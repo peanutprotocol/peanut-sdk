@@ -1,0 +1,33 @@
+// SDK example
+
+// import peanut from '@squirrel-labs/peanut-sdk'; // npm
+import peanut from "../../index.js"; // local
+import { ethers } from "ethers";
+import dotenv from "dotenv";
+dotenv.config();
+
+peanut.greeting();
+
+// --------------------------------------------------
+// Create a signer (you'll have to do this part yourself!)
+const provider = new ethers.JsonRpcProvider(process.env.POKT_POLYGON_RPC);
+const wallet = new ethers.Wallet(
+  process.env.TEST_WALLET_PRIVATE_KEY,
+  provider
+);
+
+// create link
+const { link, txReceipt } = await peanut.createLink({
+  signer: wallet,
+  chainId: 137,
+  tokenAmount: 0.00877192,
+  tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+  verbose: true,
+});
+console.log(link);
+
+// // claim the created link
+// const claimTx = await peanut.claimLink({ signer: wallet, link: link });
+// console.log("Claimed link. Tx hash: ", claimTx.hash);
+// --------------------------------------------------
+

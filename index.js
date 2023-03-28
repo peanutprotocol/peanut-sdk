@@ -18,6 +18,7 @@ import {
   ERC20_ABI,
   ERC721_ABI,
   ERC1155_ABI,
+  CHAIN_MAP,
 } from "./data.js";
 const CONTRACT_VERSION = "v3";
 
@@ -113,9 +114,11 @@ export function getParamsFromLink(link) {
   /* returns the parameters from a link */
   const url = new URL(link);
   const params = new URLSearchParams(url.search);
-  const chainId = params.get("c"); // can be chain name or chain id
+  var chainId = params.get("c"); // can be chain name or chain id
+  chainId = CHAIN_MAP[String(chainId)]
   const contractVersion = params.get("v");
-  const depositIdx = params.get("i");
+  var depositIdx =params.get("i");
+  depositIdx = parseInt(depositIdx)
   const password = params.get("p");
   let trackId = "" // optional
   if (params.get("t")) {
@@ -127,9 +130,11 @@ export function getParamsFromLink(link) {
 export function getParamsFromPageURL() {
   /* returns the parameters from the current page url */
   const params = new URLSearchParams(window.location.search);
-  const chainId = params.get("c"); // can be chain name or chain id
+  var chainId = params.get("c"); // can be chain name or chain id
+  chainId = CHAIN_MAP[String(chainId)]
   const contractVersion = params.get("v");
-  const depositIdx = params.get("i");
+  var depositIdx = params.get("i");
+  depositIdx = parseInt(depositIdx)
   const password = params.get("p");
 
   return { chainId, contractVersion, depositIdx, password };
@@ -144,6 +149,7 @@ export function getLinkFromParams(
   trackId = ""
 ) {
   /* returns a link from the given parameters */
+
   const link =
     baseUrl +
     "?c=" +
@@ -215,6 +221,9 @@ export async function createLink({
   password = "", // password to claim the link
   baseUrl = "https://peanut.to/claim",
   trackId = "sdk", // optional tracker id to track the link source
+  maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
+  maxPriorityFeePerGas = ethers.parseUnits('30', 'gwei'), // maximum priority fee per gas
+  verbose = false,
 }) {
   /* creates a link with redeemable tokens */
 
@@ -241,6 +250,15 @@ export async function createLink({
   const keys = generateKeysFromString(password); // deterministically generate keys from password
   const contract = await getContract(chainId, signer);
 
+  const feeData = await signer.provider.getFeeData();
+  txOptions = { ...txOptions, 
+    maxFeePerGas: maxFeePerGas,
+    // maxFeePerGas: feeData.maxFeePerGas,
+    maxPriorityFeePerGas: maxPriorityFeePerGas,
+    // maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
+    // gasPrice: feeData.gasPrice,
+  }
+
   var tx = await contract.makeDeposit(
     tokenAddress,
     tokenType,
@@ -250,6 +268,10 @@ export async function createLink({
     txOptions
   );
 
+  if (verbose) {
+    console.log("submitted tx", tx.hash);
+  }
+  
   // now we need the deposit index from the tx receipt
   var txReceipt = await tx.wait();
   var depositIdx = getDepositIdx(txReceipt);
@@ -263,9 +285,34 @@ export async function createLink({
     baseUrl,
     trackId
   );
+  if (verbose) {
+    console.log("created link: ", link);
+  }
   // return the link and the tx receipt
   return { link, txReceipt };
 }
+
+
+export async function getLinkStatus({ signer, link }) {
+  /* checks if a link has been claimed */
+  assert(signer, "signer arg is required");
+  assert(link, "link arg is required");
+
+  const params = getParamsFromLink(link);
+  const chainId = params.chainId;
+  const contractVersion = params.contractVersion;
+  const depositIdx = params.depositIdx;
+  const contract = await getContract(chainId, signer);
+  const deposit = await contract.deposits(depositIdx);
+
+  // if the deposit is claimed, the pubKey20 will be 0x000....
+  if (deposit.pubKey20 == "0x0000000000000000000000000000000000000000") {
+    return { claimed: false, deposit };
+  }  
+  return { claimed: true, deposit };
+}
+
+
 
 export async function claimLink({ signer, link, recipient = null }) {
   /* claims the contents of a link */
@@ -314,6 +361,7 @@ export default {
   getRandomString,
   getContract,
   getDepositIdx,
+  getLinkStatus,
   getParamsFromLink,
   getParamsFromPageURL,
   getLinkFromParams,

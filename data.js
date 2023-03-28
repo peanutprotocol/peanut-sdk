@@ -1,3 +1,37 @@
+// map of chain monikers to EIP-155 chain IDs
+export const CHAIN_MAP = {
+  "eth": 1,
+  "ethereum-mainnet": 1,
+  "goerli": 5,
+  "ethereum-goerli": 5,
+  "matic": 137,
+  "polygon-mainnet": 137,
+  "polygon-mumbai": 80001,
+  "mumbai": 80001,
+  "opt": 10,
+  "optimism-mainnet": 10,
+  "moonbeam-mainnet": 1284,
+  "starkware-mainnet": 1001,
+  "arb": 42161,
+  "arbitrum-mainnet": 42161,
+  "xdai-mainnet": 100,
+  "xdai": 100,
+  "bsc-mainnet": 56,
+  "bnb": 56,
+  "bnb": 56,
+  "filecoin-mainnet": 314,
+  "fil": 314,
+  "filecoin-hyperspace": 3141,
+  "fil-2": 3141,
+  "scroll-pre_alpha_l2": 534354,
+  "scroll-l2p": 534354,
+  "scroll-alpha_l2": 534353,
+  "scroll-alpha": 534353,
+  "avalanche-mainnet": 43114,
+  "avax": 43114,
+};
+
+
 export const PEANUT_CONTRACTS = {
   ethereum: {
     mainnet: {
