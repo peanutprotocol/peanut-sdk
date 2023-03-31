@@ -65,6 +65,11 @@ export const PEANUT_CONTRACTS = {
     },
     rinkeby: {},
   },
+  scroll: {
+    alpha: { 
+      v3: "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
+    },
+  },
   xdai: {
     mainnet: {
       v1: "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
@@ -130,6 +135,10 @@ export const PEANUT_CONTRACTS_BY_CHAIN_IDS = {
   42161: {
     v1: "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
     v3: "0x9B0817fA08b46670B92300B58AA1f4AB155701ea",
+  },
+  // Scroll
+  534353: {
+    v3: "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
   },
   // xDai
   100: {

@@ -115,7 +115,14 @@ export function getParamsFromLink(link) {
   const url = new URL(link);
   const params = new URLSearchParams(url.search);
   var chainId = params.get("c"); // can be chain name or chain id
-  chainId = CHAIN_MAP[String(chainId)]
+  // if can be casted to int, then it's a chain id
+  if (parseInt(chainId)) {
+    chainId = parseInt(chainId);
+  } else {
+    // otherwise it's a chain name
+    chainId = CHAIN_MAP[String(chainId)];
+  }
+
   const contractVersion = params.get("v");
   var depositIdx =params.get("i");
   depositIdx = parseInt(depositIdx)
@@ -223,6 +230,7 @@ export async function createLink({
   trackId = "sdk", // optional tracker id to track the link source
   maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
   maxPriorityFeePerGas = ethers.parseUnits('30', 'gwei'), // maximum priority fee per gas
+  eip1559 = true, // whether to use eip1559 or not
   verbose = false,
 }) {
   /* creates a link with redeemable tokens */
@@ -251,12 +259,18 @@ export async function createLink({
   const contract = await getContract(chainId, signer);
 
   const feeData = await signer.provider.getFeeData();
-  txOptions = { ...txOptions, 
-    maxFeePerGas: maxFeePerGas,
-    // maxFeePerGas: feeData.maxFeePerGas,
-    maxPriorityFeePerGas: maxPriorityFeePerGas,
-    // maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
-    // gasPrice: feeData.gasPrice,
+  if (eip1559) {
+    txOptions = {
+      ...txOptions,
+      maxFeePerGas: maxFeePerGas,
+      maxPriorityFeePerGas: maxPriorityFeePerGas,
+    };
+  } else {
+    txOptions = {
+      ...txOptions,
+      gasPrice: feeData.gasPrice,
+      // gasPrice: feeData.gasPrice.mul(ethers.BigNumber.from(120)).div(ethers.BigNumber.from(100)), // increase gas price by 20%
+    };
   }
 
   var tx = await contract.makeDeposit(
