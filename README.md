@@ -37,3 +37,16 @@ const claimTx = await peanut.claimLink({ signer: wallet, link: link });
 ### Feedback
 
 This is an early SDK, and we're very open to suggestions and improvements. Please feel free to open an issue (or PR) on the [Github repo](https://github.com/ProphetFund/peanut-sdk/issues).
+
+
+### Examples
+
+To run the examples in examples/ folder:
+  - rename .env.example to .env & fill in the values
+  - run ```node examples/js-example/polygon.js``` or any of the other examples
+
+
+### TODO
+- [ ] prefill priority fee based on chain conditions (e.g. important for polygon)
+- [ ] async bulk link creation function
+- [ ] 

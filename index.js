@@ -23,7 +23,7 @@ import {
 const CONTRACT_VERSION = "v3";
 
 export function greeting() {
-  console.log("Hello Peanut!");
+  console.log("Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord");
 }
 
 export function generateKeysFromString(string) {
@@ -228,8 +228,8 @@ export async function createLink({
   password = "", // password to claim the link
   baseUrl = "https://peanut.to/claim",
   trackId = "sdk", // optional tracker id to track the link source
-  maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
-  maxPriorityFeePerGas = ethers.parseUnits('30', 'gwei'), // maximum priority fee per gas
+  maxFeePerGas = ethers.parseUnits('5000', 'gwei'), // maximum fee per gas
+  maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
   eip1559 = true, // whether to use eip1559 or not
   verbose = false,
 }) {
@@ -238,6 +238,10 @@ export async function createLink({
   assert(signer, "signer arg is required");
   assert(chainId, "chainId arg is required");
   assert(tokenAmount, "amount arg is required");
+
+  if (verbose) {
+    console.log("Generating link...");
+  }
 
   let txOptions = {};
   // For base tokens, we need to send the amount as value
@@ -269,6 +273,7 @@ export async function createLink({
     txOptions = {
       ...txOptions,
       gasPrice: feeData.gasPrice,
+      maxPriorityFeePerGas: maxPriorityFeePerGas,
       // gasPrice: feeData.gasPrice.mul(ethers.BigNumber.from(120)).div(ethers.BigNumber.from(100)), // increase gas price by 20%
     };
   }
@@ -283,7 +288,7 @@ export async function createLink({
   );
 
   if (verbose) {
-    console.log("submitted tx", tx.hash);
+    console.log("submitted tx: ", tx.hash);
   }
   
   // now we need the deposit index from the tx receipt

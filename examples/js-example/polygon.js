@@ -16,12 +16,26 @@ const wallet = new ethers.Wallet(
   provider
 );
 
+const feeData = await wallet.provider.getFeeData();
+console.log(feeData);
+console.log(ethers.parseUnits('50', 'gwei'))
+console.log(feeData.maxPriorityFeePerGas - ethers.parseUnits('50', 'gwei'))
+// convert maxPriorityFeePerGas to gwei
+const maxPriorityFeePerGas = ethers.formatUnits(feeData.maxPriorityFeePerGas, 'gwei');
+console.log("maxPriorityFeePerGas: ", maxPriorityFeePerGas);
+// convert maxFeePerGas to gwei
+const maxFeePerGas = ethers.formatUnits(feeData.maxFeePerGas, 'gwei');
+console.log("maxFeePerGas: ", maxFeePerGas);
+// throw new Error("stop");
+
+
 // create link
 const { link, txReceipt } = await peanut.createLink({
   signer: wallet,
   chainId: 137,
   tokenAmount: 0.00877192,
   tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+  eip1559: false,
   verbose: true,
 });
 console.log(link);

@@ -27,7 +27,8 @@
   "homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
   "dependencies": {
     "dotenv": "^16.0.3",
-    "ethers": "^6.0.3"
+    "ethers": "^6.0.3",
+    "node-fetch": "^3.3.1"
   },
   "devDependencies": {
     "mocha": "^10.2.0",
