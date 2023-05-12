@@ -10,24 +10,11 @@ peanut.greeting();
 
 // --------------------------------------------------
 // Create a signer (you'll have to do this part yourself!)
-const provider = new ethers.JsonRpcProvider(process.env.POKT_POLYGON_RPC);
+const provider = new ethers.JsonRpcProvider(process.env.POLYGON_RPC);
 const wallet = new ethers.Wallet(
   process.env.TEST_WALLET_PRIVATE_KEY,
   provider
 );
-
-const feeData = await wallet.provider.getFeeData();
-console.log(feeData);
-console.log(ethers.parseUnits('50', 'gwei'))
-console.log(feeData.maxPriorityFeePerGas - ethers.parseUnits('50', 'gwei'))
-// convert maxPriorityFeePerGas to gwei
-const maxPriorityFeePerGas = ethers.formatUnits(feeData.maxPriorityFeePerGas, 'gwei');
-console.log("maxPriorityFeePerGas: ", maxPriorityFeePerGas);
-// convert maxFeePerGas to gwei
-const maxFeePerGas = ethers.formatUnits(feeData.maxFeePerGas, 'gwei');
-console.log("maxFeePerGas: ", maxFeePerGas);
-// throw new Error("stop");
-
 
 // create link
 const { link, txReceipt } = await peanut.createLink({

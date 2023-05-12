@@ -20,6 +20,7 @@ import {
   ERC1155_ABI,
   CHAIN_MAP,
 } from "./data.js";
+import { type } from "os";
 const CONTRACT_VERSION = "v3";
 
 export function greeting() {
@@ -203,10 +204,10 @@ export async function approveSpendERC20(
 }
 
 
-export function getDepositIdx(txReceipt) {
+export function getDepositIdx(txReceipt, chainId) {
   /* returns the deposit index from a tx receipt */
   const logs = txReceipt.logs;
-  const chainId = txReceipt.chainId;
+  // const chainId = txReceipt.chainId;
   var depositIdx;
   if (chainId == 137) {
     depositIdx = logs[logs.length - 2].args[0];
@@ -228,7 +229,7 @@ export async function createLink({
   password = "", // password to claim the link
   baseUrl = "https://peanut.to/claim",
   trackId = "sdk", // optional tracker id to track the link source
-  maxFeePerGas = ethers.parseUnits('5000', 'gwei'), // maximum fee per gas
+  maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
   maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
   eip1559 = true, // whether to use eip1559 or not
   verbose = false,
@@ -263,18 +264,26 @@ export async function createLink({
   const contract = await getContract(chainId, signer);
 
   const feeData = await signer.provider.getFeeData();
+  const gasPrice = feeData.gasPrice
+
+  let multiplier = 1.5;
+  multiplier = Math.round(multiplier * 10);
+  const proposedGasPrice = (gasPrice * BigInt(multiplier)) / BigInt(10);
+
   if (eip1559) {
+    if (chainId == 137) {
+      // warn that polygon doesn't support eip1559 yet
+      console.log("WARNING: Polygon doesn't support EIP1559 yet. Using legacy tx");
+    }
     txOptions = {
       ...txOptions,
-      maxFeePerGas: maxFeePerGas,
+      // maxFeePerGas: maxFeePerGas,
       maxPriorityFeePerGas: maxPriorityFeePerGas,
     };
   } else {
     txOptions = {
       ...txOptions,
-      gasPrice: feeData.gasPrice,
-      maxPriorityFeePerGas: maxPriorityFeePerGas,
-      // gasPrice: feeData.gasPrice.mul(ethers.BigNumber.from(120)).div(ethers.BigNumber.from(100)), // increase gas price by 20%
+      gasPrice: proposedGasPrice
     };
   }
 
@@ -293,7 +302,7 @@ export async function createLink({
   
   // now we need the deposit index from the tx receipt
   var txReceipt = await tx.wait();
-  var depositIdx = getDepositIdx(txReceipt);
+  var depositIdx = getDepositIdx(txReceipt, chainId);
 
   // now we can create the link
   const link = getLinkFromParams(
