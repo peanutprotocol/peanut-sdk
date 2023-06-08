@@ -235,6 +235,7 @@ export async function createLink({
   trackId = "sdk", // optional tracker id to track the link source
   maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
   maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
+  gasLimit = 1000000, // gas limit
   eip1559 = true, // whether to use eip1559 or not
   verbose = false,
 }) {
@@ -245,6 +246,8 @@ export async function createLink({
   assert(tokenAmount, "amount arg is required");
 
   signer = walletToEthersv6(signer);
+  // print ethers version
+  console.log("Ethers version: ", ethers.version);
 
   if (verbose) {
     console.log("Generating link...");
@@ -285,13 +288,17 @@ export async function createLink({
       ...txOptions,
       maxFeePerGas: maxFeePerGas,
       maxPriorityFeePerGas: maxPriorityFeePerGas,
+      gasLimit: gasLimit,
     };
   } else {
     txOptions = {
       ...txOptions,
-      gasPrice: proposedGasPrice
+      gasPrice: proposedGasPrice,
+      gasLimit: gasLimit,
     };
   }
+
+  console.log("txOptions: ", txOptions)
 
   var tx = await contract.makeDeposit(
     tokenAddress,
