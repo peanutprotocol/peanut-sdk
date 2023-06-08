@@ -1,6 +1,6 @@
 {
   "name": "@squirrel-labs/peanut-sdk",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
   "type": "module",

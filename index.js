@@ -245,7 +245,6 @@ export async function createLink({
   assert(tokenAmount, "amount arg is required");
 
   signer = walletToEthersv6(signer);
-  console.log("ethers version: ", ethers.version);
 
   if (verbose) {
     console.log("Generating link...");

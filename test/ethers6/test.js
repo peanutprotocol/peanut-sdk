@@ -1,5 +1,5 @@
-// import peanut from '@squirrel-labs/peanut-sdk';
-import peanut from "../../index.js"; // local
+import peanut from '@squirrel-labs/peanut-sdk';
+// import peanut from "../../index.js"; // local
 import { ethers } from 'ethers'; // ethers v5.7.2
 import dotenv from 'dotenv';
 dotenv.config({path: '../../.env'});
