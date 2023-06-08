@@ -101,6 +101,8 @@ function getRandomString(length) {
 
 export async function getContract(chainId, signer) {
   /* returns a contract object for the given chainId and signer */
+  signer = walletToEthersv6(signer);
+
   if (typeof chainId == "string") {
     // if chainId is a string, convert to int
     chainId = parseInt(chainId);
@@ -126,7 +128,7 @@ export function getParamsFromLink(link) {
   }
 
   const contractVersion = params.get("v");
-  var depositIdx =params.get("i");
+  var depositIdx = params.get("i");
   depositIdx = parseInt(depositIdx)
   const password = params.get("p");
   let trackId = "" // optional
@@ -184,6 +186,7 @@ export async function approveSpendERC20(
   tokenDecimals
 ) {
   /*  Approves the contract to spend the specified amount of tokens   */
+  signer = walletToEthersv6(signer);
   const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
   if (amount == -1) {
     // if amount is -1, approve infinite amount
@@ -241,6 +244,8 @@ export async function createLink({
   assert(chainId, "chainId arg is required");
   assert(tokenAmount, "amount arg is required");
 
+  signer = walletToEthersv6(signer);
+
   if (verbose) {
     console.log("Generating link...");
   }
@@ -265,7 +270,7 @@ export async function createLink({
   const contract = await getContract(chainId, signer);
 
   const feeData = await signer.provider.getFeeData();
-  const gasPrice = feeData.gasPrice
+  const gasPrice = BigInt(feeData.gasPrice.toString());
 
   let multiplier = 1.5;
   multiplier = Math.round(multiplier * 10);
@@ -300,7 +305,7 @@ export async function createLink({
   if (verbose) {
     console.log("submitted tx: ", tx.hash);
   }
-  
+
   // now we need the deposit index from the tx receipt
   var txReceipt = await tx.wait();
   var depositIdx = getDepositIdx(txReceipt, chainId);
@@ -327,6 +332,8 @@ export async function getLinkStatus({ signer, link }) {
   assert(signer, "signer arg is required");
   assert(link, "link arg is required");
 
+  signer = walletToEthersv6(signer);
+
   const params = getParamsFromLink(link);
   const chainId = params.chainId;
   const contractVersion = params.contractVersion;
@@ -337,7 +344,7 @@ export async function getLinkStatus({ signer, link }) {
   // if the deposit is claimed, the pubKey20 will be 0x000....
   if (deposit.pubKey20 == "0x0000000000000000000000000000000000000000") {
     return { claimed: true, deposit };
-  }  
+  }
   return { claimed: false, deposit };
 }
 
@@ -346,6 +353,8 @@ export async function claimLink({ signer, link, recipient = null }) {
   /* claims the contents of a link */
   assert(signer, "signer arg is required");
   assert(link, "link arg is required");
+
+  signer = walletToEthersv6(signer);
 
   const params = getParamsFromLink(link);
   const chainId = params.chainId;
@@ -380,7 +389,7 @@ export async function claimLink({ signer, link, recipient = null }) {
 }
 
 
-async function createClaimPayload(link, recipientAddress){
+async function createClaimPayload(link, recipientAddress) {
   /* internal utility function to create the payload for claiming a link */
   const params = getParamsFromLink(link);
   const chainId = params.chainId;
@@ -392,7 +401,7 @@ async function createClaimPayload(link, recipientAddress){
   var addressHashBinary = ethers.getBytes(addressHash);
   var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
   var signature = await signAddress(recipientAddress, keys.privateKey); // sign with link keys
-  
+
   return {
     "addressHash": addressHashEIP191,
     "signature": signature,
@@ -403,7 +412,7 @@ async function createClaimPayload(link, recipientAddress){
 }
 
 
-export async function claimLinkGasless( link, recipientAddress, apiKey ) {
+export async function claimLinkGasless(link, recipientAddress, apiKey) {
   const payload = await createClaimPayload(link, recipientAddress);
   const url = "https://api.peanut.to/claim";
   // const url = "http://127.0.0.1:5001/claim";
@@ -429,6 +438,20 @@ export async function claimLinkGasless( link, recipientAddress, apiKey ) {
     console.error('Error with axios request: ', error);
   }
 }
+
+
+function walletToEthersv6(wallet) {
+  /* always returns an ethers v6 wallet.
+
+  If the wallet is already an ethers v6 wallet, it is returned unchanged.
+  If the wallet is an ethers v5 wallet, it is converted to an ethers v6 wallet.
+  */
+  const provider = wallet.provider;
+  const key = wallet.privateKey;
+  const ethersv6Wallet = new ethers.Wallet(key, provider);
+  return ethersv6Wallet;
+}
+
 
 // export object with all functions
 export default {
