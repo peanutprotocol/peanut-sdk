@@ -7,9 +7,9 @@
 //
 /////////////////////////////////////////////////////////
 
-import { ethers } from "ethers";
 import assert from "assert";
 import axios from 'axios';
+import { ethers } from "ethers";
 
 // load data.js file from same directory (using import)
 import {

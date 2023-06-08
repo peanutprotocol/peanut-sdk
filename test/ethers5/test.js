@@ -23,9 +23,11 @@ const { link, txReceipt } = await peanut.createLink({
 });
 
 // get status of link
-const status = await peanut.getLinkStatus({signer: wallet, link: link});
-console.log(status);
+console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
+
 
 // claim link
 const claimTx = await peanut.claimLink({ signer: wallet, link: link });
-console.log("claimTx: ", claimTx);
+console.log("claimTx: ", claimTx.hash);
+
+console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);

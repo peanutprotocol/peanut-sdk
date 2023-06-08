@@ -13,6 +13,9 @@ Important to have a dependency alias on ethers v6:
     "ethers": "npm:ethers@^6.0.3",
 ```
 
+alternative: peer dependency or bundled dependency:
+  // "bundledDependencies": ["ethers"],
+
 
 ### TODO
 - [ ] move live tests to optimism-goerli

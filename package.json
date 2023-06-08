@@ -1,6 +1,6 @@
 {
   "name": "@squirrel-labs/peanut-sdk",
-  "version": "1.0.21",
+  "version": "1.0.24",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
   "type": "module",
@@ -28,8 +28,10 @@
   "dependencies": {
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
-    "ethers": "npm:ethers@^6.0.3",
-    "node-fetch": "^3.3.1"
+    "ethers": "^6.5.1"
+  },
+  "peerDependencies": {
+    "ethers": "^6.0.0"
   },
   "devDependencies": {
     "mocha": "^10.2.0",
