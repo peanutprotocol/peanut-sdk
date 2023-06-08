@@ -1,0 +1,18 @@
+{
+  "name": "ethers6",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@squirrel-labs/peanut-sdk": "^1.0.19",
+    "dotenv": "^16.1.4",
+    "ethers": "^6.5.1"
+  }
+}

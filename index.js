@@ -245,6 +245,7 @@ export async function createLink({
   assert(tokenAmount, "amount arg is required");
 
   signer = walletToEthersv6(signer);
+  console.log("ethers version: ", ethers.version);
 
   if (verbose) {
     console.log("Generating link...");
@@ -292,6 +293,24 @@ export async function createLink({
       gasPrice: proposedGasPrice
     };
   }
+
+  console.log(`tokenAddress,
+  tokenType,
+  BigInt(tokenAmount),
+  tokenId,
+  keys.address,
+  txOptions`);
+  console.log(tokenAddress,
+    tokenType,
+    BigInt(tokenAmount),
+    tokenId,
+    keys.address,
+    txOptions);
+
+  console.log(txOptions)
+  console.log(typeof txOptions)
+  console.log(typeof txOptions.maxPriorityFeePerGas)
+  console.log(typeof txOptions.value)
 
   var tx = await contract.makeDeposit(
     tokenAddress,

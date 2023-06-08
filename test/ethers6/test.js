@@ -7,7 +7,7 @@ dotenv.config({path: '../../.env'});
 // create goerli wallet with optimism rpc
 const wallet = new ethers.Wallet(
     process.env.TEST_WALLET_PRIVATE_KEY,
-    new ethers.providers.JsonRpcProvider("https://rpc.goerli.optimism.gateway.fm")
+    new ethers.JsonRpcProvider("https://rpc.goerli.optimism.gateway.fm")
 );
 
 // print version of ethers
