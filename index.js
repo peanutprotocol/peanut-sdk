@@ -278,13 +278,13 @@ export async function createLink({
   const proposedGasPrice = (gasPrice * BigInt(multiplier)) / BigInt(10);
 
   if (eip1559) {
-    if (chainId == 137) {
-      // warn that polygon doesn't support eip1559 yet
-      console.log("WARNING: Polygon doesn't support EIP1559 yet. Using legacy tx");
-    }
+    // if (chainId == 137) {
+    //   // warn that polygon doesn't support eip1559 yet
+    //   console.log("WARNING: Polygon doesn't support EIP1559 yet. Using legacy tx");
+    // }
     txOptions = {
       ...txOptions,
-      // maxFeePerGas: maxFeePerGas,
+      maxFeePerGas: maxFeePerGas,
       maxPriorityFeePerGas: maxPriorityFeePerGas,
     };
   } else {
@@ -293,24 +293,6 @@ export async function createLink({
       gasPrice: proposedGasPrice
     };
   }
-
-  console.log(`tokenAddress,
-  tokenType,
-  BigInt(tokenAmount),
-  tokenId,
-  keys.address,
-  txOptions`);
-  console.log(tokenAddress,
-    tokenType,
-    BigInt(tokenAmount),
-    tokenId,
-    keys.address,
-    txOptions);
-
-  console.log(txOptions)
-  console.log(typeof txOptions)
-  console.log(typeof txOptions.maxPriorityFeePerGas)
-  console.log(typeof txOptions.value)
 
   var tx = await contract.makeDeposit(
     tokenAddress,

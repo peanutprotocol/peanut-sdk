@@ -28,3 +28,4 @@ console.log(status);
 
 // claim link
 const claimTx = await peanut.claimLink({ signer: wallet, link: link });
+console.log("claimTx: ", claimTx);
