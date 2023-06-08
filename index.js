@@ -9,16 +9,17 @@
 
 import { ethers } from "ethers";
 import assert from "assert";
+import axios from 'axios';
 
 // load data.js file from same directory (using import)
 import {
   PEANUT_ABI_V3,
   PEANUT_CONTRACTS,
-  PEANUT_CONTRACTS_BY_CHAIN_IDS,
   ERC20_ABI,
   ERC721_ABI,
   ERC1155_ABI,
   CHAIN_MAP,
+  PROVIDERS,
 } from "./data.js";
 import { type } from "os";
 const CONTRACT_VERSION = "v3";
@@ -105,7 +106,7 @@ export async function getContract(chainId, signer) {
     chainId = parseInt(chainId);
   }
   const contractAddress =
-    PEANUT_CONTRACTS_BY_CHAIN_IDS[chainId][CONTRACT_VERSION];
+    PEANUT_CONTRACTS[chainId][CONTRACT_VERSION];
   const contract = new ethers.Contract(contractAddress, PEANUT_ABI_V3, signer);
   return contract;
   // TODO: return class
@@ -188,7 +189,7 @@ export async function approveSpendERC20(
     // if amount is -1, approve infinite amount
     amount = ethers.MaxUint256;
   }
-  const spender = PEANUT_CONTRACTS_BY_CHAIN_IDS[chainId][CONTRACT_VERSION];
+  const spender = PEANUT_CONTRACTS[chainId][CONTRACT_VERSION];
   let allowance = await tokenContract.allowance(signer.address, spender);
   // convert amount to BigInt and compare to allowance
   amount = ethers.parseUnits(amount.toString(), tokenDecimals);
@@ -335,11 +336,10 @@ export async function getLinkStatus({ signer, link }) {
 
   // if the deposit is claimed, the pubKey20 will be 0x000....
   if (deposit.pubKey20 == "0x0000000000000000000000000000000000000000") {
-    return { claimed: false, deposit };
+    return { claimed: true, deposit };
   }  
-  return { claimed: true, deposit };
+  return { claimed: false, deposit };
 }
-
 
 
 export async function claimLink({ signer, link, recipient = null }) {
@@ -364,6 +364,8 @@ export async function claimLink({ signer, link, recipient = null }) {
   var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
   var signature = await signAddress(recipient, keys.privateKey); // sign with link keys
 
+  // TODO: use createClaimPayload instead
+
   // withdraw the deposit
   // address hash is hash(prefix + hash(address))
   const tx = await contract.withdrawDeposit(
@@ -375,6 +377,57 @@ export async function claimLink({ signer, link, recipient = null }) {
   const txReceipt = await tx.wait();
 
   return txReceipt;
+}
+
+
+async function createClaimPayload(link, recipientAddress){
+  /* internal utility function to create the payload for claiming a link */
+  const params = getParamsFromLink(link);
+  const chainId = params.chainId;
+  const password = params.password;
+  const keys = generateKeysFromString(password); // deterministically generate keys from password
+
+  // cryptography
+  var addressHash = solidityHashAddress(recipientAddress);
+  var addressHashBinary = ethers.getBytes(addressHash);
+  var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
+  var signature = await signAddress(recipientAddress, keys.privateKey); // sign with link keys
+  
+  return {
+    "addressHash": addressHashEIP191,
+    "signature": signature,
+    "idx": params.depositIdx,
+    "chainId": params.chainId,
+    "contractVersion": params.contractVersion,
+  }
+}
+
+
+export async function claimLinkGasless( link, recipientAddress, apiKey ) {
+  const payload = await createClaimPayload(link, recipientAddress);
+  const url = "https://api.peanut.to/claim";
+  // const url = "http://127.0.0.1:5001/claim";
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  const body = {
+    "address": recipientAddress,
+    "address_hash": payload.addressHash,
+    "signature": payload.signature,
+    "idx": payload.idx,
+    "chain": payload.chainId,
+    "version": payload.contractVersion,
+    "api_key": apiKey,
+  };
+
+  try {
+    const response = await axios.post(url, body, { headers });
+    return response.data;
+  } catch (error) {
+    console.error('Error with axios request: ', error);
+  }
 }
 
 // export object with all functions
@@ -396,6 +449,7 @@ export default {
   createLink,
   claimLink,
   approveSpendERC20,
+  claimLinkGasless,
   // approveSpendERC721,
   // approveSpendERC1155,
 };

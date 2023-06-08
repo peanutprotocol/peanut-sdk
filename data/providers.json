@@ -1,0 +1,62 @@
+
+{
+    "1": "https://mainnet.infura.io/v3/",
+    "5": "https://goerli.infura.io/v3/",
+    "137": "https://polygon-rpc.com/",
+    "80001": "https://polygon-mumbai.infura.io/v3/",
+    "10": "https://optimism-mainnet.infura.io/v3/",
+    "420": "https://endpoints.omniatech.io/v1/op/goerli/public",
+    "69": "https://optimism-kovan.infura.io/v3/",
+    "42161": "https://arbitrum-mainnet.infura.io/v3/",
+    "421611": "https://arbitrum-rinkeby.infura.io/v3/",
+    "1313161556": "https://near-mainnet.infura.io/v3/",
+    "1313161555": "https://near-testnet.infura.io/v3/",
+    "1287": "https://moonbeam-mainnet.infura.io/v3/",
+    "100": "https://rpc.gnosischain.com/",
+    "56": "https://bsc-dataseed.binance.org/",
+    "461": "https://filecoin-hyperspace.chainstacklabs.com/rpc/v1",
+    "60001": "https://prealpha-rpc.scroll.io/l2",
+    "60002": "https://alpha-rpc.scroll.io/l2",
+    "ethereum": {
+        "mainnet": "https://mainnet.infura.io/v3/",
+        "goerli": "https://goerli.infura.io/v3/"
+    },
+    "polygon": {
+        "mainnet": "https://polygon-rpc.com/",
+        "mumbai": "https://polygon-mumbai.infura.io/v3/"
+    },
+    "optimism": {
+        "mainnet": "https://optimism-mainnet.infura.io/v3/",
+        "kovan": "https://optimism-kovan.infura.io/v3/"
+    },
+    "arbitrum": {
+        "mainnet": "https://arbitrum-mainnet.infura.io/v3/",
+        "rinkeby": "https://arbitrum-rinkeby.infura.io/v3/"
+    },
+    "starknet": {
+        "mainnet": "https://starknet-mainnet.infura.io/v3/",
+        "goerli": "https://starknet-mainnet.infura.io/v3/"
+    },
+    "near": {
+        "mainnet": "https://near-mainnet.infura.io/v3/",
+        "testnet": "https://near-testnet.infura.io/v3/"
+    },
+    "avalanche": {},
+    "moonbeam": {
+        "mainnet": "https://moonbeam-mainnet.infura.io/v3/"
+    },
+    "xdai": {
+        "mainnet": "https://rpc.gnosischain.com/"
+    },
+    "bsc": {
+        "mainnet": "https://bsc-dataseed.binance.org/"
+    },
+    "filecoin": {
+        "mainnet": "",
+        "hyperspace": "https://filecoin-hyperspace.chainstacklabs.com/rpc/v1"
+    },
+    "scroll": {
+        "pre_alpha_l2": "https://prealpha-rpc.scroll.io/l2",
+        "alpha": "https://alpha-rpc.scroll.io/l2"
+    }
+}

@@ -3,11 +3,7 @@ import peanut from "../index.js"; // local
 import assert from "assert";
 import { ethers } from "ethers";
 import dotenv from "dotenv";
-
-// load .env file
 dotenv.config();
-
-peanut.greeting();
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY;
 const GOERLI_RPC_URL = process.env.POKT_GOERLI_RPC;
@@ -26,11 +22,12 @@ describe("Peanut SDK", function () {
   });
 
   // test wallet from private key should have address 0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f
+  // EDIT: 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02
   describe("test wallet from private key", function () {
-    it("should have address 0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f", function () {
+    it("should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", function () {
       assert.equal(
         wallet.address,
-        "0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f"
+        "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02"
       );
     });
   });
