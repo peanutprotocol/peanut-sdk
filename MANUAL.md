@@ -18,5 +18,7 @@ alternative: peer dependency or bundled dependency:
 
 
 ### TODO
-- [ ] move live tests to optimism-goerli
+- [x] move live tests to optimism-goerli
 - [ ] move to TypeScript
+- [ ] prefill priority fee based on chain conditions (e.g. important for polygon)
+- [ ] async bulk link creation function

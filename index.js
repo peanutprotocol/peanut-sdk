@@ -435,12 +435,8 @@ export async function claimLinkGasless(link, recipientAddress, apiKey) {
     "api_key": apiKey,
   };
 
-  try {
-    const response = await axios.post(url, body, { headers });
-    return response.data;
-  } catch (error) {
-    console.error('Error with axios request: ', error);
-  }
+  const response = await axios.post(url, body, { headers });
+  return response.data;
 }
 
 

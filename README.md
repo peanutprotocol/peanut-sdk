@@ -23,7 +23,6 @@ const { link, txReceipt } = await peanut.createLink({
   chainId: 5,
   tokenAmount: 0.0001337,
   tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-  password: "super_secret_password", // optional, if not provided, a random password will be generated
 });
 
 // get status of link
@@ -33,6 +32,13 @@ console.log(status);
 // claim link
 const claimTx = await peanut.claimLink({ signer: wallet, link: link });
 ```
+
+If you want your users to be able to claim links without having to pay gas, you can use the `claimLinkGasless` function:
+```
+const response = await peanut.claimLinkGasless(link, wallet.address, process.env.PEANUT_DEV_API_KEY);
+```
+Please apply for an api key on telegram/discord for this.
+
 
 ### Feedback
 
@@ -44,9 +50,3 @@ This is an early SDK, and we're very open to suggestions and improvements. Pleas
 To run the examples in examples/ folder:
   - rename .env.example to .env & fill in the values
   - run ```node examples/js-example/polygon.js``` or any of the other examples
-
-
-### TODO
-- [ ] prefill priority fee based on chain conditions (e.g. important for polygon)
-- [ ] async bulk link creation function
-- [ ] 

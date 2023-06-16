@@ -27,9 +27,12 @@ console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
 
 
 // claim link
-const claimTx = await peanut.claimLink({ signer: wallet, link: link });
-console.log("claimTx: ", claimTx.hash);
+await new Promise(r => setTimeout(r, 6000));
+// const claimTx = await peanut.claimLink({ signer: wallet, link: link });
+// console.log("claimTx: ", claimTx.hash);
 
+const res = await peanut.claimLinkGasless(link, wallet.address, process.env.PEANUT_DEV_API_KEY);
+console.log(res);
 
 // get status of link
 console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
