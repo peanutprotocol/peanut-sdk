@@ -1,6 +1,6 @@
 {
   "name": "@squirrel-labs/peanut-sdk",
-  "version": "1.0.28",
+  "version": "1.0.29",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
   "type": "module",
@@ -11,6 +11,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ProphetFund/peanut-sdk.git"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   },
   "keywords": [
     "crypto",
