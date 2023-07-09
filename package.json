@@ -34,9 +34,7 @@
     "axios": "^1.4.0",
     "dotenv": "^16.0.3"
   },
-  "peerDependencies": {
-    "ethers": "^6.0.0"
-  },
+  "bundledDependencies": ["ethers"],
   "devDependencies": {
     "mocha": "^10.2.0",
     "npm-packlist": "^7.0.4"

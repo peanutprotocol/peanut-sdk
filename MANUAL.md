@@ -22,3 +22,8 @@ alternative: peer dependency or bundled dependency:
 - [ ] move to TypeScript
 - [ ] prefill priority fee based on chain conditions (e.g. important for polygon)
 - [ ] async bulk link creation function
+
+
+### Notes
+- Packaged ethersv6 into the dependencies to avoid dependency issues with ethersv5. It increases bundle size by a lot, we need a better way of dealing with this. Potentially use Viem? https://viem.sh
+

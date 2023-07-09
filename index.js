@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////////////
 
 import assert from "assert";
-import axios from 'axios';
+import axios from "axios";
 import { ethers } from "ethers";
 
 // load data.js file from same directory (using import)
@@ -25,7 +25,9 @@ import { type } from "os";
 const CONTRACT_VERSION = "v3";
 
 export function greeting() {
-  console.log("Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord");
+  console.log(
+    "Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord",
+  );
 }
 
 export function generateKeysFromString(string) {
@@ -107,8 +109,7 @@ export async function getContract(chainId, signer) {
     // if chainId is a string, convert to int
     chainId = parseInt(chainId);
   }
-  const contractAddress =
-    PEANUT_CONTRACTS[chainId][CONTRACT_VERSION];
+  const contractAddress = PEANUT_CONTRACTS[chainId][CONTRACT_VERSION];
   const contract = new ethers.Contract(contractAddress, PEANUT_ABI_V3, signer);
   return contract;
   // TODO: return class
@@ -129,9 +130,9 @@ export function getParamsFromLink(link) {
 
   const contractVersion = params.get("v");
   var depositIdx = params.get("i");
-  depositIdx = parseInt(depositIdx)
+  depositIdx = parseInt(depositIdx);
   const password = params.get("p");
-  let trackId = "" // optional
+  let trackId = ""; // optional
   if (params.get("t")) {
     trackId = params.get("t");
   }
@@ -142,10 +143,10 @@ export function getParamsFromPageURL() {
   /* returns the parameters from the current page url */
   const params = new URLSearchParams(window.location.search);
   var chainId = params.get("c"); // can be chain name or chain id
-  chainId = CHAIN_MAP[String(chainId)]
+  chainId = CHAIN_MAP[String(chainId)];
   const contractVersion = params.get("v");
   var depositIdx = params.get("i");
-  depositIdx = parseInt(depositIdx)
+  depositIdx = parseInt(depositIdx);
   const password = params.get("p");
 
   return { chainId, contractVersion, depositIdx, password };
@@ -157,7 +158,7 @@ export function getLinkFromParams(
   depositIdx,
   password,
   baseUrl = "https://peanut.to/claim",
-  trackId = ""
+  trackId = "",
 ) {
   /* returns a link from the given parameters */
 
@@ -183,7 +184,7 @@ export async function approveSpendERC20(
   chainId,
   tokenAddress,
   amount,
-  tokenDecimals
+  tokenDecimals,
 ) {
   /*  Approves the contract to spend the specified amount of tokens   */
   signer = walletToEthersv6(signer);
@@ -206,7 +207,6 @@ export async function approveSpendERC20(
     return { allowance, txReceipt };
   }
 }
-
 
 export function getDepositIdx(txReceipt, chainId) {
   /* returns the deposit index from a tx receipt */
@@ -233,8 +233,8 @@ export async function createLink({
   password = "", // password to claim the link
   baseUrl = "https://peanut.to/claim",
   trackId = "sdk", // optional tracker id to track the link source
-  maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
-  maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
+  maxFeePerGas = ethers.parseUnits("1000", "gwei"), // maximum fee per gas
+  maxPriorityFeePerGas = ethers.parseUnits("5", "gwei"), // maximum priority fee per gas
   gasLimit = 1000000, // gas limit
   eip1559 = true, // whether to use eip1559 or not
   verbose = false,
@@ -296,14 +296,13 @@ export async function createLink({
     };
   }
 
-
   var tx = await contract.makeDeposit(
     tokenAddress,
     tokenType,
     BigInt(tokenAmount),
     tokenId,
     keys.address,
-    txOptions
+    txOptions,
   );
 
   if (verbose) {
@@ -321,7 +320,7 @@ export async function createLink({
     depositIdx,
     password,
     baseUrl,
-    trackId
+    trackId,
   );
   if (verbose) {
     console.log("created link: ", link);
@@ -329,7 +328,6 @@ export async function createLink({
   // return the link and the tx receipt
   return { link, txReceipt };
 }
-
 
 export async function getLinkStatus({ signer, link }) {
   /* checks if a link has been claimed */
@@ -351,7 +349,6 @@ export async function getLinkStatus({ signer, link }) {
   }
   return { claimed: false, deposit };
 }
-
 
 export async function claimLink({ signer, link, recipient = null }) {
   /* claims the contents of a link */
@@ -385,13 +382,12 @@ export async function claimLink({ signer, link, recipient = null }) {
     depositIdx,
     recipient,
     addressHashEIP191,
-    signature
+    signature,
   );
   const txReceipt = await tx.wait();
 
   return txReceipt;
 }
-
 
 async function createClaimPayload(link, recipientAddress) {
   /* internal utility function to create the payload for claiming a link */
@@ -407,14 +403,13 @@ async function createClaimPayload(link, recipientAddress) {
   var signature = await signAddress(recipientAddress, keys.privateKey); // sign with link keys
 
   return {
-    "addressHash": addressHashEIP191,
-    "signature": signature,
-    "idx": params.depositIdx,
-    "chainId": params.chainId,
-    "contractVersion": params.contractVersion,
-  }
+    addressHash: addressHashEIP191,
+    signature: signature,
+    idx: params.depositIdx,
+    chainId: params.chainId,
+    contractVersion: params.contractVersion,
+  };
 }
-
 
 export async function claimLinkGasless(link, recipientAddress, apiKey) {
   const payload = await createClaimPayload(link, recipientAddress);
@@ -426,19 +421,18 @@ export async function claimLinkGasless(link, recipientAddress, apiKey) {
   };
 
   const body = {
-    "address": recipientAddress,
-    "address_hash": payload.addressHash,
-    "signature": payload.signature,
-    "idx": payload.idx,
-    "chain": payload.chainId,
-    "version": payload.contractVersion,
-    "api_key": apiKey,
+    address: recipientAddress,
+    address_hash: payload.addressHash,
+    signature: payload.signature,
+    idx: payload.idx,
+    chain: payload.chainId,
+    version: payload.contractVersion,
+    api_key: apiKey,
   };
 
   const response = await axios.post(url, body, { headers });
   return response.data;
 }
-
 
 function walletToEthersv6(wallet) {
   /* always returns an ethers v6 wallet.
@@ -451,7 +445,6 @@ function walletToEthersv6(wallet) {
   const ethersv6Wallet = new ethers.Wallet(key, provider);
   return ethersv6Wallet;
 }
-
 
 // export object with all functions
 export default {
