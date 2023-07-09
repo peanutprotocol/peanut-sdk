@@ -1,6 +1,6 @@
 {
   "name": "@squirrel-labs/peanut-sdk",
-  "version": "1.0.29",
+  "version": "0.0.30",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
   "type": "module",
@@ -32,7 +32,8 @@
   "homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
   "dependencies": {
     "axios": "^1.4.0",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "ethers": "^6.0.0"
   },
   "bundledDependencies": ["ethers"],
   "devDependencies": {
