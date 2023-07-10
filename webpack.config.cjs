@@ -15,19 +15,14 @@ module.exports = {
     rules: [
       {
         test: /\.m?js$/,
-        // exclude: /(node_modules|bower_components|examples|test|other|dist)/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /(node_modules|bower_components|examples|test|other|dist)/,
+        // exclude: /(node_modules|bower_components)/,
         use: {
           loader: 'babel-loader',
           options: {
             presets: [
               [
                 '@babel/preset-env',
-                {
-                  targets: {
-                    esmodules: true,
-                  },
-                },
               ],
             ],
             plugins: ['@babel/plugin-syntax-dynamic-import']
@@ -40,15 +35,15 @@ module.exports = {
     minimize: false,
     minimizer: [
       new TerserPlugin({
-        extractComments: {
-          condition: "some",
-          filename: (fileData) => {
-            return `${fileData.filename}.LICENSE.txt${fileData.query}`;
-          },
-          banner: (licenseFile) => {
-            return `License information can be found in ${licenseFile}`;
-          },
-        },
+        // extractComments: {
+        //   condition: "some",
+        //   filename: (fileData) => {
+        //     return `${fileData.filename}.LICENSE.txt${fileData.query}`;
+        //   },
+        //   banner: (licenseFile) => {
+        //     return `License information can be found in ${licenseFile}`;
+        //   },
+        // },
       }),
     ],
   },
