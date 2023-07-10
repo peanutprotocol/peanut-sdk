@@ -9,7 +9,8 @@
 
 import assert from "assert";
 import axios from "axios";
-import { ethers } from "ethers";
+import { ethers } from "ethersv6";
+
 
 // load data.js file from same directory (using import)
 import {
@@ -440,8 +441,18 @@ function walletToEthersv6(wallet) {
   If the wallet is already an ethers v6 wallet, it is returned unchanged.
   If the wallet is an ethers v5 wallet, it is converted to an ethers v6 wallet.
   */
-  const provider = wallet.provider;
-  const key = wallet.privateKey;
+  // create new ethersv6 provider if needed
+
+  // console.log(wallet)
+  // console.log(wallet.provider)
+  var provider;
+  try { // ethersv5
+    const provider_url = wallet.provider.connection.url;
+    provider = new ethers.JsonRpcProvider(provider_url);
+  } catch (e) { // ethersv6
+    provider = wallet.provider;
+  }
+  const key = wallet.privateKey; // this clearly doesn't work for browser/hardware wallets?
   const ethersv6Wallet = new ethers.Wallet(key, provider);
   return ethersv6Wallet;
 }

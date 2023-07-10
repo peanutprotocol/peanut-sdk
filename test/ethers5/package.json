@@ -17,8 +17,8 @@
   "author": "y",
   "license": "ISC",
   "dependencies": {
-    "@squirrel-labs/peanut-sdk": "^1.0.27",
+    "@squirrel-labs/peanut-sdk": "^0.0.30",
     "dotenv": "^16.1.4",
-    "ethers": "^5.7.2"
+    "ethers": "^5.7.0"
   }
 }

@@ -1,6 +1,6 @@
-import peanut from '@squirrel-labs/peanut-sdk';
-// import peanut from "../../index.js"; // local
-import { ethers } from 'ethers'; // ethers v5.7.2
+import peanut from "../../index.js"; // local
+// import peanut from '@squirrel-labs/peanut-sdk';
+import { ethers } from 'ethers'; // ethers v6
 import dotenv from 'dotenv';
 dotenv.config({path: '../../.env'});
 
@@ -10,6 +10,14 @@ const wallet = new ethers.Wallet(
     new ethers.JsonRpcProvider("https://rpc.goerli.optimism.gateway.fm")
 );
 
+// get peanut version
+import fs from 'fs/promises';
+async function main() {
+    const data = await fs.readFile('./package.json');
+    const pjson = JSON.parse(data);
+    console.log(pjson.dependencies['@squirrel-labs/peanut-sdk']);
+}
+main();
 // print version of ethers
 console.log(ethers.version);
 

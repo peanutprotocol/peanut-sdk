@@ -10,6 +10,15 @@ const wallet = new ethers.Wallet(
     new ethers.providers.JsonRpcProvider("https://rpc.goerli.optimism.gateway.fm")
 );
 
+// get peanut version
+import fs from 'fs/promises';
+async function main() {
+    const data = await fs.readFile('./package.json');
+    const pjson = JSON.parse(data);
+    console.log(pjson.dependencies['@squirrel-labs/peanut-sdk']);
+}
+main();
+
 // print version of ethers
 console.log(ethers.version);
 
