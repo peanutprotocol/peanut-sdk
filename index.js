@@ -14,7 +14,7 @@ import { ethers } from "ethersv6";
 // import assert from "assert";
 function assert(condition, message) {
   if (!condition) {
-      throw new Error(message || "Assertion failed");
+    throw new Error(message || "Assertion failed");
   }
 }
 
@@ -28,14 +28,8 @@ import {
   CHAIN_MAP,
   PROVIDERS,
 } from "./data.js";
-import { type } from "os";
-const CONTRACT_VERSION = "v3";
 
-export function greeting() {
-  console.log(
-    "Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord",
-  );
-}
+const CONTRACT_VERSION = "v3";
 
 export function generateKeysFromString(string) {
   /* generates a deterministic key pair from an arbitrary length string */
@@ -56,7 +50,8 @@ export function hash_string(str) {
   */
   let hash = ethers.toUtf8Bytes(str);
   hash = ethers.hexlify(hash);
-  hash = ethers.hexZeroPad(hash, 32);
+  // hash = ethers.hexZeroPad(hash, 32);
+  hash = ethers.zeroPadValue(hash, 32); // hexZeroPad is deprecated
   hash = ethers.keccak256(hash);
   return hash;
 }
@@ -463,6 +458,13 @@ function walletToEthersv6(wallet) {
   return ethersv6Wallet;
 }
 
+
+export function greeting() {
+  console.log(
+    "Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord",
+  );
+}
+
 // export object with all functions
 export default {
   greeting,
@@ -486,3 +488,6 @@ export default {
   // approveSpendERC721,
   // approveSpendERC1155,
 };
+
+
+// export an object called peanut so

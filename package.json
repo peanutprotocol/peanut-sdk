@@ -3,10 +3,19 @@
   "version": "0.0.34",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
+  "module": "peanut-sdk.js",
   "type": "module",
   "scripts": {
     "test": "mocha --timeout 600000 --exit",
-    "dry-run": "npm pack --dry-run"
+    "dry-run": "npm pack --dry-run",
+    "clean": "rm -r dist || true",
+    "build": "npm run clean && webpack --config webpack.config.cjs",
+    "build:prod": "npm run clean && webpack --config webpack.config.cjs --mode production --env minimize",
+    "build:dev": "npm run clean && webpack --config webpack.config.cjs --mode development",
+    "version": "npm version patch",
+    "git": "git add . && git commit -m 'Release' && git push",
+    "publish": "npm publish",
+    "release": "npm run build:prod && npm test && npm run version && npm run git && npm run publish"
   },
   "repository": {
     "type": "git",
@@ -34,12 +43,17 @@
     "axios": "^1.4.0",
     "ethersv6": "npm:ethers@^6.0.0"
   },
-  "bundledDependencies": [
-    "ethersv6", "axios"
-  ],
   "devDependencies": {
+    "@babel/core": "^7.22.8",
+    "@babel/preset-env": "^7.22.7",
+    "babel-loader": "^9.1.3",
+    "dotenv": "^16.0.3",
     "mocha": "^10.2.0",
     "npm-packlist": "^7.0.4",
-    "dotenv": "^16.0.3"
+    "terser-webpack-plugin": "^5.3.9",
+    "url": "^0.11.1",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
   }
 }
+

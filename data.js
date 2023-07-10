@@ -1,50 +1,46 @@
+let PEANUT_ABI_V3, PEANUT_CONTRACTS, ERC20_ABI, ERC721_ABI, ERC1155_ABI, CHAIN_MAP, PROVIDERS;
 
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+const loadJSON = async (filePath) => {
+  if (typeof window === 'undefined') { // Node.js environment
+    const fs = await import('fs');
+    const { fileURLToPath } = await import('url');
+    const { dirname, join } = await import('path');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
 
-//////////////////////////////
-// load data from json files //
-//////////////////////////////
+    try {
+      const data = fs.readFileSync(join(__dirname, filePath), 'utf-8');
+      return JSON.parse(data);
+    } catch (error) {
+      console.error(`Failed to load JSON data from ${filePath}: `, error);
+    }
+  } else { // Browser environment
+    try {
+      return import(`./data/${filePath}`);
+      // return import(`./${filePath}`); // this resulted in webpack creating huge files
+    } catch (error) {
+      console.error(`Failed to load JSON data from ${filePath}: `, error);
+    }
+  }
+}
 
-// load data/peanutAbiV3.json
-const peanutAbiV3FilePath = join(__dirname, 'data', 'peanutAbiV3.json');
-const PEANUT_ABI_V3 = JSON.parse(fs.readFileSync(peanutAbiV3FilePath, 'utf-8'));
-
-// load data/erc20abi.json
-const erc20AbiFilePath = join(__dirname, 'data', 'erc20abi.json');
-const ERC20_ABI = JSON.parse(fs.readFileSync(erc20AbiFilePath, 'utf-8'));
-
-// load data/erc721abi.json
-const erc721AbiFilePath = join(__dirname, 'data', 'erc721abi.json');
-const ERC721_ABI = JSON.parse(fs.readFileSync(erc721AbiFilePath, 'utf-8'));
-
-// load data/erc1155abi.json
-const erc1155AbiFilePath = join(__dirname, 'data', 'erc1155abi.json');
-const ERC1155_ABI = JSON.parse(fs.readFileSync(erc1155AbiFilePath, 'utf-8'));
-
-// load data/contracts.json
-const contractsFilePath = join(__dirname, 'data', 'contracts.json');
-const PEANUT_CONTRACTS = JSON.parse(fs.readFileSync(contractsFilePath, 'utf-8'));
-
-// load data/providers.json
-const providersFilePath = join(__dirname, 'data', 'providers.json');
-const PROVIDERS = JSON.parse(fs.readFileSync(providersFilePath, 'utf-8'));
-
-// load data/chainMap.json
-const chainMapFilePath = join(__dirname, 'data', 'chainMap.json');
-const CHAIN_MAP = JSON.parse(fs.readFileSync(chainMapFilePath, 'utf-8'));
+// load all JSON files
+PEANUT_ABI_V3 = await loadJSON('data/peanutAbiV3.json');
+ERC20_ABI = await loadJSON('data/erc20abi.json');
+ERC721_ABI = await loadJSON('data/erc721abi.json');
+ERC1155_ABI = await loadJSON('data/erc1155abi.json');
+PEANUT_CONTRACTS = await loadJSON('data/contracts.json');
+PROVIDERS = await loadJSON('data/providers.json');
+CHAIN_MAP = await loadJSON('data/chainMap.json');
 
 // export all these functions (imported in index.js)
 export {
-    PEANUT_ABI_V3,
-    PEANUT_CONTRACTS,
-    ERC20_ABI,
-    ERC721_ABI,
-    ERC1155_ABI,
-    CHAIN_MAP,
-    PROVIDERS,
-    };
+  PEANUT_ABI_V3,
+  PEANUT_CONTRACTS,
+  ERC20_ABI,
+  ERC721_ABI,
+  ERC1155_ABI,
+  CHAIN_MAP,
+  PROVIDERS,
+};
