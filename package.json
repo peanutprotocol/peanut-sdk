@@ -1,6 +1,6 @@
 {
   "name": "@squirrel-labs/peanut-sdk",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
   "type": "module",
@@ -32,11 +32,14 @@
   "homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
   "dependencies": {
     "axios": "^1.4.0",
-    "dotenv": "^16.0.3",
     "ethersv6": "npm:ethers@^6.0.0"
   },
+  "bundledDependencies": [
+    "ethersv6", "axios"
+  ],
   "devDependencies": {
     "mocha": "^10.2.0",
-    "npm-packlist": "^7.0.4"
+    "npm-packlist": "^7.0.4",
+    "dotenv": "^16.0.3"
   }
 }

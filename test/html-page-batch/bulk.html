@@ -1,16 +1,18 @@
-Getting the following error: Uncaught TypeError: Failed to resolve module specifier "assert". Relative references must start with either "/", "./", or "../".
-
-
 <!DOCTYPE html>
 <html>
 
 <head>
     <title>MetaMask Test Page</title>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/lib.commonjs/index.min.js"></script> -->
+    <script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/@squirrel-labs/peanut-sdk@0.0.32/index.js" crossorigin="anonymous" type="module"></script>
+    <!-- <script src="https://unpkg.com/@squirrel-labs/peanut-sdk@0.0.33/index.js" crossorigin="anonymous" type="module"></script> -->
+    <script type="module">
+        import peanut from 'https://unpkg.com/@squirrel-labs/peanut-sdk@0.0.33/index.js';
 
-    <!-- <script src="https://cdn.ethers.io/lib/ethers-5.2.esm.min.js" type="module"></script> -->
+        // console log all the imports
+        console.log(ethers);
+        console.log(peanut);
+    </script>
 </head>
 
 <body>
