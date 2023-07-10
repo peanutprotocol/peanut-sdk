@@ -33,6 +33,9 @@ ERC1155_ABI = await loadJSON('data/erc1155abi.json');
 PEANUT_CONTRACTS = await loadJSON('data/contracts.json');
 PROVIDERS = await loadJSON('data/providers.json');
 CHAIN_MAP = await loadJSON('data/chainMap.json');
+// package version
+const { version } = await loadJSON('package.json');
+console.log(`Peanut SDK version: ${version}`);
 
 // export all these functions (imported in index.js)
 export {
@@ -43,4 +46,5 @@ export {
   ERC1155_ABI,
   CHAIN_MAP,
   PROVIDERS,
+  version,
 };

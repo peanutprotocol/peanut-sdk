@@ -9,8 +9,6 @@
 
 import axios from "axios";
 import { ethers } from "ethersv6";
-import pkg from './package.json';
-
 
 // import assert from "assert";
 function assert(condition, message) {
@@ -28,6 +26,7 @@ import {
   ERC1155_ABI,
   CHAIN_MAP,
   PROVIDERS,
+  version
 } from "./data.js";
 
 const CONTRACT_VERSION = "v3";
@@ -486,9 +485,8 @@ export default {
   claimLink,
   approveSpendERC20,
   claimLinkGasless,
-  version: pkg.version,
+  version: version,
   // approveSpendERC721,
   // approveSpendERC1155,
 };
-export const version = pkg.version;
-
+export { version };
