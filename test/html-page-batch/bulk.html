@@ -1,0 +1,73 @@
+Getting the following error: Uncaught TypeError: Failed to resolve module specifier "assert". Relative references must start with either "/", "./", or "../".
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MetaMask Test Page</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/lib.commonjs/index.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/@squirrel-labs/peanut-sdk@0.0.32/index.js" crossorigin="anonymous" type="module"></script>
+
+    <!-- <script src="https://cdn.ethers.io/lib/ethers-5.2.esm.min.js" type="module"></script> -->
+</head>
+
+<body>
+    <button id="connect">Connect Wallet</button>
+    <button id="getPeanutVersion">Get Peanut Version</button>
+    <button id="getEthersVersion">Get Ethers Version</button>
+    <button id="createLink">Create Link</button>
+    <button id="getLinkStatus">Get Link Status</button>
+    <button id="claimLink">Claim Link</button>
+
+    <script>
+        let wallet;
+        let provider;
+        let link;
+
+        document.getElementById('connect').addEventListener('click', async () => {
+            if (!window.ethereum) {
+                alert('MetaMask is not installed!');
+                return;
+            }
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            wallet = provider.getSigner(accounts[0]);
+        });
+
+        document.getElementById('getPeanutVersion').addEventListener('click', async () => {
+            const pjson = await fetch('package.json').then(response => response.json());
+            console.log(pjson.dependencies['@squirrel-labs/peanut-sdk']);
+        });
+
+        document.getElementById('getEthersVersion').addEventListener('click', () => {
+            console.log(ethers.version);
+        });
+
+        document.getElementById('createLink').addEventListener('click', async () => {
+            const { link: newLink, txReceipt } = await peanut.createLink({
+                signer: wallet,
+                chainId: 420,
+                tokenAmount: 0.0001337,
+                tokenType: 0,
+                verbose: true,
+            });
+            link = newLink;
+        });
+
+        document.getElementById('getLinkStatus').addEventListener('click', async () => {
+            const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
+            console.log(status);
+        });
+
+        document.getElementById('claimLink').addEventListener('click', async () => {
+            const claimTx = await peanut.claimLink({ signer: wallet, link: link });
+            console.log("claimTx: ", claimTx.hash);
+            const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
+            console.log(status);
+        });
+    </script>
+</body>
+
+</html>

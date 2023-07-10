@@ -1,7 +1,7 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // npm
 import peanut from "../index.js"; // local
 import assert from "assert";
-import { ethers } from "ethers";
+import { ethers } from "ethersv6";
 import dotenv from "dotenv";
 import "./unit_tests.js";  // run unit tests before the live tests
 

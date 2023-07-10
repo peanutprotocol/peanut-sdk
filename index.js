@@ -7,10 +7,16 @@
 //
 /////////////////////////////////////////////////////////
 
-import assert from "assert";
 import axios from "axios";
 import { ethers } from "ethersv6";
 
+
+// import assert from "assert";
+function assert(condition, message) {
+  if (!condition) {
+      throw new Error(message || "Assertion failed");
+  }
+}
 
 // load data.js file from same directory (using import)
 import {
