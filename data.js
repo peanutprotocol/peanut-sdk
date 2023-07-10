@@ -17,8 +17,8 @@ const loadJSON = async (filePath) => {
     }
   } else { // Browser environment
     try {
-      return import(`./data/${filePath}`);
-      // return import(`./${filePath}`); // this resulted in webpack creating huge files
+      const response = await fetch(filePath);
+      return await response.json();
     } catch (error) {
       console.error(`Failed to load JSON data from ${filePath}: `, error);
     }

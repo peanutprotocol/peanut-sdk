@@ -29,27 +29,32 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.json$/,
+        loader: 'json-loader',
+        type: 'javascript/auto',
+      },
     ],
   },
   optimization: {
     minimize: false,
     minimizer: [
       new TerserPlugin({
-        // extractComments: {
-        //   condition: "some",
-        //   filename: (fileData) => {
-        //     return `${fileData.filename}.LICENSE.txt${fileData.query}`;
-        //   },
-        //   banner: (licenseFile) => {
-        //     return `License information can be found in ${licenseFile}`;
-        //   },
-        // },
+        extractComments: {
+          condition: "some",
+          filename: (fileData) => {
+            return `${fileData.filename}.LICENSE.txt${fileData.query}`;
+          },
+          banner: (licenseFile) => {
+            return `License information can be found in ${licenseFile}`;
+          },
+        },
       }),
     ],
   },
-  // experiments: {
-  //   topLevelAwait: true,
-  //   asyncWebAssembly: true,
+  experiments: {
+    topLevelAwait: true,
+    asyncWebAssembly: true,
   //   outputModule: true, // big bugs, disable
-  // },
+  },
 };

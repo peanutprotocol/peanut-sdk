@@ -9,6 +9,7 @@
 
 import axios from "axios";
 import { ethers } from "ethersv6";
+import pkg from './package.json';
 
 
 // import assert from "assert";
@@ -485,9 +486,9 @@ export default {
   claimLink,
   approveSpendERC20,
   claimLinkGasless,
+  version: pkg.version,
   // approveSpendERC721,
   // approveSpendERC1155,
 };
+export const version = pkg.version;
 
-
-// export an object called peanut so
