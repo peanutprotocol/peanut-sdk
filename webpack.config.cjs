@@ -15,7 +15,8 @@ module.exports = {
     rules: [
       {
         test: /\.m?js$/,
-        exclude: /(node_modules|bower_components|examples|test|other|dist)/,
+        // exclude: /(node_modules|bower_components|examples|test|other|dist)/,
+        exclude: /(node_modules|bower_components)/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -37,11 +38,23 @@ module.exports = {
   },
   optimization: {
     minimize: false,
-    minimizer: [new TerserPlugin()],
+    minimizer: [
+      new TerserPlugin({
+        extractComments: {
+          condition: "some",
+          filename: (fileData) => {
+            return `${fileData.filename}.LICENSE.txt${fileData.query}`;
+          },
+          banner: (licenseFile) => {
+            return `License information can be found in ${licenseFile}`;
+          },
+        },
+      }),
+    ],
   },
-  experiments: {
-    topLevelAwait: true,
-    asyncWebAssembly: true,
-    outputModule: true,
-  },
+  // experiments: {
+  //   topLevelAwait: true,
+  //   asyncWebAssembly: true,
+  //   outputModule: true, // big bugs, disable
+  // },
 };

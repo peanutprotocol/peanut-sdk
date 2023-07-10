@@ -11,7 +11,7 @@
     "clean": "rm -r dist || true",
     "build": "npm run clean && webpack --config webpack.config.cjs",
     "build:prod": "npm run clean && webpack --config webpack.config.cjs --mode production --env minimize",
-    "build:dev": "npm run clean && webpack --config webpack.config.cjs --mode development",
+    "build:dev": "npm run clean && webpack --config webpack.config.cjs",
     "git": "git add . && git commit -m 'Release' && git push",
     "publish": "npm publish",
     "release": "npm run check-git-status && npm run build:prod && npm test && npm version patch --allow-dirty && npm run git && npm run publish",
@@ -50,7 +50,6 @@
     "dotenv": "^16.0.3",
     "mocha": "^10.2.0",
     "npm-packlist": "^7.0.4",
-    "terser-webpack-plugin": "^5.3.9",
     "url": "^0.11.1",
     "webpack": "^5.88.1",
     "webpack-cli": "^5.1.4"
