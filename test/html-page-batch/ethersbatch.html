@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ethereum Batch Transaction Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <button id="sendBatchTransactions">Send Batch Transactions</button>
+
+    <script>
+        document.getElementById('sendBatchTransactions').addEventListener('click', async () => {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            const fromAccount = await signer.getAddress(); // The account performing transactions
+            const toAccounts = ['0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f'];  // Replace with receiver's Ethereum account addresses
+            const amountToSend = ethers.utils.parseEther('0.01'); // Amount to send in Wei
+
+            // Array to hold all promises
+            const promises = [];
+
+            toAccounts.forEach((toAccount) => {
+                const transaction = {
+                    to: toAccount,
+                    value: amountToSend
+                };
+
+                // Add promise to array
+                promises.push(signer.sendTransaction(transaction).then((result) => {
+                    console.log('Transaction Hash:', result.hash);
+                }));
+            });
+
+            try {
+                // Execute all transactions simultaneously
+                await Promise.all(promises);
+            } catch (error) {
+                console.log('Error:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

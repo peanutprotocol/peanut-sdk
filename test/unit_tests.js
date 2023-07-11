@@ -117,3 +117,14 @@ describe("Peanut SDK", function () {
     });
   });
 });
+
+
+// // print current version // removed as version was removed
+// describe("Peanut SDK", function () {
+//   describe("getVersion()", function () {
+//     it("should return the current version", function () {
+//       assert.equal(peanut.version, "0.0.41");
+//     });
+//   });
+// }
+// );

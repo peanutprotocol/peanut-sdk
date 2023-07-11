@@ -53,8 +53,8 @@ module.exports = {
     ],
   },
   experiments: {
-    topLevelAwait: true,
-    asyncWebAssembly: true,
-  //   outputModule: true, // big bugs, disable
+    // topLevelAwait: true,
+    // asyncWebAssembly: true,
+    // outputModule: true, // big bugs, disable
   },
 };

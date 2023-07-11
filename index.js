@@ -26,7 +26,7 @@ import {
   ERC1155_ABI,
   CHAIN_MAP,
   PROVIDERS,
-  version
+  // version
 } from "./data.js";
 
 const CONTRACT_VERSION = "v3";
@@ -485,8 +485,8 @@ export default {
   claimLink,
   approveSpendERC20,
   claimLinkGasless,
-  version: version,
+  // version: version, // removed as was giving errors
   // approveSpendERC721,
   // approveSpendERC1155,
 };
-export { version };
+// export { version }; // removed as was giving errors

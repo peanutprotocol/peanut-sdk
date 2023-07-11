@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ethereum Batch Transaction Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.5.2/dist/web3.min.js"></script>
+</head>
+
+<body>
+  <button id="sendBatchTransactions">Send Batch Transactions</button>
+
+  <script>
+    window.addEventListener('load', function () {
+
+      // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+      if (typeof web3 !== 'undefined') {
+        console.log('Web3 Detected! ' + web3.currentProvider.constructor.name)
+        window.web3 = new Web3(web3.currentProvider);
+      } else {
+        console.warn('No Web3 Detected... using HTTP Provider')
+        window.web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/YOUR-INFURA-KEY"));
+      }
+
+      $('#sendBatchTransactions').click(function() {
+        var fromAccount = '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02';  // Replace with your Ethereum account address
+        var toAccounts = ['0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', '0xaBC5211D86a01c2dD50797ba7B5b32e3C1167F9f'];  // Replace with receiver's Ethereum account addresses
+        var amountToSend = web3.utils.toWei('0.0001337', 'ether');  // Amount to send in Wei
+        
+        var batch = new web3.BatchRequest();
+
+        toAccounts.forEach(function(toAccount) {
+          batch.add(web3.eth.sendTransaction.request({
+            from: fromAccount,
+            to: toAccount,
+            value: amountToSend,
+            gas: 21000
+          }, function(error, transactionHash) {
+            if (!error) {
+              console.log('Transaction Hash:', transactionHash);
+            } else {
+              console.log('Error:', error);
+            }
+          }));
+        });
+
+        batch.execute();
+      });
+
+    });
+  </script>
+</body>
+</html>
