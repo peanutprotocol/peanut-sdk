@@ -20,6 +20,7 @@ function assert(condition, message) {
 // load data.js file from same directory (using import)
 import {
   PEANUT_ABI_V3,
+  PEANUT_ABI_V4,
   PEANUT_CONTRACTS,
   ERC20_ABI,
   ERC721_ABI,
@@ -103,7 +104,7 @@ function getRandomString(length) {
   return result_str;
 }
 
-export async function getContract(chainId, signer) {
+export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
   /* returns a contract object for the given chainId and signer */
   signer = walletToEthersv6(signer);
 
@@ -111,8 +112,22 @@ export async function getContract(chainId, signer) {
     // if chainId is a string, convert to int
     chainId = parseInt(chainId);
   }
-  const contractAddress = PEANUT_CONTRACTS[chainId][CONTRACT_VERSION];
-  const contract = new ethers.Contract(contractAddress, PEANUT_ABI_V3, signer);
+
+  // TODO: fix this for new versions
+  // if version is v3, load PEANUT_ABI_V3. if it is v4, load PEANUT_ABI_V4
+  var PEANUT_ABI;
+  if (version == "v3") {
+    PEANUT_ABI = PEANUT_ABI_V3;
+  } else if (version == "v4") {
+    PEANUT_ABI = PEANUT_ABI_V4;
+  } else {
+    throw new Error("Invalid version");
+  }
+
+  const contractAddress = PEANUT_CONTRACTS[chainId][version];
+  const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signer);
+  // connected to contracv
+  console.log("Connected to contract ", version, " on chain ", chainId, " at ", contractAddress);
   return contract;
   // TODO: return class
 }
@@ -224,6 +239,27 @@ export function getDepositIdx(txReceipt, chainId) {
   return depositIdx;
 }
 
+export function getDepositIdxs(txReceipt, chainId, contractAddress) {
+  /* returns an array of deposit indices from a batch transaction receipt */
+  const logs = txReceipt.logs;
+  console.log(logs);
+  console.log(logs[0]);
+  var depositIdxs = [];
+  // loop through all the logs and extract the deposit index from each
+  for (var i = 0; i < logs.length; i++) {
+    // check if the log was emitted by our contract
+    if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
+      if (chainId == 137) {
+        depositIdxs.push(logs[i].args[0]);
+      } else {
+        depositIdxs.push(logs[i].args[0]);
+      }
+    }
+  }
+  return depositIdxs;
+}
+
+
 export async function createLink({
   signer, // ethers signer object
   chainId, // chain id of the network (only EVM for now)
@@ -331,6 +367,256 @@ export async function createLink({
   return { link, txReceipt };
 }
 
+async function makeDeposits(signer, chainId, contractVersion, tokenAmount, numberOfLinks, tokenAddress, tokenType, keys) {
+  const contract = await getContract(chainId, signer, contractVersion);
+  let tx;
+
+  // convert tokenAmount to Wei
+  tokenAmount = ethers.parseUnits(tokenAmount.toString(), "ether");
+  const amounts = Array(numberOfLinks).fill(tokenAmount);
+
+  const pubKeys20 = keys.map(key => key.address);
+
+  // Set maxFeePerGas and maxPriorityFeePerGas (in Gwei)
+  const maxFeePerGas = ethers.parseUnits('900', 'gwei'); // 100 Gwei
+  const maxPriorityFeePerGas = ethers.parseUnits('50', 'gwei'); // 2 Gwei
+
+  // Transaction options (eip1559)
+  // let txOptions = {
+  //   maxFeePerGas,
+  //   maxPriorityFeePerGas
+  // };
+
+  let txOptions = await setTxOptions({}, true, chainId, signer);
+
+  if (tokenType == 0) { // ETH
+    txOptions = {
+      ...txOptions,
+      value: amounts.reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0))  // set total Ether value 
+    };
+
+    tx = await contract.batchMakeDepositEther(amounts, pubKeys20, txOptions);
+
+  } else if (tokenType == 1) { // ERC20
+    // TODO: The user must have approved the contract to spend tokens on their behalf before this
+    tx = await contract.batchMakeDepositERC20(tokenAddress, amounts, pubKeys20, txOptions);
+  }
+  console.log("submitted tx: ", tx.hash, " for ", numberOfLinks, " deposits. Now waiting for receipt...");
+  // print the submitted tx fee and gas price
+  // console.log(tx)
+  const txReceipt = await tx.wait();
+  return getDepositIdxs(txReceipt, chainId, contract.target);
+}
+
+
+function generateKeysAndPasswords(passwords, numberOfLinks) {
+  let keys = [];
+  if (passwords.length > 0) {
+    keys = passwords.map(password => generateKeysFromString(password));
+  } else {
+    for (let i = 0; i < numberOfLinks; i++) {
+      const password = getRandomString(16);
+      keys.push(generateKeysFromString(password));
+      passwords.push(password);
+    }
+  }
+  return { keys, passwords };
+}
+
+async function setTxOptions(txOptions, eip1559, chainId, signer, maxFeePerGas = '1000', maxPriorityFeePerGas = '50', gasLimit = 500000){
+  // helper function for setting tx options
+  // if polygon, use legacy tx options. Else use eip1559 (unless specified otherwise)
+
+  // convert maxFeePerGas and maxPriorityFeePerGas to Wei from Gwei
+  maxFeePerGas = ethers.parseUnits(maxFeePerGas, 'gwei'); 
+  maxPriorityFeePerGas = ethers.parseUnits(maxPriorityFeePerGas, 'gwei');
+
+  const provider = signer.provider;
+  
+  let gasPrice;
+
+  try {
+    const feeData = await provider.getFeeData();
+    gasPrice = BigInt(feeData.gasPrice.toString());
+  } catch(error) {
+    console.error('Failed to fetch gas price from provider:', error);
+    return; // exit the function if the gas price cannot be fetched
+  }
+  
+  // calculate the proposed gas price
+  const multiplier = 1.5;
+  const proposedGasPrice = (gasPrice * BigInt(Math.round(multiplier * 10))) / BigInt(10);
+
+  if(eip1559 && chainId !== 137) { // EIP-1559 options if supported and requested
+    txOptions = {
+      ...txOptions,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+      gasLimit
+    };
+  } else { // legacy options
+    txOptions = {
+      ...txOptions,
+      gasPrice: proposedGasPrice.toString(),
+      gasLimit
+    };
+  }
+
+  return txOptions;
+}
+
+
+
+
+function generateLinks(chainId, contractVersion, depositIdxs, passwords, baseUrl, trackId) {
+  return depositIdxs.map((depositIdx, i) =>
+    getLinkFromParams(chainId, contractVersion, depositIdx, passwords[i], baseUrl, trackId)
+  );
+}
+
+export async function createLinks({
+  signer, // ethers signer object
+  chainId, // chain id of the network (only EVM for now)
+  tokenAmount, // tokenAmount to put in each link
+  numberOfLinks = null, // number of links to create
+  tokenAmounts = [], // array of token amounts, if different amounts are needed for links
+  tokenAddress = "0x0000000000000000000000000000000000000000",
+  tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
+  tokenId = 0, // only used for ERC721 and ERC1155
+  tokenDecimals = 18, // only used for ERC20 and ERC1155
+  passwords = [], // passwords that each link should have
+  baseUrl = "https://peanut.to/claim",
+  trackId = "sdk", // optional tracker id to track the link source
+  maxFeePerGas = ethers.parseUnits("1000", "gwei"), // maximum fee per gas
+  maxPriorityFeePerGas = ethers.parseUnits("5", "gwei"), // maximum priority fee per gas
+  gasLimit = 1000000, // gas limit
+  eip1559 = true, // whether to use eip1559 or not
+  verbose = false,
+  contractVersion = "v4",
+}) {
+  // if tokenAmounts is provided, throw a not implemented error
+  if (tokenAmounts.length > 0) {
+    throw new Error("variable tokenAmounts support is not implemented yet");
+  }
+
+  assert(signer, "signer arg is required");
+  assert(chainId, "chainId arg is required");
+  assert(tokenAmount, "amount arg is required");
+  assert(
+    tokenAmounts.length > 0 || numberOfLinks > 0,
+    "either numberOfLinks or tokenAmounts must be provided",
+  );
+  numberOfLinks = numberOfLinks || tokenAmounts.length;
+  assert(
+    tokenAmounts.length == 0 || tokenAmounts.length == numberOfLinks,
+    "length of tokenAmounts must be equal to numberOfLinks",
+  );
+  assert(
+    tokenType == 0 || tokenType == 1,
+    "ERC721 and ERC1155 are not supported yet",
+  );
+
+
+  if (verbose) {
+    console.log("Asserts passed");
+  }
+  if (verbose) {
+    console.log("Generating links...");
+  }
+  // return { links: [], txReceipt: {} };
+
+  signer = walletToEthersv6(signer);
+
+  var { keys, passwords } = generateKeysAndPasswords(passwords, numberOfLinks);
+  const depositIdxs = await makeDeposits(signer, chainId, contractVersion, tokenAmount, numberOfLinks, tokenAddress, tokenType, keys);
+  const links = generateLinks(chainId, contractVersion, depositIdxs, passwords, baseUrl, trackId);
+
+  return { links, txReceipt: depositIdxs }; // Assuming depositIdxs is a list of receipts.
+
+  // let txOptions = {};
+  // // For base tokens, we need to send the amount as value
+  // if (tokenType == 0) {
+  //   const TOTAL_PAYABLE_ETHER_AMOUNT = ethers.parseUnits( // could add fee here
+  //     (tokenAmount * numberOfLinks).toString(),
+  //     "ether",
+  //   );
+  //   // tokenAmount = ethers.parseUnits(tokenAmount.toString(), "ether");
+  //   txOptions = { value: TOTAL_PAYABLE_ETHER_AMOUNT };
+  // }
+  // // for erc20 and erc1155, we need to convert tokenAmount to appropriate decimals
+  // else if (tokenType == 1) {
+  //   tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals);
+  // }
+
+  // // if no passwords are provided, generate random ones
+  // if (passwords.length == 0) { 
+  //   // password = getRandomString(16);
+  //   passwords = Array(numberOfLinks).fill(getRandomString(16));
+  // }
+
+
+  // const keys = generateKeysFromString(password); // deterministically generate keys from password
+  // const contract = await getContract(chainId, signer);
+
+  // const feeData = await signer.provider.getFeeData();
+  // const gasPrice = BigInt(feeData.gasPrice.toString());
+
+  // let multiplier = 1.5;
+  // multiplier = Math.round(multiplier * 10);
+  // const proposedGasPrice = (gasPrice * BigInt(multiplier)) / BigInt(10);
+
+  // if (eip1559) {
+  //   // if (chainId == 137) {
+  //   //   // warn that polygon doesn't support eip1559 yet
+  //   //   console.log("WARNING: Polygon doesn't support EIP1559 yet. Using legacy tx");
+  //   // }
+  //   txOptions = {
+  //     ...txOptions,
+  //     maxFeePerGas: maxFeePerGas,
+  //     maxPriorityFeePerGas: maxPriorityFeePerGas,
+  //     gasLimit: gasLimit,
+  //   };
+  // } else {
+  //   txOptions = {
+  //     ...txOptions,
+  //     gasPrice: proposedGasPrice,
+  //     gasLimit: gasLimit,
+  //   };
+  // }
+
+  // var tx = await contract.makeDeposit(
+  //   tokenAddress,
+  //   tokenType,
+  //   BigInt(tokenAmount),
+  //   tokenId,
+  //   keys.address,
+  //   txOptions,
+  // );
+
+  // if (verbose) {
+  //   console.log("submitted tx: ", tx.hash);
+  // }
+
+  // // now we need the deposit index from the tx receipt
+  // var txReceipt = await tx.wait();
+  // var depositIdx = getDepositIdx(txReceipt, chainId);
+
+  // // now we can create the link
+  // const link = getLinkFromParams(
+  //   chainId,
+  //   CONTRACT_VERSION,
+  //   depositIdx,
+  //   password,
+  //   baseUrl,
+  //   trackId,
+  // );
+  // if (verbose) {
+  //   console.log("created link: ", link);
+  // }
+  // // return the link and the tx receipt
+  // return { link, txReceipt };
+}
+
 export async function getLinkStatus({ signer, link }) {
   /* checks if a link has been claimed */
   assert(signer, "signer arg is required");
@@ -368,7 +654,7 @@ export async function claimLink({ signer, link, recipient = null }) {
     recipient = signer.address;
   }
   const keys = generateKeysFromString(password); // deterministically generate keys from password
-  const contract = await getContract(chainId, signer);
+  const contract = await getContract(chainId, signer, contractVersion);
 
   // cryptography
   var addressHash = solidityHashAddress(recipient);
@@ -482,6 +768,7 @@ export default {
   getParamsFromPageURL,
   getLinkFromParams,
   createLink,
+  createLinks,
   claimLink,
   approveSpendERC20,
   claimLinkGasless,

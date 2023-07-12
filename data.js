@@ -1,4 +1,4 @@
-let PEANUT_ABI_V3, PEANUT_CONTRACTS, ERC20_ABI, ERC721_ABI, ERC1155_ABI, CHAIN_MAP, PROVIDERS;
+let PEANUT_ABI_V3, PEANUT_ABI_V4, PEANUT_CONTRACTS, ERC20_ABI, ERC721_ABI, ERC1155_ABI, CHAIN_MAP, PROVIDERS;
 
 const loadJSON = async (filePath) => {
   if (typeof window === 'undefined') { // Node.js environment
@@ -27,6 +27,7 @@ const loadJSON = async (filePath) => {
 
 // load all JSON files
 PEANUT_ABI_V3 = await loadJSON('data/peanutAbiV3.json');
+PEANUT_ABI_V4 = await loadJSON('data/peanutAbiV4.json');
 ERC20_ABI = await loadJSON('data/erc20abi.json');
 ERC721_ABI = await loadJSON('data/erc721abi.json');
 ERC1155_ABI = await loadJSON('data/erc1155abi.json');
@@ -40,6 +41,7 @@ CHAIN_MAP = await loadJSON('data/chainMap.json');
 // export all these functions (imported in index.js)
 export {
   PEANUT_ABI_V3,
+  PEANUT_ABI_V4,
   PEANUT_CONTRACTS,
   ERC20_ABI,
   ERC721_ABI,
