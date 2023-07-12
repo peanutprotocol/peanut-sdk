@@ -744,8 +744,16 @@ function walletToEthersv6(wallet) {
   } catch (e) { // ethersv6
     provider = wallet.provider;
   }
-  const key = wallet.privateKey; // this clearly doesn't work for browser/hardware wallets?
-  const ethersv6Wallet = new ethers.Wallet(key, provider);
+
+  // try to get private key. if browser wallet, this will fail
+  let ethersv6Wallet;
+  try {    
+    const key = wallet.privateKey; // this clearly doesn't work for browser/hardware wallets?
+    ethersv6Wallet = new ethers.Wallet(key, provider);
+  } catch (e) {
+    ethersv6Wallet = wallet;
+  }
+
   return ethersv6Wallet;
 }
 

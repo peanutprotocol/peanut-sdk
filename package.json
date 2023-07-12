@@ -3,7 +3,7 @@
   "version": "0.0.46",
   "description": "The Peanut Protocol SDK! See examples/ folder",
   "main": "index.js",
-  "module": "peanut-sdk.js",
+  "module": "index.js",
   "type": "module",
   "scripts": {
     "test": "mocha --timeout 600000 --exit",
