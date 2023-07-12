@@ -276,6 +276,7 @@ export async function createLink({
   gasLimit = 1000000, // gas limit
   eip1559 = true, // whether to use eip1559 or not
   verbose = false,
+  contractVersion = CONTRACT_VERSION,
 }) {
   /* creates a link with redeemable tokens */
 
@@ -306,7 +307,7 @@ export async function createLink({
     password = getRandomString(16);
   }
   const keys = generateKeysFromString(password); // deterministically generate keys from password
-  const contract = await getContract(chainId, signer);
+  const contract = await getContract(chainId, signer, contractVersion); // get the contract instance
 
   const feeData = await signer.provider.getFeeData();
   const gasPrice = BigInt(feeData.gasPrice.toString());
@@ -628,7 +629,7 @@ export async function getLinkStatus({ signer, link }) {
   const chainId = params.chainId;
   const contractVersion = params.contractVersion;
   const depositIdx = params.depositIdx;
-  const contract = await getContract(chainId, signer);
+  const contract = await getContract(chainId, signer, contractVersion);
   const deposit = await contract.deposits(depositIdx);
 
   // if the deposit is claimed, the pubKey20 will be 0x000....
