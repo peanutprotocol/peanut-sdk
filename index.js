@@ -242,8 +242,6 @@ export function getDepositIdx(txReceipt, chainId) {
 export function getDepositIdxs(txReceipt, chainId, contractAddress) {
   /* returns an array of deposit indices from a batch transaction receipt */
   const logs = txReceipt.logs;
-  console.log(logs);
-  console.log(logs[0]);
   var depositIdxs = [];
   // loop through all the logs and extract the deposit index from each
   for (var i = 0; i < logs.length; i++) {
@@ -673,6 +671,7 @@ export async function claimLink({ signer, link, recipient = null }) {
     addressHashEIP191,
     signature,
   );
+  console.log("submitted tx: ", tx.hash, " now waiting for receipt...");
   const txReceipt = await tx.wait();
 
   return txReceipt;
@@ -719,8 +718,13 @@ export async function claimLinkGasless(link, recipientAddress, apiKey) {
     api_key: apiKey,
   };
 
-  const response = await axios.post(url, body, { headers });
-  return response.data;
+  // if axios error, return the error message
+  try {
+    const response = await axios.post(url, body, { headers });
+    return response.data;
+  } catch (e) {
+    return e.response;
+  }
 }
 
 function walletToEthersv6(wallet) {
