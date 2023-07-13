@@ -202,6 +202,7 @@ export async function approveSpendERC20(
   tokenAddress,
   amount,
   tokenDecimals,
+  contractVersion = CONTRACT_VERSION,
 ) {
   /*  Approves the contract to spend the specified amount of tokens   */
   signer = walletToEthersv6(signer);
@@ -210,7 +211,7 @@ export async function approveSpendERC20(
     // if amount is -1, approve infinite amount
     amount = ethers.MaxUint256;
   }
-  const spender = PEANUT_CONTRACTS[chainId][CONTRACT_VERSION];
+  const spender = PEANUT_CONTRACTS[chainId][contractVersion];
   let allowance = await tokenContract.allowance(signer.address, spender);
   // convert amount to BigInt and compare to allowance
   amount = ethers.parseUnits(amount.toString(), tokenDecimals);
@@ -218,7 +219,8 @@ export async function approveSpendERC20(
     console.log("Allowance already enough, no need to approve more");
     return { allowance, txReceipt: null };
   } else {
-    const tx = await tokenContract.approve(spender, amount);
+    const txOptions = await setTxOptions({}, true, chainId, signer);
+    const tx = await tokenContract.approve(spender, amount, txOptions);
     const txReceipt = await tx.wait();
     let allowance = await tokenContract.allowance(signer.address, spender);
     return { allowance, txReceipt };
@@ -283,6 +285,25 @@ export async function createLink({
   assert(tokenAmount, "amount arg is required");
 
   signer = walletToEthersv6(signer);
+
+  // check allowance
+  // TODO: check for erc721 and erc1155
+  console.log('checking allowance...')
+  if (tokenType == 1) {
+    // if token is erc20, check allowance
+    const allowance = await approveSpendERC20(
+      signer,
+      chainId,
+      tokenAddress,
+      tokenAmount,
+      tokenDecimals,
+      contractVersion,
+    );
+    console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
+    if (allowance < tokenAmount) {
+      throw new Error("Allowance not enough");
+    }
+  }
 
   if (verbose) {
     console.log("Generating link...");
@@ -366,12 +387,12 @@ export async function createLink({
   return { link, txReceipt };
 }
 
-async function makeDeposits(signer, chainId, contractVersion, tokenAmount, numberOfLinks, tokenAddress, tokenType, keys) {
+async function makeDeposits(signer, chainId, contractVersion, numberOfLinks, tokenType, tokenAmount, tokenAddress, tokenDecimals, keys) {
   const contract = await getContract(chainId, signer, contractVersion);
   let tx;
 
-  // convert tokenAmount to Wei
-  tokenAmount = ethers.parseUnits(tokenAmount.toString(), "ether");
+  // convert tokenAmount depending on tokenDecimals
+  tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals);
   const amounts = Array(numberOfLinks).fill(tokenAmount);
 
   const pubKeys20 = keys.map(key => key.address);
@@ -422,31 +443,31 @@ function generateKeysAndPasswords(passwords, numberOfLinks) {
   return { keys, passwords };
 }
 
-async function setTxOptions(txOptions, eip1559, chainId, signer, maxFeePerGas = '1000', maxPriorityFeePerGas = '50', gasLimit = 10000000){
+async function setTxOptions(txOptions, eip1559, chainId, signer, maxFeePerGas = '1000', maxPriorityFeePerGas = '50', gasLimit = 10000000) {
   // helper function for setting tx options
   // if polygon, use legacy tx options. Else use eip1559 (unless specified otherwise)
 
   // convert maxFeePerGas and maxPriorityFeePerGas to Wei from Gwei
-  maxFeePerGas = ethers.parseUnits(maxFeePerGas, 'gwei'); 
+  maxFeePerGas = ethers.parseUnits(maxFeePerGas, 'gwei');
   maxPriorityFeePerGas = ethers.parseUnits(maxPriorityFeePerGas, 'gwei');
 
   const provider = signer.provider;
-  
+
   let gasPrice;
 
   try {
     const feeData = await provider.getFeeData();
     gasPrice = BigInt(feeData.gasPrice.toString());
-  } catch(error) {
+  } catch (error) {
     console.error('Failed to fetch gas price from provider:', error);
     return; // exit the function if the gas price cannot be fetched
   }
-  
+
   // calculate the proposed gas price
   const multiplier = 1.5;
   const proposedGasPrice = (gasPrice * BigInt(Math.round(multiplier * 10))) / BigInt(10);
 
-  if(eip1559 && chainId !== 137) { // EIP-1559 options if supported and requested
+  if (eip1559 && chainId !== 137) { // EIP-1559 options if supported and requested
     txOptions = {
       ...txOptions,
       maxFeePerGas,
@@ -482,7 +503,7 @@ export async function createLinks({
   tokenAddress = "0x0000000000000000000000000000000000000000",
   tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
   tokenId = 0, // only used for ERC721 and ERC1155
-  tokenDecimals = 18, // only used for ERC20 and ERC1155
+  tokenDecimals = null, // only used for ERC20 and ERC1155
   passwords = [], // passwords that each link should have
   baseUrl = "https://peanut.to/claim",
   trackId = "sdk", // optional tracker id to track the link source
@@ -514,10 +535,37 @@ export async function createLinks({
     tokenType == 0 || tokenType == 1,
     "ERC721 and ERC1155 are not supported yet",
   );
-
+  assert(
+    tokenType == 0 || tokenAddress != "0x0000000000000000000000000000000000000000",
+    "tokenAddress must be provided for non-ETH tokens",
+  );
+  // tokendecimals must be provided for erc20 and erc1155 tokens
+  assert(
+    !(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+    "tokenDecimals must be provided for ERC20 and ERC1155 tokens",
+  );
+  if (tokenDecimals == null) {
+    tokenDecimals = 18;
+  }
 
   if (verbose) {
     console.log("Asserts passed");
+  }
+
+  console.log('checking allowance...')
+  if (tokenType == 1) {
+    // if token is erc20, check allowance
+    const allowance = await approveSpendERC20(
+      signer,
+      chainId,
+      tokenAddress,
+      tokenAmount * numberOfLinks,
+      tokenDecimals,
+      contractVersion,
+    );
+    if (allowance < tokenAmount) {
+      throw new Error("Allowance not enough");
+    }
   }
   if (verbose) {
     console.log("Generating links...");
@@ -527,7 +575,7 @@ export async function createLinks({
   signer = walletToEthersv6(signer);
 
   var { keys, passwords } = generateKeysAndPasswords(passwords, numberOfLinks);
-  const depositIdxs = await makeDeposits(signer, chainId, contractVersion, tokenAmount, numberOfLinks, tokenAddress, tokenType, keys);
+  const depositIdxs = await makeDeposits(signer, chainId, contractVersion, numberOfLinks, tokenType, tokenAmount, tokenAddress, tokenDecimals, keys);
   const links = generateLinks(chainId, contractVersion, depositIdxs, passwords, baseUrl, trackId);
 
   return { links, txReceipt: depositIdxs }; // Assuming depositIdxs is a list of receipts.
@@ -747,7 +795,7 @@ function walletToEthersv6(wallet) {
 
   // try to get private key. if browser wallet, this will fail
   let ethersv6Wallet;
-  try {    
+  try {
     const key = wallet.privateKey; // this clearly doesn't work for browser/hardware wallets?
     ethersv6Wallet = new ethers.Wallet(key, provider);
   } catch (e) {

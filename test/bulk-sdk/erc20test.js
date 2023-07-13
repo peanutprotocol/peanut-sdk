@@ -20,20 +20,36 @@ const wallet = new ethers.Wallet(
 ////////////////////////////////////////////////////////////
 
 
+// create single link
+// var { link, txReceipt } = await peanut.createLink({
+//     signer: wallet,
+//     chainId: CHAINID,
+//     tokenAmount: 0.0001,
+//     tokenAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+//     tokenDecimals: 6,
+//     tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+//     verbose: true,
+//     trackId: "test" // optional, user defined string
+// });
+
+// console.log(link);
+
 // create link - batch function!
 const { links, txReceipt } = await peanut.createLinks({
     signer: wallet,
     chainId: CHAINID,
-    numberOfLinks: 20,
+    numberOfLinks: 5,
     tokenAmount: 0.0001,
-    tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+    tokenAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    tokenDecimals: 6,
+    tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
     verbose: true,
-    trackId: "campaignId?" // optional, user defined string
+    trackId: "test" // optional, user defined string
 
 });
 
 console.log(links);
-// console.log(txReceipt);
+console.log(txReceipt);
 
 // // get status of single link
 // console.log((await peanut.getLinkStatus({signer: wallet, link: links[0]})).claimed);
