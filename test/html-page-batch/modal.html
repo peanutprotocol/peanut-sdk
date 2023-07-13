@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BEAM <> Peanut test page</title>
+</head>
+
+<body>
+    <p id="link"></p>
+    <button id="claimLinkGasless">🥜 Claim Link Gasless</button>
+    <script>
+        document.getElementById('link').innerHTML = window.location.href;
+    </script>
+
+    <!-- load peanut from CDN, will make peanut object available -->
+    <script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/peanut-sdk.js"></script>
+    <script>
+        document.getElementById('claimLinkGasless').addEventListener('click', async () => {
+            // get current url
+            const url = window.location.href; // assumes we have url parameters c, v, i, p, and t  
+            // example: https://ecodemogasless.netlify.app/t/usdc?c=137&v=v4&i=114&p=EAlYhwYt2VteSusd&t=campaignId
+
+            console.log('claiming link gaslessly....')
+            const receiverAddress = "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02"; // address to claim to. NEED TO GET THIS FROM BEAM
+            const apiKey = "gvAMxXbG8n177xrH4mc0PfzuhcJumFC5";
+            const response = await peanut.claimLinkGasless(url, receiverAddress, apiKey);
+            console.log("response: ", response);
+        });
+    </script>
+</body>
+
+</html>

@@ -24,8 +24,8 @@ const wallet = new ethers.Wallet(
 const { links, txReceipt } = await peanut.createLinks({
     signer: wallet,
     chainId: CHAINID,
-    numberOfLinks: 3,
-    tokenAmount: 0.00001337,
+    numberOfLinks: 5,
+    tokenAmount: 0.0001,
     tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
     verbose: true,
     trackId: "campaignId?" // optional, user defined string
@@ -35,23 +35,23 @@ const { links, txReceipt } = await peanut.createLinks({
 console.log(links);
 // console.log(txReceipt);
 
-// get status of single link
-console.log((await peanut.getLinkStatus({signer: wallet, link: links[0]})).claimed);
+// // get status of single link
+// console.log((await peanut.getLinkStatus({signer: wallet, link: links[0]})).claimed);
 
 
-// claim link
-console.log("claiming link...");
-await new Promise(r => setTimeout(r, 6000));
-const claimTx = await peanut.claimLink({ signer: wallet, link: links[0] });
-console.log("claimTx: ", claimTx.hash);
+// // claim link
+// console.log("claiming link...");
+// await new Promise(r => setTimeout(r, 6000));
+// const claimTx = await peanut.claimLink({ signer: wallet, link: links[0] });
+// console.log("claimTx: ", claimTx.hash);
 
-// get status of single link
-console.log((await peanut.getLinkStatus({signer: wallet, link: links[0]})).claimed);
+// // get status of single link
+// console.log((await peanut.getLinkStatus({signer: wallet, link: links[0]})).claimed);
 
-// claiming second link gaslessly
-console.log("claiming second link gaslessly...");
-// let link2 = "https://peanut.to/claim?c=137&v=v4&i=50&p=yverkC3hhG3mPgcR&t=campaignId"
-// const claimTx2 = await peanut.claimLinkGasless({ recipientAddress: "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", link: link2, apiKey: process.env.PEANUT_DEV_API_KEY });
-const claimTx2 = await peanut.claimLinkGasless(links[1], "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", process.env.PEANUT_DEV_API_KEY);
-// const claimTx2 = await peanut.claimLinkGasless({ recipientAddress: "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", link: links[1], apiKey: process.env.PEANUT_DEV_API_KEY });
-console.log("claimTx2: ", claimTx2);
+// // claiming second link gaslessly
+// console.log("claiming second link gaslessly...");
+// // let link2 = "https://peanut.to/claim?c=137&v=v4&i=50&p=yverkC3hhG3mPgcR&t=campaignId"
+// // const claimTx2 = await peanut.claimLinkGasless({ recipientAddress: "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", link: link2, apiKey: process.env.PEANUT_DEV_API_KEY });
+// const claimTx2 = await peanut.claimLinkGasless(links[1], "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", process.env.PEANUT_DEV_API_KEY);
+// // const claimTx2 = await peanut.claimLinkGasless({ recipientAddress: "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", link: links[1], apiKey: process.env.PEANUT_DEV_API_KEY });
+// console.log("claimTx2: ", claimTx2);

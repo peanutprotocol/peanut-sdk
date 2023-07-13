@@ -9,13 +9,14 @@
     <!-- <script src="https://unpkg.com/@squirrel-labs/peanut-sdk@0.0.41/dist/peanut-sdk.js" crossorigin="anonymous" type="module"></script> -->
     <!-- for dev purposes. load peanut-sdk from ../../dist/peanut-sdk.js -->
     <!-- <script src="../../dist/peanut-sdk.js" crossorigin="anonymous"></script> -->
-    <script src="../../index.js" crossorigin="anonymous" type="module"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/index.js" type="module"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/peanut-sdk.js"></script>
+    <!-- <script src="../../index.js" crossorigin="anonymous" type="module"></script> -->
     <!-- <script src="dist/peanut-sdk.js" crossorigin="anonymous"></script> -->
-    <script type="module">
+    <script>
         // console log all the imports
         console.log(peanut);
-        peanut = await peanut;
-        console.log(peanut);
+        console.log(ethers);
     </script>
 </head>
 
@@ -26,6 +27,8 @@
     <button id="createLink">Create Link</button>
     <button id="getLinkStatus">Get Link Status</button>
     <button id="claimLink">Claim Link</button>
+    <button id="claimLinkGasless">Claim Link Gasless</button>
+
 
     <script>
         let wallet;
@@ -62,6 +65,7 @@
         });
 
         document.getElementById('getLinkStatus').addEventListener('click', async () => {
+            let link = 'https://peanut.to/claim?c=137&v=v4&i=114&p=EAlYhwYt2VteSusd&t=campaignId?'
             const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
             console.log(status);
         });
@@ -72,6 +76,19 @@
             const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
             console.log(status);
         });
+
+    document.getElementById('claimLinkGasless').addEventListener('click', async () => {
+        //'https://peanut.to/claim?c=137&v=v4&i=112&p=jms2zuPc275MIFqD&t=campaignId?',
+        //'https://peanut.to/claim?c=137&v=v4&i=113&p=WDHHonJybxqewpqE&t=campaignId?',
+        //'https://peanut.to/claim?c=137&v=v4&i=114&p=EAlYhwYt2VteSusd&t=campaignId?'
+
+        let sampleLink = 'https://peanut.to/claim?c=137&v=v4&i=112&p=jms2zuPc275MIFqD&t=campaignId?'
+        console.log('claiming link....')
+        const response = await peanut.claimLinkGasless(sampleLink, "0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02", "gvAMxXbG8n177xrH4mc0PfzuhcJumFC5");
+        console.log("response: ", response);
+        //const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
+        //console.log(status);
+    });
     </script>
 </body>
 

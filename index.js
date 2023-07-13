@@ -422,7 +422,7 @@ function generateKeysAndPasswords(passwords, numberOfLinks) {
   return { keys, passwords };
 }
 
-async function setTxOptions(txOptions, eip1559, chainId, signer, maxFeePerGas = '1000', maxPriorityFeePerGas = '50', gasLimit = 500000){
+async function setTxOptions(txOptions, eip1559, chainId, signer, maxFeePerGas = '1000', maxPriorityFeePerGas = '50', gasLimit = 10000000){
   // helper function for setting tx options
   // if polygon, use legacy tx options. Else use eip1559 (unless specified otherwise)
 
