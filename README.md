@@ -44,6 +44,8 @@ const response = await peanut.claimLinkGasless(link, wallet.address, process.env
 Please apply for an api key on telegram/discord for this.
 
 
+If you're using a browser wallet, you will need to use ethersv6 and pass it in to the peanut sdk. ethersv5 compatibility coming soon.
+
 ### Feedback
 
 This is an early SDK, and we're very open to suggestions and improvements. Please feel free to open an issue (or PR) on the [Github repo](https://github.com/ProphetFund/peanut-sdk/issues).
@@ -51,6 +53,4 @@ This is an early SDK, and we're very open to suggestions and improvements. Pleas
 
 ### Examples
 
-To run the examples in examples/ folder:
-  - rename .env.example to .env & fill in the values
-  - run ```node examples/js-example/polygon.js``` or any of the other examples
+Check the /examples folder.
