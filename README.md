@@ -10,12 +10,16 @@ or via CDN:
 
 `<script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/index.min.js"></script> `
 
+
 ### Usage
 
 Usage is as easy as:
 
 ```
 import peanut from '@squirrel-labs/peanut-sdk';
+
+// setup wallet with ethers v6 (ethersv5, web3js and viem support coming soon!)
+// ...
 
 // create link
 const { link, txReceipt } = await peanut.createLink({
