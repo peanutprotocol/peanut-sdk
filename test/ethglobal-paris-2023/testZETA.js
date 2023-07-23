@@ -24,7 +24,6 @@ const { link, txReceipt } = await peanut.createLink({
     eip1559: false,
 });
 
-
 // get status of link
 // console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
 
@@ -37,6 +36,7 @@ try {
     console.log("claimTx: ", claimTx.hash);
     console.log("https://testnet-zkevm.polygonscan.com/tx/" + claimTx.hash);
 } catch (e) {
+    console.log(e);
     console.log("claimed!");
 }
 

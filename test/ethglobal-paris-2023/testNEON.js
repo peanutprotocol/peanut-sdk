@@ -6,7 +6,7 @@ dotenv.config({path: '../../.env'});
 
 
 const RPC_URL = "https://devnet.neonevm.org";
-const CHAINID = 245022926; // celo alfajores
+const CHAINID = 245022926;
 // create goerli wallet with optimism rpc
 const wallet = new ethers.Wallet(
     process.env.TEST_WALLET_PRIVATE_KEY,

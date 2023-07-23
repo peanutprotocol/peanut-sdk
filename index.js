@@ -335,6 +335,7 @@ export async function createLink({
   multiplier = Math.round(multiplier * 10);
   const proposedGasPrice = (gasPrice * BigInt(multiplier)) / BigInt(10);
 
+
   if (eip1559) {
     // if (chainId == 137) {
     //   // warn that polygon doesn't support eip1559 yet
@@ -374,7 +375,7 @@ export async function createLink({
   // now we can create the link
   const link = getLinkFromParams(
     chainId,
-    CONTRACT_VERSION,
+    contractVersion,
     depositIdx,
     password,
     baseUrl,
