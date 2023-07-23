@@ -595,7 +595,7 @@ PEANUT_CONTRACTS = {
     "v1": "0x9B0817fA08b46670B92300B58AA1f4AB155701ea",
     "v3": "0x1aBe03DC4706aE47c4F2ae04EEBe5c8607c74e17"
   },
-  "420": {
+  "420":{
     "optimism-goerli": "This is a comment",
     "v3": "0xDC608f2Bc4f0AFf02D12d51Ca8b543B343525c8a"
   },
@@ -635,8 +635,38 @@ PEANUT_CONTRACTS = {
   },
   "43113": {
     "avalanche-fuji": "This is a comment"
+  },
+  "314159": {
+    "comment": "filecoin testnet",
+    "v4": "0x1851359AB8B002217cf4D108d7F027B63563754C"
+  },
+  "1442": {
+    "comment": "polygon zkevm testnet",
+    "v4": "0x60d5db92eca3ee10ccf60517f910d8154ff62231"
+  },
+  "7001": {
+    "comment": "zetachain testnet",
+    "v4": "0xABCf92BD1c01f2eFe63FfcEaa73F19ec72F0Eba5"
+  },
+  "245022926": {
+    "comment": "neon devnet",
+    "v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
+  },
+  "5001": {
+    "comment": "mantle testnet",
+    "v4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
+  },
+  "44787": {
+    "comment": "celo alfajores testnet",
+    "v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
+  },
+  "10200": {
+    "comment": "gnosis chiado testnet",
+    "v4": "0xABCf92BD1c01f2eFe63FfcEaa73F19ec72F0Eba5"
   }
 }
+   
+
 
 
 PROVIDERS = {
@@ -657,6 +687,9 @@ PROVIDERS = {
   "461": "https://filecoin-hyperspace.chainstacklabs.com/rpc/v1",
   "60001": "https://prealpha-rpc.scroll.io/l2",
   "60002": "https://alpha-rpc.scroll.io/l2",
+  "44787": "https://alfajores-forno.celo-testnet.org",
+  "245022926": "https://devnet.neonevm.org",
+  "10200": "https://rpc.chiado.gnosis.gateway.fm",
   "ethereum": {
     "mainnet": "https://mainnet.infura.io/v3/",
     "goerli": "https://goerli.infura.io/v3/"

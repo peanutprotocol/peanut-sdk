@@ -65,6 +65,34 @@
   },
   "43113": {
     "avalanche-fuji": "This is a comment"
+  },
+  "314159": {
+    "comment": "filecoin testnet",
+    "v4": "0x1851359AB8B002217cf4D108d7F027B63563754C"
+  },
+  "1442": {
+    "comment": "polygon zkevm testnet",
+    "v4": "0x60d5db92eca3ee10ccf60517f910d8154ff62231"
+  },
+  "7001": {
+    "comment": "zetachain testnet",
+    "v4": "0xABCf92BD1c01f2eFe63FfcEaa73F19ec72F0Eba5"
+  },
+  "245022926": {
+    "comment": "neon devnet",
+    "v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
+  },
+  "5001": {
+    "comment": "mantle testnet",
+    "v4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
+  },
+  "44787": {
+    "comment": "celo alfajores testnet",
+    "v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
+  },
+  "10200": {
+    "comment": "gnosis chiado testnet",
+    "v4": "0xABCf92BD1c01f2eFe63FfcEaa73F19ec72F0Eba5"
   }
 }
    
