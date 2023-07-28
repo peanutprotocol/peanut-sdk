@@ -115,21 +115,13 @@ export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
   signer = walletToEthersv6(signer);
 
   if (typeof chainId == "string" || chainId instanceof String) {
+    // just move to TS ffs
+    // do smae with bigint
     // if chainId is a string, convert to int
     chainId = parseInt(chainId);
   }
-
-  console.log('hello world')
-  console.log('chainId', chainId)
   chainId = parseInt(chainId);
-  console.log('chainId', chainId)
 
-  // if bigints are used, convert to int
-  if (chainId instanceof BigInt) {
-    console.log("chainId is a bigint");
-    chainId = parseInt(chainId);
-    console.log("chainId is now an int");
-  }
 
   // TODO: fix this for new versions
   // if version is v3, load PEANUT_ABI_V3. if it is v4, load PEANUT_ABI_V4
@@ -142,7 +134,6 @@ export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
     throw new Error("Invalid version");
   }
 
-  console.log("contractrunner: ", signer);
   const contractAddress = PEANUT_CONTRACTS[chainId][version];
   const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signer);
   // connected to contracv
