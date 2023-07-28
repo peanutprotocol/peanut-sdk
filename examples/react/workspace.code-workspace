@@ -1,0 +1,42 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "workbench.colorCustomizations": {
+      "activityBar.activeBorder": "#bf407b",
+      "sash.hoverBorder": "#93e6fc",
+      "statusBar.background": "#61dafb",
+      "statusBar.foreground": "#15202b",
+      "statusBarItem.hoverBackground": "#2fcefa",
+      "statusBarItem.remoteBackground": "#61dafb",
+      "statusBarItem.remoteForeground": "#15202b"
+    },
+    "peacock.color": "#61dafb",
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "**/node_modules": true,
+      "node_modules": true,
+      "**/yarn.lock": true,
+      "**/package-lock.json": true,
+      "package-lock.json": true,
+      ".next": true
+    },
+    "tailwindCSS.emmetCompletions": true,
+    "tailwindCSS.includeLanguages": {
+      "html": "HTML",
+      "javascript": "javascript",
+      "javascriptreact": "javascriptreact",
+      "typescript": "typescript",
+      "typescriptreact": "typescriptreact"
+    },
+    "css.validate": false
+  }
+}

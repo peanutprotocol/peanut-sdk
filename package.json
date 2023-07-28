@@ -2,8 +2,8 @@
   "name": "@squirrel-labs/peanut-sdk",
   "version": "0.0.52",
   "description": "The Peanut Protocol SDK! See examples/ folder",
-  "main": "index.js",
-  "module": "peanut-sdk.js",
+  "main": "dist/peanut-sdk.js",
+  "module": "dist/peanut-sdk.js",
   "type": "module",
   "scripts": {
     "test": "mocha --timeout 600000 --exit",

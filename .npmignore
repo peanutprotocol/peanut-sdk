@@ -6,3 +6,4 @@ other/*
 examples/*
 .env
 *.env
+playground/

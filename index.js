@@ -32,6 +32,12 @@ import {
 
 const CONTRACT_VERSION = "v3";
 
+export function greeting() {
+  console.log(
+    "🥜 Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord",
+  );
+}
+
 export function generateKeysFromString(string) {
   /* generates a deterministic key pair from an arbitrary length string */
   var privateKey = ethers.keccak256(ethers.toUtf8Bytes(string));
@@ -108,9 +114,21 @@ export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
   /* returns a contract object for the given chainId and signer */
   signer = walletToEthersv6(signer);
 
-  if (typeof chainId == "string") {
+  if (typeof chainId == "string" || chainId instanceof String) {
     // if chainId is a string, convert to int
     chainId = parseInt(chainId);
+  }
+
+  console.log('hello world')
+  console.log('chainId', chainId)
+  chainId = parseInt(chainId);
+  console.log('chainId', chainId)
+
+  // if bigints are used, convert to int
+  if (chainId instanceof BigInt) {
+    console.log("chainId is a bigint");
+    chainId = parseInt(chainId);
+    console.log("chainId is now an int");
   }
 
   // TODO: fix this for new versions
@@ -124,6 +142,7 @@ export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
     throw new Error("Invalid version");
   }
 
+  console.log("contractrunner: ", signer);
   const contractAddress = PEANUT_CONTRACTS[chainId][version];
   const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signer);
   // connected to contracv
@@ -806,15 +825,7 @@ function walletToEthersv6(wallet) {
   return ethersv6Wallet;
 }
 
-
-export function greeting() {
-  console.log(
-    "Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord",
-  );
-}
-
-// export object with all functions
-export default {
+const peanut = {
   greeting,
   generateKeysFromString,
   signMessageWithPrivatekey,
@@ -838,4 +849,6 @@ export default {
   // approveSpendERC721,
   // approveSpendERC1155,
 };
-// export { version }; // removed as was giving errors
+
+export default peanut;
+export { peanut };

@@ -7,9 +7,9 @@ module.exports = {
   output: {
     filename: 'peanut-sdk.js',
     path: path.resolve(__dirname, 'dist'),
-    library: 'peanut',
-    libraryTarget: 'umd',
-    globalObject: 'this',
+    library: {
+      type: 'module',
+    },
   },
   module: {
     rules: [
@@ -55,6 +55,7 @@ module.exports = {
   experiments: {
     // topLevelAwait: true,
     // asyncWebAssembly: true,
-    // outputModule: true, // big bugs, disable
+    outputModule: true, // big bugs, disable
   },
+  target: ['web', 'browserslist:> 0.25%, not dead'],
 };

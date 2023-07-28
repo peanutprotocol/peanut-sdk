@@ -8,7 +8,7 @@
 
 or via CDN:
 
-`<script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/index.min.js"></script> `
+`<script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/peanut-sdk.js"></script> `
 
 
 ### Usage
@@ -18,14 +18,15 @@ Usage is as easy as:
 ```
 import peanut from '@squirrel-labs/peanut-sdk';
 
-// setup wallet with ethers v6 (ethersv5, web3js and viem support coming soon!)
-// ...
+// setup signer with ethers v6 (ethersv5, web3js and viem support coming soon!)
+const provider = new ethers.BrowserProvider(window.ethereum, 'any')
+const signer = await provider.getSigner()
 
 // create link
 const { link, txReceipt } = await peanut.createLink({
-  signer: wallet,
+  signer: signer,
   chainId: 5,
-  tokenAmount: 0.0001337,
+  tokenAmount: 0.001,
   tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 });
 
@@ -48,7 +49,7 @@ If you're using a browser wallet, you will need to use ethersv6 and pass it in t
 
 ### Feedback
 
-This is an early SDK, and we're very open to suggestions and improvements. Please feel free to open an issue (or PR) on the [Github repo](https://github.com/ProphetFund/peanut-sdk/issues).
+This is an early SDK, and we're very open to suggestions and improvements. Please feel free to ping on discord #dev channel, or open an issue (or PR) on the [Github repo](https://github.com/ProphetFund/peanut-sdk/issues).
 
 
 ### Examples

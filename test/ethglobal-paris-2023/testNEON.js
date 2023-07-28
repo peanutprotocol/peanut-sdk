@@ -26,6 +26,7 @@ const { link, txReceipt } = await peanut.createLink({
 });
 
 
+
 // get status of link
 // console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
 
