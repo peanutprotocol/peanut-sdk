@@ -112,7 +112,7 @@ function getRandomString(length) {
 
 export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
   /* returns a contract object for the given chainId and signer */
-  signer = walletToEthersv6(signer);
+  signer = await convertSignerToV6(signer);
 
   if (typeof chainId == "string" || chainId instanceof String) {
     // just move to TS ffs
@@ -215,7 +215,7 @@ export async function approveSpendERC20(
   contractVersion = CONTRACT_VERSION,
 ) {
   /*  Approves the contract to spend the specified amount of tokens   */
-  signer = walletToEthersv6(signer);
+  signer = await convertSignerToV6(signer);
   const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
   if (amount == -1) {
     // if amount is -1, approve infinite amount
@@ -294,7 +294,8 @@ export async function createLink({
   assert(chainId, "chainId arg is required");
   assert(tokenAmount, "amount arg is required");
 
-  signer = walletToEthersv6(signer);
+  signer = await convertSignerToV6(signer);
+
 
   // check allowance
   // TODO: check for erc721 and erc1155
@@ -583,7 +584,7 @@ export async function createLinks({
   }
   // return { links: [], txReceipt: {} };
 
-  signer = walletToEthersv6(signer);
+  signer = await convertSignerToV6(signer);
 
   var { keys, passwords } = generateKeysAndPasswords(passwords, numberOfLinks);
   const depositIdxs = await makeDeposits(signer, chainId, contractVersion, numberOfLinks, tokenType, tokenAmount, tokenAddress, tokenDecimals, keys);
@@ -680,7 +681,7 @@ export async function getLinkStatus({ signer, link }) {
   assert(signer, "signer arg is required");
   assert(link, "link arg is required");
 
-  signer = walletToEthersv6(signer);
+  signer = await convertSignerToV6(signer);
 
   const params = getParamsFromLink(link);
   const chainId = params.chainId;
@@ -701,7 +702,7 @@ export async function claimLink({ signer, link, recipient = null }) {
   assert(signer, "signer arg is required");
   assert(link, "link arg is required");
 
-  signer = walletToEthersv6(signer);
+  signer = await convertSignerToV6(signer);
 
   const params = getParamsFromLink(link);
   const chainId = params.chainId;
@@ -786,35 +787,114 @@ export async function claimLinkGasless(link, recipientAddress, apiKey) {
   }
 }
 
-function walletToEthersv6(wallet) {
-  /* always returns an ethers v6 wallet.
-
-  If the wallet is already an ethers v6 wallet, it is returned unchanged.
-  If the wallet is an ethers v5 wallet, it is converted to an ethers v6 wallet.
-  */
-  // create new ethersv6 provider if needed
-
-  // console.log(wallet)
-  // console.log(wallet.provider)
-  var provider;
-  try { // ethersv5
-    const provider_url = wallet.provider.connection.url;
-    provider = new ethers.JsonRpcProvider(provider_url);
-  } catch (e) { // ethersv6
-    provider = wallet.provider;
+// convertSignerToV6
+// await convertSignerToV6
+async function convertSignerToV6(signer) {
+  // Check if it's already a v6 signer, just return it
+  if (signer.provider.broadcastTransaction) {
+    console.log("signer is already v6");
+    return signer;
   }
 
-  // try to get private key. if browser wallet, this will fail
-  let ethersv6Wallet;
-  try {
-    const key = wallet.privateKey; // this clearly doesn't work for browser/hardware wallets?
-    ethersv6Wallet = new ethers.Wallet(key, provider);
-  } catch (e) {
-    ethersv6Wallet = wallet;
-  }
+  console.log("%c You are passing an ethers v5 signer, attempting conversion to v6. THIS IS AN EXPERIMENTAL FEATURE", "color: yellow");
+  console.log("%c To avoid any issues, please migrate to ethers v6", "color: yellow");
 
-  return ethersv6Wallet;
+
+  // // Old approach: wrapping the signer and provider. Too many issues with this approach
+  // const providerV6 = {
+  //   ...signer.provider, 
+  //   call: (tx) => signer.provider.call(tx),
+  //   destroy: () => signer.provider.destroy(),
+  //   estimateGas: (tx) => signer.provider.estimateGas(tx),
+  //   getBalance: (address, blockTag) => signer.provider.getBalance(address, blockTag),
+  //   getBlock: (blockHashOrBlockTag, prefetchTxs) => signer.provider.getBlock(blockHashOrBlockTag, prefetchTxs),
+  //   getBlockNumber: () => signer.provider.getBlockNumber(),
+  //   getCode: (address, blockTag) => signer.provider.getCode(address, blockTag),
+  //   getFeeData: () => signer.provider.getFeeData(),
+  //   getLogs: (filter) => signer.provider.getLogs(filter),
+  //   getNetwork: () => signer.provider.getNetwork(),
+  //   getStorage: (address, position, blockTag) => signer.provider.getStorage(address, position, blockTag),
+  //   getTransaction: (hash) => signer.provider.getTransaction(hash),
+  //   getTransactionCount: (address, blockTag) => signer.provider.getTransactionCount(address, blockTag),
+  //   getTransactionReceipt: (hash) => signer.provider.getTransactionReceipt(hash),
+  //   getTransactionResult: (hash) => signer.provider.getTransactionResult(hash),
+  //   lookupAddress: (address) => signer.provider.lookupAddress(address),
+  //   resolveName: (ensName) => signer.provider.resolveName(ensName),
+  //   waitForBlock: (blockTag) => signer.provider.waitForBlock(blockTag),
+  //   waitForTransaction: (hash, confirms, timeout) => signer.provider.waitForTransaction(hash, confirms, timeout),
+  //   on: (eventName, listener) => signer.provider.on(eventName, listener),
+
+  //   // v6 methods
+  //   broadcastTransaction: (signedTx) => signer.provider.sendTransaction(signedTx),
+  // };
+  
+  // const signerV6 = {
+  //   ...signer,
+  //   provider: providerV6,
+  //   call: (tx) => signer.call(tx),
+  //   connect: (provider) => signer.connect(provider),
+  //   estimateGas: (tx) => signer.estimateGas(tx),
+  //   getAddress: () => signer.getAddress(),
+  //   getNonce: (blockTag) => signer.getTransactionCount(blockTag),
+  //   populateCall: (tx) => signer.populateTransaction(tx),
+  //   populateTransaction: (tx) => signer.populateTransaction(tx),
+  //   resolveName: (name) => signer.resolveName(name),
+  //   sendTransaction: (tx) => signer.sendTransaction(tx),
+  //   signMessage: (message) => signer.signMessage(message),
+  //   signTransaction: (tx) => signer.signTransaction(tx),
+  //   signTypedData: (domain, types, value) => signer._signTypedData(domain, types, value), // underscore in the original method, assuming it's a typo in the doc
+  // };
+
+  // window.signerV6 = signerV6;
+  // return signerV6;
+
+  // New approach: creating a new ethers v6 wallet
+  // if EOA wallet, just get the private key and provider and instantiate a new ethers v6 wallet
+  if (signer.privateKey) {
+    const provider = signer.provider;
+    const privateKey = signer.privateKey;
+    const wallet = new ethers.Wallet(privateKey, provider);
+    return wallet;
+  } 
+  // if it is wallet whose key we cannot access (e.g. BrowserWallet), we connect ourselves to the provider
+   else {
+    const provider = new ethers.BrowserProvider(window.ethereum, "any");
+    const signer = await provider.getSigner();
+    return signer;
+   }
 }
+
+
+
+// function convertSignerToV6(wallet) {
+//   /* always returns an ethers v6 wallet.
+
+//   If the wallet is already an ethers v6 wallet, it is returned unchanged.
+//   If the wallet is an ethers v5 wallet, it is converted to an ethers v6 wallet.
+//   */
+//   // create new ethersv6 provider if needed
+
+//   // console.log(wallet)
+//   // console.log(wallet.provider)
+//   var provider;
+//   try { // ethersv5
+//     const provider_url = wallet.provider.connection.url;
+//     provider = new ethers.JsonRpcProvider(provider_url);
+//   } catch (e) { // ethersv6
+//     provider = wallet.provider;
+//   }
+
+//   // try to get private key. if browser wallet, this will fail
+//   let ethersv6Wallet;
+//   try {
+//     const key = wallet.privateKey; // this clearly doesn't work for browser/hardware wallets?
+//     ethersv6Wallet = new ethers.Wallet(key, provider);
+//   } catch (e) {
+//     ethersv6Wallet = wallet;
+//   }
+
+//   return ethersv6Wallet;
+// }
 
 const peanut = {
   greeting,

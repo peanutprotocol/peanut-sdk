@@ -15,8 +15,6 @@ function App() {
   const [linkStatus, setLinkStatus] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [claimTx, setClaimTx] = useState(null);
-  const [warningMessage, setWarningMessage] = useState(null);
-
 
   useEffect(() => {
     if (window.ethereum) {
@@ -32,11 +30,6 @@ function App() {
 
       window.ethereum.on("chainChanged", function (chainId) {
         console.log("chainChanged", chainId);
-        if(chainId !== '0x5') {
-          setWarningMessage("Please switch to Goerli network");
-        } else {
-          setWarningMessage(null);
-        }
         connectWallet();
       });
     }
@@ -46,17 +39,8 @@ function App() {
     if (isConnected) return;
     if (typeof window.ethereum !== "undefined") {
       window.ethereum.enable();
-      const provider = new ethers.BrowserProvider(window.ethereum, "any");
+      const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
       const signer = await provider.getSigner();
-
-      // check chainId, if not goerli, show warning
-      const network = await signer.provider.getNetwork();
-      const chainId = network.chainId;
-      if(chainId !== '0x5') {
-        setWarningMessage("Please switch to Goerli network");
-      } else {
-        setWarningMessage(null);
-      }
 
       setSigner(signer);
       setIsConnected(true);
@@ -71,7 +55,7 @@ function App() {
     if (!signer) throw new Error("Connect wallet first");
     const network = await signer.provider.getNetwork();
     const chainId = network.chainId;
-    
+
     // export signer to window
     window.signer = signer;
     console.log(signer);
@@ -125,16 +109,11 @@ function App() {
   return (
     <div style={{ width: "80%", margin: "auto" }}>
     <h1 style={{ textAlign: "center" }}> Peanut SDK Example</h1>
-    <h3 style={{ textAlign: "center" }}> Ethers v6 + React + Vite</h3>
-
-
+    <h3 style={{ textAlign: "center" }}> Ethers v5 + React + Vite</h3>
+      {chainId && <p>Chain ID: {parseInt(chainId)}</p>}
       <button onClick={connectWallet} style={{ background: "green", margin: "10px" }}>
         {isConnected ? "Connected" : "Connect Wallet"}
       </button>
-
-    {warningMessage && <p style={{ color: "red" }}>{warningMessage}</p>}
-      {chainId && <p>Chain ID: {parseInt(chainId)}</p>}
-
       <div
         style={{
           display: "flex",
