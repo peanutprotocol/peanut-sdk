@@ -41,7 +41,8 @@
   "homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
   "dependencies": {
     "axios": "^1.4.0",
-    "ethersv6": "npm:ethers@^6.0.0"
+    "ethersv6": "npm:ethers@^6",
+    "ethersv5": "npm:ethers@^5"
   },
   "devDependencies": {
     "@babel/core": "^7.22.8",
@@ -57,6 +58,6 @@
     "webpack-cli": "^5.1.4"
   },
   "peerDependencies": {
-    "ethers": "^6.0.0"
+    "ethers": "^5 || ^6"
   }
 }

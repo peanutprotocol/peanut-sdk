@@ -13,7 +13,8 @@
     "@squirrel-labs/peanut-sdk": "^0.0.52",
     "ethers": "^6",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "util-browser": "^0.0.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.17",

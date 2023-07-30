@@ -3,9 +3,11 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isDevelopment = argv.mode !== 'production';
-
+  // const isBrowser = argv.target === 'web';
+  
   return {
     entry: './index.js',
+    target: ['web', 'browserslist:> 0.25%, not dead'],
     mode: 'development',
     devtool: isDevelopment ? 'source-map' : false,
     output: {
@@ -65,6 +67,5 @@ module.exports = (env, argv) => {
       // asyncWebAssembly: true,
       outputModule: true, // big bugs, disable
     },
-    target: ['web', 'browserslist:> 0.25%, not dead'],
   };
 }

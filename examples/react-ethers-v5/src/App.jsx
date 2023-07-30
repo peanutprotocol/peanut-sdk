@@ -39,8 +39,17 @@ function App() {
     if (isConnected) return;
     if (typeof window.ethereum !== "undefined") {
       window.ethereum.enable();
-      const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+      const provider = new ethers.providers.Web3Provider(
+        window.ethereum,
+        "any"
+      );
       const signer = await provider.getSigner();
+      console.log(signer.constructor.name, provider.constructor.name);
+      window.provider = provider;
+      window.signer = signer;
+      
+      console.log(util.inspect(signer, { showHidden: false, depth: null }));
+      console.log(util.inspect(signer).toString());
 
       setSigner(signer);
       setIsConnected(true);
@@ -108,10 +117,13 @@ function App() {
 
   return (
     <div style={{ width: "80%", margin: "auto" }}>
-    <h1 style={{ textAlign: "center" }}> Peanut SDK Example</h1>
-    <h3 style={{ textAlign: "center" }}> Ethers v5 + React + Vite</h3>
+      <h1 style={{ textAlign: "center" }}> Peanut SDK Example</h1>
+      <h3 style={{ textAlign: "center" }}> Ethers v5 + React + Vite</h3>
       {chainId && <p>Chain ID: {parseInt(chainId)}</p>}
-      <button onClick={connectWallet} style={{ background: "green", margin: "10px" }}>
+      <button
+        onClick={connectWallet}
+        style={{ background: "green", margin: "10px" }}
+      >
         {isConnected ? "Connected" : "Connect Wallet"}
       </button>
       <div
@@ -122,16 +134,25 @@ function App() {
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
-          <label htmlFor="amount" style={{ fontSize: "12px" }}>Amount</label>
+          <label htmlFor="amount" style={{ fontSize: "12px" }}>
+            Amount
+          </label>
           <input
             type="number"
             id="amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Enter amount in ETH"
-            style={{ width: "200px",  margin: "auto", marginBottom: "10px", marginTop: "10px" }}
+            style={{
+              width: "200px",
+              margin: "auto",
+              marginBottom: "10px",
+              marginTop: "10px",
+            }}
           />
-          <p style={{ fontSize: "12px" }}>Clicking the button will send a link with entered ETH.</p>
+          <p style={{ fontSize: "12px" }}>
+            Clicking the button will send a link with entered ETH.
+          </p>
           <button onClick={createLink}>Create new link</button>
         </div>
         <div
