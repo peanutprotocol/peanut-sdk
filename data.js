@@ -8,9 +8,8 @@ import PROVIDERS from './data/providers.json';
 import CHAIN_MAP from './data/chainMap.json';
 
 
-// package version
-// const { version } = await loadJSON('package.json'); // removed as was giving errors
-// console.log(`Peanut SDK version: ${version}`); // removed as was giving errors
+// package version (from package.json)
+import { version } from './package.json';
 
 // export all these functions (imported in index.js)
 export {
@@ -22,5 +21,5 @@ export {
   ERC1155_ABI,
   CHAIN_MAP,
   PROVIDERS,
-  // version, // removed as was giving errors
+  version,
 };

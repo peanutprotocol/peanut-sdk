@@ -1,14 +1,5 @@
-////////////////// Peanut Library ///////////////////////
-//
-//  The intent of this library is to provide a set of stable functions to interact
-//  with Peanut Protocol. Since we want others to build on top of Peanut, modularizing
-//  the code will make it easier to maintain and update. We should also dogfood it internally
-//  to make sure it works as intended.
-//
-/////////////////////////////////////////////////////////
-
-import axios from "axios";
 import { ethers } from "ethersv6";
+import 'isomorphic-fetch'; // isomorphic-fetch is a library that implements fetch in node.js and the browser
 
 // import assert from "assert";
 function assert(condition, message) {
@@ -27,7 +18,7 @@ import {
     ERC1155_ABI,
     CHAIN_MAP,
     PROVIDERS,
-    // version
+    version
 } from "./data.js";
 
 const CONTRACT_VERSION = "v3";
@@ -112,7 +103,7 @@ function getRandomString(length) {
 
 export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
     /* returns a contract object for the given chainId and signer */
-    signer = await convertSignerToV6(signer);
+    // // // // signer = await convertSignerToV6(signer);
 
     if (typeof chainId == "string" || chainId instanceof String) {
         // just move to TS ffs
@@ -215,7 +206,7 @@ export async function approveSpendERC20(
     contractVersion = CONTRACT_VERSION,
 ) {
     /*  Approves the contract to spend the specified amount of tokens   */
-    signer = await convertSignerToV6(signer);
+    // // // signer = await convertSignerToV6(signer);
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
     if (amount == -1) {
         // if amount is -1, approve infinite amount
@@ -294,7 +285,7 @@ export async function createLink({
     assert(chainId, "chainId arg is required");
     assert(tokenAmount, "amount arg is required");
 
-    signer = await convertSignerToV6(signer);
+    // // signer = await convertSignerToV6(signer);
 
 
     // check allowance
@@ -584,96 +575,13 @@ export async function createLinks({
     }
     // return { links: [], txReceipt: {} };
 
-    signer = await convertSignerToV6(signer);
+    // signer = await convertSignerToV6(signer);
 
     var { keys, passwords } = generateKeysAndPasswords(passwords, numberOfLinks);
     const depositIdxs = await makeDeposits(signer, chainId, contractVersion, numberOfLinks, tokenType, tokenAmount, tokenAddress, tokenDecimals, keys);
     const links = generateLinks(chainId, contractVersion, depositIdxs, passwords, baseUrl, trackId);
 
     return { links, txReceipt: depositIdxs }; // Assuming depositIdxs is a list of receipts.
-
-    // let txOptions = {};
-    // // For base tokens, we need to send the amount as value
-    // if (tokenType == 0) {
-    //   const TOTAL_PAYABLE_ETHER_AMOUNT = ethers.parseUnits( // could add fee here
-    //     (tokenAmount * numberOfLinks).toString(),
-    //     "ether",
-    //   );
-    //   // tokenAmount = ethers.parseUnits(tokenAmount.toString(), "ether");
-    //   txOptions = { value: TOTAL_PAYABLE_ETHER_AMOUNT };
-    // }
-    // // for erc20 and erc1155, we need to convert tokenAmount to appropriate decimals
-    // else if (tokenType == 1) {
-    //   tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals);
-    // }
-
-    // // if no passwords are provided, generate random ones
-    // if (passwords.length == 0) { 
-    //   // password = getRandomString(16);
-    //   passwords = Array(numberOfLinks).fill(getRandomString(16));
-    // }
-
-
-    // const keys = generateKeysFromString(password); // deterministically generate keys from password
-    // const contract = await getContract(chainId, signer);
-
-    // const feeData = await signer.provider.getFeeData();
-    // const gasPrice = BigInt(feeData.gasPrice.toString());
-
-    // let multiplier = 1.5;
-    // multiplier = Math.round(multiplier * 10);
-    // const proposedGasPrice = (gasPrice * BigInt(multiplier)) / BigInt(10);
-
-    // if (eip1559) {
-    //   // if (chainId == 137) {
-    //   //   // warn that polygon doesn't support eip1559 yet
-    //   //   console.log("WARNING: Polygon doesn't support EIP1559 yet. Using legacy tx");
-    //   // }
-    //   txOptions = {
-    //     ...txOptions,
-    //     maxFeePerGas: maxFeePerGas,
-    //     maxPriorityFeePerGas: maxPriorityFeePerGas,
-    //     gasLimit: gasLimit,
-    //   };
-    // } else {
-    //   txOptions = {
-    //     ...txOptions,
-    //     gasPrice: proposedGasPrice,
-    //     gasLimit: gasLimit,
-    //   };
-    // }
-
-    // var tx = await contract.makeDeposit(
-    //   tokenAddress,
-    //   tokenType,
-    //   BigInt(tokenAmount),
-    //   tokenId,
-    //   keys.address,
-    //   txOptions,
-    // );
-
-    // if (verbose) {
-    //   console.log("submitted tx: ", tx.hash);
-    // }
-
-    // // now we need the deposit index from the tx receipt
-    // var txReceipt = await tx.wait();
-    // var depositIdx = getDepositIdx(txReceipt, chainId);
-
-    // // now we can create the link
-    // const link = getLinkFromParams(
-    //   chainId,
-    //   CONTRACT_VERSION,
-    //   depositIdx,
-    //   password,
-    //   baseUrl,
-    //   trackId,
-    // );
-    // if (verbose) {
-    //   console.log("created link: ", link);
-    // }
-    // // return the link and the tx receipt
-    // return { link, txReceipt };
 }
 
 export async function getLinkStatus({ signer, link }) {
@@ -681,7 +589,7 @@ export async function getLinkStatus({ signer, link }) {
     assert(signer, "signer arg is required");
     assert(link, "link arg is required");
 
-    signer = await convertSignerToV6(signer);
+    // // signer = await convertSignerToV6(signer);
 
     const params = getParamsFromLink(link);
     const chainId = params.chainId;
@@ -702,7 +610,7 @@ export async function claimLink({ signer, link, recipient = null }) {
     assert(signer, "signer arg is required");
     assert(link, "link arg is required");
 
-    signer = await convertSignerToV6(signer);
+    // signer = await convertSignerToV6(signer);
 
     const params = getParamsFromLink(link);
     const chainId = params.chainId;
@@ -782,88 +690,24 @@ export async function claimLinkGasless(link, recipientAddress, apiKey, url = "ht
     };
 
     // if axios error, return the error message
+
     try {
-        const response = await axios.post(url, body, { headers });
-        return response.data;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        } else {
+            const data = await response.json();
+            return data;
+        }
     } catch (e) {
         console.log("error claiming link: ", e);
-        return e.response;
+        return e.message;
     }
-}
-
-// convertSignerToV6
-// await convertSignerToV6
-async function convertSignerToV6(signer) {
-    // Check if it's already a v6 signer, just return it
-    if (signer.provider.broadcastTransaction) {
-        console.log("signer is already v6");
-        return signer;
-    }
-    console.log("%c You are passing an ethers v5 signer, attempting conversion to v6. THIS IS AN EXPERIMENTAL FEATURE", "color: yellow");
-    console.log("%c To avoid any issues, please migrate to ethers v6", "color: yellow");
-
-    // New approach: creating a new ethers v6 wallet
-    // if EOA wallet, just get the private key and provider and instantiate a new ethers v6 wallet
-    if (signer.privateKey) {
-        const provider = signer.provider;
-        const privateKey = signer.privateKey;
-        const wallet = new ethers.Wallet(privateKey, provider);
-        return wallet;
-    }
-    // if it is wallet whose key we cannot access (e.g. BrowserWallet), we connect ourselves to the provider
-    else { // this will not work with walletconnect or non-meta mask wallets
-        const provider = new ethers.BrowserProvider(window.ethereum, "any");
-        const signer = await provider.getSigner();
-        return signer;
-    }
-
-    // // Old approach: wrapping the signer and provider. Too many issues with this approach
-    // const providerV6 = {
-    //   ...signer.provider, 
-    //   call: (tx) => signer.provider.call(tx),
-    //   destroy: () => signer.provider.destroy(),
-    //   estimateGas: (tx) => signer.provider.estimateGas(tx),
-    //   getBalance: (address, blockTag) => signer.provider.getBalance(address, blockTag),
-    //   getBlock: (blockHashOrBlockTag, prefetchTxs) => signer.provider.getBlock(blockHashOrBlockTag, prefetchTxs),
-    //   getBlockNumber: () => signer.provider.getBlockNumber(),
-    //   getCode: (address, blockTag) => signer.provider.getCode(address, blockTag),
-    //   getFeeData: () => signer.provider.getFeeData(),
-    //   getLogs: (filter) => signer.provider.getLogs(filter),
-    //   getNetwork: () => signer.provider.getNetwork(),
-    //   getStorage: (address, position, blockTag) => signer.provider.getStorage(address, position, blockTag),
-    //   getTransaction: (hash) => signer.provider.getTransaction(hash),
-    //   getTransactionCount: (address, blockTag) => signer.provider.getTransactionCount(address, blockTag),
-    //   getTransactionReceipt: (hash) => signer.provider.getTransactionReceipt(hash),
-    //   getTransactionResult: (hash) => signer.provider.getTransactionResult(hash),
-    //   lookupAddress: (address) => signer.provider.lookupAddress(address),
-    //   resolveName: (ensName) => signer.provider.resolveName(ensName),
-    //   waitForBlock: (blockTag) => signer.provider.waitForBlock(blockTag),
-    //   waitForTransaction: (hash, confirms, timeout) => signer.provider.waitForTransaction(hash, confirms, timeout),
-    //   on: (eventName, listener) => signer.provider.on(eventName, listener),
-
-    //   // v6 methods
-    //   broadcastTransaction: (signedTx) => signer.provider.sendTransaction(signedTx),
-    // };
-
-    // const signerV6 = {
-    //   ...signer,
-    //   provider: providerV6,
-    //   call: (tx) => signer.call(tx),
-    //   connect: (provider) => signer.connect(provider),
-    //   estimateGas: (tx) => signer.estimateGas(tx),
-    //   getAddress: () => signer.getAddress(),
-    //   getNonce: (blockTag) => signer.getTransactionCount(blockTag),
-    //   populateCall: (tx) => signer.populateTransaction(tx),
-    //   populateTransaction: (tx) => signer.populateTransaction(tx),
-    //   resolveName: (name) => signer.resolveName(name),
-    //   sendTransaction: (tx) => signer.sendTransaction(tx),
-    //   signMessage: (message) => signer.signMessage(message),
-    //   signTransaction: (tx) => signer.signTransaction(tx),
-    //   signTypedData: (domain, types, value) => signer._signTypedData(domain, types, value), // underscore in the original method, assuming it's a typo in the doc
-    // };
-
-    // window.signerV6 = signerV6;
-    // return signerV6;
 }
 
 const peanut = {
@@ -886,7 +730,7 @@ const peanut = {
     claimLink,
     approveSpendERC20,
     claimLinkGasless,
-    // version: version, // removed as was giving errors
+    version: version,
     // approveSpendERC721,
     // approveSpendERC1155,
 };

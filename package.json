@@ -2,8 +2,14 @@
   "name": "@squirrel-labs/peanut-sdk",
   "version": "0.0.53",
   "description": "The Peanut Protocol SDK! See examples/ folder",
-  "main": "dist/peanut-sdk.js",
-  "module": "dist/peanut-sdk.js",
+  "main": "dist/peanut-sdk.node.js",
+  "module": "dist/peanut-sdk.browser.js",
+  "browser": {
+    "./dist/peanut-sdk.node.js": "./dist/peanut-sdk.browser.js",
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "type": "module",
   "scripts": {
     "test": "mocha --timeout 600000 --exit",
@@ -14,17 +20,13 @@
     "build:dev": "npm run clean && webpack --config webpack.config.cjs",
     "git": "git add . && git commit -m 'Release' && git push",
     "npm-publish": "npm publish",
+    "prepublishOnly": "npm run build:prod",
     "release": "npm run check-git-status && npm run build:prod && npm test && npm version patch --allow-dirty && npm run git && npm run npm-publish",
     "check-git-status": "git diff-index --quiet HEAD -- || (echo \"ERROR: Git working directory is not clean.\" && exit 1)"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ProphetFund/peanut-sdk.git"
-  },
-  "browser": {
-    "fs": false,
-    "path": false,
-    "os": false
   },
   "keywords": [
     "crypto",
@@ -40,24 +42,24 @@
   },
   "homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
   "dependencies": {
-    "axios": "^1.4.0",
+    "ethersv5": "npm:ethers@^5",
     "ethersv6": "npm:ethers@^6",
-    "ethersv5": "npm:ethers@^5"
+    "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.8",
     "@babel/preset-env": "^7.22.7",
     "babel-loader": "^9.1.3",
+    "bufferutil": "^4.0.7",
     "dotenv": "^16.0.3",
     "json-loader": "^0.5.7",
     "mocha": "^10.2.0",
     "npm-packlist": "^7.0.4",
     "raw-loader": "^4.0.2",
     "url": "^0.11.1",
+    "utf-8-validate": "^5.0.10",
     "webpack": "^5.88.1",
-    "webpack-cli": "^5.1.4"
-  },
-  "peerDependencies": {
-    "ethers": "^5 || ^6"
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
   }
 }

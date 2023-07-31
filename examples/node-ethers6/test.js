@@ -1,23 +1,23 @@
-// import peanut from "../../index.js"; // local
-import peanut from '@squirrel-labs/peanut-sdk';
-import { ethers } from 'ethers'; // ethers v6
+import { peanut } from '@squirrel-labs/peanut-sdk';
+import { ethers } from 'ethers'; // ethers v5.7.2
 import dotenv from 'dotenv';
-dotenv.config({path: '../../.env'}); // set up an env file
+dotenv.config({path: '../../.env'});
 
+console.log('Ethers version: ', ethers.version);
+console.log('Peanut version: ', peanut.version);
 
 ////////////////////////////////////////////////////////////
 // replace with ethers signer from browser wallet
 const CHAINID = 5; // goerli
 const RPC_URL = "https://rpc.ankr.com/eth_goerli";
-// const CHAINID = 137; // matic mainnet
-// const RPC_URL = "https://polygon.llamarpc.com";
-
+////////////////////////////////////////////////////////////
 // create goerli wallet with optimism rpc
 const wallet = new ethers.Wallet(
     process.env.TEST_WALLET_PRIVATE_KEY,
     new ethers.JsonRpcProvider(RPC_URL)
 );
 ////////////////////////////////////////////////////////////
+
 
 // create link
 const { link, txReceipt } = await peanut.createLink({
@@ -29,17 +29,15 @@ const { link, txReceipt } = await peanut.createLink({
 });
 
 // get status of link
-console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
+await new Promise(r => setTimeout(r, 3000));
+var {claimed, deposit} = await peanut.getLinkStatus({signer: wallet, link: link});
+console.log("The link is claimed: ", claimed);
 
 
 // claim link
-await new Promise(r => setTimeout(r, 6000));
 const claimTx = await peanut.claimLink({ signer: wallet, link: link });
 console.log("claimTx: ", claimTx.hash);
 
-// GASLESS
-// const res = await peanut.claimLinkGasless(link, wallet.address, process.env.PEANUT_DEV_API_KEY);
-// console.log(res);
-
-// get status of link
-console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
+await new Promise(r => setTimeout(r, 3000));
+({claimed, deposit } = await peanut.getLinkStatus({signer: wallet, link: link}));
+console.log("The link is claimed: ", claimed);

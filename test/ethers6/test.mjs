@@ -1,5 +1,12 @@
 // import peanut from "../../index.js"; // local
+// import * as peanut from "@squirrel-labs/peanut-sdk"; // npm
+// import * as peanut from "@squirrel-labs/peanut-sdk"; // npm
+// import { peanut } from '@squirrel-labs/peanut-sdk';
 import peanut from '@squirrel-labs/peanut-sdk';
+// import { peanut } from '@squirrel-labs/peanut-sdk';
+// import * as peanut from '@squirrel-labs/peanut-sdk';
+console.log(peanut);
+
 import { ethers } from 'ethers'; // ethers v6
 import dotenv from 'dotenv';
 dotenv.config({path: '../../.env'});
@@ -23,15 +30,15 @@ const wallet = new ethers.Wallet(
 ////////////////////////////////////////////////////////////
 
 // create link
-// const { link, txReceipt } = await peanut.createLink({
-//   signer: wallet,
-//   chainId: CHAINID,
-//   tokenAmount: 0.0001,
-//   tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-//   verbose: true,
-// });
+const { link, txReceipt } = await peanut.createLink({
+  signer: wallet,
+  chainId: CHAINID,
+  tokenAmount: 0.0001,
+  tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+  verbose: true,
+});
 
-let link = "https://peanut.to/claim?c=5&v=v3&i=265&p=msElbP5vF0idLNgs&t=sdk"
+// let link = "https://peanut.to/claim?c=5&v=v3&i=265&p=msElbP5vF0idLNgs&t=sdk"
 // get status of link
 console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
 
@@ -45,4 +52,5 @@ const res = await peanut.claimLinkGasless(link, wallet.address, process.env.PEAN
 console.log("res: ", res);
 
 // get status of link
+await new Promise(r => setTimeout(r, 2000));
 console.log((await peanut.getLinkStatus({signer: wallet, link: link})).claimed);
