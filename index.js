@@ -326,11 +326,20 @@ export function getDepositIdx(txReceipt, chainId) {
     const logs = txReceipt.logs;
     // const chainId = txReceipt.chainId;
     var depositIdx;
+    var logIndex
     if (chainId == 137) {
-        depositIdx = logs[logs.length - 2].args[0];
+        logIndex = logs.length - 2;
     } else {
-        // get last log a
-        depositIdx = logs[logs.length - 1].args[0];
+        logIndex = logs.length - 1; // last log is the deposit event
+    }
+    // only works if EventLog. If Log, then need to look at data, and first uint256 is depositIdx.
+    try {
+        depositIdx = logs[logIndex].args[0];
+    } catch (error) {
+        // get uint256 from data (first 32 bytes)
+        const data = logs[logIndex].data;
+        const depositIdxHex = data.slice(0, 66);
+        depositIdx = parseInt(BigInt(depositIdxHex)); // should this be int or bigint? decide wen TS.
     }
     return depositIdx;
 }
