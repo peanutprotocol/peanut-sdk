@@ -1,5 +1,5 @@
-import { peanut } from '@squirrel-labs/peanut-sdk';
-import { ethers } from 'ethers'; // ethers v6
+import { peanut } from '@squirrel-labs/peanut-sdk-ethersv5';
+import { ethers } from 'ethers'; // ethers v5.7.2
 import dotenv from 'dotenv';
 dotenv.config({path: '../../.env'});
 
@@ -33,12 +33,12 @@ await new Promise(r => setTimeout(r, 3000));
 var {claimed, deposit} = await peanut.getLinkStatus({signer: wallet, link: link});
 console.log("The link is claimed: ", claimed);
 
-
 // claim link
-const claimTx = await peanut.claimLink({ signer: wallet, link: link });
-console.log("claimTx: ", claimTx.hash);
+const res = await peanut.claimLinkGasless(link, wallet.address, process.env.PEANUT_DEV_API_KEY);
+console.log("res: ", res);
 
 // check status of link again
 await new Promise(r => setTimeout(r, 3000));
 ({claimed, deposit } = await peanut.getLinkStatus({signer: wallet, link: link}));
 console.log("The link is claimed: ", claimed);
+

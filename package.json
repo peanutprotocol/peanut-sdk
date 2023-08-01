@@ -45,6 +45,9 @@
     "ethersv6": "npm:ethers@^6",
     "isomorphic-fetch": "^3.0.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@babel/core": "^7.22.8",
     "@babel/preset-env": "^7.22.7",
