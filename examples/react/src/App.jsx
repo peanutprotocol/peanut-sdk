@@ -52,7 +52,7 @@ function App() {
       // check chainId, if not goerli, show warning
       const network = await signer.provider.getNetwork();
       const chainId = network.chainId;
-      if(chainId !== '0x5') {
+      if(chainId !== '0x5' && chainId !== 5 && chainId !== BigInt(5)) {
         setWarningMessage("Please switch to Goerli network");
       } else {
         setWarningMessage(null);

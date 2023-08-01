@@ -42,7 +42,6 @@
   },
   "homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
   "dependencies": {
-    "ethersv5": "npm:ethers@^5",
     "ethersv6": "npm:ethers@^6",
     "isomorphic-fetch": "^3.0.0"
   },
