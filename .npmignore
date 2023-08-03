@@ -4,6 +4,7 @@ tests
 test/*
 other/*
 examples/*
+scripts/
 .env
 *.env
 playground/

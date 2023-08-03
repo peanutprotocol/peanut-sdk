@@ -5,14 +5,10 @@
     <title>MetaMask Test Page</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥜</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.6.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="node_modules/@squirrel-labs/peanut-sdk/dist/peanut-sdk.browser.js"></script>
-
-
-    <!-- for dev purposes. load peanut-sdk from ../../dist/peanut-sdk.js -->
-    <!-- <script src="../../dist/peanut-sdk.browser.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/peanut-sdk.browser.js" type="module"></script> -->
     <script type="module">
-        // import peanut from '../../index.js';
+        // import peanut from 'https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/peanut-sdk.browser.js';
+        import peanut from '../../dist/peanut-sdk.browser.js';
         console.log(peanut);
     </script>
 </head>

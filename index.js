@@ -26,8 +26,9 @@ import {
     ERC721_ABI,
     ERC1155_ABI,
     CHAIN_MAP,
+    CHAIN_DETAILS,
     PROVIDERS,
-    version
+    VERSION
 } from "./data.js";
 
 const CONTRACT_VERSION = "v3";
@@ -459,6 +460,17 @@ export async function createLink({
         };
     }
 
+    if (verbose) {
+        console.log("making deposit...");
+        console.log("deposit Params: ", [
+            tokenAddress,
+            tokenType,
+            BigInt(tokenAmount),
+            tokenId,
+            keys.address,
+            txOptions,
+        ]);
+    }
     var tx = await contract.makeDeposit(
         tokenAddress,
         tokenType,
@@ -707,7 +719,7 @@ export async function getLinkStatus({ signer, link }) {
     return { claimed: false, deposit };
 }
 
-export async function claimLink({ signer, link, recipient = null }) {
+export async function claimLink({ signer, link, recipient = null, verbose = false }) {
     /* claims the contents of a link */
     assert(signer, "signer arg is required");
     assert(link, "link arg is required");
@@ -730,6 +742,14 @@ export async function claimLink({ signer, link, recipient = null }) {
     var addressHashBinary = ethers.getBytes(addressHash);
     var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
     var signature = await signAddress(recipient, keys.privateKey); // sign with link keys
+
+    if (verbose) {
+        // print the params
+        console.log("params: ", params);
+        console.log("addressHash: ", addressHash);
+        console.log("addressHashEIP191: ", addressHashEIP191);
+        console.log("signature: ", signature);
+    }
 
     // TODO: use createClaimPayload instead
 
@@ -833,7 +853,9 @@ const peanut = {
     claimLink,
     approveSpendERC20,
     claimLinkGasless,
-    version: version,
+    VERSION,
+    version: VERSION,
+    CHAIN_DETAILS,
     // approveSpendERC721,
     // approveSpendERC1155,
 };

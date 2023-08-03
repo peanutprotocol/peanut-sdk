@@ -6,10 +6,11 @@ import ERC1155_ABI from './data/erc1155abi.json';
 import PEANUT_CONTRACTS from './data/contracts.json';
 import PROVIDERS from './data/providers.json';
 import CHAIN_MAP from './data/chainMap.json';
+import CHAIN_DETAILS from './data/chainDetails.json';
 
 
 // package version (from package.json)
-import { version } from './package.json';
+import { version as VERSION} from './package.json';
 
 // export all these functions (imported in index.js)
 export {
@@ -20,6 +21,7 @@ export {
   ERC721_ABI,
   ERC1155_ABI,
   CHAIN_MAP,
+  CHAIN_DETAILS,
   PROVIDERS,
-  version,
+  VERSION
 };
