@@ -1,0 +1,12 @@
+{
+	"name": "peanut-sdk-tests",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {},
+	"dependencies": {
+		"@squirrel-labs/peanut-sdk": "*",
+		"ethers": "^6"
+	},
+	"devDependencies": {}
+}

@@ -7,21 +7,30 @@ import PEANUT_CONTRACTS from './data/contracts.json';
 import PROVIDERS from './data/providers.json';
 import CHAIN_MAP from './data/chainMap.json';
 import CHAIN_DETAILS from './data/chainDetails.json';
+import { version as VERSION } from './package.json'; // version from package.json
 
+// CONSTANTS
+const TOKEN_TYPES = Object.freeze({
+	ETH: 0,
+	ERC20: 1,
+	ERC721: 2,
+	ERC1155: 3,
+});
 
-// package version (from package.json)
-import { version as VERSION} from './package.json';
+const DEFAULT_CONTRACT_VERSION = 'v3';
 
 // export all these functions (imported in index.js)
 export {
-  PEANUT_ABI_V3,
-  PEANUT_ABI_V4,
-  PEANUT_CONTRACTS,
-  ERC20_ABI,
-  ERC721_ABI,
-  ERC1155_ABI,
-  CHAIN_MAP,
-  CHAIN_DETAILS,
-  PROVIDERS,
-  VERSION
+	PEANUT_ABI_V3,
+	PEANUT_ABI_V4,
+	PEANUT_CONTRACTS,
+	ERC20_ABI,
+	ERC721_ABI,
+	ERC1155_ABI,
+	CHAIN_MAP,
+	CHAIN_DETAILS,
+	PROVIDERS,
+	VERSION,
+	TOKEN_TYPES,
+	DEFAULT_CONTRACT_VERSION,
 };
