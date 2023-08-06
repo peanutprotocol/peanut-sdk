@@ -553,11 +553,12 @@ export async function createLink({
 	// var tx = await contract.makeDeposit(...depositParams);
 	var tx = await contract.makeDeposit(...depositParams, txOptions);
 
-	verbose && console.log('submitted tx: ', tx.hash);
+	console.log('submitted tx: ', tx.hash);
 
 	// now we need the deposit index from the tx receipt
 	var txReceipt = await tx.wait();
 	var depositIdx = getDepositIdx(txReceipt, chainId);
+	verbose && console.log('Deposit finalized. Deposit index: ', depositIdx);
 
 	// now we can create the link
 	const link = getLinkFromParams(chainId, contractVersion, depositIdx, password, baseUrl, trackId);

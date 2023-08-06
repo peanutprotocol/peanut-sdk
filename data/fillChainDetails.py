@@ -15,7 +15,18 @@ ICONS_URL = "https://raw.githubusercontent.com/ethereum-lists/chains/master/_dat
 def get_chain_ids():
     with open(CONTRACTS_PATH, "r") as file:
         contracts = json.load(file)
-    return list(contracts.keys())
+    chain_ids = list(contracts.keys())
+    # filter out all the chain ids that don't have a v3 chain id
+    # e.g. keep:
+    # "1": {
+	# 	"ethereum-mainnet": "This is a comment",
+	# 	"v3": "0xdB60C736A30C41D9df0081057Eae73C3eb119895"
+	# },
+    # # but remove:
+    # "80001": {
+	# 	"polygon-mumbai": "This is a comment"
+	# },
+    return [chain_id for chain_id in chain_ids if contracts[chain_id].get("v3")]
 
 
 def get_chain_details(chain_id):
@@ -36,6 +47,8 @@ def get_chain_icon(icon_name):
 
 def combine_details():
     chain_ids = get_chain_ids()
+    print(f"Found {len(chain_ids)} chain ids with a v3 chain id. Fetching details...")
+    print(chain_ids)
     chain_details = {}
 
     for chain_id in chain_ids:
