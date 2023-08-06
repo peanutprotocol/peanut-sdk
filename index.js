@@ -7,8 +7,8 @@
 //
 /////////////////////////////////////////////////////////
 
-import { ethers } from 'ethersv6'; // v6
-// import { ethers } from 'ethersv5'; // v5
+// import { ethers } from 'ethersv6'; // v6
+import { ethers } from 'ethersv5'; // v5
 import 'isomorphic-fetch'; // isomorphic-fetch is a library that implements fetch in node.js and the browser
 
 // import assert from "assert";
@@ -42,8 +42,8 @@ export function greeting() {
 
 export function generateKeysFromString(string) {
 	/* generates a deterministic key pair from an arbitrary length string */
-	var privateKey = ethers.keccak256(ethers.toUtf8Bytes(string)); // v6
-	// var privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)); // v5
+	// var privateKey = ethers.keccak256(ethers.toUtf8Bytes(string)); // v6
+	var privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)); // v5
 	var wallet = new ethers.Wallet(privateKey);
 	// var publicKey = wallet.publicKey; // deprecated in ethers v6
 
@@ -58,14 +58,14 @@ export function hash_string(str) {
 	/*
 	  1. convert to bytes, 2. right pad to 32 bytes, 3. hash
 	  */
-	let hash = ethers.toUtf8Bytes(str); // v6
-	// let hash = ethers.utils.toUtf8Bytes(str); // v5
-	hash = ethers.hexlify(hash); // v6
-	// hash = ethers.utils.hexlify(hash); // v5
-	hash = ethers.zeroPadValue(hash, 32); // hexZeroPad is deprecated
-	// hash = ethers.hexZeroPad(hash, 32); // v5
-	hash = ethers.keccak256(hash); // v6
-	// hash = ethers.utils.keccak256(hash); // v5
+	// let hash = ethers.toUtf8Bytes(str); // v6
+	let hash = ethers.utils.toUtf8Bytes(str); // v5
+	// hash = ethers.hexlify(hash); // v6
+	hash = ethers.utils.hexlify(hash); // v5
+	// hash = ethers.zeroPadValue(hash, 32); // v6
+	hash = ethers.utils.hexZeroPad(hash, 32); // v5
+	// hash = ethers.keccak256(hash); // v6
+	hash = ethers.utils.keccak256(hash); // v5
 	return hash;
 }
 
@@ -79,30 +79,30 @@ export async function signMessageWithPrivatekey(message, privateKey) {
 
 export function verifySignature(message, signature, address) {
 	/* verifies a signature with a public key and returns true if valid */
-	const messageSigner = ethers.verifyMessage(message, signature); // v6
-	// const messageSigner = ethers.utils.verifyMessage(message, signature); // v5
+	// const messageSigner = ethers.verifyMessage(message, signature); // v6
+	const messageSigner = ethers.utils.verifyMessage(message, signature); // v5
 	return messageSigner == address;
 }
 
 export function solidityHashBytesEIP191(bytes) {
 	/* adds the EIP191 prefix to a message and hashes it same as solidity*/
 	// assert(bytes instanceof Uint8Array);
-	return ethers.hashMessage(bytes); // v6
-	// return ethers.utils.hashMessage(bytes); // v5
+	// return ethers.hashMessage(bytes); // v6
+	return ethers.utils.hashMessage(bytes); // v5
 }
 
 export function solidityHashAddress(address) {
 	/* hashes an address to a 32 byte hex string */
-	return ethers.solidityPackedKeccak256(['address'], [address]); // v6
-	// return ethers.utils.solidityKeccak256(["address"], [address]); // v5
+	// return ethers.solidityPackedKeccak256(['address'], [address]); // v6
+	return ethers.utils.solidityKeccak256(["address"], [address]); // v5
 }
 
 export async function signAddress(string, privateKey) {
 	// 1. hash plain address
-	const stringHash = ethers.solidityPackedKeccak256(['address'], [string]); // v6
-	// const stringHash = ethers.utils.solidityKeccak256(["address"], [string]); // v5
-	const stringHashbinary = ethers.getBytes(stringHash); // v6
-	// const stringHashbinary = ethers.utils.arrayify(stringHash); // v5
+	// const stringHash = ethers.solidityPackedKeccak256(['address'], [string]); // v6
+	const stringHash = ethers.utils.solidityKeccak256(["address"], [string]); // v5
+	// const stringHashbinary = ethers.getBytes(stringHash); // v6
+	const stringHashbinary = ethers.utils.arrayify(stringHash); // v5
 
 	// 2. add eth msg prefix, then hash, then sign
 	var signer = new ethers.Wallet(privateKey);
@@ -121,46 +121,47 @@ function getRandomString(length) {
 
 async function convertSignerToV6(signer, verbose = true) {
 	return signer;
-	// Check if it's already a v6 signer, just return it
-	if (signer.provider.broadcastTransaction) {
-		// console.log("signer is already v6");
-		return signer;
-	}
-	console.log(
-		'%cYOU ARE PASSING IN AN ETHERS v5 SIGNER. PLEASE UPGRADE TO ETHERS v6 OR USE THE LEGACY PEANUT SDK',
-		'color: red',
-	);
-	console.log(
-		'%c You are passing an ethers v5 signer, attempting conversion to v6. THIS IS AN EXPERIMENTAL FEATURE',
-		'color: yellow',
-	);
-	console.log('%c To avoid any issues, please migrate to ethers v6', 'color: yellow');
+	// // Check if it's already a v6 signer, just return it
+	// if (signer.provider.broadcastTransaction) {
+	// 	// console.log("signer is already v6");
+	// 	return signer;
+	// }
+	// console.log(
+	// 	'%cYOU ARE PASSING IN AN ETHERS v5 SIGNER. PLEASE UPGRADE TO ETHERS v6 OR USE THE LEGACY PEANUT SDK',
+	// 	'color: red',
+	// );
+	// console.log(
+	// 	'%c You are passing an ethers v5 signer, attempting conversion to v6. THIS IS AN EXPERIMENTAL FEATURE',
+	// 	'color: yellow',
+	// );
+	// console.log('%c To avoid any issues, please migrate to ethers v6', 'color: yellow');
 
-	// New approach: creating a new ethers v6 wallet
-	// if EOA wallet, just get the private key and provider and instantiate a new ethers v6 wallet
-	if (signer.privateKey) {
-		const provider = signer.provider;
-		const privateKey = signer.privateKey;
-		const wallet = new ethers.Wallet(privateKey, provider);
-		return wallet;
-	}
-	return signer;
+	// // New approach: creating a new ethers v6 wallet
+	// // if EOA wallet, just get the private key and provider and instantiate a new ethers v6 wallet
+	// if (signer.privateKey) {
+	// 	const provider = signer.provider;
+	// 	const privateKey = signer.privateKey;
+	// 	const wallet = new ethers.Wallet(privateKey, provider);
+	// 	return wallet;
+	// }
+	// return signer;
 
-	// New approach: creating a new ethers v6 wallet
-	// if EOA wallet, just get the private key and provider and instantiate a new ethers v6 wallet
-	if (signer.privateKey) {
-		const provider = signer.provider;
-		const privateKey = signer.privateKey;
-		const wallet = new ethers.Wallet(privateKey, provider);
-		return wallet;
-	}
-	// if it is wallet whose key we cannot access (e.g. BrowserWallet), we connect ourselves to the provider
-	else {
-		// this will not work with walletconnect or non-meta mask wallets
-		const provider = new ethers.BrowserProvider(window.ethereum, 'any');
-		const signer = await provider.getSigner();
-		return signer;
-	}
+	// // New approach: creating a new ethers v6 wallet
+	// // if EOA wallet, just get the private key and provider and instantiate a new ethers v6 wallet
+	// if (signer.privateKey) {
+	// 	const provider = signer.provider;
+	// 	const privateKey = signer.privateKey;
+	// 	const wallet = new ethers.Wallet(privateKey, provider);
+	// 	return wallet;
+	// }
+	// // if it is wallet whose key we cannot access (e.g. BrowserWallet), we connect ourselves to the provider
+	// else {
+	// 	// this will not work with walletconnect or non-meta mask wallets
+	// 	// const provider = new ethers.BrowserProvider(window.ethereum, 'any'); // v6
+	// 	const provider = new ethers.utils.Web3Provider(window.ethereum, 'any'); // v5
+	// 	const signer = await provider.getSigner();
+	// 	return signer;
+	// }
 
 	// // Old approach: wrapping the signer and provider. Too many issues with this approach
 	// const providerV6 = {
@@ -186,7 +187,7 @@ async function convertSignerToV6(signer, verbose = true) {
 	//   waitForTransaction: (hash, confirms, timeout) => signer.provider.waitForTransaction(hash, confirms, timeout),
 	//   on: (eventName, listener) => signer.provider.on(eventName, listener),
 
-	//   // v6 methods
+	// //   // v6 methods
 	//   broadcastTransaction: (signedTx) => signer.provider.sendTransaction(signedTx),
 	// };
 
@@ -363,13 +364,14 @@ export async function approveSpendERC20(
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
 	if (amount == -1) {
 		// if amount is -1, approve infinite amount
-		amount = ethers.MaxUint256;
+		// amount = ethers.MaxUint256; // v6
+		amount = ethers.constants.MaxUint256; // v5
 	}
 	const spender = PEANUT_CONTRACTS[chainId][contractVersion];
 	let allowance = await getAllowance(signer, chainId, tokenContract, spender);
 	// convert amount to BigInt and compare to allowance
-	amount = ethers.parseUnits(amount.toString(), tokenDecimals); // v6
-	// amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals); // v5
+	// amount = ethers.parseUnits(amount.toString(), tokenDecimals); // v6
+	amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals); // v5
 	if (allowance >= amount) {
 		console.log('Allowance already enough, no need to approve more');
 		return { allowance, txReceipt: null };
@@ -494,14 +496,14 @@ export async function createLink({
 		}
 	}
 	// convert tokenAmount to appropriate unit
-	tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
-	// tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals); // v5
+	// tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
+	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals); // v5
 
 	// if native token (tokentype == 0), add value to txOptions
 	txOptions = {};
 	// set nonce
-	nonce = nonce || (await signer.getNonce()); // v6
-	// nonce = nonce || (await signer.getTransactionCount()); // v5
+	// nonce = nonce || (await signer.getNonce()); // v6
+	nonce = nonce || (await signer.getTransactionCount()); // v5
 	txOptions.nonce = nonce;
 	if (tokenType == 0) {
 		txOptions = {
@@ -620,8 +622,8 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 
 	// cryptography
 	var addressHash = solidityHashAddress(recipient);
-	var addressHashBinary = ethers.getBytes(addressHash); // v6
-	// var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
+	// var addressHashBinary = ethers.getBytes(addressHash); // v6
+	var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
 	var signature = await signAddress(recipient, keys.privateKey); // sign with link keys
 
@@ -653,8 +655,8 @@ async function createClaimPayload(link, recipientAddress) {
 
 	// cryptography
 	var addressHash = solidityHashAddress(recipientAddress);
-	var addressHashBinary = ethers.getBytes(addressHash); // v6
-	// var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
+	// var addressHashBinary = ethers.getBytes(addressHash); // v6
+	var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
 	var signature = await signAddress(recipientAddress, keys.privateKey); // sign with link keys
 

@@ -1,4 +1,5 @@
-import peanut from '@squirrel-labs/peanut-sdk';
+// import peanut from '@squirrel-labs/peanut-sdk'; // v6
+import peanut from '@squirrel-labs/peanut-sdk-ethersv5'; // v5
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';

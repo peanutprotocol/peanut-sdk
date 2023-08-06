@@ -1,5 +1,5 @@
 {
-	"name": "@squirrel-labs/peanut-sdk",
+	"name": "@squirrel-labs/peanut-sdk-ethersv5",
 	"version": "0.0.64",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
@@ -30,7 +30,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ProphetFund/peanut-sdk.git"
+		"url": "git+https://github.com/ProphetFund/peanut-sdk/tree/ethersv5.git"
 	},
 	"keywords": [
 		"crypto",
@@ -46,7 +46,7 @@
 	},
 	"homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
 	"dependencies": {
-		"ethersv6": "npm:ethers@^6",
+		"ethersv5": "npm:ethers@^5",
 		"isomorphic-fetch": "^3.0.0"
 	},
 	"publishConfig": {
