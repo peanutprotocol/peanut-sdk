@@ -7,7 +7,8 @@
 //
 /////////////////////////////////////////////////////////
 
-import { ethers } from 'ethersv6';
+import { ethers } from 'ethersv6'; // v6
+// import { ethers } from 'ethersv5'; // v5
 import 'isomorphic-fetch'; // isomorphic-fetch is a library that implements fetch in node.js and the browser
 
 // import assert from "assert";
@@ -41,7 +42,8 @@ export function greeting() {
 
 export function generateKeysFromString(string) {
 	/* generates a deterministic key pair from an arbitrary length string */
-	var privateKey = ethers.keccak256(ethers.toUtf8Bytes(string));
+	var privateKey = ethers.keccak256(ethers.toUtf8Bytes(string)); // v6
+	// var privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)); // v5
 	var wallet = new ethers.Wallet(privateKey);
 	// var publicKey = wallet.publicKey; // deprecated in ethers v6
 
@@ -56,11 +58,14 @@ export function hash_string(str) {
 	/*
 	  1. convert to bytes, 2. right pad to 32 bytes, 3. hash
 	  */
-	let hash = ethers.toUtf8Bytes(str);
-	hash = ethers.hexlify(hash);
-	// hash = ethers.hexZeroPad(hash, 32);
+	let hash = ethers.toUtf8Bytes(str); // v6
+	// let hash = ethers.utils.toUtf8Bytes(str); // v5
+	hash = ethers.hexlify(hash); // v6
+	// hash = ethers.utils.hexlify(hash); // v5
 	hash = ethers.zeroPadValue(hash, 32); // hexZeroPad is deprecated
-	hash = ethers.keccak256(hash);
+	// hash = ethers.hexZeroPad(hash, 32); // v5
+	hash = ethers.keccak256(hash); // v6
+	// hash = ethers.utils.keccak256(hash); // v5
 	return hash;
 }
 
@@ -74,26 +79,30 @@ export async function signMessageWithPrivatekey(message, privateKey) {
 
 export function verifySignature(message, signature, address) {
 	/* verifies a signature with a public key and returns true if valid */
-	const messageSigner = ethers.verifyMessage(message, signature);
+	const messageSigner = ethers.verifyMessage(message, signature); // v6
+	// const messageSigner = ethers.utils.verifyMessage(message, signature); // v5
 	return messageSigner == address;
 }
 
 export function solidityHashBytesEIP191(bytes) {
 	/* adds the EIP191 prefix to a message and hashes it same as solidity*/
 	// assert(bytes instanceof Uint8Array);
-	return ethers.hashMessage(bytes);
+	return ethers.hashMessage(bytes); // v6
+	// return ethers.utils.hashMessage(bytes); // v5
 }
 
 export function solidityHashAddress(address) {
 	/* hashes an address to a 32 byte hex string */
-	// return ethers.solidityKeccak256(["address"], [address]); // no longer exists in ethers v6
-	return ethers.solidityPackedKeccak256(['address'], [address]);
+	return ethers.solidityPackedKeccak256(['address'], [address]); // v6
+	// return ethers.utils.solidityKeccak256(["address"], [address]); // v5
 }
 
 export async function signAddress(string, privateKey) {
 	// 1. hash plain address
-	const stringHash = ethers.solidityPackedKeccak256(['address'], [string]);
-	const stringHashbinary = ethers.getBytes(stringHash);
+	const stringHash = ethers.solidityPackedKeccak256(['address'], [string]); // v6
+	// const stringHash = ethers.utils.solidityKeccak256(["address"], [string]); // v5
+	const stringHashbinary = ethers.getBytes(stringHash); // v6
+	// const stringHashbinary = ethers.utils.arrayify(stringHash); // v5
 
 	// 2. add eth msg prefix, then hash, then sign
 	var signer = new ethers.Wallet(privateKey);
@@ -111,6 +120,7 @@ function getRandomString(length) {
 }
 
 async function convertSignerToV6(signer, verbose = true) {
+	return signer;
 	// Check if it's already a v6 signer, just return it
 	if (signer.provider.broadcastTransaction) {
 		// console.log("signer is already v6");
@@ -358,7 +368,8 @@ export async function approveSpendERC20(
 	const spender = PEANUT_CONTRACTS[chainId][contractVersion];
 	let allowance = await getAllowance(signer, chainId, tokenContract, spender);
 	// convert amount to BigInt and compare to allowance
-	amount = ethers.parseUnits(amount.toString(), tokenDecimals);
+	amount = ethers.parseUnits(amount.toString(), tokenDecimals); // v6
+	// amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals); // v5
 	if (allowance >= amount) {
 		console.log('Allowance already enough, no need to approve more');
 		return { allowance, txReceipt: null };
@@ -483,14 +494,14 @@ export async function createLink({
 		}
 	}
 	// convert tokenAmount to appropriate unit
-	tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals);
+	tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
+	// tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals); // v5
 
 	// if native token (tokentype == 0), add value to txOptions
 	txOptions = {};
-	// // set nonce
-	// const nonce = await signer.getTransactionCount(); // doesnt work in v6
-	// const nonce = await signer.getNonce();
-	nonce = nonce || (await signer.getNonce());
+	// set nonce
+	nonce = nonce || (await signer.getNonce()); // v6
+	// nonce = nonce || (await signer.getTransactionCount()); // v5
 	txOptions.nonce = nonce;
 	if (tokenType == 0) {
 		txOptions = {
@@ -567,169 +578,6 @@ export async function createLink({
 	return { link, txReceipt };
 }
 
-export async function createLinks({
-	signer, // ethers signer object
-	chainId, // chain id of the network (only EVM for now)
-	tokenAmount, // tokenAmount to put in each link
-	numberOfLinks = null, // number of links to create
-	tokenAmounts = [], // array of token amounts, if different amounts are needed for links
-	tokenAddress = '0x0000000000000000000000000000000000000000',
-	tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
-	tokenId = 0, // only used for ERC721 and ERC1155
-	tokenDecimals = null, // only used for ERC20 and ERC1155
-	passwords = [], // passwords that each link should have
-	baseUrl = 'https://peanut.to/claim',
-	trackId = 'sdk', // optional tracker id to track the link source
-	maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
-	maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
-	gasLimit = 1000000, // gas limit
-	eip1559 = true, // whether to use eip1559 or not
-	verbose = false,
-	contractVersion = 'v4',
-}) {
-	// if tokenAmounts is provided, throw a not implemented error
-	if (tokenAmounts.length > 0) {
-		throw new Error('variable tokenAmounts support is not implemented yet');
-	}
-
-	assert(signer, 'signer arg is required');
-	assert(chainId, 'chainId arg is required');
-	assert(tokenAmount, 'amount arg is required');
-	assert(tokenAmounts.length > 0 || numberOfLinks > 0, 'either numberOfLinks or tokenAmounts must be provided');
-	numberOfLinks = numberOfLinks || tokenAmounts.length;
-	assert(
-		tokenAmounts.length == 0 || tokenAmounts.length == numberOfLinks,
-		'length of tokenAmounts must be equal to numberOfLinks',
-	);
-	assert(tokenType == 0 || tokenType == 1, 'ERC721 and ERC1155 are not supported yet');
-	assert(
-		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
-		'tokenAddress must be provided for non-ETH tokens',
-	);
-	// tokendecimals must be provided for erc20 and erc1155 tokens
-	assert(
-		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
-		'tokenDecimals must be provided for ERC20 and ERC1155 tokens',
-	);
-	if (tokenDecimals == null) {
-		tokenDecimals = 18;
-	}
-
-	if (verbose) {
-		console.log('Asserts passed');
-	}
-
-	console.log('checking allowance...');
-	if (tokenType == 1) {
-		// if token is erc20, check allowance
-		const allowance = await approveSpendERC20(
-			signer,
-			chainId,
-			tokenAddress,
-			tokenAmount * numberOfLinks,
-			tokenDecimals,
-			contractVersion,
-		);
-		if (allowance < tokenAmount) {
-			throw new Error('Allowance not enough');
-		}
-	}
-	if (verbose) {
-		console.log('Generating links...');
-	}
-	// return { links: [], txReceipt: {} };
-
-	signer = await convertSignerToV6(signer);
-
-	var { keys, passwords } = generateKeysAndPasswords(passwords, numberOfLinks);
-	const depositIdxs = await makeDeposits(
-		signer,
-		chainId,
-		contractVersion,
-		numberOfLinks,
-		tokenType,
-		tokenAmount,
-		tokenAddress,
-		tokenDecimals,
-		keys,
-	);
-	const links = generateLinks(chainId, contractVersion, depositIdxs, passwords, baseUrl, trackId);
-
-	return { links, txReceipt: depositIdxs }; // Assuming depositIdxs is a list of receipts.
-}
-
-async function makeDeposits(
-	signer,
-	chainId,
-	contractVersion,
-	numberOfLinks,
-	tokenType,
-	tokenAmount,
-	tokenAddress,
-	tokenDecimals,
-	keys,
-) {
-	// HAS TO BE FIXED
-	const contract = await getContract(chainId, signer, contractVersion);
-	let tx;
-
-	// convert tokenAmount depending on tokenDecimals
-	tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals);
-	const amounts = Array(numberOfLinks).fill(tokenAmount);
-
-	const pubKeys20 = keys.map(key => key.address);
-
-	// Set maxFeePerGas and maxPriorityFeePerGas (in Gwei)
-	const maxFeePerGas = ethers.parseUnits('900', 'gwei'); // 100 Gwei
-	const maxPriorityFeePerGas = ethers.parseUnits('50', 'gwei'); // 2 Gwei
-
-	// Transaction options (eip1559)
-	// let txOptions = {
-	//   maxFeePerGas,
-	//   maxPriorityFeePerGas
-	// };
-
-	let txOptions = await setTxOptions({}, true, chainId, signer);
-
-	if (tokenType == 0) {
-		// ETH
-		txOptions = {
-			...txOptions,
-			value: amounts.reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0)), // set total Ether value
-		};
-
-		tx = await contract.batchMakeDepositEther(amounts, pubKeys20, txOptions);
-	} else if (tokenType == 1) {
-		// ERC20
-		// TODO: The user must have approved the contract to spend tokens on their behalf before this
-		tx = await contract.batchMakeDepositERC20(tokenAddress, amounts, pubKeys20, txOptions);
-	}
-	console.log('submitted tx: ', tx.hash, ' for ', numberOfLinks, ' deposits. Now waiting for receipt...');
-	// print the submitted tx fee and gas price
-	// console.log(tx)
-	const txReceipt = await tx.wait();
-	return getDepositIdxs(txReceipt, chainId, contract.target);
-}
-
-function generateKeysAndPasswords(passwords, numberOfLinks) {
-	let keys = [];
-	if (passwords.length > 0) {
-		keys = passwords.map(password => generateKeysFromString(password));
-	} else {
-		for (let i = 0; i < numberOfLinks; i++) {
-			const password = getRandomString(16);
-			keys.push(generateKeysFromString(password));
-			passwords.push(password);
-		}
-	}
-	return { keys, passwords };
-}
-
-function generateLinks(chainId, contractVersion, depositIdxs, passwords, baseUrl, trackId) {
-	return depositIdxs.map((depositIdx, i) =>
-		getLinkFromParams(chainId, contractVersion, depositIdx, passwords[i], baseUrl, trackId),
-	);
-}
 
 export async function getLinkStatus({ signer, link }) {
 	/* checks if a link has been claimed */
@@ -772,7 +620,8 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 
 	// cryptography
 	var addressHash = solidityHashAddress(recipient);
-	var addressHashBinary = ethers.getBytes(addressHash);
+	var addressHashBinary = ethers.getBytes(addressHash); // v6
+	// var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
 	var signature = await signAddress(recipient, keys.privateKey); // sign with link keys
 
@@ -804,7 +653,8 @@ async function createClaimPayload(link, recipientAddress) {
 
 	// cryptography
 	var addressHash = solidityHashAddress(recipientAddress);
-	var addressHashBinary = ethers.getBytes(addressHash);
+	var addressHashBinary = ethers.getBytes(addressHash); // v6
+	// var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
 	var signature = await signAddress(recipientAddress, keys.privateKey); // sign with link keys
 

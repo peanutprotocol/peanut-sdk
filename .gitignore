@@ -1,6 +1,7 @@
 # random
 prompt.md
 playground/
+!playground/preprompt.py
 dist/
 archive/
 
