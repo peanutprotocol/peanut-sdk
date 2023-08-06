@@ -473,11 +473,6 @@ export async function createLink({
 		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens',
 	);
-	// if tokenAddress provided but tokenType is 0, throw error
-	assert(
-		!(tokenAddress != '0x0000000000000000000000000000000000000000' && tokenType == 0),
-		"you are providing a tokenAddress but tokenType is 0, which means you're trying to send native tokens.",
-	);
 
 	signer = await convertSignerToV6(signer);
 
