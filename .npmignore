@@ -9,3 +9,4 @@ scripts/
 *.env
 playground/
 archive/
+coverage/

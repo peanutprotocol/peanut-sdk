@@ -54,8 +54,8 @@ export function generateKeysFromString(string) {
 
 export function hash_string(str) {
 	/*
-      1. convert to bytes, 2. right pad to 32 bytes, 3. hash
-      */
+	  1. convert to bytes, 2. right pad to 32 bytes, 3. hash
+	  */
 	let hash = ethers.toUtf8Bytes(str);
 	hash = ethers.hexlify(hash);
 	// hash = ethers.hexZeroPad(hash, 32);
@@ -66,8 +66,8 @@ export function hash_string(str) {
 
 export async function signMessageWithPrivatekey(message, privateKey) {
 	/* signs a message with a private key and returns the signature
-          THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
-      */
+		  THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
+	  */
 	var signer = new ethers.Wallet(privateKey);
 	return signer.signMessage(message); // this calls ethers.hashMessage and prefixes the hash
 }
@@ -361,6 +361,7 @@ export async function approveSpendERC20(
 		console.log('Allowance already enough, no need to approve more');
 		return { allowance, txReceipt: null };
 	} else {
+		console.log('Allowance only', allowance.toString(), ', need' + amount.toString() + ', approving...');
 		const txOptions = await setTxOptions({}, true, chainId, signer);
 		const tx = await tokenContract.approve(spender, amount, txOptions);
 		const txReceipt = await tx.wait();
@@ -380,12 +381,23 @@ async function setTxOptions(
 	let feeData;
 	try {
 		feeData = await provider.getFeeData();
+		console.log('Fetched gas price from provider:', feeData);
 	} catch (error) {
 		console.error('Failed to fetch gas price from provider:', error);
 		return txOptions;
 	}
 
-	const gasPrice = BigInt(feeData.gasPrice.toString());
+	let gasPrice;
+	if (!txOptions.gasPrice) {
+		if (feeData.gasPrice == null) {
+			// operating in a EIP-1559 environment
+			eip1559 = true;
+			console.log("Couldn't fetch gas price from provider, trying an eip1559 transaction");
+		} else {
+			txOptions.gasPrice = feeData.gasPrice.toString();
+			gasPrice = BigInt(feeData.gasPrice.toString());
+		}
+	}
 
 	maxFeePerGas = maxFeePerGas || feeData.maxFeePerGas.toString();
 	maxPriorityFeePerGas = maxPriorityFeePerGas || feeData.maxPriorityFeePerGas.toString();
@@ -453,6 +465,7 @@ export async function createLink({
 	txOptions = {};
 	// // set nonce
 	// const nonce = await signer.getTransactionCount(); // doesnt work in v6
+	// const nonce = await signer.getNonce();
 	// txOptions.nonce = nonce;
 	if (tokenType == 0) {
 		txOptions = {
@@ -472,7 +485,7 @@ export async function createLink({
 			tokenDecimals,
 			contractVersion,
 		);
-		console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount);
+		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount);
 		if (allowance < tokenAmount) {
 			throw new Error('Allowance not enough');
 		}
@@ -488,7 +501,6 @@ export async function createLink({
 	verbose && console.log('Generating link...');
 
 	// set transaction options
-	verbose && console.log('pre txOptions: ', txOptions);
 	let txOptions = await setTxOptions(
 		txOptions,
 		signer.provider,
@@ -497,6 +509,7 @@ export async function createLink({
 		maxPriorityFeePerGas,
 		gasLimit,
 	);
+
 	verbose && console.log('post txOptions: ', txOptions);
 	const estimatedGasLimit = await estimateGasLimit(
 		contract,

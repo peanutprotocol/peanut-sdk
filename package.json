@@ -25,7 +25,7 @@
 		"build:prod": "npm run clean && webpack --config webpack.config.cjs --mode production --env minimize",
 		"build:dev": "npm run clean && webpack --config webpack.config.cjs",
 		"git": "npm run pre-git && git add . && git commit -m 'Release' && git push",
-		"release": "npm run check-git-status && npm run build:prod && npm test && npm version patch --allow-dirty && npm run git && npm publish",
+		"release": "npm run check-git-status && npm run test && npm run build:prod && npm version patch --allow-dirty && npm run git && npm publish",
 		"check-git-status": "git diff-index --quiet HEAD -- || (echo \"ERROR: Git working directory is not clean.\" && exit 1)"
 	},
 	"repository": {
