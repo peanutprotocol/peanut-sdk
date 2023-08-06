@@ -345,6 +345,7 @@ export async function approveSpendERC20(
 	amount,
 	tokenDecimals,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
+	verbose = true,
 ) {
 	/*  Approves the contract to spend the specified amount of tokens   */
 	signer = await convertSignerToV6(signer);
@@ -362,7 +363,7 @@ export async function approveSpendERC20(
 		return { allowance, txReceipt: null };
 	} else {
 		console.log('Allowance only', allowance.toString(), ', need' + amount.toString() + ', approving...');
-		const txOptions = await setTxOptions({}, true, chainId, signer);
+		const txOptions = await setTxOptions({ verbose }, signer.provider, true); // Include verbose when calling setTxOptions
 		const tx = await tokenContract.approve(spender, amount, txOptions);
 		const txReceipt = await tx.wait();
 		allowance = await getAllowance(signer, chainId, tokenContract, spender);
@@ -370,18 +371,27 @@ export async function approveSpendERC20(
 	}
 }
 
-async function setTxOptions(
+async function setTxOptions({
 	txOptions,
 	provider,
 	eip1559,
 	maxFeePerGas = null,
-	maxPriorityFeePerGas = null,
+	maxFeePerGasMultiplier = 1.1,
 	gasLimit = null,
-) {
+	gasPrice = null,
+	gasPriceMultiplier = 1.2,
+	maxPriorityFeePerGas = null,
+	maxPriorityFeePerGasMultiplier = 1.1,
+	verbose = false,
+} = {}) {
 	let feeData;
 	try {
+		console.log('IN SET TX OPTIONS');
+		console.log(provider);
+		console.log(provider.getFeeData);
+		console.log(await provider.getFeeData());
 		feeData = await provider.getFeeData();
-		console.log('Fetched gas price from provider:', feeData);
+		verbose && console.log('Fetched gas price from provider:', feeData);
 	} catch (error) {
 		console.error('Failed to fetch gas price from provider:', error);
 		return txOptions;
@@ -392,9 +402,15 @@ async function setTxOptions(
 	}
 
 	if (eip1559) {
-		console.log('Setting eip1559 tx options...', txOptions);
-		txOptions.maxFeePerGas = maxFeePerGas || feeData.maxFeePerGas.toString();
-		txOptions.maxPriorityFeePerGas = maxPriorityFeePerGas || feeData.maxPriorityFeePerGas.toString();
+		verbose && console.log('Setting eip1559 tx options...', txOptions);
+		txOptions.maxFeePerGas =
+			maxFeePerGas ||
+			(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10);
+		txOptions.maxPriorityFeePerGas =
+			maxPriorityFeePerGas ||
+			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
+				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
+				BigInt(10);
 	} else {
 		let gasPrice;
 		if (!txOptions.gasPrice) {
@@ -407,12 +423,11 @@ async function setTxOptions(
 				gasPrice = BigInt(feeData.gasPrice.toString());
 			}
 		}
-		const multiplier = 1.3;
-		const proposedGasPrice = (gasPrice * BigInt(Math.round(multiplier * 10))) / BigInt(10);
+		const proposedGasPrice = (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10);
 		txOptions.gasPrice = proposedGasPrice.toString();
 	}
 
-	console.log('FINAL txOptions:', txOptions);
+	verbose && console.log('FINAL txOptions:', txOptions);
 
 	return txOptions;
 }
@@ -475,7 +490,7 @@ export async function createLink({
 	} else if (tokenType == 1) {
 		// check allowance
 		// TODO: check for erc721 and erc1155
-		console.log('checking allowance...');
+		verbose && console.log('checking allowance...');
 		// if token is erc20, check allowance
 		const allowance = await approveSpendERC20(
 			signer,
@@ -501,14 +516,15 @@ export async function createLink({
 	verbose && console.log('Generating link...');
 
 	// set transaction options
-	let txOptions = await setTxOptions(
+	let txOptions = await setTxOptions({
 		txOptions,
-		signer.provider,
+		provider: signer.provider,
 		eip1559,
 		maxFeePerGas,
 		maxPriorityFeePerGas,
 		gasLimit,
-	);
+		verbose, // Include verbose in the object passed to setTxOptions
+	});
 
 	verbose && console.log('post txOptions: ', txOptions);
 	const estimatedGasLimit = await estimateGasLimit(
@@ -527,9 +543,7 @@ export async function createLink({
 	// var tx = await contract.makeDeposit(...depositParams);
 	var tx = await contract.makeDeposit(...depositParams, txOptions);
 
-	if (verbose) {
-		console.log('submitted tx: ', tx.hash);
-	}
+	verbose && console.log('submitted tx: ', tx.hash);
 
 	// now we need the deposit index from the tx receipt
 	var txReceipt = await tx.wait();
@@ -537,9 +551,7 @@ export async function createLink({
 
 	// now we can create the link
 	const link = getLinkFromParams(chainId, contractVersion, depositIdx, password, baseUrl, trackId);
-	if (verbose) {
-		console.log('created link: ', link);
-	}
+	verbose && console.log('created link: ', link);
 	// return the link and the tx receipt
 	return { link, txReceipt };
 }
