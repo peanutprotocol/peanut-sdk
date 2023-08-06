@@ -6,21 +6,81 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY;
-const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm';
-const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm';
-const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL);
-const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL);
 
-describe('Peanut SDK Integration Tests', function () {
-	describe('create and claim native link on optimism goerli', function () {
-		it('should create a link and claim it', async function () {
-			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider);
+async function createAndClaimLink(options) {
+	const { link, txReceipt } = await peanut.createLink(options);
+	if (txReceipt && txReceipt.hash) {
+		await waitForTransaction(options.signer.provider, txReceipt.hash);
+	}
+	return peanut.claimLink({
+		signer: options.signer,
+		link: link,
+	});
+}
 
+async function waitForTransaction(provider, txHash, timeout = 60000) {
+	const startTime = Date.now();
+
+	while (Date.now() - startTime < timeout) {
+		const receipt = await provider.getTransactionReceipt(txHash);
+		if (receipt && receipt.blockNumber) {
+			return receipt;
+		}
+		await new Promise(res => setTimeout(res, 1000)); // Wait for 1 second before retrying
+	}
+
+	throw new Error('Transaction was not confirmed within the timeout period.');
+}
+
+describe('Peanut SDK LIVE Integration Tests', function () {
+	describe('optimism goerli', function () {
+		const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm';
+
+		const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL);
+		const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider);
+
+		it('should create a native link and claim it', async function () {
+			// create link
+			const { link, txReceipt } = await peanut.createLink({
+				signer: optimismGoerliWallet,
+				chainId: 420,
+				tokenAmount: 0.00001,
+				tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+			});
+			setTimeout(() => {}, 6000);
+			const claimTx = await peanut.claimLink({
+				signer: optimismGoerliWallet,
+				link: link,
+			});
+		}, 60000);
+		it('should create an erc20 link and claim it', async function () {
+			// create link
+			const { link, txReceipt } = await peanut.createLink({
+				signer: optimismGoerliWallet,
+				chainId: 420,
+				tokenAmount: 0.00001,
+				tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+			});
+			setTimeout(() => {}, 6000);
+			const claimTx = await peanut.claimLink({
+				signer: optimismGoerliWallet,
+				link: link,
+			});
+		}, 60000);
+	});
+	describe('goerli', function () {
+		const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm';
+		const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL);
+		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider);
+		const chainId = 5;
+		const tokenAmount = 0.0001;
+
+		it('should create a native link and claim it', async function () {
 			// create link
 			const { link, txReceipt } = await peanut.createLink({
 				signer: goerliWallet,
-				chainId: 420,
-				tokenAmount: 0.00001,
+				chainId: chainId,
+				tokenAmount: tokenAmount,
 				tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 			});
 			setTimeout(() => {}, 6000);
@@ -28,7 +88,41 @@ describe('Peanut SDK Integration Tests', function () {
 				signer: goerliWallet,
 				link: link,
 			});
-		}, 60000); // 60 seconds timeout
+		}, 60000);
+		it('should create an erc20 link and claim it', async function () {
+			const tokenAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'; // goerli LINK
+			const tokenDecimals = 18;
+
+			// create link
+			const { link, txReceipt } = await peanut.createLink({
+				signer: goerliWallet,
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenDecimals: tokenDecimals,
+				tokenAddress: tokenAddress,
+				tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+			});
+			setTimeout(() => {}, 6000);
+			const claimTx = await peanut.claimLink({
+				signer: goerliWallet,
+				link: link,
+			});
+		}, 60000);
+		it('should fail when setting the decimals wrong', async function () {
+			try {
+				await createAndClaimLink({
+					signer: goerliWallet,
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenDecimals: 38, // Set the wrong decimals
+					tokenAddress: tokenAddress,
+					tokenType: 0,
+				});
+				throw new Error('Test should have thrown an error but did not.');
+			} catch (e) {
+				expect(e.message).toContain('Expected error message here'); // Replace with expected error message
+			}
+		}, 60000);
 	});
 	//   describe("create and claim native link on goerli", function () {
 	//     it("should create a link and claim it", async function () {

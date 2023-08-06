@@ -464,6 +464,14 @@ export async function createLink({
 	assert(signer, 'signer arg is required');
 	assert(chainId, 'chainId arg is required');
 	assert(tokenAmount, 'amount arg is required');
+	assert(
+		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
+		'tokenAddress must be provided for non-native tokens',
+	);
+	assert(
+		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+		'tokenDecimals must be provided for ERC20 and ERC1155 tokens',
+	);
 
 	signer = await convertSignerToV6(signer);
 
