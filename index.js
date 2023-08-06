@@ -110,7 +110,7 @@ function getRandomString(length) {
 	return result_str;
 }
 
-async function convertSignerToV6(signer) {
+async function convertSignerToV6(signer, verbose = true) {
 	// Check if it's already a v6 signer, just return it
 	if (signer.provider.broadcastTransaction) {
 		// console.log("signer is already v6");
@@ -349,6 +349,7 @@ export async function approveSpendERC20(
 ) {
 	/*  Approves the contract to spend the specified amount of tokens   */
 	signer = await convertSignerToV6(signer);
+
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
 	if (amount == -1) {
 		// if amount is -1, approve infinite amount
@@ -362,8 +363,8 @@ export async function approveSpendERC20(
 		console.log('Allowance already enough, no need to approve more');
 		return { allowance, txReceipt: null };
 	} else {
-		console.log('Allowance only', allowance.toString(), ', need' + amount.toString() + ', approving...');
-		const txOptions = await setTxOptions({ verbose }, signer.provider, true); // Include verbose when calling setTxOptions
+		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...');
+		const txOptions = await setTxOptions({ verbose, provider: signer.provider, eip1559: true });
 		const tx = await tokenContract.approve(spender, amount, txOptions);
 		const txReceipt = await tx.wait();
 		allowance = await getAllowance(signer, chainId, tokenContract, spender);
@@ -385,16 +386,15 @@ async function setTxOptions({
 	verbose = false,
 } = {}) {
 	let feeData;
+	// if not txOptions, create it (oneliner)
+	txOptions = txOptions || {};	
 	try {
-		console.log('IN SET TX OPTIONS');
-		console.log(provider);
-		console.log(provider.getFeeData);
-		console.log(await provider.getFeeData());
 		feeData = await provider.getFeeData();
 		verbose && console.log('Fetched gas price from provider:', feeData);
 	} catch (error) {
 		console.error('Failed to fetch gas price from provider:', error);
-		return txOptions;
+		throw error;
+		// return txOptions;
 	}
 
 	if (gasLimit) {
@@ -460,6 +460,7 @@ export async function createLink({
 	eip1559 = true,
 	verbose = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
+	nonce = null,
 }) {
 	assert(signer, 'signer arg is required');
 	assert(chainId, 'chainId arg is required');
@@ -471,6 +472,11 @@ export async function createLink({
 	assert(
 		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens',
+	);
+	// if tokenAddress provided but tokenType is 0, throw error
+	assert(
+		!(tokenAddress != '0x0000000000000000000000000000000000000000' && tokenType == 0),
+		"you are providing a tokenAddress but tokenType is 0, which means you're trying to send native tokens.",
 	);
 
 	signer = await convertSignerToV6(signer);
@@ -489,7 +495,8 @@ export async function createLink({
 	// // set nonce
 	// const nonce = await signer.getTransactionCount(); // doesnt work in v6
 	// const nonce = await signer.getNonce();
-	// txOptions.nonce = nonce;
+	nonce = nonce || (await signer.getNonce());
+	txOptions.nonce = nonce;
 	if (tokenType == 0) {
 		txOptions = {
 			...txOptions,
@@ -666,6 +673,7 @@ async function makeDeposits(
 	tokenDecimals,
 	keys,
 ) {
+	// HAS TO BE FIXED
 	const contract = await getContract(chainId, signer, contractVersion);
 	let tx;
 
@@ -873,7 +881,7 @@ const peanut = {
 	getParamsFromPageURL,
 	getLinkFromParams,
 	createLink,
-	createLinks,
+	// createLinks,
 	claimLink,
 	approveSpendERC20,
 	claimLinkGasless,
