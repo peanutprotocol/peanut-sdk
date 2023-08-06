@@ -387,32 +387,32 @@ async function setTxOptions(
 		return txOptions;
 	}
 
-	let gasPrice;
-	if (!txOptions.gasPrice) {
-		if (feeData.gasPrice == null) {
-			// operating in a EIP-1559 environment
-			eip1559 = true;
-			console.log("Couldn't fetch gas price from provider, trying an eip1559 transaction");
-		} else {
-			txOptions.gasPrice = feeData.gasPrice.toString();
-			gasPrice = BigInt(feeData.gasPrice.toString());
-		}
-	}
-
-	maxFeePerGas = maxFeePerGas || feeData.maxFeePerGas.toString();
-	maxPriorityFeePerGas = maxPriorityFeePerGas || feeData.maxPriorityFeePerGas.toString();
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit;
 	}
 
 	if (eip1559) {
-		txOptions.maxFeePerGas = maxFeePerGas;
-		txOptions.maxPriorityFeePerGas = maxPriorityFeePerGas;
+		console.log('Setting eip1559 tx options...', txOptions);
+		txOptions.maxFeePerGas = maxFeePerGas || feeData.maxFeePerGas.toString();
+		txOptions.maxPriorityFeePerGas = maxPriorityFeePerGas || feeData.maxPriorityFeePerGas.toString();
 	} else {
+		let gasPrice;
+		if (!txOptions.gasPrice) {
+			if (feeData.gasPrice == null) {
+				// operating in a EIP-1559 environment
+				eip1559 = true;
+				console.log("Couldn't fetch gas price from provider, trying an eip1559 transaction");
+			} else {
+				txOptions.gasPrice = feeData.gasPrice.toString();
+				gasPrice = BigInt(feeData.gasPrice.toString());
+			}
+		}
 		const multiplier = 1.3;
 		const proposedGasPrice = (gasPrice * BigInt(Math.round(multiplier * 10))) / BigInt(10);
 		txOptions.gasPrice = proposedGasPrice.toString();
 	}
+
+	console.log('FINAL txOptions:', txOptions);
 
 	return txOptions;
 }
