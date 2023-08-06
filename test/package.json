@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {},
 	"dependencies": {
-		"@squirrel-labs/peanut-sdk": "*",
-		"ethers": "^6"
+		"@squirrel-labs/peanut-sdk-ethersv5": "*",
+		"ethers": "^5"
 	},
 	"devDependencies": {}
 }

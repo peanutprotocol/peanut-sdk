@@ -617,6 +617,8 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 	const password = params.password;
 	if (recipient == null) {
 		recipient = await signer.getAddress();
+
+		verbose && console.log('recipient not provided, using signer address: ', recipient);
 	}
 	const keys = generateKeysFromString(password); // deterministically generate keys from password
 	const contract = await getContract(chainId, signer, contractVersion);
@@ -625,6 +627,7 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 	var addressHash = solidityHashAddress(recipient);
 	// var addressHashBinary = ethers.getBytes(addressHash); // v6
 	var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
+	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary);
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
 	var signature = await signAddress(recipient, keys.privateKey); // sign with link keys
 

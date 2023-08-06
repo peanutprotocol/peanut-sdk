@@ -1,7 +1,6 @@
-// import peanut from '@squirrel-labs/peanut-sdk'; // v6
+// // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 import peanut from '@squirrel-labs/peanut-sdk-ethersv5'; // v5
-// import { ethers } from 'ethersv6'; // v6
-import { ethers } from 'ethersv5'; // v5
+import { ethers } from 'ethers';
 import dotenv from 'dotenv';
 
 // load .env file
@@ -39,8 +38,8 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 	describe('optimism goerli', function () {
 		const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm';
 
-		const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v6
-		// const optimismGoerliProvider = new ethers.utils.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v5
+		// const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v6
+		const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v5
 		const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider);
 
 		it('should create a native link and claim it', async function () {
@@ -58,8 +57,8 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 	});
 	describe('goerli', function () {
 		const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm';
-		// const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6
-		const goerliProvider = new ethers.utils.JsonRpcProvider(GOERLI_RPC_URL); // v5
+		// // const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6
+		const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL); // v5
 		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider);
 		const chainId = 5;
 		const tokenAmount = 0.0001;

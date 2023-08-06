@@ -12,7 +12,7 @@ const CHAINID = 5; // goerli
 const RPC_URL = 'https://rpc.ankr.com/eth_goerli';
 ////////////////////////////////////////////////////////////
 // create goerli wallet with optimism rpc
-const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers.JsonRpcProvider(RPC_URL));
+const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers.providers.JsonRpcProvider(RPC_URL));
 ////////////////////////////////////////////////////////////
 
 // create link
