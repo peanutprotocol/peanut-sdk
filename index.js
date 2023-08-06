@@ -342,7 +342,8 @@ export function getDepositIdxs(txReceipt, chainId, contractAddress) {
 async function getAllowance(signer, chainId, tokenContract, spender) {
 	let allowance;
 	try {
-		allowance = await tokenContract.allowance(signer.address, spender);
+		let address = await signer.getAddress();
+		allowance = await tokenContract.allowance(address, spender);
 	} catch (error) {
 		console.error('Error fetching allowance:', error);
 	}
@@ -615,7 +616,7 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 	const depositIdx = params.depositIdx;
 	const password = params.password;
 	if (recipient == null) {
-		recipient = signer.address;
+		recipient = await signer.getAddress();
 	}
 	const keys = generateKeysFromString(password); // deterministically generate keys from password
 	const contract = await getContract(chainId, signer, contractVersion);
