@@ -502,7 +502,7 @@ export async function createLink({
 	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals); // v5
 
 	// if native token (tokentype == 0), add value to txOptions
-	txOptions = {};
+	let txOptions = {};
 	// set nonce
 	// nonce = nonce || (await signer.getNonce()); // v6
 	nonce = nonce || (await signer.getTransactionCount()); // v5
@@ -541,7 +541,7 @@ export async function createLink({
 	verbose && console.log('Generating link...');
 
 	// set transaction options
-	let txOptions = await setTxOptions({
+	txOptions = await setTxOptions({
 		txOptions,
 		provider: signer.provider,
 		eip1559,

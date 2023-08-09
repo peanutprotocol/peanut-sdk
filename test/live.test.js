@@ -1,5 +1,6 @@
 // // import peanut from '@squirrel-labs/peanut-sdk'; // v6
-import peanut from '@squirrel-labs/peanut-sdk-ethersv5'; // v5
+// import peanut from '@squirrel-labs/peanut-sdk-ethersv5'; // v5
+import peanut from '../index';  // import directly from source code
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
 

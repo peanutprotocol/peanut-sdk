@@ -1,14 +1,11 @@
-// import peanut from '@squirrel-labs/peanut-sdk'; // v6
-import peanut from '@squirrel-labs/peanut-sdk-ethersv5'; // v5
-import { fileURLToPath } from 'url';
-import path from 'path';
-import fs from 'fs';
+import peanut from '../index';
+import { dirname, join } from 'path';
+import { readFileSync } from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
-const packagePath = path.join(__dirname, '../package.json');
-const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+const packagePath = join(__dirname, '../package.json');
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
 const version = packageJson.version;
 
 describe('Peanut SDK', function () {
@@ -16,8 +13,9 @@ describe('Peanut SDK', function () {
 		// get current version from package.json
 
 		it('should return the current version', function () {
-			expect(peanut.version).toBe(version);
 			expect(peanut.VERSION).toBe(version);
+			expect(peanut.version).toBe(version);
+
 		});
 	});
 });
