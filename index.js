@@ -28,6 +28,7 @@ import {
 	ERC1155_ABI,
 	CHAIN_MAP,
 	CHAIN_DETAILS,
+	TOKEN_DETAILS,
 	PROVIDERS,
 	VERSION,
 	DEFAULT_CONTRACT_VERSION,
@@ -401,7 +402,7 @@ async function setTxOptions({
 } = {}) {
 	let feeData;
 	// if not txOptions, create it (oneliner)
-	txOptions = txOptions || {};	
+	txOptions = txOptions || {};
 	try {
 		feeData = await provider.getFeeData();
 		verbose && console.log('Fetched gas price from provider:', feeData);
@@ -424,7 +425,7 @@ async function setTxOptions({
 			maxPriorityFeePerGas ||
 			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-				BigInt(10);
+			BigInt(10);
 	} else {
 		let gasPrice;
 		if (!txOptions.gasPrice) {
@@ -673,6 +674,69 @@ async function createClaimPayload(link, recipientAddress) {
 	};
 }
 
+export async function getLinkDetails(signer, link, verbose = false) {
+
+	/**
+	 * Gets the details of a Link: what token it is, how much it holds, etc.
+	 */
+	/**
+	 * Plan:
+	 * 1. Get link from blockchain (need provider for that)
+	 * 2. get token details from tokenDetails object
+	 * 3. format token amount with decimals
+	 * 4. get token price (TODO: API!)
+	 * 5. return link details
+	 */
+
+	assert(signer, 'signer arg is required');
+	assert(link, 'link arg is required');
+
+	signer = await convertSignerToV6(signer);
+
+	const params = getParamsFromLink(link);
+	const chainId = params.chainId;
+	const contractVersion = params.contractVersion;
+	const depositIdx = params.depositIdx;
+	const password = params.password;
+	const contract = await getContract(chainId, signer, contractVersion);
+
+	const deposit = await contract.deposits(depositIdx);
+	verbose && console.log('fetched deposit: ', deposit);
+
+	// Retrieve the token's details from the tokenDetails.json file
+	verbose && console.log('finding token details for token with address: ', deposit.tokenAddress, ' on chain: ', chainId);
+	// Find the correct chain details using chainId
+	const chainDetails = TOKEN_DETAILS.find(chain => chain.chainId === String(chainId));
+	if (!chainDetails) {
+		throw new Error('Chain details not found');
+	}
+
+	// Find the token within the tokens array of the chain
+	const tokenDetails = chainDetails.tokens.find(token => token.address.toLowerCase() === deposit.tokenAddress.toLowerCase());
+	if (!tokenDetails) {
+		throw new Error('Token details not found');
+	}
+
+
+	// Format the token amount
+	const tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals);
+
+	// TODO: Fetch token price using API
+
+	return {
+		link: link,
+		chainId: chainId,
+		depositIndex: depositIdx,
+		contractVersion: contractVersion,
+		password: password,
+		tokenAddress: deposit.tokenAddress,
+		tokenSymbol: tokenDetails.symbol,
+		tokenName: tokenDetails.name,
+		tokenAmount: tokenAmount,
+		// tokenPrice: tokenPrice
+	};
+}
+
 export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'https://api.peanut.to/claim') {
 	console.log('claiming link through Peanut API...');
 	const payload = await createClaimPayload(link, recipientAddress);
@@ -729,6 +793,7 @@ const peanut = {
 	getContract,
 	getDepositIdx,
 	getLinkStatus,
+	getLinkDetails,
 	getParamsFromLink,
 	getParamsFromPageURL,
 	getLinkFromParams,

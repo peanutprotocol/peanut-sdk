@@ -17,15 +17,6 @@ def get_chain_ids():
         contracts = json.load(file)
     chain_ids = list(contracts.keys())
     # filter out all the chain ids that don't have a v3 chain id
-    # e.g. keep:
-    # "1": {
-	# 	"ethereum-mainnet": "This is a comment",
-	# 	"v3": "0xdB60C736A30C41D9df0081057Eae73C3eb119895"
-	# },
-    # # but remove:
-    # "80001": {
-	# 	"polygon-mumbai": "This is a comment"
-	# },
     return [chain_id for chain_id in chain_ids if contracts[chain_id].get("v3")]
 
 

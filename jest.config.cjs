@@ -14,6 +14,10 @@ const config = {
 		'<rootDir>/test/',
 		'<rootDir>/node_modules/',
 	],
+	transformIgnorePatterns: [
+		"/node_modules/(?!(\\@squirrel-labs\\/peanut-sdk-ethersv5)/)",
+		"/node_modules/(?!(\\@squirrel-labs\\/peanut-sdk)/)"
+	],
 	testPathIgnorePatterns: ['<rootDir>/test/manual/'],
 	// try to test directly on index.js
 	// moduleDirectories: ["node_modules", "src"],

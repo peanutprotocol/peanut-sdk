@@ -1,3 +1,5 @@
+// holds configuration data for the library
+
 import PEANUT_ABI_V3 from './data/peanutAbiV3.json';
 import PEANUT_ABI_V4 from './data/peanutAbiV4.json';
 import ERC20_ABI from './data/erc20abi.json';
@@ -7,6 +9,7 @@ import PEANUT_CONTRACTS from './data/contracts.json';
 import PROVIDERS from './data/providers.json';
 import CHAIN_MAP from './data/chainMap.json';
 import CHAIN_DETAILS from './data/chainDetails.json';
+import TOKEN_DETAILS from './data/tokenDetails.json';
 import { version as VERSION } from './package.json'; // version from package.json
 
 // CONSTANTS
@@ -29,6 +32,7 @@ export {
 	ERC1155_ABI,
 	CHAIN_MAP,
 	CHAIN_DETAILS,
+	TOKEN_DETAILS,
 	PROVIDERS,
 	VERSION,
 	TOKEN_TYPES,
