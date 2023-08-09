@@ -1,4 +1,4 @@
-import { peanut } from '@squirrel-labs/peanut-sdk-ethersv5';
+import { peanut } from '@squirrel-labs/peanut-sdk';
 import { ethers } from 'ethers'; // ethers v5.7.2
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });

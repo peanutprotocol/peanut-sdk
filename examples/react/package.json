@@ -10,7 +10,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@squirrel-labs/peanut-sdk-ethersv5": "*",
+		"@squirrel-labs/peanut-sdk": "*",
 		"ethers": "^5",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",

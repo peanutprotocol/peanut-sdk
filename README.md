@@ -2,7 +2,7 @@
 
 **Send tokens via cryptographically secure links**.
 
-NPM package [here](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk). This package makes use of ethers v6. If you're using ethers v5, please refer to [@squirrel-labs/peanut-sdk-ethersv5](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk-ethersv5).
+NPM package [here](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk). This package makes use of ethers v6. If you're using ethers v5, please refer to [@squirrel-labs/peanut-sdk](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk).
 
 ### Install
 

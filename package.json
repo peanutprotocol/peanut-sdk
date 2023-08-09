@@ -1,5 +1,5 @@
 {
-	"name": "@squirrel-labs/peanut-sdk-ethersv5",
+	"name": "@squirrel-labs/peanut-sdk",
 	"version": "0.0.67",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
@@ -42,7 +42,8 @@
 	"homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
 	"dependencies": {
 		"ethersv5": "npm:ethers@^5",
-		"isomorphic-fetch": "^3.0.0"
+		"isomorphic-fetch": "^3.0.0",
+		"registry.npmjs.org": "^1.0.1"
 	},
 	"publishConfig": {
 		"access": "public"
