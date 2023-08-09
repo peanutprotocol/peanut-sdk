@@ -1,5 +1,5 @@
 {
-	"name": "@squirrel-labs/peanut-sdk-ethersv5",
+	"name": "@squirrel-labs/peanut-sdk",
 	"version": "0.0.69",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
