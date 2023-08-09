@@ -723,12 +723,14 @@ export async function getLinkDetails(signer, link, verbose = false) {
 
 	// TODO: Fetch token price using API
 
+	console.log(deposit)
 	return {
 		link: link,
 		chainId: chainId,
 		depositIndex: depositIdx,
 		contractVersion: contractVersion,
 		password: password,
+		tokenType: deposit.contractType,
 		tokenAddress: deposit.tokenAddress,
 		tokenSymbol: tokenDetails.symbol,
 		tokenName: tokenDetails.name,
