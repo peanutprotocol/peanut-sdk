@@ -57,4 +57,14 @@ describe('getLinkDetails', function () {
         const linkDetails = await peanut.getLinkDetails(polygonWallet, link);
         console.log(linkDetails);
     });
+
+    it('provider instead of signer should work', async function () {
+        /** simple usdc test */
+        const link = "https://peanut.to/claim?c=137&v=v3&i=1479&p=NMuAQpGTV7KvtGQD";
+        const polygonProviderUrl = "https://polygon-mainnet.infura.io/v3/" + INFURA_API_KEY;
+        const polygonProvider = new ethers.providers.JsonRpcProvider(polygonProviderUrl);
+        // should have 1 usdc inside
+        const linkDetails = await peanut.getLinkDetails(polygonProvider, link);
+        console.log(linkDetails);
+    });
 });

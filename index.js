@@ -213,9 +213,9 @@ async function convertSignerToV6(signer, verbose = true) {
 	// return signerV6;
 }
 
-export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
+export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION) {
 	/* returns a contract object for the given chainId and signer */
-	signer = await convertSignerToV6(signer);
+	// signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
 
 	if (typeof chainId == 'string' || chainId instanceof String) {
 		// just move to TS ffs
@@ -237,7 +237,7 @@ export async function getContract(chainId, signer, version = CONTRACT_VERSION) {
 	}
 
 	const contractAddress = PEANUT_CONTRACTS[chainId][version];
-	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signer);
+	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider);
 	// connected to contracv
 	console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress);
 	return contract;
@@ -674,31 +674,21 @@ async function createClaimPayload(link, recipientAddress) {
 	};
 }
 
-export async function getLinkDetails(signer, link, verbose = false) {
+export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 
 	/**
 	 * Gets the details of a Link: what token it is, how much it holds, etc.
 	 */
-	/**
-	 * Plan:
-	 * 1. Get link from blockchain (need provider for that)
-	 * 2. get token details from tokenDetails object
-	 * 3. format token amount with decimals
-	 * 4. get token price (TODO: API!)
-	 * 5. return link details
-	 */
 
-	assert(signer, 'signer arg is required');
+	assert(signerOrProvider, 'signerOrProvider arg is required');
 	assert(link, 'link arg is required');
-
-	signer = await convertSignerToV6(signer);
 
 	const params = getParamsFromLink(link);
 	const chainId = params.chainId;
 	const contractVersion = params.contractVersion;
 	const depositIdx = params.depositIdx;
 	const password = params.password;
-	const contract = await getContract(chainId, signer, contractVersion);
+	const contract = await getContract(chainId, signerOrProvider, contractVersion);
 
 	const deposit = await contract.deposits(depositIdx);
 	verbose && console.log('fetched deposit: ', deposit);
