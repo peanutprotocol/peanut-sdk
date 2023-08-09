@@ -12,12 +12,7 @@
 	},
 	"type": "module",
 	"scripts": {
-		"test-jest-old": "jest",
-		"test-jest-coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-		"test-jest-multithreaded": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-		"test-jest": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-		"test-mocha": "mocha --timeout 600000 --exit",
-		"test": "npm run build:dev && npm run test-jest --no-cache",
+		"test": "npx jest --coverage",
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",

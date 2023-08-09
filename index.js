@@ -805,6 +805,7 @@ const peanut = {
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
+	TOKEN_DETAILS,
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
 	// approveSpendERC721,
