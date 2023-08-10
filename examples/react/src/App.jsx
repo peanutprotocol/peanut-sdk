@@ -10,6 +10,7 @@ function App() {
 	const [signer, setSigner] = useState(null);
 	const [chainId, setChainId] = useState(null);
 	const [amount, setAmount] = useState(0.01);
+	const [networkName, setNetworkName] = useState(null); // Add this state to store the network name
 	const [link, setLink] = useState('https://peanut.to/claim?c=5&v=v3&i=243&p=xChtaH9t3ONAZczD&t=sdk');
 	const [linkStatus, setLinkStatus] = useState(null);
 	const [isConnected, setIsConnected] = useState(false);
@@ -41,29 +42,25 @@ function App() {
 	}, []);
 
 	const connectWallet = async () => {
-		if (isConnected) return;
-		if (typeof window.ethereum !== 'undefined') {
-			window.ethereum.enable();
-			const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-			const signer = await provider.getSigner();
+        if (isConnected) return;
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.enable();
+            const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+            const signer = await provider.getSigner();
 
-			// check chainId, if not goerli, show warning
-			const network = await signer.provider.getNetwork();
-			const chainId = network.chainId;
-			if (chainId !== '0x5' && chainId !== 5 && chainId !== BigInt(5)) {
-				setWarningMessage('Please switch to Goerli network');
-			} else {
-				setWarningMessage(null);
-			}
+            // Get network details
+            const network = await signer.provider.getNetwork();
+            const chainId = network.chainId;
+            setNetworkName(network.name); // Set the network name
 
-			setSigner(signer);
-			setIsConnected(true);
-			setChainId((await provider.getNetwork()).chainId);
-			console.log(signer.address, (await provider.getNetwork()).chainId);
-		} else {
-			alert('Please install MetaMask!');
-		}
-	};
+            setSigner(signer);
+            setIsConnected(true);
+            setChainId((await provider.getNetwork()).chainId);
+            console.log(signer.address, (await provider.getNetwork()).chainId);
+        } else {
+            alert('Please install MetaMask!');
+        }
+    };
 
 	const createLink = async () => {
 		if (!signer) throw new Error('Connect wallet first');
@@ -127,6 +124,9 @@ function App() {
 
 			{warningMessage && <p style={{ color: 'red' }}>{warningMessage}</p>}
 			{chainId && <p>Chain ID: {parseInt(chainId)}</p>}
+			
+			{networkName && <p>Connected to: {networkName}</p>} {/* Display the network name */}
+            {chainId && <p>Chain ID: {parseInt(chainId)}</p>}
 
 			<div
 				style={{

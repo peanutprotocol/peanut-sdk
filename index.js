@@ -298,7 +298,7 @@ export function getDepositIdx(txReceipt, chainId) {
 	// const chainId = txReceipt.chainId;
 	var depositIdx;
 	var logIndex;
-	if (chainId == 137) {
+	if (chainId == 137 || chainId == 80001) { // why do you have to be this way?
 		logIndex = logs.length - 2;
 	} else {
 		logIndex = logs.length - 1; // last log is the deposit event
@@ -883,6 +883,7 @@ const peanut = {
 	TOKEN_DETAILS,
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
+	PEANUT_CONTRACTS
 	// approveSpendERC721,
 	// approveSpendERC1155,
 };
