@@ -39,7 +39,6 @@ describe('getLinkDetails', function () {
 		console.log(linkDetails);
 	});
 
-
 	it('should have 1 goerli eth inside', async function () {
 		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider);
 		const link = 'https://peanut.to/claim?c=5&v=v3&i=314&p=FjEditsxpzOx6IrI';
@@ -47,7 +46,7 @@ describe('getLinkDetails', function () {
 		const linkDetails = await peanut.getLinkDetails(goerliWallet, link);
 		console.log(linkDetails);
 		// linkdetails.tokenAmount should be 1
-		expect(linkDetails.tokenAmount).toBe("1");
+		expect(linkDetails.tokenAmount).toBe('1');
 	});
 
 	it('Eco optimism link should have 0.1 eco inside', async function () {
@@ -59,7 +58,6 @@ describe('getLinkDetails', function () {
 		const optimismWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismProvider);
 		await expect(peanut.getLinkDetails(optimismWallet, link)).rejects.toThrow();
 	});
-
 
 	// TODO: test link that has already been claimed
 

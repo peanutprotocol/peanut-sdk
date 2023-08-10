@@ -1,9 +1,11 @@
 import requests
 import json
 import os
+import time
 
 # Path to the local contracts.json file
 CONTRACTS_PATH = "contracts.json"
+CHAIN_DETAILS_PATH = "chainDetails.json"
 
 # URLs to the GitHub chains and icons repositories
 CHAINS_URL = (
@@ -40,20 +42,31 @@ def combine_details():
     chain_ids = get_chain_ids()
     print(f"Found {len(chain_ids)} chain ids with a v3 chain id. Fetching details...")
     print(chain_ids)
-    chain_details = {}
+
+    # Load existing chain details if the file exists
+    if os.path.exists(CHAIN_DETAILS_PATH):
+        with open(CHAIN_DETAILS_PATH, "r") as file:
+            chain_details = json.load(file)
+    else:
+        chain_details = {}
 
     for chain_id in chain_ids:
-        details = get_chain_details(chain_id)
-        if details:
-            icon_name = details.get("icon")
-            if icon_name:
-                icon = get_chain_icon(icon_name)
-                if icon:
-                    details["icon"] = icon
-            chain_details[chain_id] = details
+        # Only fetch details if chain_id is not already in chainDetails.json
+        if chain_id not in chain_details:
+            print(f"Fetching details for chain id {chain_id}...")
+            details = get_chain_details(chain_id)
+            if details:
+                icon_name = details.get("icon")
+                if icon_name:
+                    icon = get_chain_icon(icon_name)
+                    if icon:
+                        details["icon"] = icon
+                chain_details[chain_id] = details
+            # wait 1 second between requests to avoid rate limiting
+            time.sleep(1)
 
-    with open("chainDetails.json", "w") as file:
-        json.dump(chain_details, file, indent=4)
+    with open(CHAIN_DETAILS_PATH, "w") as file:
+        json.dump(chain_details, file)
 
 
 # Call the function to start the process

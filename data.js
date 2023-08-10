@@ -1,16 +1,18 @@
 // holds configuration data for the library
 
-import PEANUT_ABI_V3 from './data/peanutAbiV3.json';
-import PEANUT_ABI_V4 from './data/peanutAbiV4.json';
-import ERC20_ABI from './data/erc20abi.json';
-import ERC721_ABI from './data/erc721abi.json';
-import ERC1155_ABI from './data/erc1155abi.json';
-import PEANUT_CONTRACTS from './data/contracts.json';
-import PROVIDERS from './data/providers.json';
-import CHAIN_MAP from './data/chainMap.json';
-import CHAIN_DETAILS from './data/chainDetails.json';
-import TOKEN_DETAILS from './data/tokenDetails.json';
-import { version as VERSION } from './package.json'; // version from package.json
+import PEANUT_ABI_V3 from './data/peanutAbiV3.json'; // with { type: "json" };
+import PEANUT_ABI_V4 from './data/peanutAbiV4.json'; // with { type: "json" };
+import ERC20_ABI from './data/erc20abi.json'; // with { type: "json" };
+import ERC721_ABI from './data/erc721abi.json'; // with { type: "json" };
+import ERC1155_ABI from './data/erc1155abi.json'; // with { type: "json" };
+import PEANUT_CONTRACTS from './data/contracts.json'; // with { type: "json" };
+import PROVIDERS from './data/providers.json'; // with { type: "json" };
+import CHAIN_MAP from './data/chainMap.json'; // with { type: "json" };
+import CHAIN_DETAILS from './data/chainDetails.json'; // with { type: "json" };
+import TOKEN_DETAILS from './data/tokenDetails.json'; // with { type: "json" };
+import PACKAGE_JSON from './package.json'; // with { type: "json" };
+const VERSION = PACKAGE_JSON.version;
+
 
 // CONSTANTS
 const TOKEN_TYPES = Object.freeze({

@@ -71,6 +71,7 @@ export function hash_string(str) {
 
 /**
  * Signs a message with a private key and returns the signature
+ * THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
  *
  * @param {string} message - The message to sign
  * @param {string} privateKey - The private key to use for signing
@@ -157,32 +158,14 @@ async function getAbstractSigner(signer, verbose = true) {
  * @returns {Object} - The provider
  */
 export function getDefaultProvider(chainId, verbose = false) {
-	// {
-	// 	"1": {
-	// 		"name": "Ethereum Mainnet",
-	// 		"chain": "ETH",
-	// 		"icon": [
-	// 			{
-	// 				"url": "ipfs://QmdwQDr6vmBtXmK2TmknkEuZNoaDqTasFdZdu3DRw8b2wt",
-	// 				"width": 1000,
-	// 				"height": 1628,
-	// 				"format": "png"
-	// 			}
-	// 		],
-	// 		"rpc": [
-	// 			"https://mainnet.infura.io/v3/${INFURA_API_KEY}",
-	// 			"wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}",
-	// 			"https://api.mycryptoapi.com/eth",
-	// 			"https://cloudflare-eth.com",
-	// 			"https://ethereum.publicnode.com"
-	// 		],
-
 	chainId = String(chainId);
 	const rpcs = CHAIN_DETAILS[chainId].rpc;
-	if (verbose) {
-		console.log('rpcs', rpcs);
-	}
-	const provider = new ethers.providers.JsonRpcProvider(rpcs[0]);
+
+	verbose && console.log('rpcs', rpcs);
+	// choose first rpc that has no '${' sign in it (e.g. )
+	const rpc = rpcs.find(rpc => !rpc.includes('${'));
+	verbose && console.log('rpc', rpc);
+	const provider = new ethers.providers.JsonRpcProvider(rpc);
 	return provider;
 }
 
@@ -192,9 +175,10 @@ export function getDefaultProvider(chainId, verbose = false) {
  * @param {number|string} chainId - The chainId to get the contract for
  * @param {Object} signerOrProvider - The signer or provider to use for the contract
  * @param {string} [version=CONTRACT_VERSION] - The version of the contract
+ * @param {boolean} [verbose=true] - Whether or not to print verbose output
  * @returns {Object} - The contract object
  */
-export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION) {
+export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
 	/* returns a contract object for the given chainId and signer */
 	// signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
 
@@ -220,7 +204,7 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 	const contractAddress = PEANUT_CONTRACTS[chainId][version];
 	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider);
 	// connected to contracv
-	console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress);
+	verbose && console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress);
 	return contract;
 	// TODO: return class
 }
@@ -880,7 +864,9 @@ const peanut = {
 	signAddress,
 	getRandomString,
 	getContract,
+	getDefaultProvider,
 	getDepositIdx,
+	getDepositIdxs,
 	getLinkStatus,
 	getLinkDetails,
 	getParamsFromLink,
