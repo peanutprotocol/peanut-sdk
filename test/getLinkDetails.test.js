@@ -56,4 +56,11 @@ describe('getLinkDetails', function () {
 		const linkDetails = await peanut.getLinkDetails(polygonProvider, link);
 		console.log(linkDetails);
 	});
+
+    // TODO: test link that has already been claimed
+
+    // TODO: test with unsupported erc20
+
+    // TODO: test with unsupported chain
+
 });
