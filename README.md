@@ -4,6 +4,8 @@
 
 NPM package [here](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk). This package makes use of ethers v5. If you're using ethers v6 or a different web3 library, please contact @hugomont on telegram or @uwgo on discord.
 
+[DOCS HERE](https://sdk-docs.peanut.to/global.html)
+
 ### Install
 
 `npm i @squirrel-labs/peanut-sdk`
