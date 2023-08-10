@@ -677,7 +677,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	/**
 	 * Gets the details of a Link: what token it is, how much it holds, etc.
 	 */
-
+	verbose && console.log('getLinkDetails called with link: ', link);
 	assert(signerOrProvider, 'signerOrProvider arg is required');
 	assert(link, 'link arg is required');
 
@@ -689,11 +689,23 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	const contract = await getContract(chainId, signerOrProvider, contractVersion);
 
 	const deposit = await contract.deposits(depositIdx);
+	var tokenAddress = deposit.tokenAddress;
 	verbose && console.log('fetched deposit: ', deposit);
+
+	const tokenType = deposit.contractType;
+	verbose && console.log('tokenType: ', tokenType, typeof tokenType);
+
+	if (tokenType == 0) {
+		// native token, set zero address
+		// TODO: is this a potential footgun or no? Why is matic 0xeeeeee....? Is this a problem?
+		verbose && console.log('tokenType is 0, setting tokenAddress to zero address');
+		tokenAddress = ethers.constants.AddressZero;
+	}
+	verbose && console.log('deposit: ', deposit);
 
 	// Retrieve the token's details from the tokenDetails.json file
 	verbose &&
-		console.log('finding token details for token with address: ', deposit.tokenAddress, ' on chain: ', chainId);
+		console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId);
 	// Find the correct chain details using chainId
 	const chainDetails = TOKEN_DETAILS.find(chain => chain.chainId === String(chainId));
 	if (!chainDetails) {
@@ -702,7 +714,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 
 	// Find the token within the tokens array of the chain
 	const tokenDetails = chainDetails.tokens.find(
-		token => token.address.toLowerCase() === deposit.tokenAddress.toLowerCase(),
+		token => token.address.toLowerCase() === tokenAddress.toLowerCase(),
 	);
 	if (!tokenDetails) {
 		throw new Error('Token details not found');
@@ -713,7 +725,6 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 
 	// TODO: Fetch token price using API
 
-	console.log(deposit);
 	return {
 		link: link,
 		chainId: chainId,

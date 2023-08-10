@@ -11,6 +11,7 @@
 		"os": false
 	},
 	"type": "module",
+	"types": ".d.ts",
 	"scripts": {
 		"test": "jest --coverage",
 		"prettier": "prettier . --write",
