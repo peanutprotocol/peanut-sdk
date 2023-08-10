@@ -10,3 +10,5 @@ coverage
 **/other
 **/archive
 **/data**.json
+**/data**
+data/
