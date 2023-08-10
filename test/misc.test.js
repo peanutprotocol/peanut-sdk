@@ -15,7 +15,6 @@ describe('Peanut SDK', function () {
 		it('should return the current version', function () {
 			expect(peanut.VERSION).toBe(version);
 			expect(peanut.version).toBe(version);
-
 		});
 	});
 });

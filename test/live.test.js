@@ -1,6 +1,6 @@
 // // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../index';  // import directly from source code
+import peanut from '../index'; // import directly from source code
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
 
@@ -65,12 +65,15 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 		const tokenAmount = 0.0001;
 
 		it('should create a native link and claim it', async function () {
-			await createAndClaimLink({
-				signer: goerliWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenType: 0,
-			}, 5000);
+			await createAndClaimLink(
+				{
+					signer: goerliWallet,
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0,
+				},
+				5000,
+			);
 		}, 60000);
 		it('should create an erc20 link and claim it', async function () {
 			const tokenAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'; // goerli LINK

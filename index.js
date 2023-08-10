@@ -95,13 +95,13 @@ export function solidityHashBytesEIP191(bytes) {
 export function solidityHashAddress(address) {
 	/* hashes an address to a 32 byte hex string */
 	// return ethers.solidityPackedKeccak256(['address'], [address]); // v6
-	return ethers.utils.solidityKeccak256(["address"], [address]); // v5
+	return ethers.utils.solidityKeccak256(['address'], [address]); // v5
 }
 
 export async function signAddress(string, privateKey) {
 	// 1. hash plain address
 	// const stringHash = ethers.solidityPackedKeccak256(['address'], [string]); // v6
-	const stringHash = ethers.utils.solidityKeccak256(["address"], [string]); // v5
+	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]); // v5
 	// const stringHashbinary = ethers.getBytes(stringHash); // v6
 	const stringHashbinary = ethers.utils.arrayify(stringHash); // v5
 
@@ -425,7 +425,7 @@ async function setTxOptions({
 			maxPriorityFeePerGas ||
 			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-			BigInt(10);
+				BigInt(10);
 	} else {
 		let gasPrice;
 		if (!txOptions.gasPrice) {
@@ -582,7 +582,6 @@ export async function createLink({
 	return { link, txReceipt };
 }
 
-
 export async function getLinkStatus({ signer, link }) {
 	/* checks if a link has been claimed */
 	assert(signer, 'signer arg is required');
@@ -675,7 +674,6 @@ async function createClaimPayload(link, recipientAddress) {
 }
 
 export async function getLinkDetails(signerOrProvider, link, verbose = false) {
-
 	/**
 	 * Gets the details of a Link: what token it is, how much it holds, etc.
 	 */
@@ -694,7 +692,8 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	verbose && console.log('fetched deposit: ', deposit);
 
 	// Retrieve the token's details from the tokenDetails.json file
-	verbose && console.log('finding token details for token with address: ', deposit.tokenAddress, ' on chain: ', chainId);
+	verbose &&
+		console.log('finding token details for token with address: ', deposit.tokenAddress, ' on chain: ', chainId);
 	// Find the correct chain details using chainId
 	const chainDetails = TOKEN_DETAILS.find(chain => chain.chainId === String(chainId));
 	if (!chainDetails) {
@@ -702,18 +701,19 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	}
 
 	// Find the token within the tokens array of the chain
-	const tokenDetails = chainDetails.tokens.find(token => token.address.toLowerCase() === deposit.tokenAddress.toLowerCase());
+	const tokenDetails = chainDetails.tokens.find(
+		token => token.address.toLowerCase() === deposit.tokenAddress.toLowerCase(),
+	);
 	if (!tokenDetails) {
 		throw new Error('Token details not found');
 	}
-
 
 	// Format the token amount
 	const tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals);
 
 	// TODO: Fetch token price using API
 
-	console.log(deposit)
+	console.log(deposit);
 	return {
 		link: link,
 		chainId: chainId,

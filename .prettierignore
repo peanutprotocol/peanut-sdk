@@ -9,3 +9,4 @@ coverage
 **/coverage
 **/other
 **/archive
+**/data**.json

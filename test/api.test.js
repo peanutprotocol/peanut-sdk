@@ -1,6 +1,6 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../index';  // import directly from source code
+import peanut from '../index'; // import directly from source code
 
 // import { ethers } from 'ethersv6'; // v6
 import { ethers } from 'ethersv5'; // v5
@@ -17,11 +17,7 @@ const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL); // 
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v5
 // const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v6
 
-
-const optimism_goerli_wallet = new ethers.Wallet(
-	TEST_WALLET_PRIVATE_KEY,
-	optimismGoerliProvider
-);
+const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider);
 
 describe('Peanut API Integration Tests', function () {
 	// create a link and then claim it with the API

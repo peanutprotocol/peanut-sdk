@@ -1,0 +1,6 @@
+*.env
+playground/
+archive/
+coverage/
+node_modules/
+dist/
