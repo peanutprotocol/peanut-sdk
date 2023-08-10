@@ -31,11 +31,11 @@ function App() {
 
 			window.ethereum.on('chainChanged', function (chainId) {
 				console.log('chainChanged', chainId);
-				if (chainId !== '0x5') {
-					setWarningMessage('Please switch to Goerli network');
-				} else {
-					setWarningMessage(null);
-				}
+				// if (chainId !== '0x5') {
+				// 	setWarningMessage('Please switch to Goerli network');
+				// } else {
+				// 	setWarningMessage(null);
+				// }
 				connectWallet();
 			});
 		}
@@ -123,7 +123,6 @@ function App() {
 			</button>
 
 			{warningMessage && <p style={{ color: 'red' }}>{warningMessage}</p>}
-			{chainId && <p>Chain ID: {parseInt(chainId)}</p>}
 			
 			{networkName && <p>Connected to: {networkName}</p>} {/* Display the network name */}
             {chainId && <p>Chain ID: {parseInt(chainId)}</p>}

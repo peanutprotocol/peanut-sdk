@@ -11,3 +11,17 @@ playground/
 archive/
 coverage/
 docs/
+data/**.py
+
+# config files
+*.conf.js
+*.config.js
+*.conf.cjs
+*.config.cjs
+*.conf.json
+*.config.json
+*rc.json
+*rc.js
+*rc.cjs
+*ignore
+*MANUAL.md

@@ -8,9 +8,7 @@ TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
 
 
 def fetch_coingecko_id_to_chain_id_mapping():
-    print(1)
-    response = requests.get(ASSET_PLATFORMS_URL, timeout=
-    print(2)
+    response = requests.get(ASSET_PLATFORMS_URL)
     if response.status_code != 200:
         print(
             f"Error fetching asset platforms. HTTP Status Code: {response.status_code}"

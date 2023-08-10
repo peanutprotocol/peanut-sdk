@@ -6,7 +6,6 @@ import ERC20_ABI from './data/erc20abi.json'; // with { type: "json" };
 import ERC721_ABI from './data/erc721abi.json'; // with { type: "json" };
 import ERC1155_ABI from './data/erc1155abi.json'; // with { type: "json" };
 import PEANUT_CONTRACTS from './data/contracts.json'; // with { type: "json" };
-import PROVIDERS from './data/providers.json'; // with { type: "json" };
 import CHAIN_MAP from './data/chainMap.json'; // with { type: "json" };
 import CHAIN_DETAILS from './data/chainDetails.json'; // with { type: "json" };
 import TOKEN_DETAILS from './data/tokenDetails.json'; // with { type: "json" };
@@ -35,7 +34,6 @@ export {
 	CHAIN_MAP,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
-	PROVIDERS,
 	VERSION,
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
