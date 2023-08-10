@@ -27,7 +27,7 @@ describe('Peanut API Integration Tests', function () {
 		const link = 'https://peanut.to/claim?c=420&v=v3&i=382&p=PdOR8bfWUuP4MGzw&t=sdk';
 		const status = await peanut.getLinkStatus({ signer: optimism_goerli_wallet, link: link });
 		expect(status.claimed).toBe(false);
-	});
+	}, 20000);
 
 	describe('create and claim BASE link on opt-goerli', function () {
 		return;

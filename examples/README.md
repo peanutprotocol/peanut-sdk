@@ -1,3 +1,3 @@
 # Examples
 
-All examples using ethers v6.
+All examples using ethers v5.

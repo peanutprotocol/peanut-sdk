@@ -7,7 +7,6 @@
 //
 /////////////////////////////////////////////////////////
 
-
 import { ethers } from 'ethersv5'; // v5
 import 'isomorphic-fetch'; // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import {
@@ -25,6 +24,12 @@ import {
 	DEFAULT_CONTRACT_VERSION,
 	TOKEN_TYPES,
 } from './data.js';
+
+function assert(condition, message) {
+	if (!condition) {
+		throw new Error(message || 'Assertion failed');
+	}
+}
 
 /**
  * Prints a greeting message to the console.
@@ -144,15 +149,12 @@ async function getAbstractSigner(signer, verbose = true) {
 	return signer;
 }
 
-
-/** returns the default provider for a given chainId
- * 
- * @param {number|string} chainId
- * @param {boolean} verbose
- * @returns {object} provider
- * 
- * @example
- * const provider = getDefaultProvider(1)
+/**
+ * Returns the default provider for a given chainId
+ *
+ * @param {number|string} chainId - The chainId to get the provider for
+ * @param {boolean} verbose - Whether or not to print verbose output
+ * @returns {Object} - The provider
  */
 export function getDefaultProvider(chainId, verbose = false) {
 	// {
@@ -184,7 +186,14 @@ export function getDefaultProvider(chainId, verbose = false) {
 	return provider;
 }
 
-
+/**
+ * Returns a contract object for a given chainId and signer
+ *
+ * @param {number|string} chainId - The chainId to get the contract for
+ * @param {Object} signerOrProvider - The signer or provider to use for the contract
+ * @param {string} [version=CONTRACT_VERSION] - The version of the contract
+ * @returns {Object} - The contract object
+ */
 export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION) {
 	/* returns a contract object for the given chainId and signer */
 	// signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
@@ -216,6 +225,12 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 	// TODO: return class
 }
 
+/**
+ * Returns the parameters from a link
+ *
+ * @param {string} link - The link to get the parameters from
+ * @returns {Object} - The parameters from the link
+ */
 export function getParamsFromLink(link) {
 	/* returns the parameters from a link */
 	const url = new URL(link);
@@ -240,6 +255,11 @@ export function getParamsFromLink(link) {
 	return { chainId, contractVersion, depositIdx, password, trackId };
 }
 
+/**
+ * Returns the parameters from the current page url
+ *
+ * @returns {Object} - The parameters
+ */
 export function getParamsFromPageURL() {
 	/* returns the parameters from the current page url */
 	const params = new URLSearchParams(window.location.search);
@@ -252,7 +272,17 @@ export function getParamsFromPageURL() {
 
 	return { chainId, contractVersion, depositIdx, password };
 }
-
+/**
+ * Returns a link from the given parameters
+ *
+ * @param {number|string} chainId - The chainId to use for the link
+ * @param {string} contractVersion - The contract version to use for the link
+ * @param {number} depositIdx - The deposit index to use for the link
+ * @param {string} password - The password to use for the link
+ * @param {string} baseUrl - The base URL to use for the link
+ * @param {string} trackId - The trackId to use for the link
+ * @returns {string} - The generated link
+ */
 export function getLinkFromParams(
 	chainId,
 	contractVersion,
@@ -271,6 +301,13 @@ export function getLinkFromParams(
 	return link;
 }
 
+/**
+ * Returns the deposit index from a tx receipt
+ *
+ * @param {Object} txReceipt - The transaction receipt to get the deposit index from
+ * @param {number|string} chainId - The chainId of the contract
+ * @returns {number} - The deposit index
+ */
 export function getDepositIdx(txReceipt, chainId) {
 	/* returns the deposit index from a tx receipt */
 	const logs = txReceipt.logs;
@@ -294,6 +331,14 @@ export function getDepositIdx(txReceipt, chainId) {
 	return depositIdx;
 }
 
+/**
+ * Returns an array of deposit indices from a batch transaction receipt
+ *
+ * @param {Object} txReceipt - The transaction receipt to get the deposit indices from
+ * @param {number|string} chainId - The chainId of the contract
+ * @param {string} contractAddress - The contract address
+ * @returns {Array} - The deposit indices
+ */
 export function getDepositIdxs(txReceipt, chainId, contractAddress) {
 	/* returns an array of deposit indices from a batch transaction receipt */
 	const logs = txReceipt.logs;
@@ -323,6 +368,18 @@ async function getAllowance(signer, chainId, tokenContract, spender) {
 	return allowance;
 }
 
+/**
+ * Approves the contract to spend the specified amount of tokens
+ *
+ * @param {Object} signer - The signer to use for approving the spend
+ * @param {number|string} chainId - The chainId of the contract
+ * @param {string} tokenAddress - The address of the token to approve the spend for
+ * @param {number|string} amount - The amount to approve for spending
+ * @param {number} tokenDecimals - The number of decimals the token has
+ * @param {string} contractVersion - The version of the contract
+ * @param {boolean} verbose - Whether or not to print verbose output
+ * @returns {Object} - An object containing the allowance and txReceipt
+ */
 export async function approveSpendERC20(
 	signer,
 	chainId,
@@ -397,7 +454,7 @@ async function setTxOptions({
 			maxPriorityFeePerGas ||
 			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-			BigInt(10);
+				BigInt(10);
 	} else {
 		let gasPrice;
 		if (!txOptions.gasPrice) {
@@ -430,6 +487,33 @@ async function estimateGasLimit(contract, functionName, params, txOptions) {
 	}
 }
 
+/**
+ * Generates a link with the specified parameters
+ *
+ * @param {Object} options - An object containing the options to use for the link creation
+ * @returns {Object} - An object containing the link and the txReceipt
+ * @example
+ * const result = await createLink({
+ *   signer,
+ *   chainId: 1,
+ *   tokenAmount: 100,
+ *   tokenAddress: "0xYourTokenAddress",
+ *   tokenType: 1,
+ *   tokenId: 0,
+ *   tokenDecimals: 18,
+ *   password: "yourPassword",
+ *   baseUrl: "https://peanut.to/claim",
+ *   trackId: "sdk",
+ *   maxFeePerGas: null,
+ *   maxPriorityFeePerGas: null,
+ *   gasLimit: null,
+ *   eip1559: true,
+ *   verbose: false,
+ *   contractVersion: "v4",
+ *   nonce: null
+ * });
+ * console.log(result); // { link: "https://peanut.to/claim?c=1&v=v4&i=123&p=yourPassword", txReceipt: TransactionReceipt }
+ */
 export async function createLink({
 	signer,
 	chainId,
@@ -554,6 +638,12 @@ export async function createLink({
 	return { link, txReceipt };
 }
 
+/**
+ * Checks if a link has been claimed
+ *
+ * @param {Object} options - An object containing the signer and link to check
+ * @returns {Object} - An object containing whether the link has been claimed and the deposit
+ */
 export async function getLinkStatus({ signer, link }) {
 	/* checks if a link has been claimed */
 	assert(signer, 'signer arg is required');
@@ -575,6 +665,16 @@ export async function getLinkStatus({ signer, link }) {
 	return { claimed: false, deposit };
 }
 
+/**
+ * Claims the contents of a link
+ *
+ * @param {Object} options - An object containing the options to use for claiming the link
+ * @param {Object} options.signer - The signer to use for claiming
+ * @param {string} options.link - The link to claim
+ * @param {string} [options.recipient=null] - The address to claim the link to. Defaults to the signer's address if not provided
+ * @param {boolean} [options.verbose=false] - Whether or not to print verbose output
+ * @returns {Object} - The transaction receipt
+ */
 export async function claimLink({ signer, link, recipient = null, verbose = false }) {
 	/* claims the contents of a link */
 	assert(signer, 'signer arg is required');
@@ -645,6 +745,14 @@ async function createClaimPayload(link, recipientAddress) {
 	};
 }
 
+/**
+ * Gets the details of a Link: what token it is, how much it holds, etc.
+ *
+ * @param {Object} signerOrProvider - The signer or provider to use
+ * @param {string} link - The link to get the details of
+ * @param {boolean} verbose - Whether or not to print verbose output
+ * @returns {Object} - An object containing the link details
+ */
 export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	/**
 	 * Gets the details of a Link: what token it is, how much it holds, etc.
@@ -676,8 +784,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	verbose && console.log('deposit: ', deposit);
 
 	// Retrieve the token's details from the tokenDetails.json file
-	verbose &&
-		console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId);
+	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId);
 	// Find the correct chain details using chainId
 	const chainDetails = TOKEN_DETAILS.find(chain => chain.chainId === String(chainId));
 	if (!chainDetails) {
@@ -685,9 +792,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	}
 
 	// Find the token within the tokens array of the chain
-	const tokenDetails = chainDetails.tokens.find(
-		token => token.address.toLowerCase() === tokenAddress.toLowerCase(),
-	);
+	const tokenDetails = chainDetails.tokens.find(token => token.address.toLowerCase() === tokenAddress.toLowerCase());
 	if (!tokenDetails) {
 		throw new Error('Token details not found');
 	}
@@ -712,6 +817,15 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	};
 }
 
+/**
+ * Claims a link through the Peanut API
+ *
+ * @param {string} link - The link to claim
+ * @param {string} recipientAddress - The recipient address to claim the link to
+ * @param {string} apiKey -The API key to use for the Peanut API
+ * @param {string} url - The URL to use for the Peanut API (default is 'https://api.peanut.to/claim')
+ * @returns {Object} - The data returned from the API call
+ */
 export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'https://api.peanut.to/claim') {
 	console.log('claiming link through Peanut API...');
 	const payload = await createClaimPayload(link, recipientAddress);
