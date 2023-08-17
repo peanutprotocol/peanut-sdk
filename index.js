@@ -7,8 +7,8 @@
 //
 /////////////////////////////////////////////////////////
 
-import { ethers } from 'ethersv5'; // v5
-import 'isomorphic-fetch'; // isomorphic-fetch is a library that implements fetch in node.js and the browser
+import { ethers } from 'ethersv5' // v5
+import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
@@ -22,131 +22,29 @@ import {
 	VERSION,
 	DEFAULT_CONTRACT_VERSION,
 	TOKEN_TYPES,
-} from './data.js';
+} from './data.js'
 
-function assert(condition, message) {
-	if (!condition) {
-		throw new Error(message || 'Assertion failed');
-	}
-}
-
-/**
- * Prints a greeting message to the console.
- */
-export function greeting() {
-	console.log(
-		'🥜 Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord',
-	);
-}
-
-/**
- * Generates a deterministic key pair from an arbitrary length string
- *
- * @param {string} string - The string to generate a key pair from
- * @returns {Object} - An object containing the address and privateKey
- */
-export function generateKeysFromString(string) {
-	var privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)); // v5
-	var wallet = new ethers.Wallet(privateKey);
-	return {
-		address: wallet.address,
-		privateKey: privateKey,
-	};
-}
-
-/**
- * Converts a string to bytes, pads it to 32 bytes and hashes it
- *
- * @param {string} str - The string to convert and hash
- * @returns {string} - The hashed string
- */
-export function hash_string(str) {
-	let hash = ethers.utils.toUtf8Bytes(str); // v5
-	hash = ethers.utils.hexlify(hash); // v5
-	hash = ethers.utils.hexZeroPad(hash, 32); // v5
-	hash = ethers.utils.keccak256(hash); // v5
-	return hash;
-}
-
-/**
- * Signs a message with a private key and returns the signature
- * THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
- *
- * @param {string} message - The message to sign
- * @param {string} privateKey - The private key to use for signing
- * @returns {string} - The signature
- */
-export async function signMessageWithPrivatekey(message, privateKey) {
-	var signer = new ethers.Wallet(privateKey);
-	return signer.signMessage(message); // this calls ethers.hashMessage and prefixes the hash
-}
-
-/**
- * Verifies a signature with a public key and returns true if valid
- *
- * @param {string} message - The message that was signed
- * @param {string} signature - The signature to verify
- * @param {string} address - The public key to use for verification
- * @returns {boolean} - True if the signature is valid, false otherwise
- */
-export function verifySignature(message, signature, address) {
-	const messageSigner = ethers.utils.verifyMessage(message, signature); // v5
-	return messageSigner == address;
-}
-
-/**
- * Adds the EIP191 prefix to a message and hashes it same as solidity
- *
- * @param {Uint8Array} bytes - The bytes to prefix and hash
- * @returns {string} - The hashed bytes
- */
-export function solidityHashBytesEIP191(bytes) {
-	return ethers.utils.hashMessage(bytes); // v5
-}
-
-/**
- * Hashes an address to a 32 byte hex string
- *
- * @param {string} address - The address to hash
- * @returns {string} - The hashed address
- */
-export function solidityHashAddress(address) {
-	return ethers.utils.solidityKeccak256(['address'], [address]); // v5
-}
-
-/**
- * Hashes a plain address, adds an Ethereum message prefix, hashes it again and then signs it
- *
- * @param {string} string - The plain address to hash and sign
- * @param {string} privateKey - The private key to use for signing
- * @returns {string} - The signature
- */
-export async function signAddress(string, privateKey) {
-	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]); // v5
-	const stringHashbinary = ethers.utils.arrayify(stringHash); // v5
-	var signer = new ethers.Wallet(privateKey);
-	var signature = await signer.signMessage(stringHashbinary); // this calls ethers.hashMessage and prefixes the hash
-	return signature;
-}
-
-/**
- * Generates a random string of the specified length
- *
- * @param {number} length - The length of the string to generate
- * @returns {string} - The generated string
- */
-function getRandomString(length) {
-	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-	let result_str = '';
-	for (let i = 0; i < length; i++) {
-		result_str += chars[Math.floor(Math.random() * chars.length)];
-	}
-	return result_str;
-}
+import {
+	assert,
+	greeting,
+	generateKeysFromString,
+	hash_string,
+	signMessageWithPrivatekey,
+	verifySignature,
+	solidityHashBytesEIP191,
+	solidityHashAddress,
+	signAddress,
+	getRandomString,
+	getLinkFromParams,
+	getParamsFromLink,
+	getParamsFromPageURL,
+	getDepositIdx,
+	getDepositIdxs,
+} from './util.js'
 
 async function getAbstractSigner(signer, verbose = true) {
 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
-	return signer;
+	return signer
 }
 
 /**
@@ -157,15 +55,15 @@ async function getAbstractSigner(signer, verbose = true) {
  * @returns {Object} - The provider
  */
 export function getDefaultProvider(chainId, verbose = false) {
-	chainId = String(chainId);
-	const rpcs = CHAIN_DETAILS[chainId].rpc;
+	chainId = String(chainId)
+	const rpcs = CHAIN_DETAILS[chainId].rpc
 
-	verbose && console.log('rpcs', rpcs);
+	verbose && console.log('rpcs', rpcs)
 	// choose first rpc that has no '${' sign in it (e.g. )
-	const rpc = rpcs.find(rpc => !rpc.includes('${'));
-	verbose && console.log('rpc', rpc);
-	const provider = new ethers.providers.JsonRpcProvider(rpc);
-	return provider;
+	const rpc = rpcs.find((rpc) => !rpc.includes('${'))
+	verbose && console.log('rpc', rpc)
+	const provider = new ethers.providers.JsonRpcProvider(rpc)
+	return provider
 }
 
 /**
@@ -185,170 +83,38 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 		// just move to TS ffs
 		// do smae with bigint
 		// if chainId is a string, convert to int
-		chainId = parseInt(chainId);
+		chainId = parseInt(chainId)
 	}
-	chainId = parseInt(chainId);
+	chainId = parseInt(chainId)
 
 	// TODO: fix this for new versions
 	// if version is v3, load PEANUT_ABI_V3. if it is v4, load PEANUT_ABI_V4
-	var PEANUT_ABI;
+	var PEANUT_ABI
 	if (version == 'v3') {
-		PEANUT_ABI = PEANUT_ABI_V3;
+		PEANUT_ABI = PEANUT_ABI_V3
 	} else if (version == 'v4') {
-		PEANUT_ABI = PEANUT_ABI_V4;
+		PEANUT_ABI = PEANUT_ABI_V4
 	} else {
-		throw new Error('Invalid version');
+		throw new Error('Invalid version')
 	}
 
-	const contractAddress = PEANUT_CONTRACTS[chainId][version];
-	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider);
+	const contractAddress = PEANUT_CONTRACTS[chainId][version]
+	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
 	// connected to contracv
-	verbose && console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress);
-	return contract;
+	verbose && console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress)
+	return contract
 	// TODO: return class
 }
 
-/**
- * Returns the parameters from a link
- *
- * @param {string} link - The link to get the parameters from
- * @returns {Object} - The parameters from the link
- */
-export function getParamsFromLink(link) {
-	/* returns the parameters from a link */
-	const url = new URL(link);
-	const params = new URLSearchParams(url.search);
-	var chainId = params.get('c'); // can be chain name or chain id
-	// if can be casted to int, then it's a chain id
-	if (parseInt(chainId)) {
-		chainId = parseInt(chainId);
-	} else {
-		// otherwise it's a chain name
-		chainId = CHAIN_MAP[String(chainId)];
-	}
-
-	const contractVersion = params.get('v');
-	var depositIdx = params.get('i');
-	depositIdx = parseInt(depositIdx);
-	const password = params.get('p');
-	let trackId = ''; // optional
-	if (params.get('t')) {
-		trackId = params.get('t');
-	}
-	return { chainId, contractVersion, depositIdx, password, trackId };
-}
-
-/**
- * Returns the parameters from the current page url
- *
- * @returns {Object} - The parameters
- */
-export function getParamsFromPageURL() {
-	/* returns the parameters from the current page url */
-	const params = new URLSearchParams(window.location.search);
-	var chainId = params.get('c'); // can be chain name or chain id
-	chainId = CHAIN_MAP[String(chainId)];
-	const contractVersion = params.get('v');
-	var depositIdx = params.get('i');
-	depositIdx = parseInt(depositIdx);
-	const password = params.get('p');
-
-	return { chainId, contractVersion, depositIdx, password };
-}
-/**
- * Returns a link from the given parameters
- *
- * @param {number|string} chainId - The chainId to use for the link
- * @param {string} contractVersion - The contract version to use for the link
- * @param {number} depositIdx - The deposit index to use for the link
- * @param {string} password - The password to use for the link
- * @param {string} baseUrl - The base URL to use for the link
- * @param {string} trackId - The trackId to use for the link
- * @returns {string} - The generated link
- */
-export function getLinkFromParams(
-	chainId,
-	contractVersion,
-	depositIdx,
-	password,
-	baseUrl = 'https://peanut.to/claim',
-	trackId = '',
-) {
-	/* returns a link from the given parameters */
-
-	const link = baseUrl + '?c=' + chainId + '&v=' + contractVersion + '&i=' + depositIdx + '&p=' + password;
-
-	if (trackId != '') {
-		return link + '&t=' + trackId;
-	}
-	return link;
-}
-
-/**
- * Returns the deposit index from a tx receipt
- *
- * @param {Object} txReceipt - The transaction receipt to get the deposit index from
- * @param {number|string} chainId - The chainId of the contract
- * @returns {number} - The deposit index
- */
-export function getDepositIdx(txReceipt, chainId) {
-	/* returns the deposit index from a tx receipt */
-	const logs = txReceipt.logs;
-	// const chainId = txReceipt.chainId;
-	var depositIdx;
-	var logIndex;
-	if (chainId == 137 || chainId == 80001) { // why do you have to be this way?
-		logIndex = logs.length - 2;
-	} else {
-		logIndex = logs.length - 1; // last log is the deposit event
-	}
-	// only works if EventLog. If Log, then need to look at data, and first uint256 is depositIdx.
-	try {
-		depositIdx = logs[logIndex].args[0];
-	} catch (error) {
-		// get uint256 from data (first 32 bytes)
-		const data = logs[logIndex].data;
-		const depositIdxHex = data.slice(0, 66);
-		depositIdx = parseInt(BigInt(depositIdxHex)); // should this be int or bigint? decide wen TS.
-	}
-	return depositIdx;
-}
-
-/**
- * Returns an array of deposit indices from a batch transaction receipt
- *
- * @param {Object} txReceipt - The transaction receipt to get the deposit indices from
- * @param {number|string} chainId - The chainId of the contract
- * @param {string} contractAddress - The contract address
- * @returns {Array} - The deposit indices
- */
-export function getDepositIdxs(txReceipt, chainId, contractAddress) {
-	/* returns an array of deposit indices from a batch transaction receipt */
-	const logs = txReceipt.logs;
-	var depositIdxs = [];
-	// loop through all the logs and extract the deposit index from each
-	for (var i = 0; i < logs.length; i++) {
-		// check if the log was emitted by our contract
-		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
-			if (chainId == 137) {
-				depositIdxs.push(logs[i].args[0]);
-			} else {
-				depositIdxs.push(logs[i].args[0]);
-			}
-		}
-	}
-	return depositIdxs;
-}
-
 async function getAllowance(signer, chainId, tokenContract, spender) {
-	let allowance;
+	let allowance
 	try {
-		let address = await signer.getAddress();
-		allowance = await tokenContract.allowance(address, spender);
+		let address = await signer.getAddress()
+		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
-		console.error('Error fetching allowance:', error);
+		console.error('Error fetching allowance:', error)
 	}
-	return allowance;
+	return allowance
 }
 
 /**
@@ -357,8 +123,10 @@ async function getAllowance(signer, chainId, tokenContract, spender) {
  * @param {Object} signer - The signer to use for approving the spend
  * @param {number|string} chainId - The chainId of the contract
  * @param {string} tokenAddress - The address of the token to approve the spend for
- * @param {number|string} amount - The amount to approve for spending
+ * @param {number|string} amount - The amount to approve for spending. If -1, approve infinite amount.
+ * defaults to 18.
  * @param {number} tokenDecimals - The number of decimals the token has
+ * @param {boolean} isRawAmount - Whether or not the amount is raw or not. If true, the amount will not be converted to the appropriate unit
  * @param {string} contractVersion - The version of the contract
  * @param {boolean} verbose - Whether or not to print verbose output
  * @returns {Object} - An object containing the allowance and txReceipt
@@ -368,34 +136,38 @@ export async function approveSpendERC20(
 	chainId,
 	tokenAddress,
 	amount,
-	tokenDecimals,
+	tokenDecimals = 18,
+	isRawAmount = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
-	verbose = true,
+	verbose = true
 ) {
 	/*  Approves the contract to spend the specified amount of tokens   */
-	signer = await getAbstractSigner(signer);
+	signer = await getAbstractSigner(signer)
 
-	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
 	if (amount == -1) {
 		// if amount is -1, approve infinite amount
-		// amount = ethers.MaxUint256; // v6
-		amount = ethers.constants.MaxUint256; // v5
+		amount = ethers.constants.MaxUint256
 	}
-	const spender = PEANUT_CONTRACTS[chainId][contractVersion];
-	let allowance = await getAllowance(signer, chainId, tokenContract, spender);
+	const spender = PEANUT_CONTRACTS[chainId][contractVersion]
+	let allowance = await getAllowance(signer, chainId, tokenContract, spender)
 	// convert amount to BigInt and compare to allowance
-	// amount = ethers.parseUnits(amount.toString(), tokenDecimals); // v6
-	amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals); // v5
-	if (allowance >= amount) {
-		console.log('Allowance already enough, no need to approve more');
-		return { allowance, txReceipt: null };
+
+	if (isRawAmount) {
+		amount = amount
 	} else {
-		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...');
-		const txOptions = await setTxOptions({ verbose, provider: signer.provider, eip1559: true });
-		const tx = await tokenContract.approve(spender, amount, txOptions);
-		const txReceipt = await tx.wait();
-		allowance = await getAllowance(signer, chainId, tokenContract, spender);
-		return { allowance, txReceipt };
+		amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
+	}
+	if (allowance >= amount) {
+		console.log('Allowance already enough, no need to approve more')
+		return { allowance, txReceipt: null }
+	} else {
+		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
+		const txOptions = await setTxOptions({ verbose, provider: signer.provider, eip1559: true })
+		const tx = await tokenContract.approve(spender, amount, txOptions)
+		const txReceipt = await tx.wait()
+		allowance = await getAllowance(signer, chainId, tokenContract, spender)
+		return { allowance, txReceipt }
 	}
 }
 
@@ -412,61 +184,61 @@ async function setTxOptions({
 	maxPriorityFeePerGasMultiplier = 1.1,
 	verbose = false,
 } = {}) {
-	let feeData;
+	let feeData
 	// if not txOptions, create it (oneliner)
-	txOptions = txOptions || {};
+	txOptions = txOptions || {}
 	try {
-		feeData = await provider.getFeeData();
-		verbose && console.log('Fetched gas price from provider:', feeData);
+		feeData = await provider.getFeeData()
+		verbose && console.log('Fetched gas price from provider:', feeData)
 	} catch (error) {
-		console.error('Failed to fetch gas price from provider:', error);
-		throw error;
+		console.error('Failed to fetch gas price from provider:', error)
+		throw error
 		// return txOptions;
 	}
 
 	if (gasLimit) {
-		txOptions.gasLimit = gasLimit;
+		txOptions.gasLimit = gasLimit
 	}
 
 	if (eip1559) {
-		verbose && console.log('Setting eip1559 tx options...', txOptions);
+		verbose && console.log('Setting eip1559 tx options...', txOptions)
 		txOptions.maxFeePerGas =
 			maxFeePerGas ||
-			(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10);
+			(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
 		txOptions.maxPriorityFeePerGas =
 			maxPriorityFeePerGas ||
 			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-				BigInt(10);
+				BigInt(10)
 	} else {
-		let gasPrice;
+		let gasPrice
 		if (!txOptions.gasPrice) {
 			if (feeData.gasPrice == null) {
 				// operating in a EIP-1559 environment
-				eip1559 = true;
-				console.log("Couldn't fetch gas price from provider, trying an eip1559 transaction");
+				eip1559 = true
+				console.log("Couldn't fetch gas price from provider, trying an eip1559 transaction")
 			} else {
-				txOptions.gasPrice = feeData.gasPrice.toString();
-				gasPrice = BigInt(feeData.gasPrice.toString());
+				txOptions.gasPrice = feeData.gasPrice.toString()
+				gasPrice = BigInt(feeData.gasPrice.toString())
 			}
 		}
-		const proposedGasPrice = (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10);
-		txOptions.gasPrice = proposedGasPrice.toString();
+		const proposedGasPrice = (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
+		txOptions.gasPrice = proposedGasPrice.toString()
 	}
 
-	verbose && console.log('FINAL txOptions:', txOptions);
+	verbose && console.log('FINAL txOptions:', txOptions)
 
-	return txOptions;
+	return txOptions
 }
 
 async function estimateGasLimit(contract, functionName, params, txOptions) {
 	try {
-		const method = contract[functionName];
-		const estimatedGas = BigInt(await method.estimateGas(...params, txOptions));
-		return BigInt(Math.floor(Number(estimatedGas) * 1.1)); // safety margin
+		const method = contract[functionName]
+		const estimatedGas = BigInt(await method.estimateGas(...params, txOptions))
+		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
 	} catch (error) {
-		console.error('Error estimating gas:', error);
-		return null;
+		console.error('Error estimating gas:', error)
+		return null
 	}
 }
 
@@ -516,45 +288,45 @@ export async function createLink({
 	contractVersion = DEFAULT_CONTRACT_VERSION,
 	nonce = null,
 }) {
-	assert(signer, 'signer arg is required');
-	assert(chainId, 'chainId arg is required');
-	assert(tokenAmount, 'amount arg is required');
+	assert(signer, 'signer arg is required')
+	assert(chainId, 'chainId arg is required')
+	assert(tokenAmount, 'amount arg is required')
 	assert(
 		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
-		'tokenAddress must be provided for non-native tokens',
-	);
+		'tokenAddress must be provided for non-native tokens'
+	)
 	assert(
 		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
-		'tokenDecimals must be provided for ERC20 and ERC1155 tokens',
-	);
+		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
+	)
 
-	signer = await getAbstractSigner(signer);
+	signer = await getAbstractSigner(signer)
 
 	if (tokenAddress == null) {
-		tokenAddress = '0x0000000000000000000000000000000000000000';
+		tokenAddress = '0x0000000000000000000000000000000000000000'
 		if (tokenType != 0) {
-			throw new Error('tokenAddress is null but tokenType is not 0');
+			throw new Error('tokenAddress is null but tokenType is not 0')
 		}
 	}
 	// convert tokenAmount to appropriate unit
 	// tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
-	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals); // v5
+	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
 
 	// if native token (tokentype == 0), add value to txOptions
-	let txOptions = {};
+	let txOptions = {}
 	// set nonce
 	// nonce = nonce || (await signer.getNonce()); // v6
-	nonce = nonce || (await signer.getTransactionCount()); // v5
-	txOptions.nonce = nonce;
+	nonce = nonce || (await signer.getTransactionCount()) // v5
+	txOptions.nonce = nonce
 	if (tokenType == 0) {
 		txOptions = {
 			...txOptions,
 			value: tokenAmount,
-		};
+		}
 	} else if (tokenType == 1) {
 		// check allowance
 		// TODO: check for erc721 and erc1155
-		verbose && console.log('checking allowance...');
+		verbose && console.log('checking allowance...')
 		// if token is erc20, check allowance
 		const allowance = await approveSpendERC20(
 			signer,
@@ -562,22 +334,23 @@ export async function createLink({
 			tokenAddress,
 			tokenAmount,
 			tokenDecimals,
-			contractVersion,
-		);
-		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount);
+			true,
+			contractVersion
+		)
+		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
 		if (allowance < tokenAmount) {
-			throw new Error('Allowance not enough');
+			throw new Error('Allowance not enough')
 		}
 	}
 
 	if (password == null || password == '') {
 		// if no password is provided, generate a random one
-		password = getRandomString(16);
+		password = getRandomString(16)
 	}
-	const keys = generateKeysFromString(password); // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion); // get the contract instance
+	const keys = generateKeysFromString(password) // deterministically generate keys from password
+	const contract = await getContract(chainId, signer, contractVersion) // get the contract instance
 
-	verbose && console.log('Generating link...');
+	verbose && console.log('Generating link...')
 
 	// set transaction options
 	txOptions = await setTxOptions({
@@ -588,37 +361,37 @@ export async function createLink({
 		maxPriorityFeePerGas,
 		gasLimit,
 		verbose, // Include verbose in the object passed to setTxOptions
-	});
+	})
 
-	verbose && console.log('post txOptions: ', txOptions);
+	verbose && console.log('post txOptions: ', txOptions)
 	const estimatedGasLimit = await estimateGasLimit(
 		contract,
 		'makeDeposit',
 		[tokenAddress, tokenType, tokenAmount, tokenId, keys.address],
-		txOptions,
-	);
+		txOptions
+	)
 	if (estimatedGasLimit) {
-		txOptions.gasLimit = estimatedGasLimit.toString();
+		txOptions.gasLimit = estimatedGasLimit.toString()
 	}
-	verbose && console.log('final txOptions: ', txOptions);
+	verbose && console.log('final txOptions: ', txOptions)
 	// const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address, txOptions];
-	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address];
-	verbose && console.log('depositParams: ', depositParams);
+	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address]
+	verbose && console.log('depositParams: ', depositParams)
 	// var tx = await contract.makeDeposit(...depositParams);
-	var tx = await contract.makeDeposit(...depositParams, txOptions);
+	var tx = await contract.makeDeposit(...depositParams, txOptions)
 
-	console.log('submitted tx: ', tx.hash);
+	console.log('submitted tx: ', tx.hash)
 
 	// now we need the deposit index from the tx receipt
-	var txReceipt = await tx.wait();
-	var depositIdx = getDepositIdx(txReceipt, chainId);
-	verbose && console.log('Deposit finalized. Deposit index: ', depositIdx);
+	var txReceipt = await tx.wait()
+	var depositIdx = getDepositIdx(txReceipt, chainId)
+	verbose && console.log('Deposit finalized. Deposit index: ', depositIdx)
 
 	// now we can create the link
-	const link = getLinkFromParams(chainId, contractVersion, depositIdx, password, baseUrl, trackId);
-	verbose && console.log('created link: ', link);
+	const link = getLinkFromParams(chainId, contractVersion, depositIdx, password, baseUrl, trackId)
+	verbose && console.log('created link: ', link)
 	// return the link and the tx receipt
-	return { link, txReceipt };
+	return { link, txReceipt }
 }
 
 /**
@@ -629,23 +402,23 @@ export async function createLink({
  */
 export async function getLinkStatus({ signer, link }) {
 	/* checks if a link has been claimed */
-	assert(signer, 'signer arg is required');
-	assert(link, 'link arg is required');
+	assert(signer, 'signer arg is required')
+	assert(link, 'link arg is required')
 
-	signer = await getAbstractSigner(signer);
+	signer = await getAbstractSigner(signer)
 
-	const params = getParamsFromLink(link);
-	const chainId = params.chainId;
-	const contractVersion = params.contractVersion;
-	const depositIdx = params.depositIdx;
-	const contract = await getContract(chainId, signer, contractVersion);
-	const deposit = await contract.deposits(depositIdx);
+	const params = getParamsFromLink(link)
+	const chainId = params.chainId
+	const contractVersion = params.contractVersion
+	const depositIdx = params.depositIdx
+	const contract = await getContract(chainId, signer, contractVersion)
+	const deposit = await contract.deposits(depositIdx)
 
 	// if the deposit is claimed, the pubKey20 will be 0x000....
 	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
-		return { claimed: true, deposit };
+		return { claimed: true, deposit }
 	}
-	return { claimed: false, deposit };
+	return { claimed: false, deposit }
 }
 
 /**
@@ -660,64 +433,64 @@ export async function getLinkStatus({ signer, link }) {
  */
 export async function claimLink({ signer, link, recipient = null, verbose = false }) {
 	/* claims the contents of a link */
-	assert(signer, 'signer arg is required');
-	assert(link, 'link arg is required');
+	assert(signer, 'signer arg is required')
+	assert(link, 'link arg is required')
 
-	signer = await getAbstractSigner(signer);
+	signer = await getAbstractSigner(signer)
 
-	const params = getParamsFromLink(link);
-	const chainId = params.chainId;
-	const contractVersion = params.contractVersion;
-	const depositIdx = params.depositIdx;
-	const password = params.password;
+	const params = getParamsFromLink(link)
+	const chainId = params.chainId
+	const contractVersion = params.contractVersion
+	const depositIdx = params.depositIdx
+	const password = params.password
 	if (recipient == null) {
-		recipient = await signer.getAddress();
+		recipient = await signer.getAddress()
 
-		verbose && console.log('recipient not provided, using signer address: ', recipient);
+		verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
-	const keys = generateKeysFromString(password); // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion);
+	const keys = generateKeysFromString(password) // deterministically generate keys from password
+	const contract = await getContract(chainId, signer, contractVersion)
 
 	// cryptography
-	var addressHash = solidityHashAddress(recipient);
+	var addressHash = solidityHashAddress(recipient)
 	// var addressHashBinary = ethers.getBytes(addressHash); // v6
-	var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
-	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary);
-	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
-	var signature = await signAddress(recipient, keys.privateKey); // sign with link keys
+	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
+	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
+	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+	var signature = await signAddress(recipient, keys.privateKey) // sign with link keys
 
 	if (verbose) {
 		// print the params
-		console.log('params: ', params);
-		console.log('addressHash: ', addressHash);
-		console.log('addressHashEIP191: ', addressHashEIP191);
-		console.log('signature: ', signature);
+		console.log('params: ', params)
+		console.log('addressHash: ', addressHash)
+		console.log('addressHashEIP191: ', addressHashEIP191)
+		console.log('signature: ', signature)
 	}
 
 	// TODO: use createClaimPayload instead
 
 	// withdraw the deposit
 	// address hash is hash(prefix + hash(address))
-	const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature);
-	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...');
-	const txReceipt = await tx.wait();
+	const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature)
+	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+	const txReceipt = await tx.wait()
 
-	return txReceipt;
+	return txReceipt
 }
 
 async function createClaimPayload(link, recipientAddress) {
 	/* internal utility function to create the payload for claiming a link */
-	const params = getParamsFromLink(link);
-	const chainId = params.chainId;
-	const password = params.password;
-	const keys = generateKeysFromString(password); // deterministically generate keys from password
+	const params = getParamsFromLink(link)
+	const chainId = params.chainId
+	const password = params.password
+	const keys = generateKeysFromString(password) // deterministically generate keys from password
 
 	// cryptography
-	var addressHash = solidityHashAddress(recipientAddress);
+	var addressHash = solidityHashAddress(recipientAddress)
 	// var addressHashBinary = ethers.getBytes(addressHash); // v6
-	var addressHashBinary = ethers.utils.arrayify(addressHash); // v5
-	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary);
-	var signature = await signAddress(recipientAddress, keys.privateKey); // sign with link keys
+	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
+	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+	var signature = await signAddress(recipientAddress, keys.privateKey) // sign with link keys
 
 	return {
 		addressHash: addressHashEIP191,
@@ -725,7 +498,7 @@ async function createClaimPayload(link, recipientAddress) {
 		idx: params.depositIdx,
 		chainId: params.chainId,
 		contractVersion: params.contractVersion,
-	};
+	}
 }
 
 /**
@@ -740,48 +513,48 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	/**
 	 * Gets the details of a Link: what token it is, how much it holds, etc.
 	 */
-	verbose && console.log('getLinkDetails called with link: ', link);
-	assert(signerOrProvider, 'signerOrProvider arg is required');
-	assert(link, 'link arg is required');
+	verbose && console.log('getLinkDetails called with link: ', link)
+	assert(signerOrProvider, 'signerOrProvider arg is required')
+	assert(link, 'link arg is required')
 
-	const params = getParamsFromLink(link);
-	const chainId = params.chainId;
-	const contractVersion = params.contractVersion;
-	const depositIdx = params.depositIdx;
-	const password = params.password;
-	const contract = await getContract(chainId, signerOrProvider, contractVersion);
+	const params = getParamsFromLink(link)
+	const chainId = params.chainId
+	const contractVersion = params.contractVersion
+	const depositIdx = params.depositIdx
+	const password = params.password
+	const contract = await getContract(chainId, signerOrProvider, contractVersion)
 
-	const deposit = await contract.deposits(depositIdx);
-	var tokenAddress = deposit.tokenAddress;
-	verbose && console.log('fetched deposit: ', deposit);
+	const deposit = await contract.deposits(depositIdx)
+	var tokenAddress = deposit.tokenAddress
+	verbose && console.log('fetched deposit: ', deposit)
 
-	const tokenType = deposit.contractType;
-	verbose && console.log('tokenType: ', tokenType, typeof tokenType);
+	const tokenType = deposit.contractType
+	verbose && console.log('tokenType: ', tokenType, typeof tokenType)
 
 	if (tokenType == 0) {
 		// native token, set zero address
 		// TODO: is this a potential footgun or no? Why is matic 0xeeeeee....? Is this a problem?
-		verbose && console.log('tokenType is 0, setting tokenAddress to zero address');
-		tokenAddress = ethers.constants.AddressZero;
+		verbose && console.log('tokenType is 0, setting tokenAddress to zero address')
+		tokenAddress = ethers.constants.AddressZero
 	}
-	verbose && console.log('deposit: ', deposit);
+	verbose && console.log('deposit: ', deposit)
 
 	// Retrieve the token's details from the tokenDetails.json file
-	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId);
+	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
-	const chainDetails = TOKEN_DETAILS.find(chain => chain.chainId === String(chainId));
+	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 	if (!chainDetails) {
-		throw new Error('Chain details not found');
+		throw new Error('Chain details not found')
 	}
 
 	// Find the token within the tokens array of the chain
-	const tokenDetails = chainDetails.tokens.find(token => token.address.toLowerCase() === tokenAddress.toLowerCase());
+	const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
 	if (!tokenDetails) {
-		throw new Error('Token details not found');
+		throw new Error('Token details not found')
 	}
 
 	// Format the token amount
-	const tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals);
+	const tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
 
 	// TODO: Fetch token price using API
 
@@ -797,7 +570,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 		tokenName: tokenDetails.name,
 		tokenAmount: tokenAmount,
 		// tokenPrice: tokenPrice
-	};
+	}
 }
 
 /**
@@ -810,17 +583,17 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
  * @returns {Object} - The data returned from the API call
  */
 export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'https://api.peanut.to/claim') {
-	console.log('claiming link through Peanut API...');
-	const payload = await createClaimPayload(link, recipientAddress);
+	console.log('claiming link through Peanut API...')
+	const payload = await createClaimPayload(link, recipientAddress)
 	//  url = "https://api.peanut.to/claim";
 	if (url == 'local') {
-		console.log('using local api');
-		url = 'http://127.0.0.1:5001/claim';
+		console.log('using local api')
+		url = 'http://127.0.0.1:5001/claim'
 	}
 
 	const headers = {
 		'Content-Type': 'application/json',
-	};
+	}
 
 	const body = {
 		address: recipientAddress,
@@ -830,7 +603,7 @@ export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'ht
 		chain: payload.chainId,
 		version: payload.contractVersion,
 		api_key: apiKey,
-	};
+	}
 
 	// if axios error, return the error message
 
@@ -839,17 +612,17 @@ export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'ht
 			method: 'POST',
 			headers: headers,
 			body: JSON.stringify(body),
-		});
+		})
 
 		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
+			throw new Error(`HTTP error! status: ${response.status}`)
 		} else {
-			const data = await response.json();
-			return data;
+			const data = await response.json()
+			return data
 		}
 	} catch (e) {
-		console.log('error claiming link: ', e);
-		return e.message;
+		console.log('error claiming link: ', e)
+		return e.message
 	}
 }
 
@@ -874,18 +647,18 @@ const peanut = {
 	createLink,
 	// createLinks,
 	claimLink,
-	approveSpendERC20,
 	claimLinkGasless,
+	approveSpendERC20,
+	// approveSpendERC721,
+	// approveSpendERC1155,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
-	PEANUT_CONTRACTS
-	// approveSpendERC721,
-	// approveSpendERC1155,
-};
+	PEANUT_CONTRACTS,
+}
 
-export default peanut;
-export { peanut };
+export default peanut
+export { peanut }

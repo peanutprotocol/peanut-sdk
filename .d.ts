@@ -1,1 +1,1 @@
-declare module '@squirrel-labs/peanut-sdk';
+declare module '@squirrel-labs/peanut-sdk'

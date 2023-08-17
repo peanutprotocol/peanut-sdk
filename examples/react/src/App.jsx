@@ -1,75 +1,75 @@
-import { useState } from 'react';
-import './App.css';
+import { useState } from 'react'
+import './App.css'
 // import { peanut } from '@squirrel-labs/peanut-sdk'
 // import { peanut } from '@squirrel-labs/peanut-sdk'; // v6
-import { peanut } from '@squirrel-labs/peanut-sdk'; // v5
-import { ethers } from 'ethers';
-import { useEffect } from 'react';
+import { peanut } from '@squirrel-labs/peanut-sdk' // v5
+import { ethers } from 'ethers'
+import { useEffect } from 'react'
 
 function App() {
-	const [signer, setSigner] = useState(null);
-	const [chainId, setChainId] = useState(null);
-	const [amount, setAmount] = useState(0.01);
-	const [networkName, setNetworkName] = useState(null); // Add this state to store the network name
-	const [link, setLink] = useState('https://peanut.to/claim?c=5&v=v3&i=243&p=xChtaH9t3ONAZczD&t=sdk');
-	const [linkStatus, setLinkStatus] = useState(null);
-	const [isConnected, setIsConnected] = useState(false);
-	const [claimTx, setClaimTx] = useState(null);
-	const [warningMessage, setWarningMessage] = useState(null);
+	const [signer, setSigner] = useState(null)
+	const [chainId, setChainId] = useState(null)
+	const [amount, setAmount] = useState(0.01)
+	const [networkName, setNetworkName] = useState(null) // Add this state to store the network name
+	const [link, setLink] = useState('https://peanut.to/claim?c=5&v=v3&i=243&p=xChtaH9t3ONAZczD&t=sdk')
+	const [linkStatus, setLinkStatus] = useState(null)
+	const [isConnected, setIsConnected] = useState(false)
+	const [claimTx, setClaimTx] = useState(null)
+	const [warningMessage, setWarningMessage] = useState(null)
 
 	useEffect(() => {
 		if (window.ethereum) {
 			window.ethereum.on('accountsChanged', function (accounts) {
 				if (accounts?.length > 0) {
-					setIsConnected(true);
-					connectWallet();
+					setIsConnected(true)
+					connectWallet()
 				} else {
-					setIsConnected(false);
-					setSigner(null);
+					setIsConnected(false)
+					setSigner(null)
 				}
-			});
+			})
 
 			window.ethereum.on('chainChanged', function (chainId) {
-				console.log('chainChanged', chainId);
+				console.log('chainChanged', chainId)
 				// if (chainId !== '0x5') {
 				// 	setWarningMessage('Please switch to Goerli network');
 				// } else {
 				// 	setWarningMessage(null);
 				// }
-				connectWallet();
-			});
+				connectWallet()
+			})
 		}
-	}, []);
+	}, [])
 
 	const connectWallet = async () => {
-        if (isConnected) return;
-        if (typeof window.ethereum !== 'undefined') {
-            window.ethereum.enable();
-            const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-            const signer = await provider.getSigner();
+		if (isConnected) return
+		if (typeof window.ethereum !== 'undefined') {
+			window.ethereum.enable()
+			const provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
+			const signer = await provider.getSigner()
 
-            // Get network details
-            const network = await signer.provider.getNetwork();
-            const chainId = network.chainId;
-            setNetworkName(network.name); // Set the network name
+			// Get network details
+			const network = await signer.provider.getNetwork()
+			const chainId = network.chainId
+			setNetworkName(network.name) // Set the network name
 
-            setSigner(signer);
-            setIsConnected(true);
-            setChainId((await provider.getNetwork()).chainId);
-            console.log(signer.address, (await provider.getNetwork()).chainId);
-        } else {
-            alert('Please install MetaMask!');
-        }
-    };
+			setSigner(signer)
+			setIsConnected(true)
+			setChainId((await provider.getNetwork()).chainId)
+			console.log(signer.address, (await provider.getNetwork()).chainId)
+		} else {
+			alert('Please install MetaMask!')
+		}
+	}
 
 	const createLink = async () => {
-		if (!signer) throw new Error('Connect wallet first');
-		const network = await signer.provider.getNetwork();
-		const chainId = network.chainId;
+		if (!signer) throw new Error('Connect wallet first')
+		const network = await signer.provider.getNetwork()
+		const chainId = network.chainId
 
 		// export signer to window
-		window.signer = signer;
-		console.log(signer);
+		window.signer = signer
+		console.log(signer)
 
 		// create link
 		const { link, txReceipt } = await peanut.createLink({
@@ -78,55 +78,51 @@ function App() {
 			tokenAmount: amount,
 			tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 			verbose: true,
-		});
-		setLink(link);
-		console.log(txReceipt);
-	};
+		})
+		setLink(link)
+		console.log(txReceipt)
+	}
 
 	const claimLink = async () => {
-		if (!signer || !link) return;
-		const claimTx = await peanut.claimLink({ signer: signer, link: link, verbose: true });
-		console.log(claimTx);
-		setClaimTx(claimTx);
-	};
+		if (!signer || !link) return
+		const claimTx = await peanut.claimLink({ signer: signer, link: link, verbose: true })
+		console.log(claimTx)
+		setClaimTx(claimTx)
+	}
 
 	const claimLinkGasless = async () => {
-		if (!signer || !link) return;
-		const claimTx = await peanut.claimLinkGasless(link, signer.address, 'AbOlrI9htv38pmHPENNoCwDc9lqgCFTP');
-		console.log(claimTx);
-		setClaimTx(claimTx);
-	};
+		if (!signer || !link) return
+		const claimTx = await peanut.claimLinkGasless(link, signer.address, 'AbOlrI9htv38pmHPENNoCwDc9lqgCFTP')
+		console.log(claimTx)
+		setClaimTx(claimTx)
+	}
 
 	const checkLinkStatus = async () => {
-		if (!signer || !link) throw new Error('signer or link is not set');
+		if (!signer || !link) throw new Error('signer or link is not set')
 		try {
 			// setLinkStatus({ claimed: true, deposit: null})
-			console.log('checking link status...');
+			console.log('checking link status...')
 			const { claimed, deposit } = await peanut.getLinkStatus({
 				signer: signer,
 				link: link,
-			});
-			console.log(claimed, deposit);
-			setLinkStatus(claimed);
+			})
+			console.log(claimed, deposit)
+			setLinkStatus(claimed)
 		} catch (error) {
-			console.error('Failed to check link status', error);
+			console.error('Failed to check link status', error)
 		}
-	};
+	}
 
 	return (
 		<div style={{ width: '80%', margin: 'auto' }}>
 			<h1 style={{ textAlign: 'center' }}> Peanut SDK Example</h1>
 			<h3 style={{ textAlign: 'center' }}> Ethers v5+ React + Vite</h3>
-
 			<button onClick={connectWallet} style={{ background: 'green', margin: '10px' }}>
 				{isConnected ? 'Connected' : 'Connect Wallet'}
 			</button>
-
 			{warningMessage && <p style={{ color: 'red' }}>{warningMessage}</p>}
-			
 			{networkName && <p>Connected to: {networkName}</p>} {/* Display the network name */}
-            {chainId && <p>Chain ID: {parseInt(chainId)}</p>}
-
+			{chainId && <p>Chain ID: {parseInt(chainId)}</p>}
 			<div
 				style={{
 					display: 'flex',
@@ -142,7 +138,7 @@ function App() {
 						type="number"
 						id="amount"
 						value={amount}
-						onChange={e => setAmount(e.target.value)}
+						onChange={(e) => setAmount(e.target.value)}
 						placeholder="Enter amount in ETH"
 						style={{
 							width: '200px',
@@ -181,7 +177,6 @@ function App() {
 					</div>
 				</div>
 			</div>
-
 			<div style={{ margin: '20px 0' }}>
 				<button onClick={claimLink}>Claim link</button>
 				{claimTx && (
@@ -191,7 +186,6 @@ function App() {
 					</div>
 				)}
 			</div>
-
 			<div style={{ margin: '20px 0' }}>
 				<button onClick={claimLinkGasless}>Claim link Gasless</button>
 				{claimTx && (
@@ -202,7 +196,7 @@ function App() {
 				)}
 			</div>
 		</div>
-	);
+	)
 }
 
-export default App;
+export default App

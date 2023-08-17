@@ -14,13 +14,13 @@
 			referrerpolicy="no-referrer"
 		></script>
 		<script type="module">
-			import peanut from 'https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk';
-			window.peanut = peanut;
+			import peanut from 'https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk'
+			window.peanut = peanut
 
-			peanut.greeting(); // log a greeting message :)
+			peanut.greeting() // log a greeting message :)
 
 			// Call the introspection function after the SDK import completes
-			introspectSdk();
+			introspectSdk()
 		</script>
 		<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 	</head>
@@ -89,42 +89,42 @@
 		</div>
 
 		<script>
-			let wallet;
-			let provider;
-			let link;
-			let connected = false;
+			let wallet
+			let provider
+			let link
+			let connected = false
 
 			// etc....
 
 			document.getElementById('connect').addEventListener('click', async () => {
 				if (!window.ethereum) {
-					alert('MetaMask is not installed!');
-					return;
+					alert('MetaMask is not installed!')
+					return
 				}
-				const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-				provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-				wallet = await provider.getSigner(accounts[0]);
-				console.log('wallet: ', wallet);
-				connected = true;
+				const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+				provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
+				wallet = await provider.getSigner(accounts[0])
+				console.log('wallet: ', wallet)
+				connected = true
 				// change text of button
-				document.getElementById('connect').innerHTML = 'Connected';
+				document.getElementById('connect').innerHTML = 'Connected'
 				// display wallet address and chain
-				const chainId = (await provider.getNetwork()).chainId;
-				document.getElementById('walletinfo').innerHTML = `Wallet: ${accounts[0]} <br> ChainId: ${chainId}`;
-			});
+				const chainId = (await provider.getNetwork()).chainId
+				document.getElementById('walletinfo').innerHTML = `Wallet: ${accounts[0]} <br> ChainId: ${chainId}`
+			})
 
 			document.getElementById('createLink').addEventListener('click', async () => {
 				if (!connected) {
-					alert('Connect wallet first!');
-					return;
+					alert('Connect wallet first!')
+					return
 				}
 				// get chainId from provider
-				const chainId = (await provider.getNetwork()).chainId;
-				console.log('connected to chainId: ', chainId, typeof chainId, BigInt(5) === chainId);
+				const chainId = (await provider.getNetwork()).chainId
+				console.log('connected to chainId: ', chainId, typeof chainId, BigInt(5) === chainId)
 				// error if not goerli
 				if (chainId !== 5 && chainId !== BigInt(5)) {
-					alert('Connect to Goerli network!');
-					return;
+					alert('Connect to Goerli network!')
+					return
 				}
 				const { link: newLink, txReceipt } = await peanut.createLink({
 					signer: wallet,
@@ -132,47 +132,47 @@
 					tokenAmount: 0.0001337,
 					tokenType: 0,
 					verbose: true,
-				});
-				link = newLink;
-				console.log('link: ', link);
-				document.getElementById('linkContent').innerHTML = link;
-			});
+				})
+				link = newLink
+				console.log('link: ', link)
+				document.getElementById('linkContent').innerHTML = link
+			})
 
 			document.getElementById('getLinkStatus').addEventListener('click', async () => {
 				if (!connected) {
-					alert('Connect wallet first!');
-					return;
+					alert('Connect wallet first!')
+					return
 				}
-				const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
-				console.log(status);
-			});
+				const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed
+				console.log(status)
+			})
 
 			document.getElementById('claimLink').addEventListener('click', async () => {
 				if (!connected) {
-					alert('Connect wallet first!');
-					return;
+					alert('Connect wallet first!')
+					return
 				}
-				const claimTx = await peanut.claimLink({ signer: wallet, link: link });
-				console.log('claimTx: ', claimTx.hash);
-				const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
-				console.log(status);
-			});
+				const claimTx = await peanut.claimLink({ signer: wallet, link: link })
+				console.log('claimTx: ', claimTx.hash)
+				const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed
+				console.log(status)
+			})
 
 			document.getElementById('claimLinkGasless').addEventListener('click', async () => {
-				console.log('claiming link....');
+				console.log('claiming link....')
 				if (!link) {
-					alert('Create link first!');
-					return;
+					alert('Create link first!')
+					return
 				}
 				const response = await peanut.claimLinkGasless(
 					link,
 					'0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02',
-					'gvAMxXbG8n177xrH4mc0PfzuhcJumFC5',
-				);
-				console.log('response: ', response);
+					'gvAMxXbG8n177xrH4mc0PfzuhcJumFC5'
+				)
+				console.log('response: ', response)
 				//const status = (await peanut.getLinkStatus({ signer: wallet, link: link })).claimed;
 				//console.log(status);
-			});
+			})
 		</script>
 
 		<!-- ... previous content ... -->
@@ -197,32 +197,32 @@
 		<script>
 			function introspectSdk() {
 				// Introspect the SDK
-				const sdkExports = [];
+				const sdkExports = []
 				for (const key in peanut) {
 					if (typeof peanut[key] === 'function') {
-						sdkExports.push({ type: 'function', name: key, description: `Function from the SDK: ${key}` });
+						sdkExports.push({ type: 'function', name: key, description: `Function from the SDK: ${key}` })
 					} else if (typeof peanut[key] === 'object') {
-						sdkExports.push({ type: 'object', name: key, description: `Object from the SDK: ${key}` });
+						sdkExports.push({ type: 'object', name: key, description: `Object from the SDK: ${key}` })
 					}
 				}
 
 				// Function to generate HTML for SDK functions and objects
 				function generateSdkSectionsFromIntrospection(exports) {
-					let html = '';
-					exports.forEach(exp => {
+					let html = ''
+					exports.forEach((exp) => {
 						html += `
                     <div class="mb-4">
                         <h3 class="font-bold">${exp.type.charAt(0).toUpperCase() + exp.type.slice(1)}: ${exp.name}</h3>
                         <p>${exp.description}</p>
                     </div>
-                `;
-					});
-					return html;
+                `
+					})
+					return html
 				}
 
 				// Inject the generated HTML into the page
 				document.getElementById('sdk-introspection').innerHTML =
-					generateSdkSectionsFromIntrospection(sdkExports);
+					generateSdkSectionsFromIntrospection(sdkExports)
 			}
 		</script>
 	</body>

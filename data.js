@@ -1,15 +1,15 @@
 // holds configuration data for the library
 
-import PEANUT_ABI_V3 from './data/peanutAbiV3.json'; // with { type: "json" };
-import PEANUT_ABI_V4 from './data/peanutAbiV4.json'; // with { type: "json" };
-import ERC20_ABI from './data/erc20abi.json'; // with { type: "json" };
-import ERC721_ABI from './data/erc721abi.json'; // with { type: "json" };
-import ERC1155_ABI from './data/erc1155abi.json'; // with { type: "json" };
-import PEANUT_CONTRACTS from './data/contracts.json'; // with { type: "json" };
-import CHAIN_MAP from './data/chainMap.json'; // with { type: "json" };
-import CHAIN_DETAILS from './data/chainDetails.json'; // with { type: "json" };
-import TOKEN_DETAILS from './data/tokenDetails.json'; // with { type: "json" };
-import PACKAGE_JSON from './package.json'; // with { type: "json" };
+import PEANUT_ABI_V3 from './data/peanutAbiV3.json' assert {type: 'json'};
+import PEANUT_ABI_V4 from './data/peanutAbiV4.json' assert {type: 'json'};
+import ERC20_ABI from './data/erc20abi.json' assert {type: 'json'};
+import ERC721_ABI from './data/erc721abi.json' assert {type: 'json'};
+import ERC1155_ABI from './data/erc1155abi.json' assert {type: 'json'};
+import PEANUT_CONTRACTS from './data/contracts.json' assert {type: 'json'};
+import CHAIN_MAP from './data/chainMap.json' assert {type: 'json'};
+import CHAIN_DETAILS from './data/chainDetails.json' assert {type: 'json'};
+import TOKEN_DETAILS from './data/tokenDetails.json' assert {type: 'json'};
+import PACKAGE_JSON from './package.json' assert {type: 'json'};
 const VERSION = PACKAGE_JSON.version;
 
 

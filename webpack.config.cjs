@@ -1,6 +1,6 @@
-const path = require('path');
-const TerserPlugin = require('terser-webpack-plugin');
-const nodeExternals = require('webpack-node-externals');
+const path = require('path')
+const TerserPlugin = require('terser-webpack-plugin')
+const nodeExternals = require('webpack-node-externals')
 
 // Common Configuration
 const common = {
@@ -14,10 +14,7 @@ const common = {
 					loader: 'babel-loader',
 					options: {
 						presets: [['@babel/preset-env']],
-						plugins: [
-							'@babel/plugin-syntax-dynamic-import',
-							'@babel/plugin-syntax-import-attributes',
-						],
+						plugins: ['@babel/plugin-syntax-dynamic-import', '@babel/plugin-syntax-import-assertions'],
 					},
 				},
 			},
@@ -38,11 +35,11 @@ const common = {
 			new TerserPlugin({
 				extractComments: {
 					condition: 'some',
-					filename: fileData => {
-						return `${fileData.filename}.LICENSE.txt${fileData.query}`;
+					filename: (fileData) => {
+						return `${fileData.filename}.LICENSE.txt${fileData.query}`
 					},
-					banner: licenseFile => {
-						return `License information can be found in ${licenseFile}`;
+					banner: (licenseFile) => {
+						return `License information can be found in ${licenseFile}`
 					},
 				},
 			}),
@@ -51,7 +48,7 @@ const common = {
 	experiments: {
 		outputModule: true,
 	},
-};
+}
 
 // Configuration for browser
 const browserConfig = {
@@ -66,7 +63,7 @@ const browserConfig = {
 		},
 	},
 	target: ['web', 'browserslist:> 1%, not dead, not ie 11, not op_mini all'],
-};
+}
 
 // Configuration for Node.js
 const nodeConfig = {
@@ -83,6 +80,6 @@ const nodeConfig = {
 	},
 	target: ['node', 'es2020'],
 	// externals: [nodeExternals()], // causes problems with CommonJS require vs ES6 import :(
-};
+}
 
-module.exports = [browserConfig, nodeConfig];
+module.exports = [browserConfig, nodeConfig]

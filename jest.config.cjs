@@ -25,6 +25,6 @@ const config = {
 	//   "@squirrel-labs/peanut-sdk": "<rootDir>/index.js"
 	// },
 	// transformIgnorePatterns: ["<rootDir>/node_modules/"],
-};
+}
 
-module.exports = config;
+module.exports = config

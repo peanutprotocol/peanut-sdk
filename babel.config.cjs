@@ -1,4 +1,3 @@
-// babel.config.js
 module.exports = {
 	presets: [
 		[
@@ -10,4 +9,5 @@ module.exports = {
 			},
 		],
 	],
-};
+	plugins: [['@babel/plugin-syntax-import-assertions']],
+}
