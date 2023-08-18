@@ -1,6 +1,6 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.0.80",
+	"version": "0.0.81",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
 	"module": "dist/peanut-sdk.browser.js",
@@ -13,7 +13,7 @@
 	"type": "module",
 	"types": ".d.ts",
 	"scripts": {
-		"test": "jest --coverage",
+		"test": "jest --coverage --silent",
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",

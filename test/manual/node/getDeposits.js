@@ -13,8 +13,8 @@ const RPC_URL = peanut.CHAIN_DETAILS[String(CHAINID)].rpc[0]
 console.log('RPC_URL: ', RPC_URL)
 
 // create goerli wallet with optimism rpc
-const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL);
-const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider);
+const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL)
+const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider)
 ////////////////////////////////////////////////////////////
 
-const deposits = await peanut.getAllDeposits({signer: wallet, chainId: CHAINID})
+const deposits = await peanut.getAllDeposits({ signer: wallet, chainId: CHAINID })

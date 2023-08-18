@@ -1,9 +1,8 @@
 ////////////////// Peanut Library ///////////////////////
 //
 //  The intent of this library is to provide a set of stable functions to interact
-//  with Peanut Protocol. This library is compatible with ethers v6, and
-//  supports both node and browser environments. If you're using ethers v5,
-//  use the peanut-sdk-ethers5 package instead.
+//  with Peanut Protocol. This library is compatible with ethers v5, and
+//  supports both node and browser environments.
 //
 /////////////////////////////////////////////////////////
 
@@ -163,7 +162,7 @@ export async function approveSpendERC20(
 		return { allowance, txReceipt: null }
 	} else {
 		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
-		const txOptions = await setTxOptions({ verbose, provider: signer.provider, eip1559: true })
+		const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
 		const tx = await tokenContract.approve(spender, amount, txOptions)
 		const txReceipt = await tx.wait()
 		allowance = await getAllowance(signer, chainId, tokenContract, spender)
@@ -171,7 +170,7 @@ export async function approveSpendERC20(
 	}
 }
 
-async function setTxOptions({
+async function setFeeOptions({
 	txOptions,
 	provider,
 	eip1559,
@@ -204,7 +203,7 @@ async function setTxOptions({
 	let chainId = await provider.getNetwork().then((network) => network.chainId)
 	if (chainId == 137) {
 		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
-		console.log('Setting maxPriorityFeePerGas to 30 gwei')
+		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
 	}
 
 	if (eip1559) {
@@ -217,6 +216,11 @@ async function setTxOptions({
 			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
 				BigInt(10)
+
+		// ensure maxPriorityFeePerGas is less than maxFeePerGas
+		if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
+			txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+		}
 	} else {
 		let gasPrice
 		if (!txOptions.gasPrice) {
@@ -239,13 +243,13 @@ async function setTxOptions({
 }
 
 async function estimateGasLimit(contract, functionName, params, txOptions) {
-    try {
-        const estimatedGas = await contract.estimateGas[functionName](...params, txOptions);
-        return BigInt(Math.floor(Number(estimatedGas) * 1.1)); // safety margin
-    } catch (error) {
-        console.error(`Error estimating gas for ${functionName}:`, error);
-        return null;
-    }
+	try {
+		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
+		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
+	} catch (error) {
+		console.error(`Error estimating gas for ${functionName}:`, error)
+		return null
+	}
 }
 
 /**
@@ -353,30 +357,26 @@ export async function createLink({
 		// if no password is provided, generate a random one
 		password = getRandomString(16)
 	}
+
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
 	const contract = await getContract(chainId, signer, contractVersion) // get the contract instance
 
 	verbose && console.log('Generating link...')
 
 	// set transaction options
-	txOptions = await setTxOptions({
+	txOptions = await setFeeOptions({
 		txOptions,
 		provider: signer.provider,
 		eip1559,
 		maxFeePerGas,
 		maxPriorityFeePerGas,
 		gasLimit,
-		verbose, // Include verbose in the object passed to setTxOptions
+		verbose, // Include verbose in the object passed to setFeeOptions
 	})
 
 	verbose && console.log('post txOptions: ', txOptions)
 	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address]
-	const estimatedGasLimit = await estimateGasLimit(
-		contract,
-		'makeDeposit',
-		depositParams,
-		txOptions
-	)
+	const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
 	if (estimatedGasLimit) {
 		txOptions.gasLimit = estimatedGasLimit.toString()
 	}
@@ -384,6 +384,26 @@ export async function createLink({
 	// const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address, txOptions];
 	verbose && console.log('depositParams: ', depositParams)
 	// var tx = await contract.makeDeposit(...depositParams);
+
+	// store in localstorage in case tx falls through (only if in web environment)
+	// TODO: refactor in future
+	if (typeof window !== 'undefined') {
+		const tempDeposits = JSON.parse(localStorage.getItem('tempDeposits')) || []
+		const tempDeposit = {
+			chain: chainId,
+			tokenAmount: tokenAmount.toString(),
+			contractType: tokenType,
+			contractVersion: contractVersion,
+			tokenAddress: tokenAddress,
+			password: password,
+			idx: null,
+			link: null,
+			txHash: null,
+		}
+		tempDeposits.push(tempDeposit)
+		localStorage.setItem('tempDeposits', JSON.stringify(tempDeposits))
+	}
+
 	var tx = await contract.makeDeposit(...depositParams, txOptions)
 
 	console.log('submitted tx: ', tx.hash)
@@ -437,8 +457,17 @@ export async function getLinkStatus({ signer, link }) {
  * @param {boolean} [options.verbose=false] - Whether or not to print verbose output
  * @returns {Object} - The transaction receipt
  */
-export async function claimLink({ signer, link, recipient = null, verbose = false }) {
-	/* claims the contents of a link */
+export async function claimLink({
+	signer,
+	link,
+	recipient = null,
+	verbose = false,
+	maxFeePerGas = null,
+	maxPriorityFeePerGas = null,
+	gasLimit = null,
+	eip1559 = true,
+}) {
+	// claims the contents of a link
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
 
@@ -451,7 +480,6 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 	const password = params.password
 	if (recipient == null) {
 		recipient = await signer.getAddress()
-
 		verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
@@ -459,7 +487,6 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 
 	// cryptography
 	var addressHash = solidityHashAddress(recipient)
-	// var addressHashBinary = ethers.getBytes(addressHash); // v6
 	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
@@ -473,11 +500,23 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 		console.log('signature: ', signature)
 	}
 
-	// TODO: use createClaimPayload instead
+	// Prepare transaction options
+	let txOptions = {}
+	txOptions = await setFeeOptions({
+		txOptions,
+		provider: signer.provider,
+		eip1559,
+		maxFeePerGas,
+		maxPriorityFeePerGas,
+		gasLimit,
+		verbose,
+	})
+
+	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
+	verbose && console.log('claimParams: ', claimParams)
 
 	// withdraw the deposit
-	// address hash is hash(prefix + hash(address))
-	const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature)
+	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
 	const txReceipt = await tx.wait()
 
@@ -486,29 +525,33 @@ export async function claimLink({ signer, link, recipient = null, verbose = fals
 
 /**
  * Gets all deposits for a given signer and chainId.
- * 
+ *
  */
-export async function getAllDepositsForSigner({ signer, chainId, contractVersion = DEFAULT_CONTRACT_VERSION, verbose = false }) {
-    
-    const contract = await getContract(chainId, signer, contractVersion)
-	let deposits;
+export async function getAllDepositsForSigner({
+	signer,
+	chainId,
+	contractVersion = DEFAULT_CONTRACT_VERSION,
+	verbose = false,
+}) {
+	const contract = await getContract(chainId, signer, contractVersion)
+	let deposits
 	if (contractVersion == 'v3') {
 		// throw warning if using v3
 		console.warn('WARNING: This function is not efficient for v3 contracts. Not recommended to use.')
-		const depositCount = await contract.getDepositCount();
-		deposits = [];
-		for(let i = 0; i < depositCount; i++) {
+		const depositCount = await contract.getDepositCount()
+		deposits = []
+		for (let i = 0; i < depositCount; i++) {
 			verbose && console.log('fetching deposit: ', i)
-			let deposit = await contract.deposits(i);
-			deposits.push(deposit);
+			let deposit = await contract.deposits(i)
+			deposits.push(deposit)
 		}
 	} else {
 		// v4: we now have getAllDeposits available
-		const address = await signer.getAddress();
+		const address = await signer.getAddress()
 		// const allDeposits = await contract.getAllDeposits();
-		deposits = await contract.getAllDepositsForAddress(address);
+		deposits = await contract.getAllDepositsForAddress(address)
 	}
-    return deposits
+	return deposits
 }
 
 /**
@@ -584,6 +627,7 @@ async function createClaimPayload(link, recipientAddress) {
 	var signature = await signAddress(recipientAddress, keys.privateKey) // sign with link keys
 
 	return {
+		recipientAddress: recipientAddress,
 		addressHash: addressHashEIP191,
 		signature: signature,
 		idx: params.depositIdx,
@@ -633,7 +677,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	// Retrieve the token's details from the tokenDetails.json file
 	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
-	console.log('chainId: ', chainId);
+	console.log('chainId: ', chainId)
 	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 	if (!chainDetails) {
 		throw new Error('Chain details not found')
@@ -674,9 +718,17 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
  * @param {string} url - The URL to use for the Peanut API (default is 'https://api.peanut.to/claim')
  * @returns {Object} - The data returned from the API call
  */
-export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'https://api.peanut.to/claim') {
+export async function claimLinkGasless(
+	link,
+	recipientAddress,
+	apiKey,
+	verbose = false,
+	url = 'https://api.peanut.to/claim'
+) {
 	console.log('claiming link through Peanut API...')
+	verbose && console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', apiKey, ' url: ', url)
 	const payload = await createClaimPayload(link, recipientAddress)
+	verbose && console.log('payload: ', payload)
 	//  url = "https://api.peanut.to/claim";
 	if (url == 'local') {
 		console.log('using local api')
@@ -688,7 +740,7 @@ export async function claimLinkGasless(link, recipientAddress, apiKey, url = 'ht
 	}
 
 	const body = {
-		address: recipientAddress,
+		address: payload.recipientAddress,
 		address_hash: payload.addressHash,
 		signature: payload.signature,
 		idx: payload.idx,
@@ -731,7 +783,7 @@ const peanut = {
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
-	getAllDeposits,
+	getAllDepositsForSigner,
 	getLinkStatus,
 	getLinkDetails,
 	getParamsFromLink,

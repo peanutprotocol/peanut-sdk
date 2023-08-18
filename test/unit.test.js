@@ -102,6 +102,15 @@ describe('Unit tests', function () {
 				expect(params.password).toBe('super_secret_password')
 				expect(params.trackId).toBe('123456789')
 			})
+			it('should return correct params from link with hash', function () {
+				let link = 'https://peanut.to/claim#?c=137&v=v3&i=1555&p=eCEge2ooT3fGkFfd&t=sdk'
+				let params = peanut.getParamsFromLink(link)
+				expect(params.chainId).toBe(137)
+				expect(params.contractVersion).toBe('v3')
+				expect(params.depositIdx).toBe(1555)
+				expect(params.password).toBe('eCEge2ooT3fGkFfd')
+				expect(params.trackId).toBe('sdk')
+			})
 		})
 	})
 })

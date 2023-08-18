@@ -5,3 +5,4 @@
 -   set maxPriorityFeePerGas to 30 gwei on polygon to avoid stuck transactions
 -   refactored some code & general code quality improvements
 -   fix for goerli tokens in getLinkDetails
+-   link parameteres now by default have a '#' in front to prevent server side attacks

@@ -1,4 +1,5 @@
 import { ethers } from 'ethersv5' // v5
+import { CHAIN_MAP } from './data.js'
 
 export function assert(condition, message) {
 	if (!condition) {
@@ -121,15 +122,42 @@ export function getRandomString(length) {
 }
 
 /**
+ * Returns the parameters from the current page url
+ *
+ * @returns {Object} - The parameters
+ */
+export function getParamsFromPageURL() {
+	/* returns the parameters from the current page url */
+	const params = new URLSearchParams(window.location.search)
+	var chainId = params.get('c') // can be chain name or chain id
+	chainId = CHAIN_MAP[String(chainId)]
+	const contractVersion = params.get('v')
+	var depositIdx = params.get('i')
+	depositIdx = parseInt(depositIdx)
+	const password = params.get('p')
+
+	return { chainId, contractVersion, depositIdx, password }
+}
+
+/**
  * Returns the parameters from a link
  *
  * @param {string} link - The link to get the parameters from
+ *
  * @returns {Object} - The parameters from the link
  */
 export function getParamsFromLink(link) {
 	/* returns the parameters from a link */
 	const url = new URL(link)
-	const params = new URLSearchParams(url.search)
+	let search = url.search
+
+	// If there is no search params, try to get params after hash
+	if (search === '') {
+		search = url.hash.startsWith('#?') ? url.hash.substring(1) : ''
+	}
+
+	const params = new URLSearchParams(search)
+
 	var chainId = params.get('c') // can be chain name or chain id
 	// if can be casted to int, then it's a chain id
 	if (parseInt(chainId)) {
@@ -147,26 +175,10 @@ export function getParamsFromLink(link) {
 	if (params.get('t')) {
 		trackId = params.get('t')
 	}
+
 	return { chainId, contractVersion, depositIdx, password, trackId }
 }
 
-/**
- * Returns the parameters from the current page url
- *
- * @returns {Object} - The parameters
- */
-export function getParamsFromPageURL() {
-	/* returns the parameters from the current page url */
-	const params = new URLSearchParams(window.location.search)
-	var chainId = params.get('c') // can be chain name or chain id
-	chainId = CHAIN_MAP[String(chainId)]
-	const contractVersion = params.get('v')
-	var depositIdx = params.get('i')
-	depositIdx = parseInt(depositIdx)
-	const password = params.get('p')
-
-	return { chainId, contractVersion, depositIdx, password }
-}
 /**
  * Returns a link from the given parameters
  *
@@ -188,7 +200,7 @@ export function getLinkFromParams(
 ) {
 	/* returns a link from the given parameters */
 
-	const link = baseUrl + '?c=' + chainId + '&v=' + contractVersion + '&i=' + depositIdx + '&p=' + password
+	const link = baseUrl + '#?c=' + chainId + '&v=' + contractVersion + '&i=' + depositIdx + '&p=' + password
 
 	if (trackId != '') {
 		return link + '&t=' + trackId

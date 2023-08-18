@@ -420,7 +420,7 @@ export async function approveSpendERC20(
 		return { allowance, txReceipt: null };
 	} else {
 		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...');
-		const txOptions = await setTxOptions({ verbose, provider: signer.provider, eip1559: true });
+		const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true });
 		const tx = await tokenContract.approve(spender, amount, txOptions);
 		const txReceipt = await tx.wait();
 		allowance = await getAllowance(signer, chainId, tokenContract, spender);
@@ -428,7 +428,7 @@ export async function approveSpendERC20(
 	}
 }
 
-async function setTxOptions({
+async function setFeeOptions({
 	txOptions,
 	provider,
 	eip1559,
@@ -609,14 +609,14 @@ export async function createLink({
 	verbose &amp;&amp; console.log('Generating link...');
 
 	// set transaction options
-	txOptions = await setTxOptions({
+	txOptions = await setFeeOptions({
 		txOptions,
 		provider: signer.provider,
 		eip1559,
 		maxFeePerGas,
 		maxPriorityFeePerGas,
 		gasLimit,
-		verbose, // Include verbose in the object passed to setTxOptions
+		verbose, // Include verbose in the object passed to setFeeOptions
 	});
 
 	verbose &amp;&amp; console.log('post txOptions: ', txOptions);

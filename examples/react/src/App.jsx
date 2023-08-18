@@ -6,6 +6,8 @@ import { peanut } from '@squirrel-labs/peanut-sdk' // v5
 import { ethers } from 'ethers'
 import { useEffect } from 'react'
 
+console.log('Peanut SDK version', peanut.version)
+
 function App() {
 	const [signer, setSigner] = useState(null)
 	const [chainId, setChainId] = useState(null)
@@ -62,6 +64,41 @@ function App() {
 		}
 	}
 
+	const switchToGoerli = async () => {
+		try {
+			await window.ethereum.request({
+				method: 'wallet_switchEthereumChain',
+				params: [{ chainId: '0x5' }],
+			})
+		} catch (error) {
+			if (error.code === 4902) {
+				try {
+					await window.ethereum.request({
+						method: 'wallet_addEthereumChain',
+						params: [
+							{
+								chainId: '0x5',
+								chainName: 'Goerli Testnet',
+								nativeCurrency: {
+									name: 'ETH',
+									symbol: 'ETH',
+									decimals: 18,
+								},
+								// public rpc
+								rpcUrls: ['https://rpc.ankr.com/eth_goerli'],
+								blockExplorerUrls: ['https://goerli.etherscan.io/'],
+							},
+						],
+					})
+				} catch (addError) {
+					console.error('Failed to add Goerli network:', addError)
+				}
+			} else {
+				console.error('Failed to switch to Goerli network:', error)
+			}
+		}
+	}
+
 	const createLink = async () => {
 		if (!signer) throw new Error('Connect wallet first')
 		const network = await signer.provider.getNetwork()
@@ -92,7 +129,8 @@ function App() {
 
 	const claimLinkGasless = async () => {
 		if (!signer || !link) return
-		const claimTx = await peanut.claimLinkGasless(link, signer.address, 'AbOlrI9htv38pmHPENNoCwDc9lqgCFTP')
+		const address = await signer.getAddress()
+		const claimTx = await peanut.claimLinkGasless(link, address, 'AbOlrI9htv38pmHPENNoCwDc9lqgCFTP', true)
 		console.log(claimTx)
 		setClaimTx(claimTx)
 	}
@@ -120,6 +158,7 @@ function App() {
 			<button onClick={connectWallet} style={{ background: 'green', margin: '10px' }}>
 				{isConnected ? 'Connected' : 'Connect Wallet'}
 			</button>
+			<button onClick={switchToGoerli}>Switch to Goerli Testnet</button>
 			{warningMessage && <p style={{ color: 'red' }}>{warningMessage}</p>}
 			{networkName && <p>Connected to: {networkName}</p>} {/* Display the network name */}
 			{chainId && <p>Chain ID: {parseInt(chainId)}</p>}

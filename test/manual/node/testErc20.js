@@ -12,7 +12,6 @@ const CHAINID = 137 // matic mainnet
 const RPC_URL = peanut.CHAIN_DETAILS[String(CHAINID)].rpc[0]
 console.log('RPC_URL: ', RPC_URL)
 
-
 // create goerli wallet with optimism rpc
 const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers.providers.JsonRpcProvider(RPC_URL))
 ////////////////////////////////////////////////////////////

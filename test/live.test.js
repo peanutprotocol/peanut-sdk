@@ -14,10 +14,12 @@ async function createAndClaimLink(options, inbetweenDelay = 1000) {
 	if (txReceipt && txReceipt.hash) {
 		await waitForTransaction(options.signer.provider, txReceipt.hash)
 	}
+	console.log('Link created: ' + link)
 	await new Promise((res) => setTimeout(res, inbetweenDelay)) // Wait for 1 second before claiming
 	return peanut.claimLink({
 		signer: options.signer,
 		link: link,
+		verbose: options.verbose,
 	})
 }
 
@@ -49,20 +51,21 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 				chainId: 420,
 				tokenAmount: 0.00001,
 				tokenType: 0,
+				verbose: true,
 			})
 			// Add assertion here
 		}, 60000)
-		it('should create an erc20 link and claim it', async function () {
-			// TODO. Do nothing for now
-		}, 60000)
+		// it('should create an erc20 link and claim it', async function () {
+		// 	// TODO. Do nothing for now
+		// }, 60000)
 	})
-	describe.only('polygon', function () {
+	describe('polygon', function () {
 		const POLYGON_RPC_URL = 'https://polygon-mainnet.infura.io/v3/' + process.env.INFURA_API_KEY
 		const polygonProvider = new ethers.providers.JsonRpcProvider(POLYGON_RPC_URL)
 		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, polygonProvider)
 		const chainId = 137
 		const tokenAmount = 0.0001
-		
+
 		it('should create a native link and claim it', async function () {
 			await createAndClaimLink(
 				{
@@ -70,6 +73,7 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenType: 0,
+					verbose: true,
 				},
 				5000
 			)
@@ -79,14 +83,18 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 			const tokenDecimals = 6
 
 			// create link
-			await createAndClaimLink({
-				signer: polygonWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenDecimals: tokenDecimals,
-				tokenAddress: tokenAddress,
-				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-			})
+			await createAndClaimLink(
+				{
+					signer: polygonWallet,
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenDecimals: tokenDecimals,
+					tokenAddress: tokenAddress,
+					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+					verbose: true,
+				},
+				5000
+			)
 		}, 180000)
 	})
 	describe('goerli', function () {
@@ -104,6 +112,7 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenType: 0,
+					verbose: true,
 				},
 				5000
 			)
@@ -120,6 +129,7 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 				tokenDecimals: tokenDecimals,
 				tokenAddress: tokenAddress,
 				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				verbose: true,
 			})
 		}, 180000)
 		it('should fail when no tokenAddress', async function () {
@@ -130,11 +140,28 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 					tokenAmount: tokenAmount,
 					tokenDecimals: 18,
 					tokenType: 1,
+					verbose: true,
 				})
 				throw new Error('Test should have thrown an error but did not.')
 			} catch (e) {
 				expect(e.message).toContain('tokenAddress must be provided for non-native tokens') // Replace with expected error message
 			}
+		}, 60000)
+		it('API gasless claim test', async function () {
+			// create link
+			const { link } = await peanut.createLink({
+				signer: goerliWallet,
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenType: 0,
+				verbose: true,
+			})
+
+			// claim link using api
+			const receiverAddress = goerliWallet.address
+			const apiToken = process.env.PEANUT_DEV_API_KEY
+			const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken)
+			console.log(res)
 		}, 60000)
 	})
 })
