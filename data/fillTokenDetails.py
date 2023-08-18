@@ -73,26 +73,29 @@ def main():
     for chain_id, details in chain_details.items():
         print(f"Fetching tokens for chainId {chain_id}...")
         coingecko_id = chain_id_to_coingecko_id.get(int(chain_id))
-        if not coingecko_id:
+        tokens = []
+        if coingecko_id:
+            tokens = fetch_tokens_for_platform(coingecko_id)
+            # wait for 1 second to avoid rate limit
+            time.sleep(1)
+            total_tokens += len(tokens)
+            chains_fetched += 1
+
+            # Filter out tokens with missing fields
+            complete_tokens = [
+                {key: value for key, value in token.items() if key not in ["chainId"]}
+                for token in tokens
+                if all(
+                    key in token
+                    for key in ["address", "decimals", "name", "symbol", "logoURI"]
+                )
+            ]
+            total_errors += len(tokens) - len(complete_tokens)
+        else:
             print(f"Warning: No CoinGecko ID found for chainId {chain_id}. Skipping.")
-            continue
-
-        tokens = fetch_tokens_for_platform(coingecko_id)
-        # wait for 1 second to avoid rate limit
-        time.sleep(1)
-        total_tokens += len(tokens)
-        chains_fetched += 1
-
-        # Filter out tokens with missing fields
-        complete_tokens = [
-            {key: value for key, value in token.items() if key not in ["chainId"]}
-            for token in tokens
-            if all(
-                key in token
-                for key in ["address", "decimals", "name", "symbol", "logoURI"]
-            )
-        ]
-        total_errors += len(tokens) - len(complete_tokens)
+            complete_tokens = (
+                []
+            )  # No tokens could be fetched, so initialize an empty list
 
         # Add native token
         native_token = {
@@ -100,7 +103,7 @@ def main():
             "name": details["nativeCurrency"]["name"],
             "symbol": details["nativeCurrency"]["symbol"],
             "decimals": details["nativeCurrency"]["decimals"],
-            "logoURI": details.get("icon", [{}])[0].get("url", "")
+            "logoURI": details.get("icon", [{}])[0].get("url", ""),
         }
         complete_tokens.append(native_token)
 
@@ -120,6 +123,11 @@ def main():
     print(f"Total tokens recorded: {total_tokens}")
     print(f"Total tokens with complete data: {total_tokens - total_errors}")
     print(f"Total tokens with missing data: {total_errors}")
+
+    # assert that chainDetails.json and tokenDetails.json have the same number of chains
+    assert len(chain_details) == len(
+        tokenDetails
+    ), "chainDetails.json and tokenDetails.json have different number of chains"
 
 
 if __name__ == "__main__":

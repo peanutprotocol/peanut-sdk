@@ -181,7 +181,7 @@ async function setTxOptions({
 	gasPrice = null,
 	gasPriceMultiplier = 1.2,
 	maxPriorityFeePerGas = null,
-	maxPriorityFeePerGasMultiplier = 1.1,
+	maxPriorityFeePerGasMultiplier = 2,
 	verbose = false,
 } = {}) {
 	let feeData
@@ -198,6 +198,13 @@ async function setTxOptions({
 
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
+	}
+
+	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
+	let chainId = await provider.getNetwork().then((network) => network.chainId)
+	if (chainId == 137) {
+		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
+		console.log('Setting maxPriorityFeePerGas to 30 gwei')
 	}
 
 	if (eip1559) {
@@ -232,14 +239,13 @@ async function setTxOptions({
 }
 
 async function estimateGasLimit(contract, functionName, params, txOptions) {
-	try {
-		const method = contract[functionName]
-		const estimatedGas = BigInt(await method.estimateGas(...params, txOptions))
-		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
-	} catch (error) {
-		console.error('Error estimating gas:', error)
-		return null
-	}
+    try {
+        const estimatedGas = await contract.estimateGas[functionName](...params, txOptions);
+        return BigInt(Math.floor(Number(estimatedGas) * 1.1)); // safety margin
+    } catch (error) {
+        console.error(`Error estimating gas for ${functionName}:`, error);
+        return null;
+    }
 }
 
 /**
@@ -364,10 +370,11 @@ export async function createLink({
 	})
 
 	verbose && console.log('post txOptions: ', txOptions)
+	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address]
 	const estimatedGasLimit = await estimateGasLimit(
 		contract,
 		'makeDeposit',
-		[tokenAddress, tokenType, tokenAmount, tokenId, keys.address],
+		depositParams,
 		txOptions
 	)
 	if (estimatedGasLimit) {
@@ -375,7 +382,6 @@ export async function createLink({
 	}
 	verbose && console.log('final txOptions: ', txOptions)
 	// const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address, txOptions];
-	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address]
 	verbose && console.log('depositParams: ', depositParams)
 	// var tx = await contract.makeDeposit(...depositParams);
 	var tx = await contract.makeDeposit(...depositParams, txOptions)
@@ -433,6 +439,91 @@ export async function getLinkStatus({ signer, link }) {
  */
 export async function claimLink({ signer, link, recipient = null, verbose = false }) {
 	/* claims the contents of a link */
+	assert(signer, 'signer arg is required')
+	assert(link, 'link arg is required')
+
+	signer = await getAbstractSigner(signer)
+
+	const params = getParamsFromLink(link)
+	const chainId = params.chainId
+	const contractVersion = params.contractVersion
+	const depositIdx = params.depositIdx
+	const password = params.password
+	if (recipient == null) {
+		recipient = await signer.getAddress()
+
+		verbose && console.log('recipient not provided, using signer address: ', recipient)
+	}
+	const keys = generateKeysFromString(password) // deterministically generate keys from password
+	const contract = await getContract(chainId, signer, contractVersion)
+
+	// cryptography
+	var addressHash = solidityHashAddress(recipient)
+	// var addressHashBinary = ethers.getBytes(addressHash); // v6
+	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
+	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
+	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+	var signature = await signAddress(recipient, keys.privateKey) // sign with link keys
+
+	if (verbose) {
+		// print the params
+		console.log('params: ', params)
+		console.log('addressHash: ', addressHash)
+		console.log('addressHashEIP191: ', addressHashEIP191)
+		console.log('signature: ', signature)
+	}
+
+	// TODO: use createClaimPayload instead
+
+	// withdraw the deposit
+	// address hash is hash(prefix + hash(address))
+	const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature)
+	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+	const txReceipt = await tx.wait()
+
+	return txReceipt
+}
+
+/**
+ * Gets all deposits for a given signer and chainId.
+ * 
+ */
+export async function getAllDepositsForSigner({ signer, chainId, contractVersion = DEFAULT_CONTRACT_VERSION, verbose = false }) {
+    
+    const contract = await getContract(chainId, signer, contractVersion)
+	let deposits;
+	if (contractVersion == 'v3') {
+		// throw warning if using v3
+		console.warn('WARNING: This function is not efficient for v3 contracts. Not recommended to use.')
+		const depositCount = await contract.getDepositCount();
+		deposits = [];
+		for(let i = 0; i < depositCount; i++) {
+			verbose && console.log('fetching deposit: ', i)
+			let deposit = await contract.deposits(i);
+			deposits.push(deposit);
+		}
+	} else {
+		// v4: we now have getAllDeposits available
+		const address = await signer.getAddress();
+		// const allDeposits = await contract.getAllDeposits();
+		deposits = await contract.getAllDepositsForAddress(address);
+	}
+    return deposits
+}
+
+/**
+ * Claims the contents of a link as a sender. Can only be used if a link has not been claimed in a set time period.
+ * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
+ *
+ * @param {Object} options - An object containing the options to use for claiming the link
+ * @param {Object} options.signer - The signer to use for claiming
+ * @param {string} options.link - The link to claim
+ * @param {boolean} [options.verbose=false] - Whether or not to print verbose output
+ * @returns {Object} - The transaction receipt
+ */
+export async function claimLinkSender({ signer, link, verbose = false }) {
+	// raise error, not implemented yet
+	throw new Error('Not implemented yet')
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
 
@@ -542,6 +633,7 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	// Retrieve the token's details from the tokenDetails.json file
 	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
+	console.log('chainId: ', chainId);
 	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 	if (!chainDetails) {
 		throw new Error('Chain details not found')
@@ -639,6 +731,7 @@ const peanut = {
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
+	getAllDeposits,
 	getLinkStatus,
 	getLinkDetails,
 	getParamsFromLink,

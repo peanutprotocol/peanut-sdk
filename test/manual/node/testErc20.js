@@ -1,4 +1,5 @@
-import peanut from '@squirrel-labs/peanut-sdk'
+// import peanut from '@squirrel-labs/peanut-sdk'
+import peanut from '../../../index.js' // import directly from source code
 import { ethers } from 'ethers' // ethers v6
 import dotenv from 'dotenv'
 dotenv.config({ path: '../../../.env' })
@@ -8,13 +9,16 @@ dotenv.config({ path: '../../../.env' })
 // const CHAINID = 5; // goerli
 // const RPC_URL = "https://rpc.ankr.com/eth_goerli";
 const CHAINID = 137 // matic mainnet
-const RPC_URL = 'https://polygon.llamarpc.com'
+const RPC_URL = peanut.CHAIN_DETAILS[String(CHAINID)].rpc[0]
+console.log('RPC_URL: ', RPC_URL)
+
 
 // create goerli wallet with optimism rpc
-const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers.JsonRpcProvider(RPC_URL))
+const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers.providers.JsonRpcProvider(RPC_URL))
 ////////////////////////////////////////////////////////////
 
 // create single link
+// add 1 to nonce
 var { link, txReceipt } = await peanut.createLink({
 	signer: wallet,
 	chainId: CHAINID,

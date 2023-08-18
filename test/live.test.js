@@ -56,6 +56,39 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 			// TODO. Do nothing for now
 		}, 60000)
 	})
+	describe.only('polygon', function () {
+		const POLYGON_RPC_URL = 'https://polygon-mainnet.infura.io/v3/' + process.env.INFURA_API_KEY
+		const polygonProvider = new ethers.providers.JsonRpcProvider(POLYGON_RPC_URL)
+		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, polygonProvider)
+		const chainId = 137
+		const tokenAmount = 0.0001
+		
+		it('should create a native link and claim it', async function () {
+			await createAndClaimLink(
+				{
+					signer: polygonWallet,
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0,
+				},
+				5000
+			)
+		}, 60000)
+		it('should create an erc20 link and claim it', async function () {
+			const tokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' // polygon usdc
+			const tokenDecimals = 6
+
+			// create link
+			await createAndClaimLink({
+				signer: polygonWallet,
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenDecimals: tokenDecimals,
+				tokenAddress: tokenAddress,
+				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+			})
+		}, 180000)
+	})
 	describe('goerli', function () {
 		const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
 		// // const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6

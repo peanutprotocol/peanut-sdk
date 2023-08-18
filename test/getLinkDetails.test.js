@@ -46,7 +46,7 @@ describe('getLinkDetails', function () {
 		const linkDetails = await peanut.getLinkDetails(goerliWallet, link)
 		console.log(linkDetails)
 		// linkdetails.tokenAmount should be 1
-		expect(linkDetails.tokenAmount).toBe('1')
+		expect(linkDetails.tokenAmount).toBe('1.0')
 	})
 
 	it('Eco optimism link should have 0.1 eco inside', async function () {
