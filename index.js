@@ -751,22 +751,18 @@ export async function claimLinkGasless(
 
 	// if axios error, return the error message
 
-	try {
-		const response = await fetch(url, {
-			method: 'POST',
-			headers: headers,
-			body: JSON.stringify(body),
-		})
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
 
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`)
-		} else {
-			const data = await response.json()
-			return data
-		}
-	} catch (e) {
-		console.log('error claiming link: ', e)
-		return e.message
+	if (!response.ok) {
+		const error = await response.text()
+		throw new Error(error)
+	} else {
+		const data = await response.json()
+		return data
 	}
 }
 

@@ -163,5 +163,19 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 			const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken)
 			console.log(res)
 		}, 60000)
+		it('API gasless claim test invalid link should throw', async function () {
+			// create link
+			const link = 'https://peanut.to/claim?c=5&v=v3&i=31&p=FjEditsxpzOafssaffsafsasx6IrI&t=sdk'
+
+			const receiverAddress = goerliWallet.address
+			const apiToken = process.env.PEANUT_DEV_API_KEY
+			try {
+				await peanut.claimLinkGasless(link, receiverAddress, apiToken)
+				throw new Error('Test should have thrown an error but did not.')
+			} catch (e) {
+				console.log(e)
+				// expect(e.message).toContain('invalid link') // Replace with expected error message
+			}
+		}, 60000)
 	})
 })

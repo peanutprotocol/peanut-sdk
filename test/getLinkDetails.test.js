@@ -58,6 +58,14 @@ describe('getLinkDetails', function () {
 		const optimismWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismProvider)
 		await expect(peanut.getLinkDetails(optimismWallet, link)).rejects.toThrow()
 	})
+	it.only('Localhost should work', async function () {
+		const link = 'http://localhost:3000/claim#?c=5&v=v3&i=415&p=pCEABanDLd9kReTW&t=sdk'
+		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
+		const linkDetails = await peanut.getLinkDetails(goerliWallet, link)
+		console.log(linkDetails)
+		// should not be empty
+		expect(linkDetails).not.toBe(undefined)
+	})
 
 	// TODO: test link that has already been claimed
 

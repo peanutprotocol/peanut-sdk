@@ -6,3 +6,4 @@
 -   refactored some code & general code quality improvements
 -   fix for goerli tokens in getLinkDetails
 -   link parameteres now by default have a '#' in front to prevent server side attacks
+-   claimLinkGasless now throws on fail
