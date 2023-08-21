@@ -57,10 +57,13 @@
 	},
 	"200101": {
 		"milkomeda-c1-testnet": "",
-		"v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7"
+		"v3": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5",
+		"v4": "0x897F8EDdB345F0d16081615823F76055Ad60A00c"
 	},
 	"2001": {
-		"milkomeda-c1": ""
+		"milkomeda-c1": "",
+		"v3": "0x897F8EDdB345F0d16081615823F76055Ad60A00c",
+		"v4": "0x1851359AB8B002217cf4D108d7F027B63563754C"
 	},
 	"bsctestnet": {},
 	"56": {

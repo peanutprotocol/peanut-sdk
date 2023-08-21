@@ -7,3 +7,4 @@
 -   fix for goerli tokens in getLinkDetails
 -   link parameteres now by default have a '#' in front to prevent server side attacks
 -   claimLinkGasless now throws on fail
+-   chainDetails now includes an url to an icon for each chain
