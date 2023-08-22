@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: util.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: util.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { ethers } from 'ethersv5' // v5
+import { CHAIN_MAP } from './data.js'
+
+export function assert(condition, message) {
+	if (!condition) {
+		throw new Error(message || 'Assertion failed')
+	}
+}
+
+/**
+ * Prints a greeting message to the console.
+ */
+export function greeting() {
+	console.log(
+		'🥜 Hello &amp; thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord'
+	)
+}
+
+/**
+ * Generates a deterministic key pair from an arbitrary length string
+ *
+ * @param {string} string - The string to generate a key pair from
+ * @returns {Object} - An object containing the address and privateKey
+ */
+export function generateKeysFromString(string) {
+	var privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)) // v5
+	var wallet = new ethers.Wallet(privateKey)
+	return {
+		address: wallet.address,
+		privateKey: privateKey,
+	}
+}
+
+/**
+ * Converts a string to bytes, pads it to 32 bytes and hashes it
+ *
+ * @param {string} str - The string to convert and hash
+ * @returns {string} - The hashed string
+ */
+export function hash_string(str) {
+	let hash = ethers.utils.toUtf8Bytes(str) // v5
+	hash = ethers.utils.hexlify(hash) // v5
+	hash = ethers.utils.hexZeroPad(hash, 32) // v5
+	hash = ethers.utils.keccak256(hash) // v5
+	return hash
+}
+
+/**
+ * Signs a message with a private key and returns the signature
+ * THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
+ *
+ * @param {string} message - The message to sign
+ * @param {string} privateKey - The private key to use for signing
+ * @returns {string} - The signature
+ */
+export async function signMessageWithPrivatekey(message, privateKey) {
+	var signer = new ethers.Wallet(privateKey)
+	return signer.signMessage(message) // this calls ethers.hashMessage and prefixes the hash
+}
+
+/**
+ * Verifies a signature with a public key and returns true if valid
+ *
+ * @param {string} message - The message that was signed
+ * @param {string} signature - The signature to verify
+ * @param {string} address - The public key to use for verification
+ * @returns {boolean} - True if the signature is valid, false otherwise
+ */
+export function verifySignature(message, signature, address) {
+	const messageSigner = ethers.utils.verifyMessage(message, signature) // v5
+	return messageSigner == address
+}
+
+/**
+ * Adds the EIP191 prefix to a message and hashes it same as solidity
+ *
+ * @param {Uint8Array} bytes - The bytes to prefix and hash
+ * @returns {string} - The hashed bytes
+ */
+export function solidityHashBytesEIP191(bytes) {
+	return ethers.utils.hashMessage(bytes) // v5
+}
+
+/**
+ * Hashes an address to a 32 byte hex string
+ *
+ * @param {string} address - The address to hash
+ * @returns {string} - The hashed address
+ */
+export function solidityHashAddress(address) {
+	return ethers.utils.solidityKeccak256(['address'], [address]) // v5
+}
+
+/**
+ * Hashes a plain address, adds an Ethereum message prefix, hashes it again and then signs it
+ *
+ * @param {string} string - The plain address to hash and sign
+ * @param {string} privateKey - The private key to use for signing
+ * @returns {string} - The signature
+ */
+export async function signAddress(string, privateKey) {
+	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]) // v5
+	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
+	var signer = new ethers.Wallet(privateKey)
+	var signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
+	return signature
+}
+
+/**
+ * Generates a random string of the specified length
+ *
+ * @param {number} length - The length of the string to generate
+ * @returns {string} - The generated string
+ */
+export function getRandomString(length) {
+	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+	let result_str = ''
+	for (let i = 0; i &lt; length; i++) {
+		result_str += chars[Math.floor(Math.random() * chars.length)]
+	}
+	return result_str
+}
+
+/**
+ * Returns the parameters from the current page url
+ *
+ * @returns {Object} - The parameters
+ */
+export function getParamsFromPageURL() {
+	/* returns the parameters from the current page url */
+	const params = new URLSearchParams(window.location.search)
+	var chainId = params.get('c') // can be chain name or chain id
+	chainId = CHAIN_MAP[String(chainId)]
+	const contractVersion = params.get('v')
+	var depositIdx = params.get('i')
+	depositIdx = parseInt(depositIdx)
+	const password = params.get('p')
+
+	return { chainId, contractVersion, depositIdx, password }
+}
+
+/**
+ * Returns the parameters from a link
+ *
+ * @param {string} link - The link to get the parameters from
+ *
+ * @returns {Object} - The parameters from the link
+ */
+export function getParamsFromLink(link) {
+	/* returns the parameters from a link */
+	const url = new URL(link)
+	let search = url.search
+
+	// If there is no search params, try to get params after hash
+	if (search === '') {
+		search = url.hash.startsWith('#?') ? url.hash.substring(1) : ''
+	}
+
+	const params = new URLSearchParams(search)
+
+	var chainId = params.get('c') // can be chain name or chain id
+	// if can be casted to int, then it's a chain id
+	if (parseInt(chainId)) {
+		chainId = parseInt(chainId)
+	} else {
+		// otherwise it's a chain name
+		chainId = CHAIN_MAP[String(chainId)]
+	}
+
+	const contractVersion = params.get('v')
+	var depositIdx = params.get('i')
+	depositIdx = parseInt(depositIdx)
+	const password = params.get('p')
+	let trackId = '' // optional
+	if (params.get('t')) {
+		trackId = params.get('t')
+	}
+
+	return { chainId, contractVersion, depositIdx, password, trackId }
+}
+
+/**
+ * Returns a link from the given parameters
+ *
+ * @param {number|string} chainId - The chainId to use for the link
+ * @param {string} contractVersion - The contract version to use for the link
+ * @param {number} depositIdx - The deposit index to use for the link
+ * @param {string} password - The password to use for the link
+ * @param {string} baseUrl - The base URL to use for the link
+ * @param {string} trackId - The trackId to use for the link
+ * @returns {string} - The generated link
+ */
+export function getLinkFromParams(
+	chainId,
+	contractVersion,
+	depositIdx,
+	password,
+	baseUrl = 'https://peanut.to/claim',
+	trackId = ''
+) {
+	/* returns a link from the given parameters */
+
+	const link = baseUrl + '#?c=' + chainId + '&amp;v=' + contractVersion + '&amp;i=' + depositIdx + '&amp;p=' + password
+
+	if (trackId != '') {
+		return link + '&amp;t=' + trackId
+	}
+	return link
+}
+
+/**
+ * Returns the deposit index from a tx receipt
+ *
+ * @param {Object} txReceipt - The transaction receipt to get the deposit index from
+ * @param {number|string} chainId - The chainId of the contract
+ * @returns {number} - The deposit index
+ */
+export function getDepositIdx(txReceipt, chainId) {
+	/* returns the deposit index from a tx receipt */
+	const logs = txReceipt.logs
+	// const chainId = txReceipt.chainId;
+	var depositIdx
+	var logIndex
+	if (chainId == 137 || chainId == 80001) {
+		// why do you have to be this way?
+		logIndex = logs.length - 2
+	} else {
+		logIndex = logs.length - 1 // last log is the deposit event
+	}
+	// only works if EventLog. If Log, then need to look at data, and first uint256 is depositIdx.
+	try {
+		depositIdx = logs[logIndex].args[0]
+	} catch (error) {
+		// get uint256 from data (first 32 bytes)
+		const data = logs[logIndex].data
+		const depositIdxHex = data.slice(0, 66)
+		depositIdx = parseInt(BigInt(depositIdxHex)) // should this be int or bigint? decide wen TS.
+	}
+	return depositIdx
+}
+
+/**
+ * Returns an array of deposit indices from a batch transaction receipt
+ *
+ * @param {Object} txReceipt - The transaction receipt to get the deposit indices from
+ * @param {number|string} chainId - The chainId of the contract
+ * @param {string} contractAddress - The contract address
+ * @returns {Array} - The deposit indices
+ */
+export function getDepositIdxs(txReceipt, chainId, contractAddress) {
+	/* returns an array of deposit indices from a batch transaction receipt */
+	const logs = txReceipt.logs
+	var depositIdxs = []
+	// loop through all the logs and extract the deposit index from each
+	for (var i = 0; i &lt; logs.length; i++) {
+		// check if the log was emitted by our contract
+		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
+			if (chainId == 137) {
+				depositIdxs.push(logs[i].args[0])
+			} else {
+				depositIdxs.push(logs[i].args[0])
+			}
+		}
+	}
+	return depositIdxs
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#approveSpendERC20">approveSpendERC20</a></li><li><a href="global.html#claimLink">claimLink</a></li><li><a href="global.html#claimLinkGasless">claimLinkGasless</a></li><li><a href="global.html#claimLinkSender">claimLinkSender</a></li><li><a href="global.html#generateKeysFromString">generateKeysFromString</a></li><li><a href="global.html#getAllDepositsForSigner">getAllDepositsForSigner</a></li><li><a href="global.html#getContract">getContract</a></li><li><a href="global.html#getDefaultProvider">getDefaultProvider</a></li><li><a href="global.html#getDepositIdx">getDepositIdx</a></li><li><a href="global.html#getDepositIdxs">getDepositIdxs</a></li><li><a href="global.html#getLinkDetails">getLinkDetails</a></li><li><a href="global.html#getLinkFromParams">getLinkFromParams</a></li><li><a href="global.html#getLinkStatus">getLinkStatus</a></li><li><a href="global.html#getParamsFromLink">getParamsFromLink</a></li><li><a href="global.html#getParamsFromPageURL">getParamsFromPageURL</a></li><li><a href="global.html#getRandomString">getRandomString</a></li><li><a href="global.html#greeting">greeting</a></li><li><a href="global.html#hash_string">hash_string</a></li><li><a href="global.html#signAddress">signAddress</a></li><li><a href="global.html#signMessageWithPrivatekey">signMessageWithPrivatekey</a></li><li><a href="global.html#solidityHashAddress">solidityHashAddress</a></li><li><a href="global.html#solidityHashBytesEIP191">solidityHashBytesEIP191</a></li><li><a href="global.html#verifySignature">verifySignature</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Aug 22 2023 18:11:31 GMT+0000 (Greenwich Mean Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

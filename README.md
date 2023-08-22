@@ -58,3 +58,22 @@ This is an early SDK, and we're very open to suggestions and improvements. Pleas
 ### Examples
 
 Check the /examples folder.
+
+
+
+```sh
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+----------|---------|----------|---------|---------|-------------------
+All files |    1.16 |        0 |       0 |    1.18 |
+ data.js  |     100 |      100 |     100 |     100 |
+ index.js |    0.37 |        0 |       0 |    0.38 | 46-765
+ util.js  |       0 |        0 |       0 |       0 | 5-265
+----------|---------|----------|---------|---------|-------------------
+Test Suites: 4 failed, 1 passed, 5 total
+Tests:       1 failed, 4 skipped, 1 passed, 6 total
+Snapshots:   0 total
+Time:        3.07 s
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+```

@@ -1,9 +1,6 @@
 export {
-	getAbstractSigner,
-} from './signer.js'
-export {
 	createLink,
-} from './create-link.mjs'
+} from './create-link.js'
 import {
 	PEANUT_CONTRACTS,
 	CHAIN_DETAILS,
