@@ -206,6 +206,12 @@ async function setFeeOptions({
 		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
 	}
 
+	// if on milkomeda, set eip1559 to false
+	if (chainId == "2001" || chainId == "200101" || chainId == 2001 || chainId == 200101) {
+		eip1559 = false
+		verbose && console.log('Setting eip1559 to false for milkomeda')
+	}
+
 	if (eip1559) {
 		verbose && console.log('Setting eip1559 tx options...', txOptions)
 		txOptions.maxFeePerGas =
