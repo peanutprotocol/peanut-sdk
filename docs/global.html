@@ -104,7 +104,7 @@
     
 
     
-    <h4 class="name" id="approveSpendERC20"><span class="type-signature"></span>approveSpendERC20<span class="signature">(signer, chainId, tokenAddress, amount, tokenDecimals, contractVersion, verbose)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="approveSpendERC20"><span class="type-signature"></span>approveSpendERC20<span class="signature">(signer, chainId, tokenAddress, amount, tokenDecimals, isRawAmount, contractVersion, verbose)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
     
@@ -239,7 +239,8 @@
 
             
 
-            <td class="description last">The amount to approve for spending</td>
+            <td class="description last">The amount to approve for spending. If -1, approve infinite amount.
+defaults to 18.</td>
         </tr>
 
     
@@ -263,6 +264,29 @@
             
 
             <td class="description last">The number of decimals the token has</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isRawAmount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Whether or not the amount is raw or not. If true, the amount will not be converted to the appropriate unit</td>
         </tr>
 
     
@@ -349,7 +373,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line367">line 367</a>
+        <a href="api_approveSpendERC20.js.html">api/approveSpendERC20.js</a>, <a href="api_approveSpendERC20.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -686,7 +710,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line662">line 662</a>
+        <a href="api_claimLink.js.html">api/claimLink.js</a>, <a href="api_claimLink.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -914,7 +938,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line813">line 813</a>
+        <a href="api_claimLinkGasless.js.html">api/claimLinkGasless.js</a>, <a href="api_claimLinkGasless.js.html#line12">line 12</a>
     </li></ul></dd>
     
 
@@ -944,6 +968,305 @@
         
 <div class="param-desc">
     - The data returned from the API call
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="claimLinkSender"><span class="type-signature"></span>claimLinkSender<span class="signature">(options)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Claims the contents of a link as a sender. Can only be used if a link has not been claimed in a set time period.
+(24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object containing the options to use for claiming the link
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>signer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The signer to use for claiming</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>link</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The link to claim</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>verbose</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Whether or not to print verbose output</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_claimLinkSender.js.html">api/claimLinkSender.js</a>, <a href="api_claimLinkSender.js.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - The transaction receipt
 </div>
 
 
@@ -1073,7 +1396,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line501">line 501</a>
+        <a href="api_createLink.js.html">api/createLink.js</a>, <a href="api_createLink.js.html#line45">line 45</a>
     </li></ul></dd>
     
 
@@ -1256,7 +1579,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line49">line 49</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -1303,6 +1626,94 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getAllDepositsForSigner"><span class="type-signature"></span>getAllDepositsForSigner<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Gets all deposits for a given signer and chainId.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_getAllDeposittsForSigner.js.html">api/getAllDeposittsForSigner.js</a>, <a href="api_getAllDeposittsForSigner.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1547,7 +1958,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line181">line 181</a>
+        <a href="api_web3.js.html">api/web3.js</a>, <a href="api_web3.js.html#line32">line 32</a>
     </li></ul></dd>
     
 
@@ -1732,7 +2143,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line160">line 160</a>
+        <a href="api_web3.js.html">api/web3.js</a>, <a href="api_web3.js.html#line11">line 11</a>
     </li></ul></dd>
     
 
@@ -1917,7 +2328,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line295">line 295</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line218">line 218</a>
     </li></ul></dd>
     
 
@@ -2125,7 +2536,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line326">line 326</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line250">line 250</a>
     </li></ul></dd>
     
 
@@ -2330,7 +2741,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line740">line 740</a>
+        <a href="api_getLinkDetails.js.html">api/getLinkDetails.js</a>, <a href="api_getLinkDetails.js.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -2607,7 +3018,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line270">line 270</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
@@ -2766,7 +3177,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line631">line 631</a>
+        <a href="api_getLinkStatus.js.html">api/getLinkStatus.js</a>, <a href="api_getLinkStatus.js.html#line16">line 16</a>
     </li></ul></dd>
     
 
@@ -2925,7 +3336,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line218">line 218</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line149">line 149</a>
     </li></ul></dd>
     
 
@@ -3035,7 +3446,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line247">line 247</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line129">line 129</a>
     </li></ul></dd>
     
 
@@ -3194,7 +3605,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line139">line 139</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -3304,7 +3715,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line37">line 37</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line13">line 13</a>
     </li></ul></dd>
     
 
@@ -3441,7 +3852,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line64">line 64</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line40">line 40</a>
     </li></ul></dd>
     
 
@@ -3623,7 +4034,7 @@ console.log(result); // { link: "https://peanut.to/claim?c=1&amp;v=v4&amp;i=123&
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line125">line 125</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line101">line 101</a>
     </li></ul></dd>
     
 
@@ -3806,7 +4217,7 @@ THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line80">line 80</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -3965,7 +4376,7 @@ THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line114">line 114</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
@@ -4124,7 +4535,7 @@ THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line104">line 104</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -4329,7 +4740,7 @@ THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line93">line 93</a>
+        <a href="common_util.js.html">common/util.js</a>, <a href="common_util.js.html#line69">line 69</a>
     </li></ul></dd>
     
 
@@ -4397,13 +4808,13 @@ THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#approveSpendERC20">approveSpendERC20</a></li><li><a href="global.html#claimLink">claimLink</a></li><li><a href="global.html#claimLinkGasless">claimLinkGasless</a></li><li><a href="global.html#createLink">createLink</a></li><li><a href="global.html#generateKeysFromString">generateKeysFromString</a></li><li><a href="global.html#getContract">getContract</a></li><li><a href="global.html#getDefaultProvider">getDefaultProvider</a></li><li><a href="global.html#getDepositIdx">getDepositIdx</a></li><li><a href="global.html#getDepositIdxs">getDepositIdxs</a></li><li><a href="global.html#getLinkDetails">getLinkDetails</a></li><li><a href="global.html#getLinkFromParams">getLinkFromParams</a></li><li><a href="global.html#getLinkStatus">getLinkStatus</a></li><li><a href="global.html#getParamsFromLink">getParamsFromLink</a></li><li><a href="global.html#getParamsFromPageURL">getParamsFromPageURL</a></li><li><a href="global.html#getRandomString">getRandomString</a></li><li><a href="global.html#greeting">greeting</a></li><li><a href="global.html#hash_string">hash_string</a></li><li><a href="global.html#signAddress">signAddress</a></li><li><a href="global.html#signMessageWithPrivatekey">signMessageWithPrivatekey</a></li><li><a href="global.html#solidityHashAddress">solidityHashAddress</a></li><li><a href="global.html#solidityHashBytesEIP191">solidityHashBytesEIP191</a></li><li><a href="global.html#verifySignature">verifySignature</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#approveSpendERC20">approveSpendERC20</a></li><li><a href="global.html#claimLink">claimLink</a></li><li><a href="global.html#claimLinkGasless">claimLinkGasless</a></li><li><a href="global.html#claimLinkSender">claimLinkSender</a></li><li><a href="global.html#createLink">createLink</a></li><li><a href="global.html#generateKeysFromString">generateKeysFromString</a></li><li><a href="global.html#getAllDepositsForSigner">getAllDepositsForSigner</a></li><li><a href="global.html#getContract">getContract</a></li><li><a href="global.html#getDefaultProvider">getDefaultProvider</a></li><li><a href="global.html#getDepositIdx">getDepositIdx</a></li><li><a href="global.html#getDepositIdxs">getDepositIdxs</a></li><li><a href="global.html#getLinkDetails">getLinkDetails</a></li><li><a href="global.html#getLinkFromParams">getLinkFromParams</a></li><li><a href="global.html#getLinkStatus">getLinkStatus</a></li><li><a href="global.html#getParamsFromLink">getParamsFromLink</a></li><li><a href="global.html#getParamsFromPageURL">getParamsFromPageURL</a></li><li><a href="global.html#getRandomString">getRandomString</a></li><li><a href="global.html#greeting">greeting</a></li><li><a href="global.html#hash_string">hash_string</a></li><li><a href="global.html#signAddress">signAddress</a></li><li><a href="global.html#signMessageWithPrivatekey">signMessageWithPrivatekey</a></li><li><a href="global.html#solidityHashAddress">solidityHashAddress</a></li><li><a href="global.html#solidityHashBytesEIP191">solidityHashBytesEIP191</a></li><li><a href="global.html#verifySignature">verifySignature</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Aug 10 2023 20:46:07 GMT+0200 (Central European Summer Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Aug 22 2023 22:37:51 GMT+0200 (Mitteleuropäische Sommerzeit)
 </footer>
 
 <script> prettyPrint(); </script>

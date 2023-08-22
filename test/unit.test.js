@@ -12,10 +12,10 @@ const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY)
 describe('Unit tests', function () {
 	// test wallet from private key should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02
 	describe('test wallet from private key', function () {
-		it('should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', function () {
+		it('should have address 0xFa347bE7039D6627878676EA3f2b3B4d766fa651', function () {
 			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY)
-			expect(wallet.address).toBe('0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02')
+			expect(wallet.address).toBe('0xFa347bE7039D6627878676EA3f2b3B4d766fa651')
 		})
 	})
 

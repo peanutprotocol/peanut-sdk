@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: api/approveSpendERC20.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: api/approveSpendERC20.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { ethers } from 'ethersv5'
+import {
+    DEFAULT_CONTRACT_VERSION,
+    ERC20_ABI,
+    PEANUT_CONTRACTS,
+    getAbstractSigner
+} from '../common/index.js'
+import {
+    getAllowance,
+    setFeeOptions
+} from './index.js'
+
+/**
+ * Approves the contract to spend the specified amount of tokens
+ *
+ * @param {Object} signer - The signer to use for approving the spend
+ * @param {number|string} chainId - The chainId of the contract
+ * @param {string} tokenAddress - The address of the token to approve the spend for
+ * @param {number|string} amount - The amount to approve for spending. If -1, approve infinite amount.
+ * defaults to 18.
+ * @param {number} tokenDecimals - The number of decimals the token has
+ * @param {boolean} isRawAmount - Whether or not the amount is raw or not. If true, the amount will not be converted to the appropriate unit
+ * @param {string} contractVersion - The version of the contract
+ * @param {boolean} verbose - Whether or not to print verbose output
+ * @returns {Object} - An object containing the allowance and txReceipt
+ */
+export async function approveSpendERC20(
+    signer,
+    chainId,
+    tokenAddress,
+    amount,
+    tokenDecimals = 18,
+    isRawAmount = false,
+    contractVersion = DEFAULT_CONTRACT_VERSION,
+    verbose = true
+) {
+    /*  Approves the contract to spend the specified amount of tokens   */
+    signer = await getAbstractSigner(signer)
+
+    const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
+    if (amount == -1) {
+        // if amount is -1, approve infinite amount
+        amount = ethers.constants.MaxUint256
+    }
+    const spender = PEANUT_CONTRACTS[chainId][contractVersion]
+    let allowance = await getAllowance(signer, chainId, tokenContract, spender)
+    // convert amount to BigInt and compare to allowance
+
+    if (isRawAmount) {
+        amount = amount
+    } else {
+        amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
+    }
+    if (allowance >= amount) {
+        console.log('Allowance already enough, no need to approve more')
+        return { allowance, txReceipt: null }
+    } else {
+        console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
+        const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
+        const tx = await tokenContract.approve(spender, amount, txOptions)
+        const txReceipt = await tx.wait()
+        allowance = await getAllowance(signer, chainId, tokenContract, spender)
+        return { allowance, txReceipt }
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#approveSpendERC20">approveSpendERC20</a></li><li><a href="global.html#claimLink">claimLink</a></li><li><a href="global.html#claimLinkGasless">claimLinkGasless</a></li><li><a href="global.html#claimLinkSender">claimLinkSender</a></li><li><a href="global.html#createLink">createLink</a></li><li><a href="global.html#generateKeysFromString">generateKeysFromString</a></li><li><a href="global.html#getAllDepositsForSigner">getAllDepositsForSigner</a></li><li><a href="global.html#getContract">getContract</a></li><li><a href="global.html#getDefaultProvider">getDefaultProvider</a></li><li><a href="global.html#getDepositIdx">getDepositIdx</a></li><li><a href="global.html#getDepositIdxs">getDepositIdxs</a></li><li><a href="global.html#getLinkDetails">getLinkDetails</a></li><li><a href="global.html#getLinkFromParams">getLinkFromParams</a></li><li><a href="global.html#getLinkStatus">getLinkStatus</a></li><li><a href="global.html#getParamsFromLink">getParamsFromLink</a></li><li><a href="global.html#getParamsFromPageURL">getParamsFromPageURL</a></li><li><a href="global.html#getRandomString">getRandomString</a></li><li><a href="global.html#greeting">greeting</a></li><li><a href="global.html#hash_string">hash_string</a></li><li><a href="global.html#signAddress">signAddress</a></li><li><a href="global.html#signMessageWithPrivatekey">signMessageWithPrivatekey</a></li><li><a href="global.html#solidityHashAddress">solidityHashAddress</a></li><li><a href="global.html#solidityHashBytesEIP191">solidityHashBytesEIP191</a></li><li><a href="global.html#verifySignature">verifySignature</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Aug 22 2023 22:37:51 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

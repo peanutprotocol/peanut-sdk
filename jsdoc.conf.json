@@ -1,7 +1,12 @@
 {
 	"source": {
-		"include": ["."],
-		"exclude": ["node_modules/"]
+		"include": [
+			"src/api/",
+			"src/common/"
+		],
+		"exclude": [
+			"node_modules/"
+		]
 	},
 	"opts": {
 		"destination": "docs/"
