@@ -68,7 +68,7 @@ export function getDefaultProvider(chainId, verbose = false) {
  * @param {boolean} [verbose=true] - Whether or not to print verbose output
  * @returns {Object} - The contract object
  */
-export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
+export async function getContract(chainId, signerOrProvider, version = DEFAULT_CONTRACT_VERSION, verbose = true) {
 	/* returns a contract object for the given chainId and signer */
 	// signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
 
@@ -592,41 +592,3 @@ export async function claimLinkGasless(
 		return data
 	}
 }
-
-const peanut = {
-	greeting,
-	generateKeysFromString,
-	signMessageWithPrivatekey,
-	verifySignature,
-	solidityHashBytesEIP191,
-	solidityHashAddress,
-	signAddress,
-	getRandomString,
-	getContract,
-	getDefaultProvider,
-	getDepositIdx,
-	getDepositIdxs,
-	getAllDepositsForSigner,
-	getLinkStatus,
-	getLinkDetails,
-	getParamsFromLink,
-	getParamsFromPageURL,
-	getLinkFromParams,
-	// createLink,
-	// createLinks,
-	claimLink,
-	claimLinkGasless,
-	approveSpendERC20,
-	// approveSpendERC721,
-	// approveSpendERC1155,
-	VERSION,
-	version: VERSION,
-	CHAIN_DETAILS,
-	TOKEN_DETAILS,
-	TOKEN_TYPES,
-	DEFAULT_CONTRACT_VERSION,
-	PEANUT_CONTRACTS,
-}
-
-export default peanut
-export { peanut }
