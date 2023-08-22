@@ -9,6 +9,8 @@
 import { ethers } from 'ethersv5' // v5
 import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import { DEFAULT_CONTRACT_VERSION } from './data.js'
+import { getAbstractSigner } from './signer.js'
+import { approveSpendERC20 } from './peanut.js'
 
 import {
 	assert,

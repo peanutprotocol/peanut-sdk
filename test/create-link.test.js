@@ -1,4 +1,4 @@
-import { createLink } from './create-link.mjs';
+import { createLink } from '../create-link.mjs';
 
 describe('Create Peanut link', () => {
   // A mock signer object
@@ -52,3 +52,4 @@ describe('Create Peanut link', () => {
   });
 
 });
+
