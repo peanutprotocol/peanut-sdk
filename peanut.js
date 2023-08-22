@@ -164,7 +164,7 @@ export async function approveSpendERC20(
 	}
 }
 
-async function setFeeOptions({
+export async function setFeeOptions({
 	txOptions,
 	provider,
 	eip1559,

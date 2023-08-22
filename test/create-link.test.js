@@ -1,21 +1,24 @@
-import { createLink } from '../create-link.mjs';
+import dotenv from 'dotenv'
+dotenv.config()
+import { ethers } from 'ethersv5'
+import { createLink } from '../create-link.js';
+
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
+
 
 describe('Create Peanut link', () => {
-  // A mock signer object
-  const mockSigner = {
-    getTransactionCount: jest.fn().mockResolvedValue(10), // Mock nonce
-    provider: {
-      getGasPrice: jest.fn().mockResolvedValue('20000000000'),
-    },
-    getAddress: jest.fn().mockResolvedValue('0xb72430b16657a7463a9dBb5d4645b3dC539B6e6b'),
-  };
+  // Mock a signer
+  const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
+  // // const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6
+  const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL) // v5
+  const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
   
   // A mock options object
   const options = {
-    signer: mockSigner,
+    signer: goerliWallet,
     chainId: 1,
     tokenAmount: 100,
-    tokenAddress: "0xb72430b16657a7463a9dBb5d4645b3dC539B6e6b",
+    tokenAddress: "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1",
     tokenType: 1,
     tokenId: 0,
     tokenDecimals: 18,

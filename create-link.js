@@ -6,29 +6,22 @@
 //
 /////////////////////////////////////////////////////////
 
+import 'isomorphic-fetch'
 import { ethers } from 'ethersv5' // v5
-import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import { DEFAULT_CONTRACT_VERSION } from './data.js'
 import { getAbstractSigner } from './signer.js'
-import { approveSpendERC20 } from './peanut.js'
+import { approveSpendERC20, setFeeOptions, getContract } from './peanut.js'
 
 import {
 	assert,
-	greeting,
 	generateKeysFromString,
-	hash_string,
-	signMessageWithPrivatekey,
-	verifySignature,
-	solidityHashBytesEIP191,
-	solidityHashAddress,
-	signAddress,
 	getRandomString,
 	getLinkFromParams,
-	getParamsFromLink,
-	getParamsFromPageURL,
 	getDepositIdx,
-	getDepositIdxs,
+	estimateGasLimit,
 } from './util.js'
+
+const CREATE_LINK_STORAGE_KEY = 'temp.peanut.deposits'
 
 /**
  * Generates a link with the specified parameters
@@ -76,18 +69,18 @@ export async function createLink({
 	contractVersion = DEFAULT_CONTRACT_VERSION,
 	nonce = null,
 }) {
-	assert(signer, 'signer arg is required')
-	assert(chainId, 'chainId arg is required')
-	assert(tokenAmount, 'amount arg is required')
-	assert(
-		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
-		'tokenAddress must be provided for non-native tokens'
-	)
-	assert(
-		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
-		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
-	)
+	// validate input parameters
+	await validateInputParameters({
+		signer, 
+		chainId, 
+		tokenAmount, 
+		tokenType, 
+		tokenAddress,
+		tokenDecimals
+	});
 
+
+	/* Mutate our signer object */
 	signer = await getAbstractSigner(signer)
 
 	if (tokenAddress == null) {
@@ -98,7 +91,11 @@ export async function createLink({
 	}
 	// convert tokenAmount to appropriate unit
 	// tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
-	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
+	// tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
+
+	/* Avoid mutation */
+	const convertedTokenAmount = convertTokenAmount(tokenAmount.toString(), tokenDecimals);
+
 
 	// if native token (tokentype == 0), add value to txOptions
 	let txOptions = {}
@@ -109,7 +106,7 @@ export async function createLink({
 	if (tokenType == 0) {
 		txOptions = {
 			...txOptions,
-			value: tokenAmount,
+			value: convertedTokenAmount,
 		}
 	} else if (tokenType == 1) {
 		// check allowance
@@ -120,13 +117,13 @@ export async function createLink({
 			signer,
 			chainId,
 			tokenAddress,
-			tokenAmount,
+			convertedTokenAmount.toString(),
 			tokenDecimals,
 			true,
 			contractVersion
 		)
-		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
-		if (allowance < tokenAmount) {
+		verbose && console.log('allowance: ', allowance, ' convertedTokenAmount: ', convertedTokenAmount)
+		if (allowance < convertedTokenAmount) {
 			throw new Error('Allowance not enough')
 		}
 	}
@@ -164,23 +161,35 @@ export async function createLink({
 	// var tx = await contract.makeDeposit(...depositParams);
 
 	// store in localstorage in case tx falls through (only if in web environment)
-	// TODO: refactor in future
-	if (typeof window !== 'undefined') {
-		const tempDeposits = JSON.parse(localStorage.getItem('tempDeposits')) || []
-		const tempDeposit = {
-			chain: chainId,
-			tokenAmount: tokenAmount.toString(),
-			contractType: tokenType,
-			contractVersion: contractVersion,
-			tokenAddress: tokenAddress,
-			password: password,
-			idx: null,
-			link: null,
-			txHash: null,
-		}
-		tempDeposits.push(tempDeposit)
-		localStorage.setItem('tempDeposits', JSON.stringify(tempDeposits))
+
+	  const tempDeposits = handleLocalStorage({
+		action: 'get',
+		key: CREATE_LINK_STORAGE_KEY,
+		verbose: verbose,
+	  }) || [];
+
+	  const tempDeposit = {
+		chain: chainId,
+		tokenAmount: tokenAmount.toString(),
+		contractType: tokenType,
+		contractVersion: contractVersion,
+		tokenAddress: tokenAddress,
+		password: password,
+		idx: null,
+		link: null,
+		txHash: null,
 	}
+
+	/* push new values into storage arr */
+	  tempDeposits.push(tempDeposit);
+
+	  handleLocalStorage({
+		action: 'set', 
+		key: CREATE_LINK_STORAGE_KEY, 
+		verbose: verbose,
+		value: tempDeposits
+	});
+	  
 
 	var tx = await contract.makeDeposit(...depositParams, txOptions)
 
@@ -196,4 +205,73 @@ export async function createLink({
 	verbose && console.log('created link: ', link)
 	// return the link and the tx receipt
 	return { link, txReceipt }
+}
+
+
+
+/**
+ * Validates the input parameters for a token transaction.
+ * @param {Object} params - The input parameters for the transaction.
+ * @param {Object} params.signer - The signer object.
+ * @param {number} params.chainId - The chain ID.
+ * @param {number} params.tokenAmount - The amount of tokens.
+ * @param {number} params.tokenType - The type of token.
+ * @param {string} params.tokenAddress - The address of the token.
+ * @param {number|null} params.tokenDecimals - The number of decimals for the token.
+ * @returns {void}
+ * @throws {Error} - Throws an error if any of the input parameters are missing or invalid.
+ * @todo We should ideally use a validator library like zod, validator.js for all of our inputs instead of manually asserting them.
+ */
+function validateInputParameters({signer, chainId, tokenAmount, tokenType, tokenAddress, tokenDecimals}) {
+    assert(signer, 'signer arg is required');
+    assert(chainId, 'chainId arg is required');
+    assert(tokenAmount, 'amount arg is required');
+    assert(
+      tokenType === 0 || tokenAddress !== '0x0000000000000000000000000000000000000000',
+      'tokenAddress must be provided for non-native tokens'
+    );
+
+    assert(
+        !(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+        'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
+    )
+}
+
+/**
+ * Converts the token amount to the appropriate unit.
+ * @param {number} tokenAmount - The amount of tokens.
+ * @param {number} tokenDecimals - The number of decimals for the token.
+ * @returns {Object} - The converted token amount.
+ */
+function convertTokenAmount(tokenAmount, tokenDecimals) {
+	return ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals);
+  }
+  
+
+/**
+ * Handles local storage actions.
+ * @param {Object} params - The input parameters for the function.
+ * @param {string} params.action - The action to perform (set or get).
+ * @param {string} params.key - The key to use for the local storage.
+ * @param {Object|null} params.value - The value to store in local storage.
+ * @param {boolean} [params.verbose=false] - Whether to log verbose output to the console.
+ * @returns {Object|null} - The retrieved value or null if not available.
+ * @throws {Error} - Throws an error if the `action` parameter is missing or invalid.
+ */
+function handleLocalStorage({action, key, value = null, verbose = false}) {
+    if (typeof window === 'undefined') {
+      console.warn(`window object doesn't exist. LocalStorage is only available in the browser. for ${action} ${key}`);
+      return null;
+    }
+  
+    if (action === 'set') {
+      localStorage.setItem(key, JSON.stringify(value));
+       verbose && console.log(`Saved the data to the key '${key}'`);
+    } else if (action === 'get') {
+      const retrievedValue = localStorage.getItem(key);
+        verbose && console.log(`Retrieved the data from the key '${key}'`)
+      return JSON.parse(retrievedValue);
+    } else {
+      throw new Error(`Invalid action '${action}'. Please choose 'set' or 'get'.`);
+    }
 }

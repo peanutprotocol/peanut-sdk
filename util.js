@@ -274,7 +274,7 @@ export function getDepositIdxs(txReceipt, chainId, contractAddress) {
  * @param {Object} txOptions - The transaction options object.
  * @returns {BigInt|null} - The estimated gas limit or null if an error occurred.
  */
-async function estimateGasLimit(contract, functionName, params, txOptions) {
+export async function estimateGasLimit(contract, functionName, params, txOptions) {
     try {
         const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
         return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
