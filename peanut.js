@@ -236,17 +236,6 @@ async function setFeeOptions({
 	return txOptions
 }
 
-async function estimateGasLimit(contract, functionName, params, txOptions) {
-	try {
-		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
-		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
-	} catch (error) {
-		console.error(`Error estimating gas for ${functionName}:`, error)
-		return null
-	}
-}
-
-
 /**
  * Checks if a link has been claimed
  *

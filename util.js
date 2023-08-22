@@ -264,3 +264,22 @@ export function getDepositIdxs(txReceipt, chainId, contractAddress) {
 	}
 	return depositIdxs
 }
+
+
+/**
+ * Estimates the gas limit for a contract function call.
+ * @param {Object} contract - The contract object.
+ * @param {string} functionName - The name of the function to estimate gas for.
+ * @param {Array} params - The parameters to pass to the function.
+ * @param {Object} txOptions - The transaction options object.
+ * @returns {BigInt|null} - The estimated gas limit or null if an error occurred.
+ */
+async function estimateGasLimit(contract, functionName, params, txOptions) {
+    try {
+        const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
+        return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
+    } catch (error) {
+        console.error(`Error estimating gas for ${functionName}:`, error)
+        return null
+    }
+}
