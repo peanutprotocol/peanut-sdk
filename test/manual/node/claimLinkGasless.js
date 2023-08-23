@@ -10,7 +10,7 @@ console.log('Peanut Version: ', peanut.version)
 // replace with ethers signer from browser wallet
 // const CHAINID = 5; // goerli
 // const RPC_URL = "https://rpc.ankr.com/eth_goerli";
-const CHAINID = 2001 // matic mainnet
+const CHAINID = 56 // matic mainnet
 const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY
 const RPC_URL = peanut.CHAIN_DETAILS[String(CHAINID)].rpc[0]
 console.log('RPC_URL: ', RPC_URL)
@@ -20,7 +20,7 @@ const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL)
 const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider)
 ////////////////////////////////////////////////////////////
 
-const link = "https://peanut.to/claim?c=2001&v=v3&i=2&p=PQpNSo6nAZ2ox9OF&t=sdk"
+const link = "https://peanut.to/claim#?c=56&v=v3&i=35&p=B8Tag0ysow7jgLpt&t=sdk"
 
 const status = await peanut.getLinkStatus({ signer: wallet, link: link })
 console.log('status: ', status)
