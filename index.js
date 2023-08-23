@@ -737,7 +737,7 @@ export async function claimLinkGasless(
 	verbose && console.log('payload: ', payload)
 	//  url = "https://api.peanut.to/claim";
 	if (url == 'local') {
-		console.log('using local api')
+		verbose &&console.log('using local api')
 		url = 'http://127.0.0.1:5001/claim'
 	}
 
@@ -762,6 +762,8 @@ export async function claimLinkGasless(
 		headers: headers,
 		body: JSON.stringify(body),
 	})
+
+	verbose && console.log('response: ', response)
 
 	if (!response.ok) {
 		const error = await response.text()
