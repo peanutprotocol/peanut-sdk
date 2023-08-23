@@ -1,5 +1,5 @@
 // import peanut from '@squirrel-labs/peanut-sdk'
-import peanut from '../../../index.js' // import directly from source code
+import peanut from '../../../src/index' // import directly from source code
 import { ethers } from 'ethers' // ethers v6
 import dotenv from 'dotenv'
 dotenv.config({ path: '../../../.env' })
@@ -14,7 +14,8 @@ console.log('RPC_URL: ', RPC_URL)
 
 // create goerli wallet with optimism rpc
 const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL)
-const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider)
+const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
 ////////////////////////////////////////////////////////////
 
-const deposits = await peanut.getAllDeposits({ signer: wallet, chainId: CHAINID })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const deposits = await peanut.getAllDepositsForSigner({ signer: wallet, chainId: CHAINID })

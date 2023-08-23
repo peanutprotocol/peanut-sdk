@@ -1,5 +1,5 @@
 // import { peanut } from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../../index.js'
+import peanut from '../../src/index'
 import { ethers } from 'ethers'
 import dotenv from 'dotenv'
 dotenv.config({ path: '../../.env' })
@@ -17,7 +17,7 @@ const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers
 ////////////////////////////////////////////////////////////
 
 // create link
-const { link, txReceipt } = await peanut.createLink({
+const { link } = await peanut.createLink({
 	signer: wallet,
 	chainId: CHAINID,
 	tokenAmount: 0.001,
@@ -27,7 +27,7 @@ const { link, txReceipt } = await peanut.createLink({
 
 // get status of link
 await new Promise((r) => setTimeout(r, 3000))
-var { claimed, deposit } = await peanut.getLinkStatus({
+var { claimed } = await peanut.getLinkStatus({
 	signer: wallet,
 	link: link,
 })
@@ -39,7 +39,7 @@ console.log('claimTx: ', claimTx.hash)
 
 // check status of link again
 await new Promise((r) => setTimeout(r, 3000))
-;({ claimed, deposit } = await peanut.getLinkStatus({
+;({ claimed } = await peanut.getLinkStatus({
 	signer: wallet,
 	link: link,
 }))

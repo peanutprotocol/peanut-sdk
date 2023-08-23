@@ -16,7 +16,7 @@ const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers
 ////////////////////////////////////////////////////////////
 
 // create link
-const { link, txReceipt } = await peanut.createLink({
+const { link } = await peanut.createLink({
 	signer: wallet,
 	chainId: CHAINID,
 	tokenAmount: 0.001,
@@ -26,7 +26,7 @@ const { link, txReceipt } = await peanut.createLink({
 
 // get status of link
 await new Promise((r) => setTimeout(r, 3000))
-var { claimed, deposit } = await peanut.getLinkStatus({
+var { claimed } = await peanut.getLinkStatus({
 	signer: wallet,
 	link: link,
 })
@@ -38,7 +38,7 @@ console.log('res: ', res)
 
 // check status of link again
 await new Promise((r) => setTimeout(r, 3000))
-;({ claimed, deposit } = await peanut.getLinkStatus({
+;({ claimed } = await peanut.getLinkStatus({
 	signer: wallet,
 	link: link,
 }))

@@ -1,15 +1,15 @@
 // // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../index' // import directly from source code
+import peanut from '../src/index' // import directly from source code
 import { ethers } from 'ethers'
 import dotenv from 'dotenv'
 
 // load .env file
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
 
-async function createAndClaimLink(options, inbetweenDelay = 1000) {
+async function createAndClaimLink(options: any, inbetweenDelay = 1000) {
 	const { link, txReceipt } = await peanut.createLink(options)
 	if (txReceipt && txReceipt.hash) {
 		await waitForTransaction(options.signer.provider, txReceipt.hash)
@@ -23,7 +23,7 @@ async function createAndClaimLink(options, inbetweenDelay = 1000) {
 	})
 }
 
-async function waitForTransaction(provider, txHash, timeout = 60000) {
+async function waitForTransaction(provider: any, txHash: string, timeout = 60000) {
 	const startTime = Date.now()
 
 	while (Date.now() - startTime < timeout) {
@@ -143,7 +143,7 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 					verbose: true,
 				})
 				throw new Error('Test should have thrown an error but did not.')
-			} catch (e) {
+			} catch (e: any) {
 				expect(e.message).toContain('tokenAddress must be provided for non-native tokens') // Replace with expected error message
 			}
 		}, 60000)
@@ -159,7 +159,7 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 
 			// claim link using api
 			const receiverAddress = goerliWallet.address
-			const apiToken = process.env.PEANUT_DEV_API_KEY
+			const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 			const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken)
 			console.log(res)
 		}, 60000)
@@ -168,7 +168,7 @@ describe('Peanut SDK LIVE Integration Tests', function () {
 			const link = 'https://peanut.to/claim?c=5&v=v3&i=31&p=FjEditsxpzOafssaffsafsasx6IrI&t=sdk'
 
 			const receiverAddress = goerliWallet.address
-			const apiToken = process.env.PEANUT_DEV_API_KEY
+			const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 			try {
 				await peanut.claimLinkGasless(link, receiverAddress, apiToken)
 				throw new Error('Test should have thrown an error but did not.')

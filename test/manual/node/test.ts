@@ -6,9 +6,9 @@ import dotenv from 'dotenv'
 dotenv.config({ path: '../../../.env' })
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
+// const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
 const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
-const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL)
+// const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL)
 const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 
 const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)

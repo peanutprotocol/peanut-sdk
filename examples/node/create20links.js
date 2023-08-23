@@ -1,5 +1,5 @@
 // import peanut from '@squirrel-labs/peanut-sdk';
-import peanut from '../../index.js'
+import peanut from '../../src/index'
 import { ethers } from 'ethers'
 import dotenv from 'dotenv'
 dotenv.config({ path: '../../.env' })
@@ -11,7 +11,7 @@ console.log('Peanut version: ', peanut.version)
 // replace with ethers signer from browser wallet
 const CHAINID = 137 // polygon
 const RPC_URL = 'https://polygon-rpc.com/'
-const tokenType = 1
+// const tokenType = 1
 const tokenAddress = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
 const tokenDecimals = 6
 ////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers
 ////////////////////////////////////////////////////////////
 
 // create link
-const { link, txReceipt } = await peanut.createLink({
+const { link } = await peanut.createLink({
 	signer: wallet,
 	chainId: CHAINID,
 	tokenAmount: 0.001,

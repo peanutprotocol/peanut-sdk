@@ -1,21 +1,21 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../index' // import directly from source code
+import peanut from '../src/index' // import directly from source code
 // import { ethers } from 'ethersv6'; // v6
 import { ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
 const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY)
 
 describe('Unit tests', function () {
-	// test wallet from private key should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02
+	// test wallet from private key should have address 0x56Ba9A00928E2e3aEb458A572F76964F3F3ee353
 	describe('test wallet from private key', function () {
-		it('should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', function () {
-			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
+		it('should have address 0x56Ba9A00928E2e3aEb458A572F76964F3F3ee353', function () {
+			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
 			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY)
-			expect(wallet.address).toBe('0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02')
+			expect(wallet.address).toBe('0x56Ba9A00928E2e3aEb458A572F76964F3F3ee353')
 		})
 	})
 
@@ -79,8 +79,8 @@ describe('Unit tests', function () {
 	describe('Link Tests', function () {
 		describe('getParamsFromLink()', function () {
 			it('should return the correct params from a link', function () {
-				let link = 'https://peanut.to/claim?c=5&v=v3&i=52&p=super_secret_password'
-				let params = peanut.getParamsFromLink(link)
+				const link = 'https://peanut.to/claim?c=5&v=v3&i=52&p=super_secret_password'
+				const params = peanut.getParamsFromLink(link)
 				// assert.equal(params.chainId, 5);
 				// assert.equal(params.contractVersion, "v3");
 				// assert.equal(params.depositIdx, 52);
@@ -94,8 +94,8 @@ describe('Unit tests', function () {
 				expect(params.trackId).toBe('')
 			})
 			it('should return the correct params from a link with a trackId', function () {
-				let link = 'https://peanut.to/claim?c=5&v=v3&i=52&p=super_secret_password&t=123456789'
-				let params = peanut.getParamsFromLink(link)
+				const link = 'https://peanut.to/claim?c=5&v=v3&i=52&p=super_secret_password&t=123456789'
+				const params = peanut.getParamsFromLink(link)
 				expect(params.chainId).toBe(5)
 				expect(params.contractVersion).toBe('v3')
 				expect(params.depositIdx).toBe(52)
@@ -103,8 +103,8 @@ describe('Unit tests', function () {
 				expect(params.trackId).toBe('123456789')
 			})
 			it('should return correct params from link with hash', function () {
-				let link = 'https://peanut.to/claim#?c=137&v=v3&i=1555&p=eCEge2ooT3fGkFfd&t=sdk'
-				let params = peanut.getParamsFromLink(link)
+				const link = 'https://peanut.to/claim#?c=137&v=v3&i=1555&p=eCEge2ooT3fGkFfd&t=sdk'
+				const params = peanut.getParamsFromLink(link)
 				expect(params.chainId).toBe(137)
 				expect(params.contractVersion).toBe('v3')
 				expect(params.depositIdx).toBe(1555)

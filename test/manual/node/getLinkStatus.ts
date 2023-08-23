@@ -1,4 +1,4 @@
-import peanut from '../../../index.js' // import directly from source code
+import peanut from '../../../src/index' // import directly from source code
 
 console.log(peanut.version)
 

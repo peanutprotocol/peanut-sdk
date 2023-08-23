@@ -1,10 +1,9 @@
-const path = require('path')
-const TerserPlugin = require('terser-webpack-plugin')
-const nodeExternals = require('webpack-node-externals')
+import path from 'path'
+import TerserPlugin from 'terser-webpack-plugin'
 
 // Common Configuration
 const common = {
-	entry: './index.js',
+	entry: './src/index.js',
 	module: {
 		rules: [
 			{
@@ -77,6 +76,9 @@ const nodeConfig = {
 			// type: 'commonjs2',
 			type: 'module',
 		},
+	},
+	resolve: {
+		extensions: ['.ts', '.tsx', '.js'],
 	},
 	target: ['node', 'es2020'],
 	// externals: [nodeExternals()], // causes problems with CommonJS require vs ES6 import :(
