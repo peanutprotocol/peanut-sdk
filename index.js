@@ -213,21 +213,28 @@ async function setFeeOptions({
 	}
 
 	if (eip1559) {
-		verbose && console.log('Setting eip1559 tx options...', txOptions)
-		txOptions.maxFeePerGas =
-			maxFeePerGas ||
-			(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
-		txOptions.maxPriorityFeePerGas =
-			maxPriorityFeePerGas ||
-			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
-				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-				BigInt(10)
+		try {
+			verbose && console.log('Setting eip1559 tx options...', txOptions)
+			txOptions.maxFeePerGas =
+				maxFeePerGas ||
+				(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
+			txOptions.maxPriorityFeePerGas =
+				maxPriorityFeePerGas ||
+				(BigInt(feeData.maxPriorityFeePerGas.toString()) *
+					BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
+					BigInt(10)
 
-		// ensure maxPriorityFeePerGas is less than maxFeePerGas
-		if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
-			txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+			// ensure maxPriorityFeePerGas is less than maxFeePerGas
+			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
+				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+			}
+		} catch (error) {
+			console.error('Failed to set eip1559 tx options:', error)
+			console.log('Falling back to legacy tx options...')
+			eip1559 = false
 		}
-	} else {
+	}
+	if (!eip1559) {
 		let gasPrice
 		if (!txOptions.gasPrice) {
 			if (feeData.gasPrice == null) {

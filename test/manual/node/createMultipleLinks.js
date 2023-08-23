@@ -7,9 +7,9 @@ dotenv.config({ path: '../../../.env' })
 console.log('Peanut Version: ', peanut.version)
 
 ////////////////////////////////////////////////////////////
-const CHAIN_ID = 5
-const TOKEN_AMOUNT = 0.1
-const NUM_LINKS = 5
+const CHAIN_ID = 56
+const TOKEN_AMOUNT = 0.0001
+const NUM_LINKS = 1
 const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY
 const RPC_URL = peanut.CHAIN_DETAILS[String(CHAIN_ID)].rpc[0] // choose which rpc to use from the list, or add your own
 const CHAIN_NAME = peanut.CHAIN_DETAILS[String(CHAIN_ID)].name
