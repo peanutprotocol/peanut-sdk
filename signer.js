@@ -1,1 +1,0 @@
-// implements abstract signer class

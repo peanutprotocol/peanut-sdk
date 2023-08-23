@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: api/claimLinkGasless.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,76 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: api/claimLinkGasless.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { createClaimPayload } from './index.js'
 
+/**
+ * Claims a link through the Peanut API
+ *
+ * @param {string} link - The link to claim
+ * @param {string} recipientAddress - The recipient address to claim the link to
+ * @param {string} apiKey -The API key to use for the Peanut API
+ * @param {string} url - The URL to use for the Peanut API (default is 'https://api.peanut.to/claim')
+ * @returns {Object} - The data returned from the API call
+ */
+export async function claimLinkGasless(
+	link,
+	recipientAddress,
+	apiKey,
+	verbose = false,
+	url = 'https://api.peanut.to/claim'
+) {
+	console.log('claiming link through Peanut API...')
+	verbose &amp;&amp; console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', apiKey, ' url: ', url)
+	const payload = await createClaimPayload(link, recipientAddress)
+	verbose &amp;&amp; console.log('payload: ', payload)
+	//  url = "https://api.peanut.to/claim";
+	if (url == 'local') {
+		console.log('using local api')
+		url = 'http://127.0.0.1:5001/claim'
+	}
 
-    <h3> </h3>
+	const headers = {
+		'Content-Type': 'application/json',
+	}
 
+	const body = {
+		address: payload.recipientAddress,
+		address_hash: payload.addressHash,
+		signature: payload.signature,
+		idx: payload.idx,
+		chain: payload.chainId,
+		version: payload.contractVersion,
+		api_key: apiKey,
+	}
 
+	// if axios error, return the error message
 
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
 
-
-
-
-
-
-
-    
-
-
-
-
-
+	if (!response.ok) {
+		const error = await response.text()
+		throw new Error(error)
+	} else {
+		const data = await response.json()
+		return data
+	}
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

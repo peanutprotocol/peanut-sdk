@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: api/getAllDeposittsForSigner.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,55 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: api/getAllDeposittsForSigner.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+    DEFAULT_CONTRACT_VERSION
+} from '../common/data.js'
+import {
+    getContract
+} from './index.js'
 
-
-    <h3> </h3>
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
+/**
+ * Gets all deposits for a given signer and chainId.
+ *
+ */
+export async function getAllDepositsForSigner({
+    signer,
+    chainId,
+    contractVersion = DEFAULT_CONTRACT_VERSION,
+    verbose = false,
+}) {
+    const contract = await getContract(chainId, signer, contractVersion)
+    let deposits
+    if (contractVersion == 'v3') {
+        // throw warning if using v3
+        console.warn('WARNING: This function is not efficient for v3 contracts. Not recommended to use.')
+        const depositCount = await contract.getDepositCount()
+        deposits = []
+        for (let i = 0; i &lt; depositCount; i++) {
+            verbose &amp;&amp; console.log('fetching deposit: ', i)
+            let deposit = await contract.deposits(i)
+            deposits.push(deposit)
+        }
+    } else {
+        // v4: we now have getAllDeposits available
+        const address = await signer.getAddress()
+        // const allDeposits = await contract.getAllDeposits();
+        deposits = await contract.getAllDepositsForAddress(address)
+    }
+    return deposits
+}
+</code></pre>
+        </article>
+    </section>
 
 
 

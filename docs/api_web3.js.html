@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: api/web3.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: api/web3.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { ethers } from 'ethersv5'
+import { CHAIN_DETAILS, PEANUT_ABI_V3, PEANUT_ABI_V4, PEANUT_CONTRACTS } from '../common/index.js'
+
+/**
+ * Returns the default provider for a given chainId
+ *
+ * @param {number|string} chainId - The chainId to get the provider for
+ * @param {boolean} verbose - Whether or not to print verbose output
+ * @returns {Object} - The provider
+ */
+export function getDefaultProvider(chainId, verbose = false) {
+    chainId = String(chainId)
+    const rpcs = CHAIN_DETAILS[chainId].rpc
+
+    verbose &amp;&amp; console.log('rpcs', rpcs)
+    // choose first rpc that has no '${' sign in it (e.g. )
+    const rpc = rpcs.find((rpc) => !rpc.includes('${'))
+    verbose &amp;&amp; console.log('rpc', rpc)
+    const provider = new ethers.providers.JsonRpcProvider(rpc)
+    return provider
+}
+
+/**
+ * Returns a contract object for a given chainId and signer
+ *
+ * @param {number|string} chainId - The chainId to get the contract for
+ * @param {Object} signerOrProvider - The signer or provider to use for the contract
+ * @param {string} [version=CONTRACT_VERSION] - The version of the contract
+ * @param {boolean} [verbose=true] - Whether or not to print verbose output
+ * @returns {Object} - The contract object
+ */
+export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
+    /* returns a contract object for the given chainId and signer */
+    // signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
+
+    if (typeof chainId == 'string' || chainId instanceof String) {
+        // just move to TS ffs
+        // do smae with bigint
+        // if chainId is a string, convert to int
+        chainId = parseInt(chainId)
+    }
+    chainId = parseInt(chainId)
+
+    // TODO: fix this for new versions
+    // if version is v3, load PEANUT_ABI_V3. if it is v4, load PEANUT_ABI_V4
+    var PEANUT_ABI
+    if (version == 'v3') {
+        PEANUT_ABI = PEANUT_ABI_V3
+    } else if (version == 'v4') {
+        PEANUT_ABI = PEANUT_ABI_V4
+    } else {
+        throw new Error('Invalid version')
+    }
+
+    const contractAddress = PEANUT_CONTRACTS[chainId][version]
+    const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
+    // connected to contracv
+    verbose &amp;&amp; console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress)
+    return contract
+    // TODO: return class
+}
+
+export async function getAllowance(signer, chainId, tokenContract, spender) {
+    let allowance
+    try {
+        let address = await signer.getAddress()
+        allowance = await tokenContract.allowance(address, spender)
+    } catch (error) {
+        console.error('Error fetching allowance:', error)
+    }
+    return allowance
+}
+
+export async function estimateGasLimit(contract, functionName, params, txOptions) {
+    try {
+        const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
+        return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
+    } catch (error) {
+        console.error(`Error estimating gas for ${functionName}:`, error)
+        return null
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#approveSpendERC20">approveSpendERC20</a></li><li><a href="global.html#claimLink">claimLink</a></li><li><a href="global.html#claimLinkGasless">claimLinkGasless</a></li><li><a href="global.html#claimLinkSender">claimLinkSender</a></li><li><a href="global.html#createLink">createLink</a></li><li><a href="global.html#generateKeysFromString">generateKeysFromString</a></li><li><a href="global.html#getAllDepositsForSigner">getAllDepositsForSigner</a></li><li><a href="global.html#getContract">getContract</a></li><li><a href="global.html#getDefaultProvider">getDefaultProvider</a></li><li><a href="global.html#getDepositIdx">getDepositIdx</a></li><li><a href="global.html#getDepositIdxs">getDepositIdxs</a></li><li><a href="global.html#getLinkDetails">getLinkDetails</a></li><li><a href="global.html#getLinkFromParams">getLinkFromParams</a></li><li><a href="global.html#getLinkStatus">getLinkStatus</a></li><li><a href="global.html#getParamsFromLink">getParamsFromLink</a></li><li><a href="global.html#getParamsFromPageURL">getParamsFromPageURL</a></li><li><a href="global.html#getRandomString">getRandomString</a></li><li><a href="global.html#greeting">greeting</a></li><li><a href="global.html#hash_string">hash_string</a></li><li><a href="global.html#signAddress">signAddress</a></li><li><a href="global.html#signMessageWithPrivatekey">signMessageWithPrivatekey</a></li><li><a href="global.html#solidityHashAddress">solidityHashAddress</a></li><li><a href="global.html#solidityHashBytesEIP191">solidityHashBytesEIP191</a></li><li><a href="global.html#verifySignature">verifySignature</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Aug 22 2023 22:37:51 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
