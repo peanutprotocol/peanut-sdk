@@ -1,9 +1,17 @@
+import { Signer } from 'ethersv5'
 import {
     DEFAULT_CONTRACT_VERSION
-} from '../common/data.js'
+} from '../common/'
 import {
     getContract
-} from './index.js'
+} from './'
+
+interface GetAllDepositsForSignerParam {
+    signer: Signer,
+    chainId: string | number,
+    contractVersion?: string,
+    verbose?: boolean,
+}
 
 /**
  * Gets all deposits for a given signer and chainId.
@@ -14,7 +22,7 @@ export async function getAllDepositsForSigner({
     chainId,
     contractVersion = DEFAULT_CONTRACT_VERSION,
     verbose = false,
-}) {
+}: GetAllDepositsForSignerParam) {
     const contract = await getContract(chainId, signer, contractVersion)
     let deposits
     if (contractVersion == 'v3') {

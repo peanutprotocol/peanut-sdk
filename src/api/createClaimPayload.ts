@@ -5,13 +5,16 @@ import {
 	signAddress,
 	solidityHashAddress,
 	solidityHashBytesEIP191,
-} from '../common/index.js'
+} from '../common/index'
 
-export async function createClaimPayload(link, recipientAddress) {
+export async function createClaimPayload(link: string, recipientAddress: string) {
 	/* internal utility function to create the payload for claiming a link */
 	const params = getParamsFromLink(link)
 	const chainId = params.chainId
 	const password = params.password
+	if (!password) {
+		throw new Error("createClaimPayload no password provided")
+	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
 
 	// cryptography

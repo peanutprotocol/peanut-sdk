@@ -1,4 +1,4 @@
-import peanut from '../index'
+import peanut from '../index.js'
 import { dirname, join } from 'path'
 import { readFileSync } from 'fs'
 

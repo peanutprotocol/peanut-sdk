@@ -1,33 +1,38 @@
-import { ethers } from 'ethersv5'
+import { Signer, ethers } from 'ethersv5'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import {
     TOKEN_DETAILS,
     assert,
     getParamsFromLink
-} from '../common/index.js'
-import { getContract } from './web3.js'
+} from '../common/index'
+import {
+    getContract
+} from './'
+
 
 /**
  * Gets the details of a Link: what token it is, how much it holds, etc.
  *
- * @param {Object} signerOrProvider - The signer or provider to use
+ * @param {Signer | JsonRpcProvider} signerOrProvider - The signer or provider to use
  * @param {string} link - The link to get the details of
  * @param {boolean} verbose - Whether or not to print verbose output
  * @returns {Object} - An object containing the link details
  */
-export async function getLinkDetails(signerOrProvider, link, verbose = false) {
+export async function getLinkDetails(signerOrProvider: Signer | JsonRpcProvider, link: string, verbose = false) {
     /**
      * Gets the details of a Link: what token it is, how much it holds, etc.
      */
     verbose && console.log('getLinkDetails called with link: ', link)
-    assert(signerOrProvider, 'signerOrProvider arg is required')
-    assert(link, 'link arg is required')
+    assert(!!signerOrProvider, 'signerOrProvider arg is required')
+    assert(!!link, 'link arg is required')
 
     const params = getParamsFromLink(link)
     const chainId = params.chainId
     const contractVersion = params.contractVersion
+    assert(!!contractVersion, 'contractVersion is required')
     const depositIdx = params.depositIdx
     const password = params.password
-    const contract = await getContract(chainId, signerOrProvider, contractVersion)
+    const contract = await getContract(chainId, signerOrProvider, contractVersion!)
 
     const deposit = await contract.deposits(depositIdx)
     var tokenAddress = deposit.tokenAddress

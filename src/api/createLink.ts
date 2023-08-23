@@ -1,4 +1,5 @@
-import { ethers } from 'ethersv5'
+import { BigNumberish, Signer, ethers } from 'ethersv5'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import {
     DEFAULT_CONTRACT_VERSION,
     assert,
@@ -7,18 +8,39 @@ import {
     getDepositIdx,
     getLinkFromParams,
     getRandomString,
-} from '../common/index.js'
+} from '../common/index'
 import {
+    TxFeeOptions,
     approveSpendERC20,
     estimateGasLimit,
     getContract,
     setFeeOptions
-} from './index.js'
+} from './'
+
+interface CreateLinkParams {
+    signer: Signer
+    chainId: string | number,
+    tokenAmount?: BigNumberish,
+    tokenAddress?: string,
+    tokenType?: number,
+    tokenId?: number,
+    tokenDecimals?: number,
+    password?: string,
+    baseUrl?: string,
+    trackId?: string,
+    maxFeePerGas?: BigNumberish | null,
+    maxPriorityFeePerGas?: BigNumberish | null,
+    gasLimit?: BigNumberish | null,
+    eip1559?: boolean,
+    verbose?: boolean,
+    contractVersion?: string,
+    nonce?: number | null,
+}
 
 /**
  * Generates a link with the specified parameters
  *
- * @param {Object} options - An object containing the options to use for the link creation
+ * @param {CreateLinkParams} options - An object containing the options to use for the link creation
  * @returns {Object} - An object containing the link and the txReceipt
  * @example
  * const result = await createLink({
@@ -60,10 +82,10 @@ export async function createLink({
     verbose = false,
     contractVersion = DEFAULT_CONTRACT_VERSION,
     nonce = null,
-}) {
-    assert(signer, 'signer arg is required')
-    assert(chainId, 'chainId arg is required')
-    assert(tokenAmount, 'amount arg is required')
+}: CreateLinkParams) {
+    assert(!!signer, 'signer arg is required')
+    assert(!!chainId, 'chainId arg is required')
+    assert(!!tokenAmount, 'amount arg is required')
     assert(
         tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
         'tokenAddress must be provided for non-native tokens'
@@ -83,10 +105,10 @@ export async function createLink({
     }
     // convert tokenAmount to appropriate unit
     // tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
-    tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
+    tokenAmount = ethers.utils.parseUnits(tokenAmount!.toString(), tokenDecimals) // v5
 
     // if native token (tokentype == 0), add value to txOptions
-    let txOptions = {}
+    let txOptions: TxFeeOptions = {}
     // set nonce
     // nonce = nonce || (await signer.getNonce()); // v6
     nonce = nonce || (await signer.getTransactionCount()) // v5
@@ -111,7 +133,8 @@ export async function createLink({
             contractVersion
         )
         verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
-        if (allowance < tokenAmount) {
+        const bigAllowance = ethers.utils.parseUnits(allowance.toString())
+        if (tokenAmount.gte(bigAllowance)) {
             throw new Error('Allowance not enough')
         }
     }
@@ -129,7 +152,7 @@ export async function createLink({
     // set transaction options
     txOptions = await setFeeOptions({
         txOptions,
-        provider: signer.provider,
+        provider: signer.provider as JsonRpcProvider,
         eip1559,
         maxFeePerGas,
         maxPriorityFeePerGas,
@@ -151,7 +174,8 @@ export async function createLink({
     // store in localstorage in case tx falls through (only if in web environment)
     // TODO: refactor in future
     if (typeof window !== 'undefined') {
-        const tempDeposits = JSON.parse(localStorage.getItem('tempDeposits')) || []
+        const lsTempDeposits = localStorage.getItem('tempDeposits')
+        const tempDeposits = lsTempDeposits ? JSON.parse(lsTempDeposits) : []
         const tempDeposit = {
             chain: chainId,
             tokenAmount: tokenAmount.toString(),

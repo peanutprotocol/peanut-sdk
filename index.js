@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////////
 
 import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
-import { peanut } from './src/index.js'
+import { peanut } from './src/'
 
 export default peanut
 export { peanut }

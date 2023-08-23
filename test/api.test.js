@@ -1,6 +1,6 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../index' // import directly from source code
+import peanut from '../index.js' // import directly from source code
 
 // import { ethers } from 'ethersv6'; // v6
 import { ethers } from 'ethersv5' // v5
@@ -39,7 +39,7 @@ describe('Peanut API Integration Tests', function () {
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 
 		it('should create a link and claim it', async function () {
-			setTimeout(() => {}, 9000)
+			setTimeout(() => { }, 9000)
 			const { link, txReceipt } = await peanut.createLink({
 				signer: optimism_goerli_wallet,
 				chainId: chainId,
@@ -48,13 +48,13 @@ describe('Peanut API Integration Tests', function () {
 			})
 
 			// check status of link
-			setTimeout(() => {}, 2000)
+			setTimeout(() => { }, 2000)
 			const status = await peanut.getLinkStatus({ signer: optimism_goerli_wallet, link: link })
 			assert.strictEqual(status.claimed, false)
 
 			// claim link using api
 			const receiverAddress = optimism_goerli_wallet.address
-			setTimeout(() => {}, 9000)
+			setTimeout(() => { }, 9000)
 			const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken)
 		}, 60000) // 60 seconds timeout
 	})

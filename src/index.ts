@@ -18,7 +18,7 @@ import {
 	getParamsFromPageURL,
 	getDepositIdx,
 	getDepositIdxs,
-} from './common/index.js'
+} from './common/index'
 
 import {
 	getContract,
@@ -30,7 +30,7 @@ import {
 	claimLink,
 	claimLinkGasless,
 	approveSpendERC20,
-} from './api/index.js'
+} from './api/index'
 
 const peanut = {
 	greeting,

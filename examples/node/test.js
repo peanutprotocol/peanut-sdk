@@ -39,8 +39,8 @@ console.log('claimTx: ', claimTx.hash)
 
 // check status of link again
 await new Promise((r) => setTimeout(r, 3000))
-;({ claimed, deposit } = await peanut.getLinkStatus({
-	signer: wallet,
-	link: link,
-}))
+	; ({ claimed, deposit } = await peanut.getLinkStatus({
+		signer: wallet,
+		link: link,
+	}))
 console.log('The link is claimed: ', claimed)

@@ -1,19 +1,20 @@
-import { ethers } from 'ethersv5'
+import { BigNumber, Signer, ethers } from 'ethersv5'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import {
     DEFAULT_CONTRACT_VERSION,
     ERC20_ABI,
-    PEANUT_CONTRACTS,
-    getAbstractSigner
-} from '../common/index.js'
+    getAbstractSigner,
+    getPeanutContractAdress
+} from '../common/index'
 import {
     getAllowance,
     setFeeOptions
-} from './index.js'
+} from './'
 
 /**
  * Approves the contract to spend the specified amount of tokens
  *
- * @param {Object} signer - The signer to use for approving the spend
+ * @param {Signer} signer - The signer to use for approving the spend
  * @param {number|string} chainId - The chainId of the contract
  * @param {string} tokenAddress - The address of the token to approve the spend for
  * @param {number|string} amount - The amount to approve for spending. If -1, approve infinite amount.
@@ -25,10 +26,10 @@ import {
  * @returns {Object} - An object containing the allowance and txReceipt
  */
 export async function approveSpendERC20(
-    signer,
-    chainId,
-    tokenAddress,
-    amount,
+    signer: Signer,
+    chainId: number | string,
+    tokenAddress: string,
+    amount: number | string | BigNumber,
     tokenDecimals = 18,
     isRawAmount = false,
     contractVersion = DEFAULT_CONTRACT_VERSION,
@@ -42,7 +43,7 @@ export async function approveSpendERC20(
         // if amount is -1, approve infinite amount
         amount = ethers.constants.MaxUint256
     }
-    const spender = PEANUT_CONTRACTS[chainId][contractVersion]
+    const spender = getPeanutContractAdress(String(chainId), contractVersion)
     let allowance = await getAllowance(signer, chainId, tokenContract, spender)
     // convert amount to BigInt and compare to allowance
 
@@ -51,12 +52,12 @@ export async function approveSpendERC20(
     } else {
         amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
     }
-    if (allowance >= amount) {
+    if (allowance && allowance >= amount) {
         console.log('Allowance already enough, no need to approve more')
         return { allowance, txReceipt: null }
     } else {
-        console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
-        const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
+        console.log('Allowance only', allowance?.toString(), ', need ' + amount.toString() + ', approving...')
+        const txOptions = await setFeeOptions({ verbose, provider: signer.provider as JsonRpcProvider, eip1559: true })
         const tx = await tokenContract.approve(spender, amount, txOptions)
         const txReceipt = await tx.wait()
         allowance = await getAllowance(signer, chainId, tokenContract, spender)

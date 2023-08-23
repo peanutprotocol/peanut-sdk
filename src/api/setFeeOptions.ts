@@ -1,4 +1,7 @@
-import { ethers } from 'ethersv5'
+import { FeeData } from '@ethersproject/abstract-provider'
+import { BigNumberish, ethers } from 'ethersv5'
+import { TxFeeOptions } from './txOptions'
+
 export async function setFeeOptions({
 	txOptions,
 	provider,
@@ -11,10 +14,13 @@ export async function setFeeOptions({
 	maxPriorityFeePerGas = null,
 	maxPriorityFeePerGasMultiplier = 2,
 	verbose = false,
-} = {}) {
-	let feeData
+}: TxFeeOptions = {}) {
+	let feeData: FeeData
 	// if not txOptions, create it (oneliner)
 	txOptions = txOptions || {}
+	if (!provider) {
+		throw new Error("setFeeOptions: provider missing")
+	}
 	try {
 		feeData = await provider.getFeeData()
 		verbose && console.log('Fetched gas price from provider:', feeData)
@@ -39,12 +45,12 @@ export async function setFeeOptions({
 		verbose && console.log('Setting eip1559 tx options...', txOptions)
 		txOptions.maxFeePerGas =
 			maxFeePerGas ||
-			(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
+			(BigInt(feeData.maxFeePerGas?.toString() || "0") * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
 		txOptions.maxPriorityFeePerGas =
 			maxPriorityFeePerGas ||
-			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
+			(BigInt(feeData.maxPriorityFeePerGas?.toString() || "0") *
 				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-				BigInt(10)
+			BigInt(10)
 
 		// ensure maxPriorityFeePerGas is less than maxFeePerGas
 		if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
@@ -62,7 +68,7 @@ export async function setFeeOptions({
 				gasPrice = BigInt(feeData.gasPrice.toString())
 			}
 		}
-		const proposedGasPrice = (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
+		const proposedGasPrice = ((gasPrice || BigInt(0)) * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
 		txOptions.gasPrice = proposedGasPrice.toString()
 	}
 

@@ -1,4 +1,4 @@
-import { createClaimPayload } from './index.js'
+import { createClaimPayload } from './'
 
 /**
  * Claims a link through the Peanut API
@@ -10,9 +10,9 @@ import { createClaimPayload } from './index.js'
  * @returns {Object} - The data returned from the API call
  */
 export async function claimLinkGasless(
-	link,
-	recipientAddress,
-	apiKey,
+	link: string,
+	recipientAddress: string,
+	apiKey: string,
 	verbose = false,
 	url = 'https://api.peanut.to/claim'
 ) {
