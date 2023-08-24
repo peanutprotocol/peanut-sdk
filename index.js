@@ -455,6 +455,33 @@ export async function createLink({
 	return { link, txReceipt }
 }
 
+export async function createLinks({
+	signer, // ethers signer object
+	chainId, // chain id of the network (only EVM for now)
+	tokenAmount, // tokenAmount to put in each link
+	numberOfLinks = null, // number of links to create
+	tokenAmounts = [], // array of token amounts, if different amounts are needed for links
+	tokenAddress = '0x0000000000000000000000000000000000000000',
+	tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
+	tokenId = 0, // only used for ERC721 and ERC1155
+	tokenDecimals = null, // only used for ERC20 and ERC1155
+	passwords = [], // passwords that each link should have
+	baseUrl = 'https://peanut.to/claim',
+	trackId = 'sdk', // optional tracker id to track the link source
+	maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
+	maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
+	gasLimit = 1000000, // gas limit
+	eip1559 = true, // whether to use eip1559 or not
+	verbose = false,
+	contractVersion = DEFAULT_CONTRACT_VERSION,
+	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
+	nonce = null,
+}) {
+	console.warn('WARNING: createLinks() is not implemented yet')
+	// return mock
+	return { links: [], txReceipts: [] }
+}
+
 /**
  * Checks if a link has been claimed
  *
