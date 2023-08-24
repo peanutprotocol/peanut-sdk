@@ -468,14 +468,14 @@ export async function createLinks({
 	passwords = [], // passwords that each link should have
 	baseUrl = 'https://peanut.to/claim',
 	trackId = 'sdk', // optional tracker id to track the link source
-	maxFeePerGas = ethers.parseUnits('1000', 'gwei'), // maximum fee per gas
-	maxPriorityFeePerGas = ethers.parseUnits('5', 'gwei'), // maximum priority fee per gas
-	gasLimit = 1000000, // gas limit
-	eip1559 = true, // whether to use eip1559 or not
+	maxFeePerGas = null,
+	maxPriorityFeePerGas = null,
+	gasLimit = null,
+	eip1559 = true,
+	nonce = null,
 	verbose = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
 	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
-	nonce = null,
 }) {
 	console.warn('WARNING: createLinks() is not implemented yet')
 	// return mock
