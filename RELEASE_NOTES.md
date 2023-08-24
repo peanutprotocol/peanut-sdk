@@ -6,5 +6,7 @@
 -   refactored some code & general code quality improvements
 -   fix for goerli tokens in getLinkDetails
 -   link parameteres now by default have a '#' in front to prevent server side attacks
+-   fixed compatbility with old non # links
 -   claimLinkGasless now throws on fail
 -   chainDetails now includes an url to an icon for each chain
+-   made V4 default & fixed some new bugs

@@ -215,27 +215,41 @@ export function getLinkFromParams(
  * @param {number|string} chainId - The chainId of the contract
  * @returns {number} - The deposit index
  */
-export function getDepositIdx(txReceipt, chainId) {
+export function getDepositIdx(txReceipt, chainId, contractVersion) {
 	/* returns the deposit index from a tx receipt */
 	const logs = txReceipt.logs
-	// const chainId = txReceipt.chainId;
-	var depositIdx
-	var logIndex
-	if (chainId == 137 || chainId == 80001) {
-		// why do you have to be this way?
+	let depositIdx
+	let logIndex
+
+	// Identify the logIndex based on chainId
+	if (chainId === 137 || chainId === 80001) {
 		logIndex = logs.length - 2
 	} else {
-		logIndex = logs.length - 1 // last log is the deposit event
+		logIndex = logs.length - 1
 	}
-	// only works if EventLog. If Log, then need to look at data, and first uint256 is depositIdx.
-	try {
-		depositIdx = logs[logIndex].args[0]
-	} catch (error) {
-		// get uint256 from data (first 32 bytes)
-		const data = logs[logIndex].data
-		const depositIdxHex = data.slice(0, 66)
-		depositIdx = parseInt(BigInt(depositIdxHex)) // should this be int or bigint? decide wen TS.
+
+	// Handle the deposit index extraction based on contract version
+	if (contractVersion === 'v3') {
+		try {
+			depositIdx = logs[logIndex].args[0]
+		} catch (error) {
+			// get uint256 from data (first 32 bytes)
+			const data = logs[logIndex].data
+			const depositIdxHex = data.slice(0, 66)
+			depositIdx = parseInt(BigInt(depositIdxHex))
+		}
+	} else if (contractVersion === 'v4') {
+		// In v5, the index is now an indexed topic rather than part of the log data
+		try {
+			// Based on the etherscan example, the index is now the 1st topic.
+			depositIdx = parseInt(BigInt(`0x${logs[logIndex].topics[1].slice(2)}`))
+		} catch (error) {
+			console.error('Error parsing deposit index from v5 logs:', error)
+		}
+	} else {
+		console.error('Unsupported contract version:', contractVersion)
 	}
+
 	return depositIdx
 }
 

@@ -20,6 +20,7 @@ import {
 	TOKEN_DETAILS,
 	VERSION,
 	DEFAULT_CONTRACT_VERSION,
+	FALLBACK_CONTRACT_VERSION,
 	TOKEN_TYPES,
 } from './data.js'
 
@@ -98,6 +99,11 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 	}
 
 	const contractAddress = PEANUT_CONTRACTS[chainId][version]
+	// if the contract address is null, throw an error
+	if (contractAddress == null) {
+		throw new Error('Contract' + version + ' not deployed on chain ' + chainId)
+	}
+
 	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
 	// connected to contracv
 	verbose && console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress)
@@ -207,7 +213,7 @@ async function setFeeOptions({
 	}
 
 	// if on milkomeda, set eip1559 to false
-	if (chainId == "2001" || chainId == "200101" || chainId == 2001 || chainId == 200101) {
+	if (chainId == '2001' || chainId == '200101' || chainId == 2001 || chainId == 200101) {
 		eip1559 = false
 		verbose && console.log('Setting eip1559 to false for milkomeda')
 	}
@@ -309,6 +315,7 @@ export async function createLink({
 	eip1559 = true,
 	verbose = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
+	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
 	nonce = null,
 }) {
 	assert(signer, 'signer arg is required')
@@ -323,6 +330,20 @@ export async function createLink({
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
+	// check if contractVersion exists
+	if (!PEANUT_CONTRACTS[chainId][contractVersion]) {
+		// if not, use fallback contract version if it is not null or false, else throw error
+		if (fallBackContractVersion) {
+			contractVersion = fallBackContractVersion
+			console.warn(
+				'WARNING: Contract version ' + contractVersion + ' not deployed on chain ' + chainId,
+				'Using fallback contract version ' + fallBackContractVersion
+			)
+		} else {
+			throw new Error('Contract version ' + contractVersion + ' not deployed on chain ' + chainId)
+		}
+	}
+
 	signer = await getAbstractSigner(signer)
 
 	if (tokenAddress == null) {
@@ -332,7 +353,8 @@ export async function createLink({
 		}
 	}
 	// convert tokenAmount to appropriate unit
-	// tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
+	// limit tokenAmount to 18 decimals to fixed
+	tokenAmount = tokenAmount.toFixed(18)
 	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
 
 	// if native token (tokentype == 0), add value to txOptions
@@ -423,7 +445,7 @@ export async function createLink({
 
 	// now we need the deposit index from the tx receipt
 	var txReceipt = await tx.wait()
-	var depositIdx = getDepositIdx(txReceipt, chainId)
+	var depositIdx = getDepositIdx(txReceipt, chainId, contractVersion)
 	verbose && console.log('Deposit finalized. Deposit index: ', depositIdx)
 
 	// now we can create the link
@@ -440,7 +462,8 @@ export async function createLink({
  * @returns {Object} - An object containing whether the link has been claimed and the deposit
  */
 export async function getLinkStatus({ signer, link }) {
-	/* checks if a link has been claimed */
+	// warning deprecated
+	console.warn('WARNING: getLinkStatus is deprecated. Use getLinkDetails instead.')
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
 
@@ -496,14 +519,14 @@ export async function claimLink({
 		verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion)
+	const contract = await getContract(chainId, signer, contractVersion, verbose)
 
 	// cryptography
 	var addressHash = solidityHashAddress(recipient)
 	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
 	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	var signature = await signAddress(recipient, keys.privateKey) // sign with link keys
+	var signature = signAddress(recipient, keys.privateKey) // sign with link keys
 
 	if (verbose) {
 		// print the params
@@ -527,6 +550,7 @@ export async function claimLink({
 
 	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
 	verbose && console.log('claimParams: ', claimParams)
+	verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
@@ -676,6 +700,21 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	var tokenAddress = deposit.tokenAddress
 	verbose && console.log('fetched deposit: ', deposit)
 
+	let claimed = false
+	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
+		claimed = true
+	}
+
+	// get date of deposit (only possible in V4 links)
+	let depositDate
+	if (['v4', 'v5'].includes(contractVersion)) {
+		if (deposit.timestamp) {
+			depositDate = new Date(deposit.timestamp * 1000) // Convert Solidity's UNIX timestamp to JavaScript's Date object
+		} else {
+			verbose && console.log('No timestamp found in deposit for version', contractVersion)
+		}
+	}
+
 	const tokenType = deposit.contractType
 	verbose && console.log('tokenType: ', tokenType, typeof tokenType)
 
@@ -718,8 +757,11 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 		tokenSymbol: tokenDetails.symbol,
 		tokenName: tokenDetails.name,
 		tokenAmount: tokenAmount,
-		// tokenPrice: tokenPrice
+		clamed: claimed,
+		depositDate: depositDate,
 	}
+
+	// tokenPrice: tokenPrice
 }
 
 /**
@@ -744,7 +786,7 @@ export async function claimLinkGasless(
 	verbose && console.log('payload: ', payload)
 	//  url = "https://api.peanut.to/claim";
 	if (url == 'local') {
-		verbose &&console.log('using local api')
+		verbose && console.log('using local api')
 		url = 'http://127.0.0.1:5001/claim'
 	}
 

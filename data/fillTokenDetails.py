@@ -98,10 +98,8 @@ def main():
             )  # No tokens could be fetched, so initialize an empty list
 
         # Add native token first in the list
-        # icon: {'url': 'https://ipfs.io/ipfs/QmdwQDr6vmBtXmK2TmknkEuZNoaDqTasFdZdu3DRw8b2wt', 'format': 'png'}
         # logoURI = details.get("icon", [{}])[0].get("url", ""),
         logoURI = details.get("icon").get("url", "")
-        # if logo uri has format ipfs://QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd, replace it with https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd
         if logoURI.startswith("ipfs://"):
             logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
         native_token = {

@@ -21,7 +21,6 @@ const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL)
 const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider)
 ////////////////////////////////////////////////////////////
 
-
 // create links
 const links = []
 for (let i = 0; i < NUM_LINKS; i++) {
@@ -37,5 +36,3 @@ for (let i = 0; i < NUM_LINKS; i++) {
 }
 
 console.log('links: ', links)
-
-

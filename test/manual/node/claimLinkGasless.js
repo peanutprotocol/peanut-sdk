@@ -20,13 +20,13 @@ const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL)
 const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider)
 ////////////////////////////////////////////////////////////
 
-const link = "https://peanut.to/claim#?c=56&v=v3&i=35&p=B8Tag0ysow7jgLpt&t=sdk"
+const link = 'https://peanut.to/claim#?c=56&v=v3&i=35&p=B8Tag0ysow7jgLpt&t=sdk'
 
 const status = await peanut.getLinkStatus({ signer: wallet, link: link })
 console.log('status: ', status)
 
 const claimAddress = await wallet.getAddress()
 // const localAPIUrl = "http://127.0.0.1:5001/claim"
-const localAPIUrl = "local"
+const localAPIUrl = 'local'
 const res = await peanut.claimLinkGasless(link, claimAddress, PEANUT_DEV_API_KEY, true, localAPIUrl)
 console.log('res: ', res)
