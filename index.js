@@ -95,6 +95,8 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 		PEANUT_ABI = PEANUT_ABI_V3
 	} else if (version == 'v4') {
 		PEANUT_ABI = PEANUT_ABI_V4
+	} else if (version == 'Bv4') {
+		PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 	} else {
 		throw new Error('Invalid version')
 	}
@@ -112,10 +114,11 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 	// TODO: return class
 }
 
-async function getAllowance(signer, chainId, tokenContract, spender) {
+async function getAllowance(signer, chainId, tokenContract, spender, address=null, verbose=false) {
 	let allowance
 	try {
-		let address = await signer.getAddress()
+		address = address || await signer.getAddress()
+		verbose && console.log('calling contract allowance function...')
 		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
 		console.error('Error fetching allowance:', error)
@@ -149,15 +152,18 @@ export async function approveSpendERC20(
 ) {
 	/*  Approves the contract to spend the specified amount of tokens   */
 	signer = await getAbstractSigner(signer)
+	const signerAddress = await signer.getAddress()
 
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
+	verbose && console.log('Connected to tokenContract at ', tokenAddress, ' on chain ', chainId)
 	if (amount == -1) {
 		// if amount is -1, approve infinite amount
 		amount = ethers.constants.MaxUint256
 	}
 	const spender = PEANUT_CONTRACTS[chainId][contractVersion]
-	let allowance = await getAllowance(signer, chainId, tokenContract, spender)
-	// convert amount to BigInt and compare to allowance
+	verbose && console.log('Getting allowance for spender ', spender, 'on chain ', chainId, '...')
+	let allowance = await getAllowance(signer, chainId, tokenContract, spender, signerAddress, verbose)
+	verbose && console.log('Allowance: ', allowance.toString())
 
 	if (isRawAmount) {
 		amount = amount
@@ -165,14 +171,15 @@ export async function approveSpendERC20(
 		amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
 	}
 	if (allowance >= amount) {
-		console.log('Allowance already enough, no need to approve more')
+		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
 		return { allowance, txReceipt: null }
 	} else {
 		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
 		const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
 		const tx = await tokenContract.approve(spender, amount, txOptions)
 		const txReceipt = await tx.wait()
-		allowance = await getAllowance(signer, chainId, tokenContract, spender)
+		allowance = await getAllowance(signer, chainId, tokenContract, spender, signerAddress, verbose)
+		console.log('New Allowance: ', allowance.toString())
 		return { allowance, txReceipt }
 	}
 }
@@ -190,6 +197,7 @@ async function setFeeOptions({
 	maxPriorityFeePerGasMultiplier = 2,
 	verbose = false,
 } = {}) {
+	verbose && console.log('Setting tx options...')
 	let feeData
 	// if not txOptions, create it (oneliner)
 	txOptions = txOptions || {}
@@ -477,7 +485,7 @@ export async function createLinks({
 	nonce = null,
 	verbose = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION, // need this for passing in an address to the batcher
-	batcherContractVersion = "Bv4", // TODO: group with DEFAULT_CONTRACT_VERSION
+	batcherContractVersion = 'Bv4', // TODO: group with DEFAULT_CONTRACT_VERSION
 	fallBackcontractInstance = null, // TODO:
 }) {
 	assert(signer, 'signer arg is required')
@@ -504,66 +512,108 @@ export async function createLinks({
 		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
+	verbose && console.log('Asserts passed')
 
 	// set tokenDecimals for native token
 	if (tokenDecimals == null) {
 		tokenDecimals = 18
 	}
+	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals)
+	let totalTokenAmount;
+	if (tokenAmounts.length > 0) {
+		totalTokenAmount = tokenAmounts.reduce((acc, curr) => {
+			return acc.add(ethers.utils.parseUnits(curr.toString(), tokenDecimals));
+		}, ethers.BigNumber.from(0));
+	} else if (tokenAmount) {
+		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks));
+	} else {
+		throw new Error('Either tokenAmount or tokenAmounts must be provided');
+	}
 
-	verbose && console.log('Asserts passed')
 
-	console.log('checking allowance...')
-	    if (tokenType == 1) {
-	        // if token is erc20, check allowance
-	        const allowance = await approveSpendERC20(
-	            signer,
-	            chainId,
-	            tokenAddress,
-	            tokenAmount * numberOfLinks, // TODO: parse this Value?
-	            tokenDecimals,
-	            batcherContractVersion, // TODO: ensure this is the batcher contract
-	        );
-	        if (allowance < tokenAmount) {
-	            throw new Error("Allowance not enough");
-	        }
-	    }
-	    if (verbose) {
-	        console.log("Generating links...");
-	    }
+	// Get the batcher Contract
+	const batcherContract = await getContract(chainId, signer, batcherContractVersion)
 
-	// decide on txOptions
-	let txOptions = {} // TODO: fill with setFeeOptions
+	// Determine the pubKeys from the passwords
+	if (passwords.length == 0) {
+		passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
+	}
+	const pubKeys = passwords.map((password) => generateKeysFromString(password).address)
 
-	// if no passwords are provided, generate random ones
-    if (passwords.length == 0) {
-      // password = getRandomString(16);
-      passwords = Array(numberOfLinks).fill(getRandomString(16));
-    }
-	const keys = passwords.map((password) => generateKeysFromString(password))
+	verbose && console.log('created pubKeys')
 
-    const batcherContract = await getContract(chainId, signer, batcherContractVersion); // get the contract instance
+	// If the token is ERC20, approve the contract to spend tokens
+	if (tokenType === 1) {
+		verbose && console.log('Checking && requesting approval of a total of ', totalTokenAmount, ' tokens')
+		const { allowance, txReceipt } = await approveSpendERC20(
+			signer,
+			chainId,
+			tokenAddress,
+			totalTokenAmount,
+			tokenDecimals,
+			true,
+			batcherContractVersion
+		)
+		verbose && console.log('Allowance: ', allowance)
+	}
 
-	// call contract
-	// if (tokenType == 0) { // ETH
-	// 	txOptions = {
-	// 		...txOptions,
-	// 		value: amounts.reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0))  // set total Ether value
-	// 	};
+	// Set transaction options
+	let txOptions = {}
+	nonce = nonce || (await signer.getTransactionCount())
+	txOptions.nonce = nonce
+	if (tokenType == 0) {
+		txOptions = {
+			...txOptions,
+			value: tokenAmount * numberOfLinks,
+		}
+	}
 
-	// 	tx = await contract.batchMakeDepositEther(amounts, pubKeys20, txOptions);
+	txOptions = await setFeeOptions({
+		txOptions,
+		provider: signer.provider,
+		eip1559,
+		maxFeePerGas,
+		maxPriorityFeePerGas,
+		gasLimit,
+		verbose,
+	})
 
-	// } else if (tokenType == 1) { // ERC20
-	// 	// TODO: The user must have approved the contract to spend tokens on their behalf before this
-	// 	tx = await contract.batchMakeDepositERC20(tokenAddress, amounts, pubKeys20, txOptions);
+	verbose && console.log('post txOptions: ', txOptions)
+	// Make the batch deposit (amount of deposits is determined by length of pubKeys). tokenAmount is for each individual deposit
+	const depositParams = [
+		PEANUT_CONTRACTS[chainId][contractVersion], // The address of the PeanutV4 contract
+		tokenAddress,
+		tokenType,
+		tokenAmount,
+		tokenId,
+		pubKeys,
+	]
+	verbose && console.log('depositParams: ', depositParams)
+
+	// const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
+	// if (estimatedGasLimit) {
+	// 	txOptions.gasLimit = estimatedGasLimit.toString()
 	// }
-	console.log("submitted tx: ", tx.hash, " for ", numberOfLinks, " deposits. Now waiting for receipt...");
+	// hard code gas limit to 1 million
+	// txOptions.gasLimit = '1000000'
 
+	const tx = await batcherContract.batchMakeDeposit(...depositParams, txOptions)
+	console.log('submitted tx: ', tx.hash)
 
-	const txReceipt = await tx.wait();
-	const depositIdxs = getDepositIdxs(txReceipt, chainId, contract.target);
+	// Wait for the transaction to be mined and get the receipt
+	const txReceipt = await tx.wait()
+	verbose && console.log('txReceipt: ', txReceipt)
 
+	// Extract the deposit indices from the transaction receipt
+	const depositIdxs = getDepositIdxs(txReceipt, chainId, contractVersion)
 
-	return { links: [], txReceipts: [] }
+	// Generate the links based on the deposit indices
+	const links = depositIdxs.map((depositIdx, i) =>
+		getLinkFromParams(chainId, contractVersion, depositIdx, passwords[i], baseUrl, trackId)
+	)
+
+	// Return the links and the transaction receipt
+	return { links, txReceipt }
 }
 
 /**
@@ -954,7 +1004,7 @@ const peanut = {
 	getParamsFromPageURL,
 	getLinkFromParams,
 	createLink,
-	// createLinks,
+	createLinks,
 	claimLink,
 	claimLinkGasless,
 	approveSpendERC20,

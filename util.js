@@ -1,5 +1,5 @@
 import { ethers } from 'ethersv5' // v5
-import { CHAIN_MAP } from './data.js'
+import { CHAIN_MAP, PEANUT_CONTRACTS } from './data.js'
 
 export function assert(condition, message) {
 	if (!condition) {
@@ -261,22 +261,44 @@ export function getDepositIdx(txReceipt, chainId, contractVersion) {
  * @param {string} contractAddress - The contract address
  * @returns {Array} - The deposit indices
  */
-export function getDepositIdxs(txReceipt, chainId, contractAddress) {
-	/* returns an array of deposit indices from a batch transaction receipt */
-	// const logs = txReceipt.logs
-	// var depositIdxs = []
-	// // loop through all the logs and extract the deposit index from each
-	// for (var i = 0; i < logs.length; i++) {
-	// 	// check if the log was emitted by our contract
-	// 	if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
-	// 		if (chainId == 137) {
-	// 			depositIdxs.push(logs[i].args[0])
-	// 		} else {
-	// 			depositIdxs.push(logs[i].args[0])
-	// 		}
-	// 	}
-	// }
-	// return depositIdxs
+export function getDepositIdxs(txReceipt, chainId, contractVersion) {
+	const logs = txReceipt.logs
+	const depositIdxs = []
 
-	// OLD CODE. Get inspiration from new getDepositIdx function, or merge them together potentially
+	// events
+	// event DepositEvent(
+	//     uint256 indexed _index, uint8 indexed _contractType, uint256 _amount, address indexed _senderAddress
+	// );
+	// const logTopic = ethers.utils.id('Deposit(uint256,address,uint64,uint8,uint64,uint256)') // Update with correct event signature
+	const logTopic = ethers.utils.id('DepositEvent(uint256,uint8,uint256,address)') // Update with correct event signature
+
+	const contractAddress = PEANUT_CONTRACTS[chainId][contractVersion]
+	console.log('contractAddress: ', contractAddress)
+
+	for (let i = 0; i < logs.length; i++) {
+		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase() && logs[i].topics[0] === logTopic) {
+			const depositIdx = ethers.BigNumber.from(logs[i].topics[1]).toNumber()
+			depositIdxs.push(depositIdx)
+		}
+	}
+
+	return depositIdxs
 }
+// export function getDepositIdxs(txReceipt, chainId, contractAddress) {
+/* returns an array of deposit indices from a batch transaction receipt */
+// const logs = txReceipt.logs
+// var depositIdxs = []
+// // loop through all the logs and extract the deposit index from each
+// for (var i = 0; i < logs.length; i++) {
+// 	// check if the log was emitted by our contract
+// 	if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
+// 		if (chainId == 137) {
+// 			depositIdxs.push(logs[i].args[0])
+// 		} else {
+// 			depositIdxs.push(logs[i].args[0])
+// 		}
+// 	}
+// }
+// return depositIdxs
+// OLD CODE. Get inspiration from new getDepositIdx function, or merge them together potentially
+// }

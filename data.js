@@ -2,7 +2,7 @@
 
 import PEANUT_ABI_V3 from './data/peanutAbiV3.json' assert { type: 'json' }
 import PEANUT_ABI_V4 from './data/peanutAbiV4.json' assert { type: 'json' }
-import PEANUT_BATCHER_ABI_V4 from './data/peanutBatcherAbiV4.json' assert { type: 'json' }
+import PEANUT_BATCHER_ABI_V4 from './data/peanutBatcherV4.abi.json' assert { type: 'json' }
 import ERC20_ABI from './data/erc20abi.json' assert { type: 'json' }
 import ERC721_ABI from './data/erc721abi.json' assert { type: 'json' }
 import ERC1155_ABI from './data/erc1155abi.json' assert { type: 'json' }
