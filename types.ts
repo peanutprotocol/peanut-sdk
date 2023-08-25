@@ -16,4 +16,5 @@ export interface createLinkProp {
 	verbose?: boolean
 	contractVersion?: string
 	nonce?: any
+	fallBackContractVersion?: string
 }

@@ -1,5 +1,5 @@
 import { ethers } from 'ethersv5' // v5
-import { CHAIN_MAP } from './data'
+import { CHAIN_MAP, PEANUT_CONTRACTS } from './data'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -192,7 +192,7 @@ export function getParamsFromLink(link: string) {
 export function getLinkFromParams(
 	chainId: number | string,
 	contractVersion: number,
-	depositIdx: string,
+	depositIdx: string | number,
 	password: string,
 	baseUrl = 'https://peanut.to/claim',
 	trackId = ''
@@ -214,27 +214,41 @@ export function getLinkFromParams(
  * @param {number|string} chainId - The chainId of the contract
  * @returns {number} - The deposit index
  */
-export function getDepositIdx(txReceipt: any, chainId: number | string) {
+export function getDepositIdx(txReceipt: any, chainId: number | string, contractVersion: string) {
 	/* returns the deposit index from a tx receipt */
 	const logs = txReceipt.logs
-	// const chainId = txReceipt.chainId;
 	let depositIdx
 	let logIndex
-	if (chainId == 137 || chainId == 80001) {
-		// why do you have to be this way?
+
+	// Identify the logIndex based on chainId
+	if (chainId === 137 || chainId === 80001) {
 		logIndex = logs.length - 2
 	} else {
-		logIndex = logs.length - 1 // last log is the deposit event
+		logIndex = logs.length - 1
 	}
-	// only works if EventLog. If Log, then need to look at data, and first uint256 is depositIdx.
-	try {
-		depositIdx = logs[logIndex].args[0]
-	} catch (error) {
-		// get uint256 from data (first 32 bytes)
-		const data = logs[logIndex].data
-		const depositIdxHex = data.slice(0, 66)
-		depositIdx = BigInt(depositIdxHex) // should this be int or bigint? decide wen TS.
+
+	// Handle the deposit index extraction based on contract version
+	if (contractVersion === 'v3') {
+		try {
+			depositIdx = logs[logIndex].args[0]
+		} catch (error) {
+			// get uint256 from data (first 32 bytes)
+			const data = logs[logIndex].data
+			const depositIdxHex = data.slice(0, 66)
+			depositIdx = Number(BigInt(depositIdxHex))
+		}
+	} else if (contractVersion === 'v4') {
+		// In v5, the index is now an indexed topic rather than part of the log data
+		try {
+			// Based on the etherscan example, the index is now the 1st topic.
+			depositIdx = Number(BigInt(`0x${logs[logIndex].topics[1].slice(2)}`))
+		} catch (error) {
+			console.error('Error parsing deposit index from v5 logs:', error)
+		}
+	} else {
+		console.error('Unsupported contract version:', contractVersion)
 	}
+
 	return depositIdx
 }
 
@@ -246,20 +260,46 @@ export function getDepositIdx(txReceipt: any, chainId: number | string) {
  * @param {string} contractAddress - The contract address
  * @returns {Array} - The deposit indices
  */
-export function getDepositIdxs(txReceipt: any, chainId: number | string, contractAddress: string) {
-	/* returns an array of deposit indices from a batch transaction receipt */
+export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string) {
 	const logs = txReceipt.logs
 	const depositIdxs = []
-	// loop through all the logs and extract the deposit index from each
-	for (const log of logs) {
-		// check if the log was emitted by our contract
-		if (log.address.toLowerCase() === contractAddress.toLowerCase()) {
-			if (chainId == 137) {
-				depositIdxs.push(log.args[0])
-			} else {
-				depositIdxs.push(log.args[0])
-			}
+
+	// events
+	// event DepositEvent(
+	//     uint256 indexed _index, uint8 indexed _contractType, uint256 _amount, address indexed _senderAddress
+	// );
+	// const logTopic = ethers.utils.id('Deposit(uint256,address,uint64,uint8,uint64,uint256)') // Update with correct event signature
+	const logTopic = ethers.utils.id('DepositEvent(uint256,uint8,uint256,address)') // Update with correct event signature
+
+	const info: { [key: string]: any } = PEANUT_CONTRACTS[String(chainId) as keyof typeof PEANUT_CONTRACTS]
+	const contractAddress = info[contractVersion as keyof typeof info]
+
+	console.log('contractAddress: ', contractAddress)
+
+	for (let i = 0; i < logs.length; i++) {
+		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase() && logs[i].topics[0] === logTopic) {
+			const depositIdx = ethers.BigNumber.from(logs[i].topics[1]).toNumber()
+			depositIdxs.push(depositIdx)
 		}
 	}
+
 	return depositIdxs
 }
+// export function getDepositIdxs(txReceipt, chainId, contractAddress) {
+/* returns an array of deposit indices from a batch transaction receipt */
+// const logs = txReceipt.logs
+// var depositIdxs = []
+// // loop through all the logs and extract the deposit index from each
+// for (var i = 0; i < logs.length; i++) {
+// 	// check if the log was emitted by our contract
+// 	if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
+// 		if (chainId == 137) {
+// 			depositIdxs.push(logs[i].args[0])
+// 		} else {
+// 			depositIdxs.push(logs[i].args[0])
+// 		}
+// 	}
+// }
+// return depositIdxs
+// OLD CODE. Get inspiration from new getDepositIdx function, or merge them together potentially
+// }

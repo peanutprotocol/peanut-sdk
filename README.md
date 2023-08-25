@@ -21,7 +21,7 @@ Usage is as easy as:
 ```
 import peanut from '@squirrel-labs/peanut-sdk';
 
-// setup signer with ethers v6 (ethersv5, web3js and viem support coming soon!)
+// setup signer with ethers v5 (ethersv6, web3js and viem support coming soon!)
 const provider = new ethers.BrowserProvider(window.ethereum, 'any')
 const signer = await provider.getSigner()
 
@@ -49,7 +49,7 @@ const response = await peanut.claimLinkGasless(link, wallet.address, process.env
 
 Please apply for an api key on telegram/discord for this.
 
-If you're using a browser wallet, you will need to use ethersv6 and pass it in to the peanut sdk. ethersv5 compatibility coming soon.
+If you're using a browser wallet, you will need to use ethersv5 and pass it in to the peanut sdk. ethersv6 compatibility coming soon.
 
 ### Feedback
 

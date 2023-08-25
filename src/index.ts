@@ -11,6 +11,7 @@ import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
+	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
 	// ERC721_ABI,
@@ -20,6 +21,7 @@ import {
 	TOKEN_DETAILS,
 	VERSION,
 	DEFAULT_CONTRACT_VERSION,
+	FALLBACK_CONTRACT_VERSION,
 	TOKEN_TYPES,
 } from './data'
 
@@ -95,12 +97,19 @@ export async function getContract(
 		PEANUT_ABI = PEANUT_ABI_V3
 	} else if (version == 'v4') {
 		PEANUT_ABI = PEANUT_ABI_V4
+	} else if (version == 'Bv4') {
+		PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 	} else {
 		throw new Error('Invalid version')
 	}
 
 	const info: { [key: string]: any } = PEANUT_CONTRACTS[String(chainId) as keyof typeof PEANUT_CONTRACTS]
 	const contractAddress = info[version as keyof typeof info]
+	// if the contract address is null, throw an error
+	if (contractAddress == null) {
+		throw new Error('Contract' + version + ' not deployed on chain ' + chainId)
+	}
+
 	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
 	// connected to contracv
 	verbose && console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress)
@@ -108,10 +117,18 @@ export async function getContract(
 	// TODO: return class
 }
 
-async function getAllowance(signer: any, _chainId: number | string, tokenContract: any, spender: string) {
+async function getAllowance(
+	signer: any,
+	_chainId: number | string,
+	tokenContract: any,
+	spender: string,
+	address = null,
+	verbose = false
+) {
 	let allowance
 	try {
-		const address = await signer.getAddress()
+		address = address || (await signer.getAddress())
+		verbose && console.log('calling contract allowance function...')
 		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
 		console.error('Error fetching allowance:', error)
@@ -145,16 +162,19 @@ export async function approveSpendERC20(
 ) {
 	/*  Approves the contract to spend the specified amount of tokens   */
 	signer = await getAbstractSigner(signer)
+	const signerAddress = await signer.getAddress()
 
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
+	verbose && console.log('Connected to tokenContract at ', tokenAddress, ' on chain ', chainId)
 	if (amount == -1) {
 		// if amount is -1, approve infinite amount
 		amount = Number(ethers.constants.MaxUint256)
 	}
 	const info: { [key: string]: any } = PEANUT_CONTRACTS[String(chainId) as keyof typeof PEANUT_CONTRACTS]
 	const spender = info[contractVersion as keyof typeof info]
-	let allowance = await getAllowance(signer, chainId, tokenContract, spender)
-	// convert amount to BigInt and compare to allowance
+	verbose && console.log('Getting allowance for spender ', spender, 'on chain ', chainId, '...')
+	let allowance = await getAllowance(signer, chainId, tokenContract, spender, signerAddress, verbose)
+	verbose && console.log('Allowance: ', allowance.toString())
 
 	if (isRawAmount) {
 		amount = amount
@@ -162,14 +182,15 @@ export async function approveSpendERC20(
 		amount = Number(ethers.utils.parseUnits(amount.toString(), tokenDecimals))
 	}
 	if (allowance >= amount) {
-		console.log('Allowance already enough, no need to approve more')
+		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
 		return { allowance, txReceipt: null }
 	} else {
 		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
 		const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
 		const tx = await tokenContract.approve(spender, amount, txOptions)
 		const txReceipt = await tx.wait()
-		allowance = await getAllowance(signer, chainId, tokenContract, spender)
+		allowance = await getAllowance(signer, chainId, tokenContract, spender, signerAddress, verbose)
+		console.log('New Allowance: ', allowance.toString())
 		return { allowance, txReceipt }
 	}
 }
@@ -187,6 +208,7 @@ async function setFeeOptions({
 	maxPriorityFeePerGasMultiplier = 2,
 	verbose = false,
 }: any = {}) {
+	verbose && console.log('Setting tx options...')
 	let feeData
 	// if not txOptions, create it (oneliner)
 	txOptions = txOptions || {}
@@ -210,22 +232,35 @@ async function setFeeOptions({
 		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
 	}
 
-	if (eip1559) {
-		verbose && console.log('Setting eip1559 tx options...', txOptions)
-		txOptions.maxFeePerGas =
-			maxFeePerGas ||
-			(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
-		txOptions.maxPriorityFeePerGas =
-			maxPriorityFeePerGas ||
-			(BigInt(feeData.maxPriorityFeePerGas.toString()) *
-				BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-				BigInt(10)
+	// if on milkomeda, set eip1559 to false
+	if (chainId == '2001' || chainId == '200101' || chainId == 2001 || chainId == 200101) {
+		eip1559 = false
+		verbose && console.log('Setting eip1559 to false for milkomeda')
+	}
 
-		// ensure maxPriorityFeePerGas is less than maxFeePerGas
-		if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
-			txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+	if (eip1559) {
+		try {
+			verbose && console.log('Setting eip1559 tx options...', txOptions)
+			txOptions.maxFeePerGas =
+				maxFeePerGas ||
+				(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
+			txOptions.maxPriorityFeePerGas =
+				maxPriorityFeePerGas ||
+				(BigInt(feeData.maxPriorityFeePerGas.toString()) *
+					BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
+					BigInt(10)
+
+			// ensure maxPriorityFeePerGas is less than maxFeePerGas
+			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
+				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+			}
+		} catch (error) {
+			console.error('Failed to set eip1559 tx options:', error)
+			console.log('Falling back to legacy tx options...')
+			eip1559 = false
 		}
-	} else {
+	}
+	if (!eip1559) {
 		let gasPrice = BigInt(0)
 		if (!txOptions.gasPrice) {
 			if (feeData.gasPrice == null) {
@@ -300,6 +335,7 @@ export async function createLink({
 	eip1559 = true,
 	verbose = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
+	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
 	nonce = null,
 }: createLinkProp) {
 	assert(signer, 'signer arg is required')
@@ -314,6 +350,21 @@ export async function createLink({
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
+	// check if contractVersion exists
+	const info: { [key: string]: any } = PEANUT_CONTRACTS[String(chainId) as keyof typeof PEANUT_CONTRACTS]
+	if (!info[contractVersion]) {
+		// if not, use fallback contract version if it is not null or false, else throw error
+		if (fallBackContractVersion) {
+			contractVersion = fallBackContractVersion
+			console.warn(
+				'WARNING: Contract version ' + contractVersion + ' not deployed on chain ' + chainId,
+				'Using fallback contract version ' + fallBackContractVersion
+			)
+		} else {
+			throw new Error('Contract version ' + contractVersion + ' not deployed on chain ' + chainId)
+		}
+	}
+
 	signer = await getAbstractSigner(signer)
 
 	if (tokenAddress == null) {
@@ -323,7 +374,8 @@ export async function createLink({
 		}
 	}
 	// convert tokenAmount to appropriate unit
-	// tokenAmount = ethers.parseUnits(tokenAmount.toString(), tokenDecimals); // v6
+	// limit tokenAmount to 18 decimals to fixed
+	tokenAmount = Number(tokenAmount.toFixed(18))
 	tokenAmount = Number(ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals)) // v5
 
 	// if native token (tokentype == 0), add value to txOptions
@@ -414,7 +466,7 @@ export async function createLink({
 
 	// now we need the deposit index from the tx receipt
 	const txReceipt = await tx.wait()
-	const depositIdx = getDepositIdx(txReceipt, chainId)
+	const depositIdx = getDepositIdx(txReceipt, chainId, contractVersion)
 	verbose && console.log('Deposit finalized. Deposit index: ', depositIdx)
 
 	// now we can create the link
@@ -424,6 +476,160 @@ export async function createLink({
 	return { link, txReceipt }
 }
 
+export async function createLinks({
+	signer, // ethers signer object
+	chainId, // chain id of the network (only EVM for now)
+	tokenAmount = null, // tokenAmount to put in each link
+	numberOfLinks = null, // number of links to create
+	tokenAmounts = [], // array of token amounts, if different amounts are needed for links
+	tokenAddress = '0x0000000000000000000000000000000000000000',
+	tokenAddresses = [], // array of token addresses, if different tokens are needed for links
+	tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
+	tokenId = 0, // only used for ERC721 and ERC1155
+	tokenDecimals = null, // only used for ERC20 and ERC1155
+	passwords = [], // passwords that each link should have
+	baseUrl = 'https://peanut.to/claim',
+	trackId = 'sdk', // optional tracker id to track the link source
+	maxFeePerGas = null,
+	maxPriorityFeePerGas = null,
+	gasLimit = null,
+	eip1559 = true,
+	nonce = null,
+	verbose = false,
+	contractVersion = DEFAULT_CONTRACT_VERSION, // need this for passing in an address to the batcher
+	batcherContractVersion = 'Bv4', // TODO:
+}: any) {
+	assert(signer, 'signer arg is required')
+	assert(chainId, 'chainId arg is required')
+	assert(
+		tokenAmounts.length == 0 && tokenAddresses.length == 0,
+		'variable tokenAmounts & tokenAddresses is not supported yet. Please use a single value instead'
+	)
+
+	assert(
+		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
+		'tokenAddress must be provided for non-ETH tokens'
+	)
+	assert(tokenAmount == null || tokenAmounts.length == 0, "can't have both tokenAmount and tokenAmounts defined")
+	assert(tokenAmounts.length > 0 || numberOfLinks > 0, 'either numberOfLinks or tokenAmounts must be provided')
+	numberOfLinks = numberOfLinks || tokenAmounts.length
+	assert(
+		tokenAmounts.length == 0 || tokenAmounts.length == numberOfLinks,
+		'length of tokenAmounts must be equal to numberOfLinks'
+	)
+	assert(tokenType == 0 || tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
+	// tokendecimals must be provided for erc20 and erc1155 tokens
+	assert(
+		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
+	)
+	verbose && console.log('Asserts passed')
+
+	// set tokenDecimals for native token
+	if (tokenDecimals == null) {
+		tokenDecimals = 18
+	}
+
+	tokenAmount = tokenAmount.toFixed(18)
+	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals)
+	let totalTokenAmount
+	if (tokenAmounts.length > 0) {
+		totalTokenAmount = tokenAmounts.reduce((acc: number, curr: number) => {
+			return acc + Number(ethers.utils.parseUnits(curr.toString(), tokenDecimals))
+		}, ethers.BigNumber.from(0))
+	} else if (tokenAmount) {
+		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks))
+	} else {
+		throw new Error('Either tokenAmount or tokenAmounts must be provided')
+	}
+
+	// Get the batcher Contract
+	const batcherContract = await getContract(chainId, signer, batcherContractVersion)
+
+	// Determine the pubKeys from the passwords
+	if (passwords.length == 0) {
+		passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
+	}
+	const pubKeys = passwords.map((password: string) => generateKeysFromString(password).address)
+
+	verbose && console.log('created pubKeys')
+
+	// If the token is ERC20, approve the contract to spend tokens
+	if (tokenType === 1) {
+		verbose && console.log('Checking && requesting approval of a total of ', totalTokenAmount, ' tokens')
+		const { allowance } = await approveSpendERC20(
+			signer,
+			chainId,
+			tokenAddress,
+			totalTokenAmount,
+			tokenDecimals,
+			true,
+			batcherContractVersion
+		)
+		verbose && console.log('Allowance: ', allowance)
+	}
+
+	// Set transaction options
+	let txOptions: any
+	nonce = nonce || (await signer.getTransactionCount())
+	txOptions.nonce = nonce
+	if (tokenType == 0) {
+		txOptions = {
+			...txOptions,
+			value: tokenAmount * numberOfLinks,
+		}
+	}
+
+	txOptions = await setFeeOptions({
+		txOptions,
+		provider: signer.provider,
+		eip1559,
+		maxFeePerGas,
+		maxPriorityFeePerGas,
+		gasLimit,
+		verbose,
+	})
+
+	verbose && console.log('post txOptions: ', txOptions)
+	// Make the batch deposit (amount of deposits is determined by length of pubKeys). tokenAmount is for each individual deposit
+	const info: { [key: string]: any } = PEANUT_CONTRACTS[String(chainId) as keyof typeof PEANUT_CONTRACTS]
+
+	const depositParams = [
+		info[contractVersion], // The address of the PeanutV4 contract
+		tokenAddress,
+		tokenType,
+		tokenAmount,
+		tokenId,
+		pubKeys,
+	]
+	verbose && console.log('depositParams: ', depositParams)
+
+	// const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
+	// if (estimatedGasLimit) {
+	// 	txOptions.gasLimit = estimatedGasLimit.toString()
+	// }
+	// hard code gas limit to 1 million
+	// txOptions.gasLimit = '1000000'
+
+	const tx = await batcherContract.batchMakeDeposit(...depositParams, txOptions)
+	console.log('submitted tx: ', tx.hash)
+
+	// Wait for the transaction to be mined and get the receipt
+	const txReceipt = await tx.wait()
+	verbose && console.log('txReceipt: ', txReceipt)
+
+	// Extract the deposit indices from the transaction receipt
+	const depositIdxs = getDepositIdxs(txReceipt, chainId, contractVersion)
+
+	// Generate the links based on the deposit indices
+	const links = depositIdxs.map((depositIdx, i) =>
+		getLinkFromParams(chainId, contractVersion, depositIdx, passwords[i], baseUrl, trackId)
+	)
+
+	// Return the links and the transaction receipt
+	return { links, txReceipt }
+}
+
 /**
  * Checks if a link has been claimed
  *
@@ -431,7 +637,8 @@ export async function createLink({
  * @returns {Object} - An object containing whether the link has been claimed and the deposit
  */
 export async function getLinkStatus({ signer, link }: { signer: any; link: string }) {
-	/* checks if a link has been claimed */
+	// warning deprecated
+	console.warn('WARNING: getLinkStatus is deprecated. Use getLinkDetails instead.')
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
 
@@ -496,14 +703,14 @@ export async function claimLink({
 		verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion)
+	const contract = await getContract(chainId, signer, contractVersion, verbose)
 
 	// cryptography
 	const addressHash = solidityHashAddress(recipient)
 	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
 	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	const signature = await signAddress(recipient, keys.privateKey) // sign with link keys
+	const signature = signAddress(recipient, keys.privateKey) // sign with link keys
 
 	if (verbose) {
 		// print the params
@@ -527,6 +734,7 @@ export async function claimLink({
 
 	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
 	verbose && console.log('claimParams: ', claimParams)
+	verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
@@ -692,6 +900,21 @@ export async function getLinkDetails(signerOrProvider: any, link: string, verbos
 	let tokenAddress = deposit.tokenAddress
 	verbose && console.log('fetched deposit: ', deposit)
 
+	let claimed = false
+	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
+		claimed = true
+	}
+
+	// get date of deposit (only possible in V4 links)
+	let depositDate
+	if (['v4', 'v5'].includes(contractVersion)) {
+		if (deposit.timestamp) {
+			depositDate = new Date(deposit.timestamp * 1000) // Convert Solidity's UNIX timestamp to JavaScript's Date object
+		} else {
+			verbose && console.log('No timestamp found in deposit for version', contractVersion)
+		}
+	}
+
 	const tokenType = deposit.contractType
 	verbose && console.log('tokenType: ', tokenType, typeof tokenType)
 
@@ -734,8 +957,11 @@ export async function getLinkDetails(signerOrProvider: any, link: string, verbos
 		tokenSymbol: tokenDetails.symbol,
 		tokenName: tokenDetails.name,
 		tokenAmount: tokenAmount,
-		// tokenPrice: tokenPrice
+		clamed: claimed,
+		depositDate: depositDate,
 	}
+
+	// tokenPrice: tokenPrice
 }
 
 /**
@@ -760,7 +986,7 @@ export async function claimLinkGasless(
 	verbose && console.log('payload: ', payload)
 	//  url = "https://api.peanut.to/claim";
 	if (url == 'local') {
-		console.log('using local api')
+		verbose && console.log('using local api')
 		url = 'http://127.0.0.1:5001/claim'
 	}
 
@@ -785,6 +1011,8 @@ export async function claimLinkGasless(
 		headers: headers,
 		body: JSON.stringify(body),
 	})
+
+	verbose && console.log('response: ', response)
 
 	if (!response.ok) {
 		const error = await response.text()
@@ -815,7 +1043,7 @@ const peanut = {
 	getParamsFromPageURL,
 	getLinkFromParams,
 	createLink,
-	// createLinks,
+	createLinks,
 	claimLink,
 	claimLinkGasless,
 	approveSpendERC20,

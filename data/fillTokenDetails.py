@@ -97,15 +97,19 @@ def main():
                 []
             )  # No tokens could be fetched, so initialize an empty list
 
-        # Add native token
+        # Add native token first in the list
+        # logoURI = details.get("icon", [{}])[0].get("url", ""),
+        logoURI = details.get("icon").get("url", "")
+        if logoURI.startswith("ipfs://"):
+            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://"):]
         native_token = {
             "address": "0x0000000000000000000000000000000000000000",
             "name": details["nativeCurrency"]["name"],
             "symbol": details["nativeCurrency"]["symbol"],
             "decimals": details["nativeCurrency"]["decimals"],
-            "logoURI": details.get("icon", [{}])[0].get("url", ""),
+            "logoURI": logoURI,
         }
-        complete_tokens.append(native_token)
+        complete_tokens.insert(0, native_token)
 
         platform_data = {
             "chainId": chain_id,
