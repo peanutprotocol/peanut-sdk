@@ -518,6 +518,8 @@ export async function createLinks({
 	if (tokenDecimals == null) {
 		tokenDecimals = 18
 	}
+
+	tokenAmount = tokenAmount.toFixed(18)
 	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals)
 	let totalTokenAmount
 	if (tokenAmounts.length > 0) {

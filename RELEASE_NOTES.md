@@ -10,3 +10,4 @@
 -   claimLinkGasless now throws on fail
 -   chainDetails now includes an url to an icon for each chain
 -   made V4 default & fixed some new bugs
+-   createLinks()
