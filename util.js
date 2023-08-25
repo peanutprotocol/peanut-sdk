@@ -263,18 +263,20 @@ export function getDepositIdx(txReceipt, chainId, contractVersion) {
  */
 export function getDepositIdxs(txReceipt, chainId, contractAddress) {
 	/* returns an array of deposit indices from a batch transaction receipt */
-	const logs = txReceipt.logs
-	var depositIdxs = []
-	// loop through all the logs and extract the deposit index from each
-	for (var i = 0; i < logs.length; i++) {
-		// check if the log was emitted by our contract
-		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
-			if (chainId == 137) {
-				depositIdxs.push(logs[i].args[0])
-			} else {
-				depositIdxs.push(logs[i].args[0])
-			}
-		}
-	}
-	return depositIdxs
+	// const logs = txReceipt.logs
+	// var depositIdxs = []
+	// // loop through all the logs and extract the deposit index from each
+	// for (var i = 0; i < logs.length; i++) {
+	// 	// check if the log was emitted by our contract
+	// 	if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
+	// 		if (chainId == 137) {
+	// 			depositIdxs.push(logs[i].args[0])
+	// 		} else {
+	// 			depositIdxs.push(logs[i].args[0])
+	// 		}
+	// 	}
+	// }
+	// return depositIdxs
+
+	// OLD CODE. Get inspiration from new getDepositIdx function, or merge them together potentially
 }

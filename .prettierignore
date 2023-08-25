@@ -9,7 +9,9 @@ coverage
 **/coverage
 **/other
 **/archive
-**/data**.json
-**/data**
-data/
+
+# Ignore JSON files in data directory EXCEPT contracts.json
+!data/contracts.json  # This line might still be ineffective in `.prettierignore`
+data/*.json
+
 docs/

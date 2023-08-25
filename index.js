@@ -11,6 +11,7 @@ import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
+	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
 	ERC721_ABI,
@@ -458,10 +459,11 @@ export async function createLink({
 export async function createLinks({
 	signer, // ethers signer object
 	chainId, // chain id of the network (only EVM for now)
-	tokenAmount, // tokenAmount to put in each link
+	tokenAmount = null, // tokenAmount to put in each link
 	numberOfLinks = null, // number of links to create
 	tokenAmounts = [], // array of token amounts, if different amounts are needed for links
 	tokenAddress = '0x0000000000000000000000000000000000000000',
+	tokenAddresses = [], // array of token addresses, if different tokens are needed for links
 	tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
 	tokenId = 0, // only used for ERC721 and ERC1155
 	tokenDecimals = null, // only used for ERC20 and ERC1155
@@ -474,11 +476,93 @@ export async function createLinks({
 	eip1559 = true,
 	nonce = null,
 	verbose = false,
-	contractVersion = DEFAULT_CONTRACT_VERSION,
-	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
+	contractVersion = DEFAULT_CONTRACT_VERSION, // need this for passing in an address to the batcher
+	batcherContractVersion = "Bv4", // TODO: group with DEFAULT_CONTRACT_VERSION
+	fallBackcontractInstance = null, // TODO:
 }) {
-	console.warn('WARNING: createLinks() is not implemented yet')
-	// return mock
+	assert(signer, 'signer arg is required')
+	assert(chainId, 'chainId arg is required')
+	assert(
+		tokenAmounts.length == 0 && tokenAddresses.length == 0,
+		'variable tokenAmounts & tokenAddresses is not supported yet. Please use a single value instead'
+	)
+
+	assert(
+		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
+		'tokenAddress must be provided for non-ETH tokens'
+	)
+	assert(tokenAmount == null || tokenAmounts.length == 0, "can't have both tokenAmount and tokenAmounts defined")
+	assert(tokenAmounts.length > 0 || numberOfLinks > 0, 'either numberOfLinks or tokenAmounts must be provided')
+	numberOfLinks = numberOfLinks || tokenAmounts.length
+	assert(
+		tokenAmounts.length == 0 || tokenAmounts.length == numberOfLinks,
+		'length of tokenAmounts must be equal to numberOfLinks'
+	)
+	assert(tokenType == 0 || tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
+	// tokendecimals must be provided for erc20 and erc1155 tokens
+	assert(
+		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
+	)
+
+	// set tokenDecimals for native token
+	if (tokenDecimals == null) {
+		tokenDecimals = 18
+	}
+
+	verbose && console.log('Asserts passed')
+
+	console.log('checking allowance...')
+	    if (tokenType == 1) {
+	        // if token is erc20, check allowance
+	        const allowance = await approveSpendERC20(
+	            signer,
+	            chainId,
+	            tokenAddress,
+	            tokenAmount * numberOfLinks, // TODO: parse this Value?
+	            tokenDecimals,
+	            batcherContractVersion, // TODO: ensure this is the batcher contract
+	        );
+	        if (allowance < tokenAmount) {
+	            throw new Error("Allowance not enough");
+	        }
+	    }
+	    if (verbose) {
+	        console.log("Generating links...");
+	    }
+
+	// decide on txOptions
+	let txOptions = {} // TODO: fill with setFeeOptions
+
+	// if no passwords are provided, generate random ones
+    if (passwords.length == 0) {
+      // password = getRandomString(16);
+      passwords = Array(numberOfLinks).fill(getRandomString(16));
+    }
+	const keys = passwords.map((password) => generateKeysFromString(password))
+
+    const batcherContract = await getContract(chainId, signer, batcherContractVersion); // get the contract instance
+
+	// call contract
+	// if (tokenType == 0) { // ETH
+	// 	txOptions = {
+	// 		...txOptions,
+	// 		value: amounts.reduce((a, b) => BigInt(a) + BigInt(b), BigInt(0))  // set total Ether value
+	// 	};
+
+	// 	tx = await contract.batchMakeDepositEther(amounts, pubKeys20, txOptions);
+
+	// } else if (tokenType == 1) { // ERC20
+	// 	// TODO: The user must have approved the contract to spend tokens on their behalf before this
+	// 	tx = await contract.batchMakeDepositERC20(tokenAddress, amounts, pubKeys20, txOptions);
+	// }
+	console.log("submitted tx: ", tx.hash, " for ", numberOfLinks, " deposits. Now waiting for receipt...");
+
+
+	const txReceipt = await tx.wait();
+	const depositIdxs = getDepositIdxs(txReceipt, chainId, contract.target);
+
+
 	return { links: [], txReceipts: [] }
 }
 

@@ -101,7 +101,7 @@ def main():
         # logoURI = details.get("icon", [{}])[0].get("url", ""),
         logoURI = details.get("icon").get("url", "")
         if logoURI.startswith("ipfs://"):
-            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
+            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://"):]
         native_token = {
             "address": "0x0000000000000000000000000000000000000000",
             "name": details["nativeCurrency"]["name"],
