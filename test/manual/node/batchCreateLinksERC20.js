@@ -15,9 +15,9 @@ const TOKEN_DECIMALS = 6
 const NUM_LINKS = 3
 const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY
 // const RPC_URL = peanut.CHAIN_DETAILS[String(CHAIN_ID)].rpc[0].replace('${INFURA_API_KEY}', process.env.INFURA_API_KEY)
-const rpcs = peanut.CHAIN_DETAILS[String(CHAIN_ID)].rpc;
-const INFURA_RPC = rpcs.find(rpc => rpc.includes('infura')) || rpcs[0];
-const RPC_URL = INFURA_RPC.replace('${INFURA_API_KEY}', process.env.INFURA_API_KEY);
+const rpcs = peanut.CHAIN_DETAILS[String(CHAIN_ID)].rpc
+const INFURA_RPC = rpcs.find((rpc) => rpc.includes('infura')) || rpcs[0]
+const RPC_URL = INFURA_RPC.replace('${INFURA_API_KEY}', process.env.INFURA_API_KEY)
 
 const CHAIN_NAME = peanut.CHAIN_DETAILS[String(CHAIN_ID)].name
 console.log('Chain Name: ', CHAIN_NAME, 'Chain ID: ', CHAIN_ID)
@@ -45,12 +45,12 @@ console.log('txHash: ', txReceipt.transactionHash)
 
 // claim links
 for (let i = 0; i < links.length; i++) {
-    console.log('Link ' + i + ': ' + links[i])
-    const link = links[i]
-    const txReceipt = await peanut.claimLink({
+	console.log('Link ' + i + ': ' + links[i])
+	const link = links[i]
+	const txReceipt = await peanut.claimLink({
 		signer: wallet,
 		link: link,
 		verbose: true,
 	})
-    console.log('txHash: ', txReceipt.transactionHash)
+	console.log('txHash: ', txReceipt.transactionHash)
 }

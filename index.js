@@ -114,10 +114,10 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 	// TODO: return class
 }
 
-async function getAllowance(signer, chainId, tokenContract, spender, address=null, verbose=false) {
+async function getAllowance(signer, chainId, tokenContract, spender, address = null, verbose = false) {
 	let allowance
 	try {
-		address = address || await signer.getAddress()
+		address = address || (await signer.getAddress())
 		verbose && console.log('calling contract allowance function...')
 		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
@@ -519,17 +519,16 @@ export async function createLinks({
 		tokenDecimals = 18
 	}
 	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals)
-	let totalTokenAmount;
+	let totalTokenAmount
 	if (tokenAmounts.length > 0) {
 		totalTokenAmount = tokenAmounts.reduce((acc, curr) => {
-			return acc.add(ethers.utils.parseUnits(curr.toString(), tokenDecimals));
-		}, ethers.BigNumber.from(0));
+			return acc.add(ethers.utils.parseUnits(curr.toString(), tokenDecimals))
+		}, ethers.BigNumber.from(0))
 	} else if (tokenAmount) {
-		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks));
+		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks))
 	} else {
-		throw new Error('Either tokenAmount or tokenAmounts must be provided');
+		throw new Error('Either tokenAmount or tokenAmounts must be provided')
 	}
-
 
 	// Get the batcher Contract
 	const batcherContract = await getContract(chainId, signer, batcherContractVersion)
