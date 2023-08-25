@@ -1,7 +1,7 @@
 export interface createLinkProp {
 	signer: any
 	chainId: number | string
-	tokenAmount: number
+	tokenAmount: number | string | any
 	tokenAddress?: string
 	tokenType?: number
 	tokenId?: number
