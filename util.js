@@ -302,3 +302,12 @@ export function getDepositIdxs(txReceipt, chainId, contractVersion) {
 // return depositIdxs
 // OLD CODE. Get inspiration from new getDepositIdx function, or merge them together potentially
 // }
+
+export const ERROR_MSGS = {
+	INVALID_VERSION: 'Invalid version',
+	LOW_ALLOWANCE: 'Allowance not enough',
+	NO_TOKEN_AMOUNT: 'Either tokenAmount or tokenAmounts must be provided',
+	NOT_AVAILABLE: 'Not implemented yet',
+	NO_CHAIN_DETAILS: 'Chain details not found',
+	NO_TOKEN_DETAILS: 'Token details not found',
+}

@@ -41,6 +41,7 @@ import {
 	getParamsFromPageURL,
 	getDepositIdx,
 	getDepositIdxs,
+	ERROR_MSGS,
 } from './util.js'
 
 async function getAbstractSigner(signer, verbose = true) {
@@ -98,7 +99,7 @@ export async function getContract(chainId, signerOrProvider, version = CONTRACT_
 	} else if (version == 'Bv4') {
 		PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 	} else {
-		throw new Error('Invalid version')
+		throw new Error(ERROR_MSGS.INVALID_VERSION)
 	}
 
 	const contractAddress = PEANUT_CONTRACTS[chainId][version]
@@ -395,7 +396,7 @@ export async function createLink({
 		)
 		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
 		if (allowance < tokenAmount) {
-			throw new Error('Allowance not enough')
+			throw new Error(ERROR_MSGS.LOW_ALLOWANCE)
 		}
 	}
 
@@ -535,7 +536,7 @@ export async function createLinks({
 	} else if (tokenAmount) {
 		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks))
 	} else {
-		throw new Error('Either tokenAmount or tokenAmounts must be provided')
+		throw new Error(ERROR_MSGS.NO_TOKEN_AMOUNT)
 	}
 
 	// Get the batcher Contract
@@ -771,7 +772,7 @@ export async function getAllDepositsForSigner({
  */
 export async function claimLinkSender({ signer, link, verbose = false }) {
 	// raise error, not implemented yet
-	throw new Error('Not implemented yet')
+	throw new Error(ERROR_MSGS.NOT_AVAILABLE)
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
 
@@ -900,13 +901,13 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	console.log('chainId: ', chainId)
 	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 	if (!chainDetails) {
-		throw new Error('Chain details not found')
+		throw new Error(ERROR_MSGS.NO_CHAIN_DETAILS)
 	}
 
 	// Find the token within the tokens array of the chain
 	const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
 	if (!tokenDetails) {
-		throw new Error('Token details not found')
+		throw new Error(ERROR_MSGS.NO_TOKEN_DETAILS)
 	}
 
 	// Format the token amount
