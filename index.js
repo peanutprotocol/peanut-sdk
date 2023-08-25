@@ -361,8 +361,10 @@ export async function createLink({
 			throw new Error('tokenAddress is null but tokenType is not 0')
 		}
 	}
-	// convert tokenAmount to appropriate unit
-	// limit tokenAmount to 18 decimals to fixed
+	// limit tokenAmount to 18 decimals
+	if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
+		tokenAmount = parseFloat(tokenAmount)
+	}
 	tokenAmount = tokenAmount.toFixed(18)
 	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
 
@@ -519,8 +521,12 @@ export async function createLinks({
 		tokenDecimals = 18
 	}
 
+	// limit tokenAmount to 18 decimals
+	if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
+		tokenAmount = parseFloat(tokenAmount)
+	}
 	tokenAmount = tokenAmount.toFixed(18)
-	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals)
+	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
 	let totalTokenAmount
 	if (tokenAmounts.length > 0) {
 		totalTokenAmount = tokenAmounts.reduce((acc, curr) => {
