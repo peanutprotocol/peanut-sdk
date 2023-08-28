@@ -48,6 +48,17 @@ async function getAbstractSigner(signer, verbose = true) {
 	return signer
 }
 
+async function checkRpc(rpc, verbose = false) {
+	try {
+		verbose && console.log('Checking provider:', rpc)
+		const provider = new ethers.providers.JsonRpcProvider(rpc)
+		verbose && console.log('provider blocknumber:', await provider.getBlockNumber())
+		return true
+	} catch (error) {
+		verbose && console.error('Error checking provider:', provider)
+		return false
+	}
+}
 /**
  * Returns the default provider for a given chainId
  *
@@ -55,23 +66,37 @@ async function getAbstractSigner(signer, verbose = true) {
  * @param {boolean} verbose - Whether or not to print verbose output
  * @returns {Object} - The provider
  */
-export function getDefaultProvider(chainId, verbose = false) {
+export async function getDefaultProvider(chainId, verbose = false) {
+	verbose && console.log('Getting default provider for chainId ', chainId)
 	chainId = String(chainId)
 	const rpcs = CHAIN_DETAILS[chainId].rpc
 
 	verbose && console.log('rpcs', rpcs)
-	// choose first rpc that has no '${' sign in it (e.g. )
-	const rpc = rpcs.find((rpc) => !rpc.includes('${'))
-	verbose && console.log('rpc', rpc)
-	const provider = new ethers.providers.JsonRpcProvider(rpc)
-	return provider
+
+	for (let i = 0; i < rpcs.length; i++) {
+		const rpc = rpcs[i]
+
+		// Skip if the rpc string contains '${'
+		if (rpc.includes('${')) continue
+
+
+		verbose && console.log('Checking rpc', rpc)
+		if (await checkRpc(rpc, verbose)) {
+			verbose && console.log('Provider is alive:', rpc)
+			return new ethers.providers.JsonRpcProvider(rpc)
+		} else {
+			verbose && console.log('Provider is down:', rpc)
+		}
+	}
+
+	throw new Error('No alive provider found for chainId ' + chainId)
 }
 
 /**
  * Returns a contract object for a given chainId and signer
  *
  * @param {number|string} chainId - The chainId to get the contract for
- * @param {Object} signerOrProvider - The signer or provider to use for the contract
+ * @param {Object|null} signerOrProvider - The signer or provider to use for the contract. if null, use getDefaultProvider
  * @param {string} [version=CONTRACT_VERSION] - The version of the contract
  * @param {boolean} [verbose=true] - Whether or not to print verbose output
  * @returns {Object} - The contract object
@@ -79,6 +104,12 @@ export function getDefaultProvider(chainId, verbose = false) {
 export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
 	/* returns a contract object for the given chainId and signer */
 	// signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
+
+	// if signerOrProvider is null, use getDefaultProvider
+	if (signerOrProvider == null) {
+		verbose && console.log('signerOrProvider is null, getting default provider...')
+		signerOrProvider = await getDefaultProvider(chainId, verbose)
+	}
 
 	if (typeof chainId == 'string' || chainId instanceof String) {
 		// just move to TS ffs
@@ -844,17 +875,13 @@ async function createClaimPayload(link, recipientAddress) {
 /**
  * Gets the details of a Link: what token it is, how much it holds, etc.
  *
- * @param {Object} signerOrProvider - The signer or provider to use
+ * @param {Object|null} signerOrProvider - The signer or provider to use. if not provided, will use fallback public provider
  * @param {string} link - The link to get the details of
  * @param {boolean} verbose - Whether or not to print verbose output
  * @returns {Object} - An object containing the link details
  */
 export async function getLinkDetails(signerOrProvider, link, verbose = false) {
-	/**
-	 * Gets the details of a Link: what token it is, how much it holds, etc.
-	 */
 	verbose && console.log('getLinkDetails called with link: ', link)
-	assert(signerOrProvider, 'signerOrProvider arg is required')
 	assert(link, 'link arg is required')
 
 	const params = getParamsFromLink(link)
@@ -862,11 +889,14 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	const contractVersion = params.contractVersion
 	const depositIdx = params.depositIdx
 	const password = params.password
-	const contract = await getContract(chainId, signerOrProvider, contractVersion)
+	const contract = await getContract(chainId, signerOrProvider, contractVersion, verbose)
 
+	verbose && console.log('fetching deposit: ', depositIdx)
 	const deposit = await contract.deposits(depositIdx)
-	var tokenAddress = deposit.tokenAddress
+	// const deposit = await contract.getDeposit(depositIdx)
+	console.log('deposit: ', deposit)
 	verbose && console.log('fetched deposit: ', deposit)
+	var tokenAddress = deposit.tokenAddress
 
 	let claimed = false
 	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
@@ -1026,5 +1056,23 @@ const peanut = {
 	PEANUT_CONTRACTS,
 }
 
+console.log('peanut-sdk version: ', VERSION)
+
 export default peanut
-export { peanut }
+export {
+	peanut,
+	greeting,
+	generateKeysFromString,
+	hash_string,
+	signMessageWithPrivatekey,
+	verifySignature,
+	solidityHashBytesEIP191,
+	solidityHashAddress,
+	signAddress,
+	getRandomString,
+	getLinkFromParams,
+	getParamsFromLink,
+	getParamsFromPageURL,
+	getDepositIdx,
+	getDepositIdxs,
+}

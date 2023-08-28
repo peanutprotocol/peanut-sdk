@@ -11,7 +11,9 @@ coverage
 **/archive
 
 # Ignore JSON files in data directory EXCEPT contracts.json
-!data/contracts.json  # This line might still be ineffective in `.prettierignore`
-data/*.json
+# !data/contracts.json  # This line might still be ineffective in `.prettierignore`
+# !data/PeanutAbiV4.json  # This line might still be ineffective in `.prettierignore`
+data/tokenDetails.json
+# data/*.json
 
 docs/

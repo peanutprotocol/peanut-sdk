@@ -22,6 +22,18 @@ TRUST_WALLET_ICONS_URL = "https://raw.githubusercontent.com/trustwallet/assets/8
 DEFAULT_ICON_URL = "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/generic.svg"
 
 
+def check_rpc(rpc):
+    try:
+        print(f"Checking RPC {rpc}...")
+        response = requests.post(rpc, json={'jsonrpc':'2.0', 'method':'eth_blockNumber', 'params': [], 'id':1}, timeout=5)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
 def get_contracts():
     response = requests.get(CONTRACTS_URL)
     if response.status_code == 200:
@@ -39,7 +51,18 @@ def get_chain_details(chain_id):
     chain_file = f"eip155-{chain_id}.json"
     response = requests.get(os.path.join(CHAINS_URL, chain_file))
     if response.status_code == 200:
-        return response.json()
+        details = response.json()
+        
+        # check each rpc for liveliness and remove if dead
+        rpcs = details.get('rpc', [])
+        live_rpcs = [rpc for rpc in rpcs if check_rpc(rpc)]
+        details['rpc'] = live_rpcs
+        
+        # display a warning if no live rpcs found
+        if len(live_rpcs) == 0:
+            print(f"Warning: No live providers found for chain id {chain_id}")
+            
+        return details
     return None
 
 
