@@ -1,6 +1,6 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.0.93",
+	"version": "0.0.94",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
 	"module": "dist/peanut-sdk.browser.js",
@@ -20,6 +20,7 @@
 		"docs": "jsdoc -c jsdoc.conf.json",
 		"build": "npm run clean && webpack --config webpack.config.cjs",
 		"build:prod": "npm run clean && webpack --config webpack.config.cjs --mode production",
+		"build:dev": "npm run clean && webpack --config webpack.config.cjs --mode development",
 		"pre-git": "npm run prettier && npm run lint:fix && npm run test && npm run build:prod",
 		"git": "git add . && git commit -m 'Release' && git push",
 		"lint": "eslint '**/*.{js,ts,tsx}' --quiet",

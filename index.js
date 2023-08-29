@@ -79,7 +79,6 @@ export async function getDefaultProvider(chainId, verbose = false) {
 		// Skip if the rpc string contains '${'
 		if (rpc.includes('${')) continue
 
-
 		verbose && console.log('Checking rpc', rpc)
 		if (await checkRpc(rpc, verbose)) {
 			verbose && console.log('Provider is alive:', rpc)
@@ -307,8 +306,58 @@ async function estimateGasLimit(contract, functionName, params, txOptions) {
 		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
 	} catch (error) {
 		console.error(`Error estimating gas for ${functionName}:`, error)
+		console.error(
+			'contract address:',
+			contract.address,
+			'txOptions:',
+			txOptions,
+			'params:',
+			params,
+			'functionName:',
+			functionName
+		)
 		return null
 	}
+}
+
+export function formatNumberAvoidScientific(n) {
+	if (typeof n === 'number') {
+		const str = n.toString()
+
+		// If number is already in standard format or is an integer
+		if (!str.includes('e') && !str.includes('E')) {
+			return str
+		}
+
+		const [lead, decimal, pow] = str.split(/e|\./)
+		const prefix = lead + (decimal || '')
+		const exponent = parseInt(pow, 10)
+
+		if (exponent > 0) {
+			return prefix + '0'.repeat(exponent - (decimal || '').length)
+		} else {
+			const length = lead.length
+			if (exponent + length > 0) {
+				return prefix.slice(0, exponent + length) + '.' + prefix.slice(exponent + length)
+			} else {
+				return '0.' + '0'.repeat(-(exponent + length)) + prefix
+			}
+		}
+	} else {
+		return n
+	}
+}
+
+// trim some number to a certain number of decimals
+export function trim_decimal_overflow(n, decimals) {
+	n = formatNumberAvoidScientific(n)
+	n += ''
+
+	if (n.indexOf('.') === -1) return n
+
+	const arr = n.split('.')
+	const fraction = arr[1].substr(0, decimals)
+	return arr[0] + '.' + fraction
 }
 
 /**
@@ -393,11 +442,13 @@ export async function createLink({
 		}
 	}
 	// limit tokenAmount to 18 decimals
-	if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
-		tokenAmount = parseFloat(tokenAmount)
-	}
-	tokenAmount = tokenAmount.toFixed(18)
-	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
+	// if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
+	// 	tokenAmount = parseFloat(tokenAmount)
+	// }
+	// tokenAmount = tokenAmount.toFixed(18)
+	tokenAmount = trim_decimal_overflow(tokenAmount, tokenDecimals)
+	tokenAmount = ethers.utils.parseUnits(tokenAmount, tokenDecimals) // v5
+	assert(tokenAmount > 0, 'tokenAmount must be greater than 0')
 
 	// if native token (tokentype == 0), add value to txOptions
 	let txOptions = {}
@@ -520,6 +571,7 @@ export async function createLinks({
 	contractVersion = DEFAULT_CONTRACT_VERSION, // need this for passing in an address to the batcher
 	batcherContractVersion = 'Bv4', // TODO: group with DEFAULT_CONTRACT_VERSION
 	fallBackcontractInstance = null, // TODO:
+	mock = false,
 }) {
 	assert(signer, 'signer arg is required')
 	assert(chainId, 'chainId arg is required')
@@ -552,22 +604,28 @@ export async function createLinks({
 		tokenDecimals = 18
 	}
 
-	// limit tokenAmount to 18 decimals
-	if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
-		tokenAmount = parseFloat(tokenAmount)
-	}
-	tokenAmount = tokenAmount.toFixed(18)
-	tokenAmount = ethers.utils.parseUnits(tokenAmount.toString(), tokenDecimals) // v5
+	// // limit tokenAmount to 18 decimals
+	// if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
+	// 	tokenAmount = parseFloat(tokenAmount)
+	// }
+	// tokenAmount = tokenAmount.toFixed(18)
+
+	tokenAmount = trim_decimal_overflow(tokenAmount, tokenDecimals)
+	tokenAmount = ethers.utils.parseUnits(tokenAmount, tokenDecimals)
+	assert(tokenAmount > 0, 'tokenAmount must be greater than 0')
 	let totalTokenAmount
 	if (tokenAmounts.length > 0) {
 		totalTokenAmount = tokenAmounts.reduce((acc, curr) => {
 			return acc.add(ethers.utils.parseUnits(curr.toString(), tokenDecimals))
 		}, ethers.BigNumber.from(0))
 	} else if (tokenAmount) {
-		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks))
+		verbose && console.log('calculating tokenAmount * numberOfLinks')
+		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks.toString()))
+		verbose && console.log('totalTokenAmount: ', totalTokenAmount.toString())
 	} else {
 		throw new Error('Either tokenAmount or tokenAmounts must be provided')
 	}
+	assert(totalTokenAmount > 0, 'totalTokenAmount must be greater than 0')
 
 	// Get the batcher Contract
 	const batcherContract = await getContract(chainId, signer, batcherContractVersion)
@@ -602,7 +660,7 @@ export async function createLinks({
 	if (tokenType == 0) {
 		txOptions = {
 			...txOptions,
-			value: tokenAmount * numberOfLinks,
+			value: tokenAmount.mul(ethers.BigNumber.from(numberOfLinks.toString())),
 		}
 	}
 
@@ -628,12 +686,14 @@ export async function createLinks({
 	]
 	verbose && console.log('depositParams: ', depositParams)
 
-	// const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
-	// if (estimatedGasLimit) {
-	// 	txOptions.gasLimit = estimatedGasLimit.toString()
-	// }
-	// hard code gas limit to 1 million
-	// txOptions.gasLimit = '1000000'
+	const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
+	if (estimatedGasLimit) {
+		txOptions.gasLimit = estimatedGasLimit.toString()
+	}
+
+	if (mock) {
+		return { links: [], txReceipt: null }
+	}
 
 	const tx = await batcherContract.batchMakeDeposit(...depositParams, txOptions)
 	console.log('submitted tx: ', tx.hash)
@@ -1035,7 +1095,7 @@ const peanut = {
 	getDepositIdx,
 	getDepositIdxs,
 	getAllDepositsForSigner,
-	getLinkStatus,
+	getLinkStatus, // deprecated
 	getLinkDetails,
 	getParamsFromLink,
 	getParamsFromPageURL,

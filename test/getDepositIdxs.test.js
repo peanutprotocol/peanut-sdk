@@ -27,6 +27,9 @@ describe('getDepositIdxs', function () {
 		}
 		txReceipt1 = data1.result
 
+		// wait for 1 second
+		await new Promise((res) => setTimeout(res, 1000))
+
 		const response2 = await fetch(
 			`https://api-goerli.etherscan.io/api?module=proxy&action=eth_getTransactionReceipt&txhash=0xa64f62cee7f2692a2f2d6d3b5eb8cd32d7df48bd0150c700e7d4ea19d7e2ce5f&apikey=${ETHERSCAN_API_KEY}`
 		)
@@ -48,6 +51,7 @@ describe('getDepositIdxs', function () {
 	})
 
 	it('should return an array of deposit indices from the second batch transaction receipt', async () => {
+		console.log(txReceipt2)
 		for (let i = 0; i < txReceipt2.logs.length; i++) {
 			console.log(txReceipt2.logs[i])
 			console.log(txReceipt2.logs[i].topics)

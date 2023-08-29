@@ -23,8 +23,10 @@ DEFAULT_ICON_URL = "https://raw.githubusercontent.com/spothq/cryptocurrency-icon
 
 
 def check_rpc(rpc):
+    print(f"Checking RPC {rpc}...")
+    if "infura" in rpc.lower():
+        return True
     try:
-        print(f"Checking RPC {rpc}...")
         response = requests.post(rpc, json={'jsonrpc':'2.0', 'method':'eth_blockNumber', 'params': [], 'id':1}, timeout=5)
         if response.status_code == 200:
             return True
