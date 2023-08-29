@@ -200,7 +200,13 @@ export async function approveSpendERC20(
 	} else {
 		amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
 	}
-	if (allowance >= amount) {
+	// debug: print type of allowance and amount, print their comparison
+	// verbose && console.log('Allowance type: ', typeof allowance, allowance, allowance.toString())
+	// verbose && console.log('Amount type: ', typeof amount, amount, amount.toString())
+	// verbose && console.log('Allowance >= Amount: ', allowance >= amount)
+	// verbose && console.log('Allowance >= Amount: ', allowance.gte(amount));
+
+	if (allowance.gte(amount)) {
 		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
 		return { allowance, txReceipt: null }
 	} else {
