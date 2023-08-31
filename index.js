@@ -99,50 +99,48 @@ export async function getDefaultProvider(chainId, verbose = false) {
  * @param {string} [version=CONTRACT_VERSION] - The version of the contract
  * @param {boolean} [verbose=true] - Whether or not to print verbose output
  * @returns {Object} - The contract object
- */
-export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
-	/* returns a contract object for the given chainId and signer */
-	// signerOrProvider = await convertSignerOr ToV6(signerOrProvider);
-
-	// if signerOrProvider is null, use getDefaultProvider
+ */export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
 	if (signerOrProvider == null) {
-		verbose && console.log('signerOrProvider is null, getting default provider...')
-		signerOrProvider = await getDefaultProvider(chainId, verbose)
+		verbose && console.log('signerOrProvider is null, getting default provider...');
+		signerOrProvider = await getDefaultProvider(chainId, verbose);
 	}
 
 	if (typeof chainId == 'string' || chainId instanceof String) {
-		// just move to TS ffs
-		// do smae with bigint
-		// if chainId is a string, convert to int
-		chainId = parseInt(chainId)
-	}
-	chainId = parseInt(chainId)
-
-	// TODO: fix this for new versions
-	// if version is v3, load PEANUT_ABI_V3. if it is v4, load PEANUT_ABI_V4
-	var PEANUT_ABI
-	if (version == 'v3') {
-		PEANUT_ABI = PEANUT_ABI_V3
-	} else if (version == 'v4') {
-		PEANUT_ABI = PEANUT_ABI_V4
-	} else if (version == 'Bv4') {
-		PEANUT_ABI = PEANUT_BATCHER_ABI_V4
-	} else {
-		throw new Error('Invalid version')
+		chainId = parseInt(chainId);
 	}
 
-	const contractAddress = PEANUT_CONTRACTS[chainId][version]
-	// if the contract address is null, throw an error
-	if (contractAddress == null) {
-		throw new Error('Contract' + version + ' not deployed on chain ' + chainId)
+	// Determine which ABI version to use based on the version provided
+	var PEANUT_ABI;
+	switch(version) {
+		case 'v3':
+			PEANUT_ABI = PEANUT_ABI_V3;
+			break;
+		case 'v4':
+			PEANUT_ABI = PEANUT_ABI_V4;
+			break;
+		case 'Bv4':
+			PEANUT_ABI = PEANUT_BATCHER_ABI_V4;
+			break;
+		default:
+			throw new Error('Invalid version');
 	}
 
-	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
-	// connected to contracv
-	verbose && console.log('Connected to contract ', version, ' on chain ', chainId, ' at ', contractAddress)
-	return contract
+	// Find the contract address based on the chainId and version provided
+	const contractAddress = PEANUT_CONTRACTS[chainId] && PEANUT_CONTRACTS[chainId][version];
+
+	// If the contract address is not found, throw an error
+	if (!contractAddress) {
+		throw new Error(`Contract ${version} not deployed on chain ${chainId}`);
+	}
+
+	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider);
+
+	verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`);
+
+	return contract;
 	// TODO: return class
 }
+
 
 async function getAllowance(signer, chainId, tokenContract, spender, address = null, verbose = false) {
 	let allowance

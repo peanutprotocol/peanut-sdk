@@ -7,8 +7,8 @@ dotenv.config({ path: '../../../.env' })
 console.log('Peanut Version: ', peanut.version)
 
 ////////////////////////////////////////////////////////////
-const CHAIN_ID = 137 // 80001 for mumbai, 5 for goerli
-const TOKEN_AMOUNT = 0.0002
+const CHAIN_ID = 42161
+const TOKEN_AMOUNT = 0.000625
 const TOKEN_TYPE = 0
 const TOKEN_ADDRESS = ethers.constants.AddressZero
 const TOKEN_DECIMALS = 18
@@ -50,3 +50,34 @@ console.log('txHash: ', txReceipt.transactionHash)
 // 	})
 //     console.log('txHash: ', txReceipt.transactionHash)
 // }
+
+////// store as json file
+import fs from 'fs';
+
+function saveLinksToFile(newLinks){
+    const filePath = 'links.json';
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        let linksToSave = [];
+
+        // If file exists and has content, parse it.
+        if (!err && data) {
+            linksToSave = JSON.parse(data);
+        }
+
+        // Append new links.
+        linksToSave.push(...newLinks);
+
+        // Write the combined data back to the file.
+        fs.writeFile(filePath, JSON.stringify(linksToSave, null, 2), (writeErr) => {
+            if (writeErr) {
+                console.error('Error writing file:', writeErr);
+            } else {
+                console.log('New links appended to links.json');
+            }
+        });
+    });
+}
+
+
+saveLinksToFile(links);
