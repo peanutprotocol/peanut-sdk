@@ -145,8 +145,9 @@ async function getAllowance(signer, chainId, tokenContract, spender, address = n
 	let allowance
 	try {
 		address = address || (await signer.getAddress())
-		verbose && console.log('calling contract allowance function...')
+		verbose && console.log('calling contract allowance function for address ', address, ' and spender ', spender, '...')
 		allowance = await tokenContract.allowance(address, spender)
+		verbose && console.log('allowance: ', allowance)
 	} catch (error) {
 		console.error('Error fetching allowance:', error)
 	}
@@ -507,9 +508,11 @@ export async function createLink({
 
 	verbose && console.log('post txOptions: ', txOptions)
 	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address]
-	const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
-	if (estimatedGasLimit) {
-		txOptions.gasLimit = estimatedGasLimit.toString()
+	if (!txOptions.gasLimit) {
+		const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+		if (estimatedGasLimit) {
+			txOptions.gasLimit = estimatedGasLimit.toString()
+		}
 	}
 	verbose && console.log('final txOptions: ', txOptions)
 	// const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address, txOptions];
@@ -689,9 +692,11 @@ export async function createLinks({
 	]
 	verbose && console.log('depositParams: ', depositParams)
 
-	const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
-	if (estimatedGasLimit) {
-		txOptions.gasLimit = estimatedGasLimit.toString()
+	if (!txOptions.gasLimit){
+		const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
+		if (estimatedGasLimit) {
+			txOptions.gasLimit = estimatedGasLimit.toString()
+		}
 	}
 
 	if (mock) {
@@ -970,7 +975,10 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	let depositDate
 	if (['v4', 'v5'].includes(contractVersion)) {
 		if (deposit.timestamp) {
-			depositDate = new Date(deposit.timestamp * 1000) // Convert Solidity's UNIX timestamp to JavaScript's Date object
+			depositDate = new Date(deposit.timestamp * 1000)
+			if (deposit.timestamp == 0) {
+				depositDate = null // for deleted deposits (TODO: we'd like to keep this in the future contract versions)
+			}
 		} else {
 			verbose && console.log('No timestamp found in deposit for version', contractVersion)
 		}
@@ -1073,7 +1081,7 @@ export async function claimLinkGasless(
 		body: JSON.stringify(body),
 	})
 
-	verbose && console.log('response: ', response)
+	verbose && console.log('response status: ', response.status)
 
 	if (!response.ok) {
 		const error = await response.text()
