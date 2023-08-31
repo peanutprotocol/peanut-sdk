@@ -3,6 +3,25 @@ import json
 import os
 import time
 
+
+# these are all testnets and should be marked as such
+TESTNETS = [
+    5,
+    42,
+    4,
+    80001,
+    84531,
+    420,
+    200101,
+    97,
+    43113,
+    314159,
+    1442,
+    7001,
+    5001,
+    11155111,
+    167005,
+]
 # Existing constants
 CONTRACTS_URL = (
     "https://raw.githubusercontent.com/ProphetFund/peanut-contracts/main/contracts.json"
@@ -27,7 +46,11 @@ def check_rpc(rpc):
     if "infura" in rpc.lower():
         return True
     try:
-        response = requests.post(rpc, json={'jsonrpc':'2.0', 'method':'eth_blockNumber', 'params': [], 'id':1}, timeout=5)
+        response = requests.post(
+            rpc,
+            json={"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id": 1},
+            timeout=5,
+        )
         if response.status_code == 200:
             return True
         else:
@@ -46,30 +69,46 @@ def get_contracts():
 def get_chain_ids(contracts):
     chain_ids = list(contracts.keys())
     # filter out all the chain ids that don't have a v3 chain id
-    return [chain_id for chain_id in chain_ids if contracts[chain_id].get("v3")]
+    return [
+        chain_id
+        for chain_id in chain_ids
+        if (
+            contracts[chain_id].get("v3")
+            or (contracts[chain_id].get("v4") and contracts[chain_id].get("Bv4"))
+        )
+    ]
 
 
-def get_chain_details(chain_id):
+def get_chain_details(chain_id: int):
     chain_file = f"eip155-{chain_id}.json"
     response = requests.get(os.path.join(CHAINS_URL, chain_file))
-    if response.status_code == 200:
-        details = response.json()
-        
-        # check each rpc for liveliness and remove if dead
-        rpcs = details.get('rpc', [])
-        live_rpcs = [rpc for rpc in rpcs if check_rpc(rpc)]
-        details['rpc'] = live_rpcs
-        
-        # display a warning if no live rpcs found
-        if len(live_rpcs) == 0:
-            print(f"Warning: No live providers found for chain id {chain_id}")
-            
-        return details
-    return None
+    if response.status_code != 200:
+        return None
+
+    details = response.json()
+
+    # check each rpc for liveliness and remove if dead
+    rpcs = details.get("rpc", [])
+    live_rpcs = [rpc for rpc in rpcs if check_rpc(rpc)]
+    details["rpc"] = live_rpcs
+
+    # display a warning if no live rpcs found
+    if len(live_rpcs) == 0:
+        print(f"Warning: No live providers found for chain id {chain_id}")
+    
+    # add testnet flag if chain id is in TESTNETS
+    print(f"Checking if chain id {chain_id} is a testnet...", type(chain_id), type(TESTNETS[0]))
+    if chain_id in TESTNETS or int(chain_id) in TESTNETS:
+        details["mainnet"] = False
+    else:
+        details["mainnet"] = True
+
+    return details
 
 
 def get_chain_icon(possible_chain_names):
     for name in possible_chain_names:
+        print(f"Trying to get icon info for {name}...")
         # First attempt: Existing ICONS_URL
         icon_file = f"{name}.json"
         response = requests.get(os.path.join(ICONS_URL, icon_file))
@@ -125,8 +164,14 @@ def main():
 
     for chain_id in chain_ids:
         # Only fetch details if chain_id is not already in chainDetails.json
-        # if chain_id not in chain_details:
+        # if chain_id in chain_ids:
+        #     user_input = input(
+        #         f"Chain id {chain_id} already exists in chainDetails.json. Overwrite? (y/n) "
+        #     )
+        #     if user_input.lower() != "y":
+        #         continue
         print(f"Fetching details for chain id {chain_id}...")
+
         details = get_chain_details(chain_id)
 
         # get icon
@@ -141,7 +186,7 @@ def main():
             if details.get("name"):
                 possible_chain_names.append(details["name"])
                 # also split the name by spaces and add each word to the list
-                possible_chain_names.extend(details["name"].split(" "))
+                # possible_chain_names.extend(details["name"].split(" "))
             if details.get("chain"):
                 possible_chain_names.append(details["chain"])
             possible_chain_names.extend([name.lower() for name in possible_chain_names])
@@ -159,6 +204,8 @@ def main():
     # also overwrite contracts.json with the latest version
     with open("contracts.json", "w") as file:
         json.dump(contracts, file)
+
+    print("Done. Processed", len(chain_details), "chain ids: ", chain_details.keys())
 
 
 # Call the function to start the process
