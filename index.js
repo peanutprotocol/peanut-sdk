@@ -99,48 +99,47 @@ export async function getDefaultProvider(chainId, verbose = false) {
  * @param {string} [version=CONTRACT_VERSION] - The version of the contract
  * @param {boolean} [verbose=true] - Whether or not to print verbose output
  * @returns {Object} - The contract object
- */export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
+ */ export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
 	if (signerOrProvider == null) {
-		verbose && console.log('signerOrProvider is null, getting default provider...');
-		signerOrProvider = await getDefaultProvider(chainId, verbose);
+		verbose && console.log('signerOrProvider is null, getting default provider...')
+		signerOrProvider = await getDefaultProvider(chainId, verbose)
 	}
 
 	if (typeof chainId == 'string' || chainId instanceof String) {
-		chainId = parseInt(chainId);
+		chainId = parseInt(chainId)
 	}
 
 	// Determine which ABI version to use based on the version provided
-	var PEANUT_ABI;
-	switch(version) {
+	var PEANUT_ABI
+	switch (version) {
 		case 'v3':
-			PEANUT_ABI = PEANUT_ABI_V3;
-			break;
+			PEANUT_ABI = PEANUT_ABI_V3
+			break
 		case 'v4':
-			PEANUT_ABI = PEANUT_ABI_V4;
-			break;
+			PEANUT_ABI = PEANUT_ABI_V4
+			break
 		case 'Bv4':
-			PEANUT_ABI = PEANUT_BATCHER_ABI_V4;
-			break;
+			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
+			break
 		default:
-			throw new Error('Invalid version');
+			throw new Error('Invalid version')
 	}
 
 	// Find the contract address based on the chainId and version provided
-	const contractAddress = PEANUT_CONTRACTS[chainId] && PEANUT_CONTRACTS[chainId][version];
+	const contractAddress = PEANUT_CONTRACTS[chainId] && PEANUT_CONTRACTS[chainId][version]
 
 	// If the contract address is not found, throw an error
 	if (!contractAddress) {
-		throw new Error(`Contract ${version} not deployed on chain ${chainId}`);
+		throw new Error(`Contract ${version} not deployed on chain ${chainId}`)
 	}
 
-	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider);
+	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
 
-	verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`);
+	verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`)
 
-	return contract;
+	return contract
 	// TODO: return class
 }
-
 
 async function getAllowance(signer, chainId, tokenContract, spender, address = null, verbose = false) {
 	let allowance

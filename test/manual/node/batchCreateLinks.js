@@ -52,32 +52,31 @@ console.log('txHash: ', txReceipt.transactionHash)
 // }
 
 ////// store as json file
-import fs from 'fs';
+import fs from 'fs'
 
-function saveLinksToFile(newLinks){
-    const filePath = 'links.json';
+function saveLinksToFile(newLinks) {
+	const filePath = 'links.json'
 
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        let linksToSave = [];
+	fs.readFile(filePath, 'utf8', (err, data) => {
+		let linksToSave = []
 
-        // If file exists and has content, parse it.
-        if (!err && data) {
-            linksToSave = JSON.parse(data);
-        }
+		// If file exists and has content, parse it.
+		if (!err && data) {
+			linksToSave = JSON.parse(data)
+		}
 
-        // Append new links.
-        linksToSave.push(...newLinks);
+		// Append new links.
+		linksToSave.push(...newLinks)
 
-        // Write the combined data back to the file.
-        fs.writeFile(filePath, JSON.stringify(linksToSave, null, 2), (writeErr) => {
-            if (writeErr) {
-                console.error('Error writing file:', writeErr);
-            } else {
-                console.log('New links appended to links.json');
-            }
-        });
-    });
+		// Write the combined data back to the file.
+		fs.writeFile(filePath, JSON.stringify(linksToSave, null, 2), (writeErr) => {
+			if (writeErr) {
+				console.error('Error writing file:', writeErr)
+			} else {
+				console.log('New links appended to links.json')
+			}
+		})
+	})
 }
 
-
-saveLinksToFile(links);
+saveLinksToFile(links)
