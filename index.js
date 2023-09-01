@@ -1125,6 +1125,7 @@ console.log('peanut-sdk version: ', VERSION)
 export default peanut
 export {
 	peanut,
+	errors,
 	greeting,
 	generateKeysFromString,
 	hash_string,
