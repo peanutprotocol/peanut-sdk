@@ -43,6 +43,8 @@ import {
 	getDepositIdxs,
 } from './util.js'
 
+import * as errors from './consts/error.consts.ts'
+
 async function getAbstractSigner(signer, verbose = true) {
 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
 	return signer
@@ -87,8 +89,7 @@ export async function getDefaultProvider(chainId, verbose = false) {
 			verbose && console.log('Provider is down:', rpc)
 		}
 	}
-
-	throw new Error('No alive provider found for chainId ' + chainId)
+	throw new errors.NoProviderFoundError(chainId)
 }
 
 /**
@@ -122,7 +123,7 @@ export async function getDefaultProvider(chainId, verbose = false) {
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 			break
 		default:
-			throw new Error('Invalid version')
+			throw new errors.InvalidVersionError()
 	}
 
 	// Find the contract address based on the chainId and version provided
@@ -130,7 +131,7 @@ export async function getDefaultProvider(chainId, verbose = false) {
 
 	// If the contract address is not found, throw an error
 	if (!contractAddress) {
-		throw new Error(`Contract ${version} not deployed on chain ${chainId}`)
+		throw new errors.ContractNotDeployedError(chainId, version)
 	}
 
 	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
@@ -432,7 +433,7 @@ export async function createLink({
 				'Using fallback contract version ' + fallBackContractVersion
 			)
 		} else {
-			throw new Error('Contract version ' + contractVersion + ' not deployed on chain ' + chainId)
+			throw new errors.ContractNotDeployedError(chainId, contractVersion)
 		}
 	}
 
@@ -441,7 +442,7 @@ export async function createLink({
 	if (tokenAddress == null) {
 		tokenAddress = '0x0000000000000000000000000000000000000000'
 		if (tokenType != 0) {
-			throw new Error('tokenAddress is null but tokenType is not 0')
+			throw new errors.TokenAddressAndTypeError()
 		}
 	}
 	// limit tokenAmount to 18 decimals
@@ -480,7 +481,7 @@ export async function createLink({
 		)
 		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
 		if (allowance < tokenAmount) {
-			throw new Error('Allowance not enough')
+			throw new errors.AllowanceError()
 		}
 	}
 
@@ -626,7 +627,7 @@ export async function createLinks({
 		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks.toString()))
 		verbose && console.log('totalTokenAmount: ', totalTokenAmount.toString())
 	} else {
-		throw new Error('Either tokenAmount or tokenAmounts must be provided')
+		throw new errors.TokenAmountError()
 	}
 	assert(totalTokenAmount > 0, 'totalTokenAmount must be greater than 0')
 
@@ -865,7 +866,7 @@ export async function getAllDepositsForSigner({
  */
 export async function claimLinkSender({ signer, link, verbose = false }) {
 	// raise error, not implemented yet
-	throw new Error('Not implemented yet')
+	throw new errors.NotImlementedError()
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
 
@@ -993,13 +994,13 @@ export async function getLinkDetails(signerOrProvider, link, verbose = false) {
 	console.log('chainId: ', chainId)
 	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 	if (!chainDetails) {
-		throw new Error('Chain details not found')
+		throw new errors.ChaindetailsNotFoundError()
 	}
 
 	// Find the token within the tokens array of the chain
 	const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
 	if (!tokenDetails) {
-		throw new Error('Token details not found')
+		throw new errors.TokendetailsNotFoundError()
 	}
 
 	// Format the token amount
