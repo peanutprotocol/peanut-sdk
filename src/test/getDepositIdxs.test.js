@@ -1,4 +1,4 @@
-import peanut from '../index'
+import peanut from '../../index'
 import { ethers } from 'ethersv5'
 import dotenv from 'dotenv'
 import { expect } from '@jest/globals'

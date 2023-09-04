@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import { ethers } from 'ethersv5' // v5
+import { BigNumber, ethers } from 'ethersv5' // v5
 import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import {
 	PEANUT_ABI_V3,
@@ -14,9 +14,6 @@ import {
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
-	ERC721_ABI,
-	ERC1155_ABI,
-	CHAIN_MAP,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	VERSION,
@@ -43,19 +40,21 @@ import {
 	getDepositIdxs,
 } from './util.js'
 
-async function getAbstractSigner(signer, verbose = true) {
+import * as interfaces from './consts/interfaces.consts.ts'
+
+async function getAbstractSigner(signer: any, verbose = true) {
 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
 	return signer
-}
+} //TODO: remove this
 
-async function checkRpc(rpc, verbose = false) {
+async function checkRpc(rpc: string, verbose = false) {
 	try {
 		verbose && console.log('Checking provider:', rpc)
 		const provider = new ethers.providers.JsonRpcProvider(rpc)
 		verbose && console.log('provider blocknumber:', await provider.getBlockNumber())
 		return true
 	} catch (error) {
-		verbose && console.error('Error checking provider:', provider)
+		verbose && console.error('Error checking provider:', rpc)
 		return false
 	}
 }
@@ -66,10 +65,10 @@ async function checkRpc(rpc, verbose = false) {
  * @param {boolean} verbose - Whether or not to print verbose output
  * @returns {Object} - The provider
  */
-export async function getDefaultProvider(chainId, verbose = false) {
+export async function getDefaultProvider(chainId: string, verbose = false) {
 	verbose && console.log('Getting default provider for chainId ', chainId)
 	chainId = String(chainId)
-	const rpcs = CHAIN_DETAILS[chainId].rpc
+	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
 	verbose && console.log('rpcs', rpcs)
 
@@ -99,15 +98,18 @@ export async function getDefaultProvider(chainId, verbose = false) {
  * @param {string} [version=CONTRACT_VERSION] - The version of the contract
  * @param {boolean} [verbose=true] - Whether or not to print verbose output
  * @returns {Object} - The contract object
- */ export async function getContract(chainId, signerOrProvider, version = CONTRACT_VERSION, verbose = true) {
+ */ export async function getContract(
+	_chainId: string,
+	signerOrProvider: any,
+	version = DEFAULT_CONTRACT_VERSION,
+	verbose = true
+) {
 	if (signerOrProvider == null) {
 		verbose && console.log('signerOrProvider is null, getting default provider...')
-		signerOrProvider = await getDefaultProvider(chainId, verbose)
+		signerOrProvider = await getDefaultProvider(_chainId, verbose)
 	}
 
-	if (typeof chainId == 'string' || chainId instanceof String) {
-		chainId = parseInt(chainId)
-	}
+	const chainId = parseInt(_chainId)
 
 	// Determine which ABI version to use based on the version provided
 	var PEANUT_ABI
@@ -126,7 +128,8 @@ export async function getDefaultProvider(chainId, verbose = false) {
 	}
 
 	// Find the contract address based on the chainId and version provided
-	const contractAddress = PEANUT_CONTRACTS[chainId] && PEANUT_CONTRACTS[chainId][version]
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const contractAddress = _PEANUT_CONTRACTS[chainId.toString()] && _PEANUT_CONTRACTS[chainId.toString()][version]
 
 	// If the contract address is not found, throw an error
 	if (!contractAddress) {
@@ -141,11 +144,18 @@ export async function getDefaultProvider(chainId, verbose = false) {
 	// TODO: return class
 }
 
-async function getAllowance(signer, chainId, tokenContract, spender, address = null, verbose = false) {
+async function getAllowance(
+	signer: ethers.providers.JsonRpcSigner,
+	tokenContract: any,
+	spender: any,
+	address: string = '',
+	verbose = false
+) {
 	let allowance
 	try {
 		address = address || (await signer.getAddress())
-		verbose && console.log('calling contract allowance function for address ', address, ' and spender ', spender, '...')
+		verbose &&
+			console.log('calling contract allowance function for address ', address, ' and spender ', spender, '...')
 		allowance = await tokenContract.allowance(address, spender)
 		verbose && console.log('allowance: ', allowance)
 	} catch (error) {
@@ -169,10 +179,10 @@ async function getAllowance(signer, chainId, tokenContract, spender, address = n
  * @returns {Object} - An object containing the allowance and txReceipt
  */
 export async function approveSpendERC20(
-	signer,
-	chainId,
-	tokenAddress,
-	amount,
+	signer: ethers.providers.JsonRpcSigner,
+	chainId: string,
+	tokenAddress: string,
+	_amount: number,
 	tokenDecimals = 18,
 	isRawAmount = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
@@ -184,13 +194,15 @@ export async function approveSpendERC20(
 
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
 	verbose && console.log('Connected to tokenContract at ', tokenAddress, ' on chain ', chainId)
-	if (amount == -1) {
+	var amount: BigNumber | number = _amount
+	if (_amount == -1) {
 		// if amount is -1, approve infinite amount
 		amount = ethers.constants.MaxUint256
 	}
-	const spender = PEANUT_CONTRACTS[chainId][contractVersion]
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = _PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion]
 	verbose && console.log('Getting allowance for spender ', spender, 'on chain ', chainId, '...')
-	let allowance = await getAllowance(signer, chainId, tokenContract, spender, signerAddress, verbose)
+	let allowance = await getAllowance(signer, tokenContract, spender, signerAddress, verbose)
 	verbose && console.log('Allowance: ', allowance.toString())
 
 	if (isRawAmount) {
@@ -212,7 +224,7 @@ export async function approveSpendERC20(
 		const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
 		const tx = await tokenContract.approve(spender, amount, txOptions)
 		const txReceipt = await tx.wait()
-		allowance = await getAllowance(signer, chainId, tokenContract, spender, signerAddress, verbose)
+		allowance = await getAllowance(signer, tokenContract, spender, signerAddress, verbose)
 		console.log('New Allowance: ', allowance.toString())
 		return { allowance, txReceipt }
 	}
@@ -304,7 +316,7 @@ async function setFeeOptions({
 	return txOptions
 }
 
-async function estimateGasLimit(contract, functionName, params, txOptions) {
+async function estimateGasLimit(contract: any, functionName: string, params: any, txOptions: any) {
 	try {
 		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
 		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
@@ -324,7 +336,7 @@ async function estimateGasLimit(contract, functionName, params, txOptions) {
 	}
 }
 
-export function formatNumberAvoidScientific(n) {
+export function formatNumberAvoidScientific(n: number) {
 	if (typeof n === 'number') {
 		const str = n.toString()
 
@@ -353,8 +365,8 @@ export function formatNumberAvoidScientific(n) {
 }
 
 // trim some number to a certain number of decimals
-export function trim_decimal_overflow(n, decimals) {
-	n = formatNumberAvoidScientific(n)
+export function trim_decimal_overflow(_n: number, decimals: number) {
+	var n = formatNumberAvoidScientific(_n)
 	n += ''
 
 	if (n.indexOf('.') === -1) return n
@@ -692,7 +704,7 @@ export async function createLinks({
 	]
 	verbose && console.log('depositParams: ', depositParams)
 
-	if (!txOptions.gasLimit){
+	if (!txOptions.gasLimit) {
 		const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
 		if (estimatedGasLimit) {
 			txOptions.gasLimit = estimatedGasLimit.toString()
@@ -948,7 +960,8 @@ async function createClaimPayload(link, recipientAddress) {
  * @param {boolean} verbose - Whether or not to print verbose output
  * @returns {Object} - An object containing the link details
  */
-export async function getLinkDetails(signerOrProvider, link, verbose = false) {
+export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkDetailsParams) {
+	const verbose = false // TODO: move this to initializing the SDK
 	verbose && console.log('getLinkDetails called with link: ', link)
 	assert(link, 'link arg is required')
 
