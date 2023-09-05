@@ -10,7 +10,7 @@ import PEANUT_CONTRACTS from './data/contracts.json' assert { type: 'json' }
 import CHAIN_MAP from './data/chainMap.json' assert { type: 'json' }
 import CHAIN_DETAILS from './data/chainDetails.json' assert { type: 'json' }
 import TOKEN_DETAILS from './data/tokenDetails.json' assert { type: 'json' }
-import PACKAGE_JSON from './package.json' assert { type: 'json' }
+import PACKAGE_JSON from '../package.json' assert { type: 'json' }
 const VERSION = PACKAGE_JSON.version
 
 // CONSTANTS

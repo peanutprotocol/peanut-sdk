@@ -20,7 +20,7 @@ import {
 	DEFAULT_CONTRACT_VERSION,
 	FALLBACK_CONTRACT_VERSION,
 	TOKEN_TYPES,
-} from './data.js'
+} from './data.ts'
 
 import {
 	assert,
@@ -38,7 +38,7 @@ import {
 	getParamsFromPageURL,
 	getDepositIdx,
 	getDepositIdxs,
-} from './util.js'
+} from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
 
@@ -242,7 +242,19 @@ async function setFeeOptions({
 	maxPriorityFeePerGas = null,
 	maxPriorityFeePerGasMultiplier = 2,
 	verbose = false,
-} = {}) {
+}: {
+	txOptions?: any
+	provider: any
+	eip1559: boolean
+	maxFeePerGas?: number | null
+	maxFeePerGasMultiplier?: number
+	gasLimit?: number | null
+	gasPrice?: number | null
+	gasPriceMultiplier?: number
+	maxPriorityFeePerGas?: BigNumber | null
+	maxPriorityFeePerGasMultiplier?: number
+	verbose?: boolean
+}) {
 	verbose && console.log('Setting tx options...')
 	let feeData
 	// if not txOptions, create it (oneliner)
@@ -261,7 +273,7 @@ async function setFeeOptions({
 	}
 
 	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
-	let chainId = await provider.getNetwork().then((network) => network.chainId)
+	let chainId = await provider.getNetwork().then((network: any) => network.chainId)
 	if (chainId == 137) {
 		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
 		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
@@ -307,8 +319,8 @@ async function setFeeOptions({
 				gasPrice = BigInt(feeData.gasPrice.toString())
 			}
 		}
-		const proposedGasPrice = (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
-		txOptions.gasPrice = proposedGasPrice.toString()
+		const proposedGasPrice = gasPrice && (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
+		txOptions.gasPrice = proposedGasPrice && proposedGasPrice.toString()
 	}
 
 	verbose && console.log('FINAL txOptions:', txOptions)
@@ -423,6 +435,8 @@ export async function createLink({
 	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
 	nonce = null,
 }) {
+	//TODO: implement the ICreatelinkParams interface and ICreateLinkResponse interface
+
 	assert(signer, 'signer arg is required')
 	assert(chainId, 'chainId arg is required')
 	assert(tokenAmount, 'amount arg is required')
@@ -591,6 +605,7 @@ export async function createLinks({
 	fallBackcontractInstance = null, // TODO:
 	mock = false,
 }) {
+	// implement the ICreateLinksParams interface and ICreateLinksResponse interface
 	assert(signer, 'signer arg is required')
 	assert(chainId, 'chainId arg is required')
 	assert(
@@ -740,26 +755,27 @@ export async function createLinks({
  * @param {Object} options - An object containing the signer and link to check
  * @returns {Object} - An object containing whether the link has been claimed and the deposit
  */
-export async function getLinkStatus({ signer, link }) {
+export async function getLinkStatus({ signer, link }: { signer: ethers.providers.JsonRpcSigner; link: string }) {
+	//TODO: This can be removed I think? It's deprecated and merged into getLinkDetails
 	// warning deprecated
 	console.warn('WARNING: getLinkStatus is deprecated. Use getLinkDetails instead.')
-	assert(signer, 'signer arg is required')
-	assert(link, 'link arg is required')
+	// assert(signer, 'signer arg is required')
+	// assert(link, 'link arg is required')
 
-	signer = await getAbstractSigner(signer)
+	// signer = await getAbstractSigner(signer)
 
-	const params = getParamsFromLink(link)
-	const chainId = params.chainId
-	const contractVersion = params.contractVersion
-	const depositIdx = params.depositIdx
-	const contract = await getContract(chainId, signer, contractVersion)
-	const deposit = await contract.deposits(depositIdx)
+	// const params = getParamsFromLink(link)
+	// const chainId = params.chainId
+	// const contractVersion = params.contractVersion
+	// const depositIdx = params.depositIdx
+	// const contract = await getContract(chainId, signer, contractVersion)
+	// const deposit = await contract.deposits(depositIdx)
 
-	// if the deposit is claimed, the pubKey20 will be 0x000....
-	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
-		return { claimed: true, deposit }
-	}
-	return { claimed: false, deposit }
+	// // if the deposit is claimed, the pubKey20 will be 0x000....
+	// if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
+	// 	return { claimed: true, deposit }
+	// }
+	// return { claimed: false, deposit }
 }
 
 /**
@@ -848,6 +864,11 @@ export async function getAllDepositsForSigner({
 	chainId,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
 	verbose = false,
+}: {
+	signer: ethers.providers.JsonRpcSigner
+	chainId: string
+	contractVersion?: string
+	verbose?: boolean
 }) {
 	const contract = await getContract(chainId, signer, contractVersion)
 	let deposits
@@ -880,55 +901,63 @@ export async function getAllDepositsForSigner({
  * @param {boolean} [options.verbose=false] - Whether or not to print verbose output
  * @returns {Object} - The transaction receipt
  */
-export async function claimLinkSender({ signer, link, verbose = false }) {
+export async function claimLinkSender({
+	signer,
+	link,
+	verbose = false,
+}: {
+	signer: ethers.providers.JsonRpcSigner
+	link: string
+	verbose?: boolean
+}) {
 	// raise error, not implemented yet
 	throw new Error('Not implemented yet')
-	assert(signer, 'signer arg is required')
-	assert(link, 'link arg is required')
+	// assert(signer, 'signer arg is required')
+	// assert(link, 'link arg is required')
 
-	signer = await getAbstractSigner(signer)
+	// signer = await getAbstractSigner(signer)
 
-	const params = getParamsFromLink(link)
-	const chainId = params.chainId
-	const contractVersion = params.contractVersion
-	const depositIdx = params.depositIdx
-	const password = params.password
-	if (recipient == null) {
-		recipient = await signer.getAddress()
+	// const params = getParamsFromLink(link)
+	// const chainId = params.chainId
+	// const contractVersion = params.contractVersion
+	// const depositIdx = params.depositIdx
+	// const password = params.password
+	// if (recipient == null) {
+	// 	recipient = await signer.getAddress()
 
-		verbose && console.log('recipient not provided, using signer address: ', recipient)
-	}
-	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion)
+	// 	verbose && console.log('recipient not provided, using signer address: ', recipient)
+	// }
+	// const keys = generateKeysFromString(password) // deterministically generate keys from password
+	// const contract = await getContract(chainId, signer, contractVersion)
 
-	// cryptography
-	var addressHash = solidityHashAddress(recipient)
-	// var addressHashBinary = ethers.getBytes(addressHash); // v6
-	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
-	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
-	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	var signature = await signAddress(recipient, keys.privateKey) // sign with link keys
+	// // cryptography
+	// var addressHash = solidityHashAddress(recipient)
+	// // var addressHashBinary = ethers.getBytes(addressHash); // v6
+	// var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
+	// verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
+	// var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+	// var signature = await signAddress(recipient, keys.privateKey) // sign with link keys
 
-	if (verbose) {
-		// print the params
-		console.log('params: ', params)
-		console.log('addressHash: ', addressHash)
-		console.log('addressHashEIP191: ', addressHashEIP191)
-		console.log('signature: ', signature)
-	}
+	// if (verbose) {
+	// 	// print the params
+	// 	console.log('params: ', params)
+	// 	console.log('addressHash: ', addressHash)
+	// 	console.log('addressHashEIP191: ', addressHashEIP191)
+	// 	console.log('signature: ', signature)
+	// }
 
-	// TODO: use createClaimPayload instead
+	// // TODO: use createClaimPayload instead
 
-	// withdraw the deposit
-	// address hash is hash(prefix + hash(address))
-	const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature)
-	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
-	const txReceipt = await tx.wait()
+	// // withdraw the deposit
+	// // address hash is hash(prefix + hash(address))
+	// const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature)
+	// console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+	// const txReceipt = await tx.wait()
 
-	return txReceipt
+	// return txReceipt
 }
 
-async function createClaimPayload(link, recipientAddress) {
+async function createClaimPayload(link: string, recipientAddress: string) {
 	/* internal utility function to create the payload for claiming a link */
 	const params = getParamsFromLink(link)
 	const chainId = params.chainId
@@ -970,7 +999,7 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
 	const contractVersion = params.contractVersion
 	const depositIdx = params.depositIdx
 	const password = params.password
-	const contract = await getContract(chainId, signerOrProvider, contractVersion, verbose)
+	const contract = await getContract(chainId.toString(), RPCProvider, contractVersion, verbose)
 
 	verbose && console.log('fetching deposit: ', depositIdx)
 	const deposit = await contract.deposits(depositIdx)
@@ -1055,21 +1084,22 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
  * @param {string} url - The URL to use for the Peanut API (default is 'https://api.peanut.to/claim')
  * @returns {Object} - The data returned from the API call
  */
-export async function claimLinkGasless(
+export async function claimLinkGasless({
 	link,
 	recipientAddress,
-	apiKey,
-	verbose = false,
-	url = 'https://api.peanut.to/claim'
-) {
+	APIKey,
+	baseUrl = 'https://api.peanut.to/claim',
+}: interfaces.IClaimLinkGaslessParams) {
+	const verbose = true
 	console.log('claiming link through Peanut API...')
-	verbose && console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', apiKey, ' url: ', url)
+	verbose &&
+		console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', APIKey, ' url: ', baseUrl)
 	const payload = await createClaimPayload(link, recipientAddress)
 	verbose && console.log('payload: ', payload)
 	//  url = "https://api.peanut.to/claim";
-	if (url == 'local') {
+	if (baseUrl == 'local') {
 		verbose && console.log('using local api')
-		url = 'http://127.0.0.1:5001/claim'
+		baseUrl = 'http://127.0.0.1:5001/claim'
 	}
 
 	const headers = {
@@ -1083,12 +1113,12 @@ export async function claimLinkGasless(
 		idx: payload.idx,
 		chain: payload.chainId,
 		version: payload.contractVersion,
-		api_key: apiKey,
+		api_key: APIKey,
 	}
 
 	// if axios error, return the error message
 
-	const response = await fetch(url, {
+	const response = await fetch(baseUrl, {
 		method: 'POST',
 		headers: headers,
 		body: JSON.stringify(body),
