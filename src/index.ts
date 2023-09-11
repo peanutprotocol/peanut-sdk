@@ -497,13 +497,13 @@ export async function prepareTxs({
 export async function signAndSubmitTx({
 	structSigner,
 	unsignedTx,
-}: interfaces.ISignAndSubmitTxParams): Promise<interfaces.IClaimLinkParams> {
+}: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
 	const signedTx = await structSigner.signer.signTransaction(unsignedTx)
 	//@ts-ignore
 	const tx = await structSigner.signer.sendTransaction(signedTx)
-	const txReceipt = await tx.wait()
+	await tx.wait()
 
-	return { structSigner, link: txReceipt.transactionHash }
+	return { txHash: tx.hash, success: { success: true } }
 }
 
 // takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
@@ -625,149 +625,27 @@ export async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
-	// validate linkDetails
-	// linkDetails = validateLinkDetails(linkDetails)
+	linkDetails = validateLinkDetails(linkDetails, [], 1)
+	const password = getRandomString(16)
 
-	// check if contractVersion exists
-	if (!PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion]) {
-		// if not, use fallback contract version if it is not null or false, else throw error
-		// if (fallBackPeanutContractVersion) {
-		// 	peanutContractVersion = fallBackPeanutContractVersion
-		// 	console.warn(
-		// 		'WARNING: Contract version ' + peanutContractVersion + ' not deployed on chain ' + chainId,
-		// 		'Using fallback contract version ' + fallBackPeanutContractVersion
-		// 	)
-		// } else {
-		// 	throw new Error('Contract version ' + peanutContractVersion + ' not deployed on chain ' + chainId)
-		// }
-		throw new Error('Contract version ' + peanutContractVersion + ' not deployed on chain ' + linkDetails.chainId)
-	}
-
-	// signer = await getAbstractSigner(signer)
-
-	// limit tokenAmount to 18 decimals
-	// if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
-	// 	tokenAmount = parseFloat(tokenAmount)
-	// }
-	// tokenAmount = tokenAmount.toFixed(18)
-	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
-	const tokenAmountBignum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
-	assert(tokenAmountBignum.gt(0), 'tokenAmount must be greater than 0')
-
-	// if native token (tokentype == 0), add value to txOptions
-	let txOptions: interfaces.ITxOptions = {}
-	// set nonce
-	// nonce = nonce || (await signer.getNonce()); // v6
-	structSigner.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // v5
-	txOptions.nonce = structSigner.nonce
-	if (linkDetails.tokenType == 0) {
-		txOptions = {
-			...txOptions,
-			value: tokenAmountBignum,
-		}
-	} else if (linkDetails.tokenType == 1) {
-		// check allowance
-		// TODO: check for erc721 and erc1155
-		console.log('checking allowance...')
-		// if token is erc20, check allowance
-		const allowance = await approveSpendERC20(
-			structSigner.signer,
-			String(linkDetails.chainId),
-			linkDetails.tokenAddress,
-			tokenAmountBignum,
-			linkDetails.tokenDecimals,
-			true,
-			peanutContractVersion
-		)
-		console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmountBignum)
-		if (allowance.allowance.lt(tokenAmountBignum)) {
-			throw new Error('Allowance not enough')
-		}
-	}
-
-	if (linkDetails.password == null || linkDetails.password == '') {
-		// if no password is provided, generate a random one
-		linkDetails.password = getRandomString(16)
-	}
-
-	const keys = generateKeysFromString(linkDetails.password) // deterministically generate keys from password
-	const contract = await getContract(String(linkDetails.chainId), structSigner.signer, peanutContractVersion) // get the contract instance
-
-	console.log('Generating link...')
-
-	// set transaction options
-	txOptions = await setFeeOptions({
-		txOptions,
-		provider: structSigner.signer.provider,
-		eip1559: structSigner.eip1559,
-		maxFeePerGas: structSigner.maxFeePerGas,
-		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
-		gasLimit: structSigner.gasLimit,
+	// Prepare the transactions
+	const prepareTxsResponse = await prepareTxs({
+		address: await structSigner.signer.getAddress(),
+		linkDetails,
+		peanutContractVersion,
+		numberOfLinks: 1,
+		passwords: [password],
 	})
 
-	const depositParams = [
-		linkDetails.tokenAddress,
-		linkDetails.tokenType,
-		tokenAmountBignum,
-		linkDetails.tokenId,
-		keys.address,
-	]
-	if (!txOptions.gasLimit) {
-		const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
-		if (estimatedGasLimit) {
-			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
-		}
-	}
-	console.log('final txOptions: ', txOptions)
-	// const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address, txOptions];
-	console.log('depositParams: ', depositParams)
-
-	// store in localstorage in case tx falls through (only if in web environment)
-	// TODO: refactor in future
-	if (typeof window !== 'undefined') {
-		const tempDeposits = JSON.parse(localStorage.getItem('tempDeposits') || '[]')
-		const tempDeposit = {
-			chain: linkDetails.chainId,
-			tokenAmount: tokenAmountBignum,
-			contractType: linkDetails.tokenType,
-			peanutContractVersion: peanutContractVersion,
-			tokenAddress: linkDetails.tokenAddress,
-			password: linkDetails.password,
-			idx: null,
-			link: null,
-			txHash: null,
-		}
-		tempDeposits.push(tempDeposit)
-		localStorage.setItem('tempDeposits', JSON.stringify(tempDeposits))
-	}
-
-	const tx = await contract.makeDeposit(...depositParams, txOptions)
-
-	console.log('submitted tx: ', tx.hash)
-
-	// now we need the deposit index from the tx receipt
-	const txReceipt = await tx.wait()
-	const depositIdx = getDepositIdx(txReceipt, String(linkDetails.chainId), peanutContractVersion)
-	console.log('Deposit finalized. Deposit index: ', depositIdx)
-
-	// now we can create the link
-	const link = getLinkFromParams(
-		linkDetails.chainId,
-		peanutContractVersion,
-		depositIdx,
-		linkDetails.password,
-		linkDetails.baseUrl,
-		linkDetails.trackId
+	// Sign and submit the transactions
+	const signedTxs = await Promise.all(
+		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
 
-	console.log('created link: ', link)
+	// Get the links from the transactions
+	const link = (await getLinksFromTx({ linkDetails, txHash: signedTxs[-1].txHash, passwords: [password] })).links
 
-	const response: interfaces.ICreateLinkResponse = {
-		createdLink: { link: link, txHash: tx.hash },
-		success: { success: true },
-	}
-
-	return response
+	return { createdLink: { link: link, txHash: signedTxs[-1].txHash }, success: { success: true } }
 }
 
 export async function createLinks({
@@ -776,144 +654,33 @@ export async function createLinks({
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
-	if (!structSigner || !structSigner.signer) {
-		throw new Error('createLinks function requires a structSigner object with a signer property')
-	}
-	if (!linkDetails || !linkDetails.chainId || !linkDetails.tokenAmount) {
-		throw new Error('createLinks function requires linkDetails object with chainId and tokenAmount properties')
-	}
+	linkDetails = validateLinkDetails(linkDetails, [], numberOfLinks)
+	const passwords = Array(numberOfLinks).fill(getRandomString(16))
 
-	// Assert that linkDetails conforms to IPeanutLinkDetails
-	linkDetails = linkDetails as interfaces.IPeanutLinkDetails
-
-	// Use nullish coalescing operator to provide default values
-	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
-	linkDetails.tokenType = linkDetails.tokenType ?? 0
-	linkDetails.tokenId = linkDetails.tokenId ?? 0
-	linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 18
-	linkDetails.password = linkDetails.password ?? ''
-	linkDetails.baseUrl = linkDetails.baseUrl ?? 'https://peanut.to/claim'
-	linkDetails.trackId = linkDetails.trackId ?? 'sdk'
-	const batcherContractVersion: string = DEFAULT_BATCHER_VERSION
-
-	assert(
-		linkDetails.tokenType == 0 || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
-		'tokenAddress must be provided for non-ETH tokens'
-	)
-	assert(linkDetails.tokenType == 0 || linkDetails.tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
-	assert(
-		!(linkDetails.tokenType == 1 || linkDetails.tokenType == 3) || linkDetails.tokenDecimals != null,
-		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
-	)
-
-	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
-	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
-	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
-	const totalTokenAmount = tokenAmountBigNum.mul(ethers.BigNumber.from(numberOfLinks.toString()))
-
-	// Get the batcher Contract
-	const batcherContract = await getContract(String(linkDetails.chainId), structSigner.signer, batcherContractVersion)
-
-	// Determine the pubKeys from the passwords
-	const passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
-	const pubKeys = passwords.map((password) => generateKeysFromString(password).address)
-
-	// If the token is ERC20, approve the contract to spend tokens
-	if (linkDetails.tokenType === 1) {
-		console.log('Checking && requesting approval of a total of ', totalTokenAmount, ' tokens')
-		const { allowance } = await approveSpendERC20(
-			structSigner.signer,
-			String(linkDetails.chainId),
-			linkDetails.tokenAddress,
-			totalTokenAmount,
-			linkDetails.tokenDecimals,
-			true,
-			batcherContractVersion
-		)
-		console.log('Allowance: ', allowance)
-	}
-
-	// Set transaction options
-	let txOptions: interfaces.ITxOptions = {}
-	const nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount())
-	txOptions.nonce = nonce
-	if (linkDetails.tokenType == 0) {
-		txOptions = {
-			...txOptions,
-			value: tokenAmountBigNum.mul(ethers.BigNumber.from(numberOfLinks.toString())),
-		}
-	}
-
-	txOptions = await setFeeOptions({
-		txOptions,
-		provider: structSigner.signer.provider,
-		eip1559: structSigner.eip1559,
-		maxFeePerGas: structSigner.maxFeePerGas,
-		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
-		gasLimit: structSigner.gasLimit,
+	// Prepare the transactions
+	const prepareTxsResponse = await prepareTxs({
+		address: await structSigner.signer.getAddress(),
+		linkDetails,
+		peanutContractVersion,
+		numberOfLinks: numberOfLinks,
+		passwords: passwords,
 	})
 
-	// Make the batch deposit (amount of deposits is determined by length of pubKeys). tokenAmount is for each individual deposit
-	const depositParams = [
-		PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion], // The address of the PeanutV4 contract
-		linkDetails.tokenAddress,
-		linkDetails.tokenType,
-		tokenAmountBigNum,
-		linkDetails.tokenId,
-		pubKeys,
-	]
-	console.log('depositParams: ', depositParams)
+	// Sign and submit the transactions
+	const signedTxs = await Promise.all(
+		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
+	)
 
-	if (!txOptions.gasLimit) {
-		const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
-		if (estimatedGasLimit) {
-			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
-		}
-	}
-
-	const tx = await batcherContract.batchMakeDeposit(...depositParams, txOptions)
-	console.log('submitted tx: ', tx.hash)
-
-	// Wait for the transaction to be mined and get the receipt
-	const txReceipt = await tx.wait()
-	const txHash = txReceipt.transactionHash
-
-	// Extract the deposit indices from the transaction receipt
-	const depositIdxs = getDepositIdxs(txReceipt, linkDetails.chainId, peanutContractVersion)
-
-	// Generate the links based on the deposit indices
-	const links: interfaces.ICreatedPeanutLink[] = depositIdxs.map((depositIdx, i) => {
-		const link = getLinkFromParams(
-			linkDetails.chainId,
-			peanutContractVersion,
-			depositIdx,
-			passwords[i],
-			linkDetails.baseUrl,
-			linkDetails.trackId
-		)
-		return {
-			link: link,
-			txHash: txHash,
-		}
+	// Get the links from the transactions
+	const links = (await getLinksFromTx({ linkDetails, txHash: signedTxs[-1].txHash, passwords })).links
+	const createdLinks = links.map((link) => {
+		return { link: link, txHash: signedTxs[-1].txHash }
 	})
-
-	const response: interfaces.ICreateLinksResponse = {
-		createdLinks: links,
-		success: { success: true },
-	}
-
-	return response
+	return { createdLinks: createdLinks, success: { success: true } }
 }
 
 /**
  * Claims the contents of a link
- *
- * @param {Object} options - An object containing the options to use for claiming the link
- * @param {Object} options.signer - The signer to use for claiming
- * @param {string} options.link - The link to claim
- * @param {string} [options.recipient=null] - The address to claim the link to. Defaults to the signer's address if not provided
- * @param {boolean} [options.verbose=false] - Whether or not to print verbose output
- * @returns {Object} - The transaction receipt
  */
 export async function claimLink({
 	signer,
@@ -924,12 +691,21 @@ export async function claimLink({
 	maxPriorityFeePerGas = null,
 	gasLimit = null,
 	eip1559 = true,
+}: {
+	signer: ethers.providers.JsonRpcSigner
+	link: string
+	recipient?: string | null
+	verbose?: boolean
+	maxFeePerGas?: number | null
+	maxPriorityFeePerGas?: number | null
+	gasLimit?: number | null
+	eip1559?: boolean
 }) {
+	// TODO: split into 2
+
 	// claims the contents of a link
 	assert(signer, 'signer arg is required')
 	assert(link, 'link arg is required')
-
-	signer = await getAbstractSigner(signer)
 
 	const params = getParamsFromLink(link)
 	const chainId = params.chainId
@@ -941,7 +717,7 @@ export async function claimLink({
 		verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion, verbose)
+	const contract = await getContract(String(chainId), signer, contractVersion, verbose)
 
 	// cryptography
 	const addressHash = solidityHashAddress(recipient)
@@ -1021,12 +797,6 @@ export async function getAllDepositsForSigner({
 /**
  * Claims the contents of a link as a sender. Can only be used if a link has not been claimed in a set time period.
  * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
- *
- * @param {Object} options - An object containing the options to use for claiming the link
- * @param {Object} options.signer - The signer to use for claiming
- * @param {string} options.link - The link to claim
- * @param {boolean} [options.verbose=false] - Whether or not to print verbose output
- * @returns {Object} - The transaction receipt
  */
 export async function claimLinkSender({
 	signer,
@@ -1037,6 +807,7 @@ export async function claimLinkSender({
 	link: string
 	verbose?: boolean
 }) {
+	// TOD
 	// raise error, not implemented yet
 	throw new Error('Not implemented yet')
 	// assert(signer, 'signer arg is required')
@@ -1109,11 +880,6 @@ async function createClaimPayload(link: string, recipientAddress: string) {
 
 /**
  * Gets the details of a Link: what token it is, how much it holds, etc.
- *
- * @param {Object|null} signerOrProvider - The signer or provider to use. if not provided, will use fallback public provider
- * @param {string} link - The link to get the details of
- * @param {boolean} verbose - Whether or not to print verbose output
- * @returns {Object} - An object containing the link details
  */
 export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkDetailsParams) {
 	const verbose = false // TODO: move this to initializing the SDK
@@ -1203,12 +969,6 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
 
 /**
  * Claims a link through the Peanut API
- *
- * @param {string} link - The link to claim
- * @param {string} recipientAddress - The recipient address to claim the link to
- * @param {string} apiKey -The API key to use for the Peanut API
- * @param {string} url - The URL to use for the Peanut API (default is 'https://api.peanut.to/claim')
- * @returns {Object} - The data returned from the API call
  */
 export async function claimLinkGasless({
 	link,

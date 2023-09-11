@@ -147,7 +147,7 @@ export interface IGetLinkFromTxResponse {
 }
 
 //prepareClaimTx
-export interface IPrepareClaimTxParams extends IClaimLinkParams {} // we can remove this export interface  since it is the same as IClaimLinkParams
+export interface IPrepareClaimTxParams extends IClaimLinkParams {}
 
 export interface IPrepareClaimTxResponse {
 	unsignedTx: TransactionRequest
