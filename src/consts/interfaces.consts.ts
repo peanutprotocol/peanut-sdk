@@ -10,6 +10,15 @@ export interface IPeanutSigner {
 	eip1559?: boolean
 }
 
+export interface ITxOptions {
+	nonce?: number
+	value?: ethers.BigNumber
+	gasLimit?: ethers.BigNumber
+	gasPrice?: ethers.BigNumber
+	maxFeePerGas?: ethers.BigNumber
+	maxPriorityFeePerGas?: ethers.BigNumber
+}
+
 enum EPeanutLinkType {
 	native,
 	erc20,
@@ -24,7 +33,7 @@ export interface IPeanutLinkDetails {
 	tokenType: EPeanutLinkType
 	tokenAddress?: string
 	tokenId?: number
-	tokenDecimal?: number
+	tokenDecimals?: number
 	password?: string
 	baseUrl?: string
 	trackId?: string
@@ -64,7 +73,7 @@ export interface ICreateLinkResponse {
 
 //createLinks
 export interface ICreateLinksParams extends ICreateLinkParams {
-	NumberOfLinks: number
+	numberOfLinks: number
 }
 
 export interface ICreateLinksResponse {
@@ -127,9 +136,9 @@ export interface IGetLinkResponse {
 }
 
 //prepareClaimTx
-export interface IPrapareClaimTxParams extends IClaimLinkParams {} // we can remove this export interface  since it is the same as IClaimLinkParams
+export interface IPrepareClaimTxParams extends IClaimLinkParams {} // we can remove this export interface  since it is the same as IClaimLinkParams
 
-export interface IPrapareClaimTxResponse {
+export interface IPrepareClaimTxResponse {
 	unsignedTx: IPeanutUnsignedTransactions
 	success: IReturnSuccessObject
 }

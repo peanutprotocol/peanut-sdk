@@ -1,12 +1,17 @@
 // holds configuration data for the library
-
+interface PeanutContracts {
+	[chainId: string]: {
+		[contractVersion: string]: string
+	}
+}
 import PEANUT_ABI_V3 from './data/peanutAbiV3.json' assert { type: 'json' }
 import PEANUT_ABI_V4 from './data/peanutAbiV4.json' assert { type: 'json' }
 import PEANUT_BATCHER_ABI_V4 from './data/peanutBatcherV4.abi.json' assert { type: 'json' }
 import ERC20_ABI from './data/erc20abi.json' assert { type: 'json' }
 import ERC721_ABI from './data/erc721abi.json' assert { type: 'json' }
 import ERC1155_ABI from './data/erc1155abi.json' assert { type: 'json' }
-import PEANUT_CONTRACTS from './data/contracts.json' assert { type: 'json' }
+import PEANUT_CONTRACTS_JSON from './data/contracts.json' assert { type: 'json' }
+const PEANUT_CONTRACTS: PeanutContracts = PEANUT_CONTRACTS_JSON as PeanutContracts
 import CHAIN_MAP from './data/chainMap.json' assert { type: 'json' }
 import CHAIN_DETAILS from './data/chainDetails.json' assert { type: 'json' }
 import TOKEN_DETAILS from './data/tokenDetails.json' assert { type: 'json' }
@@ -23,6 +28,7 @@ const TOKEN_TYPES = Object.freeze({
 
 const DEFAULT_CONTRACT_VERSION = 'v4'
 const FALLBACK_CONTRACT_VERSION = 'v3'
+const DEFAULT_BATCHER_VERSION = 'Bv4'
 
 // export all these functions (imported in index.js)
 export {
@@ -40,4 +46,5 @@ export {
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
 	FALLBACK_CONTRACT_VERSION,
+	DEFAULT_BATCHER_VERSION,
 }

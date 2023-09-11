@@ -19,6 +19,7 @@ import {
 	VERSION,
 	DEFAULT_CONTRACT_VERSION,
 	FALLBACK_CONTRACT_VERSION,
+	DEFAULT_BATCHER_VERSION,
 	TOKEN_TYPES,
 } from './data.ts'
 
@@ -41,11 +42,19 @@ import {
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
+import {
+	// IPeanutSigner,
+	ICreateLinkParams,
+	IPrepareCreateTxsResponse,
+	ISignAndSubmitTxParams,
+	IClaimLinkParams,
+	IGetLinkDetailsParams,
+} from './consts/interfaces.consts.ts'
 
-async function getAbstractSigner(signer: any, verbose = true) {
+async function getAbstractSigner(signer: any) {
 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
 	return signer
-} //TODO: remove this
+}
 
 async function checkRpc(rpc: string, verbose = false) {
 	try {
@@ -60,10 +69,6 @@ async function checkRpc(rpc: string, verbose = false) {
 }
 /**
  * Returns the default provider for a given chainId
- *
- * @param {number|string} chainId - The chainId to get the provider for
- * @param {boolean} verbose - Whether or not to print verbose output
- * @returns {Object} - The provider
  */
 export async function getDefaultProvider(chainId: string, verbose = false) {
 	verbose && console.log('Getting default provider for chainId ', chainId)
@@ -90,15 +95,7 @@ export async function getDefaultProvider(chainId: string, verbose = false) {
 	throw new Error('No alive provider found for chainId ' + chainId)
 }
 
-/**
- * Returns a contract object for a given chainId and signer
- *
- * @param {number|string} chainId - The chainId to get the contract for
- * @param {Object|null} signerOrProvider - The signer or provider to use for the contract. if null, use getDefaultProvider
- * @param {string} [version=CONTRACT_VERSION] - The version of the contract
- * @param {boolean} [verbose=true] - Whether or not to print verbose output
- * @returns {Object} - The contract object
- */ export async function getContract(
+export async function getContract(
 	_chainId: string,
 	signerOrProvider: any,
 	version = DEFAULT_CONTRACT_VERSION,
@@ -112,7 +109,7 @@ export async function getDefaultProvider(chainId: string, verbose = false) {
 	const chainId = parseInt(_chainId)
 
 	// Determine which ABI version to use based on the version provided
-	var PEANUT_ABI
+	let PEANUT_ABI
 	switch (version) {
 		case 'v3':
 			PEANUT_ABI = PEANUT_ABI_V3
@@ -164,94 +161,102 @@ async function getAllowance(
 	return allowance
 }
 
-/**
- * Approves the contract to spend the specified amount of tokens
- *
- * @param {Object} signer - The signer to use for approving the spend
- * @param {number|string} chainId - The chainId of the contract
- * @param {string} tokenAddress - The address of the token to approve the spend for
- * @param {number|string} amount - The amount to approve for spending. If -1, approve infinite amount.
- * defaults to 18.
- * @param {number} tokenDecimals - The number of decimals the token has
- * @param {boolean} isRawAmount - Whether or not the amount is raw or not. If true, the amount will not be converted to the appropriate unit
- * @param {string} contractVersion - The version of the contract
- * @param {boolean} verbose - Whether or not to print verbose output
- * @returns {Object} - An object containing the allowance and txReceipt
- */
 export async function approveSpendERC20(
 	signer: ethers.providers.JsonRpcSigner,
 	chainId: string,
 	tokenAddress: string,
-	_amount: number,
+	_amount: number | BigNumber,
 	tokenDecimals = 18,
 	isRawAmount = false,
-	contractVersion = DEFAULT_CONTRACT_VERSION,
-	verbose = true
+	contractVersion = DEFAULT_CONTRACT_VERSION
 ) {
-	/*  Approves the contract to spend the specified amount of tokens   */
+	/* Approves the contract to spend the specified amount of tokens */
 	signer = await getAbstractSigner(signer)
 	const signerAddress = await signer.getAddress()
 
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = _PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion]
+	if (!spender) throw new Error('Spender address not found for the given chain and contract version')
+
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
-	verbose && console.log('Connected to tokenContract at ', tokenAddress, ' on chain ', chainId)
-	var amount: BigNumber | number = _amount
+	let allowance = await getAllowance(signer, tokenContract, spender, signerAddress)
+
+	const txDetails = await prepareApproveERC20Tx(
+		chainId,
+		tokenAddress,
+		spender,
+		_amount,
+		tokenDecimals,
+		isRawAmount,
+		contractVersion
+	)
+
+	if (!allowance.gte(txDetails.value)) {
+		const txOptions = await setFeeOptions({ provider: signer.provider, eip1559: true })
+		const tx = await signer.sendTransaction({ ...txDetails, ...txOptions })
+		const txReceipt = await tx.wait()
+		allowance = await getAllowance(signer, tokenContract, spender, signerAddress)
+		return { allowance, txReceipt }
+	} else {
+		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
+		return { allowance, txReceipt: null }
+	}
+}
+
+export async function prepareApproveERC20Tx(
+	chainId: string,
+	tokenAddress: string,
+	spenderAddress: string | undefined,
+	_amount: number | BigNumber,
+	tokenDecimals = 18,
+	isRawAmount = false,
+	contractVersion = DEFAULT_CONTRACT_VERSION
+) {
+	const defaultProvider = await getDefaultProvider(chainId)
+	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, defaultProvider)
+
+	let amount: BigNumber | number = _amount
 	if (_amount == -1) {
 		// if amount is -1, approve infinite amount
 		amount = ethers.constants.MaxUint256
 	}
-	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
-	const spender = _PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion]
-	verbose && console.log('Getting allowance for spender ', spender, 'on chain ', chainId, '...')
-	let allowance = await getAllowance(signer, tokenContract, spender, signerAddress, verbose)
-	verbose && console.log('Allowance: ', allowance.toString())
 
-	if (isRawAmount) {
-		amount = amount
-	} else {
+	if (!isRawAmount) {
 		amount = ethers.utils.parseUnits(amount.toString(), tokenDecimals)
 	}
-	// debug: print type of allowance and amount, print their comparison
-	// verbose && console.log('Allowance type: ', typeof allowance, allowance, allowance.toString())
-	// verbose && console.log('Amount type: ', typeof amount, amount, amount.toString())
-	// verbose && console.log('Allowance >= Amount: ', allowance >= amount)
-	// verbose && console.log('Allowance >= Amount: ', allowance.gte(amount));
 
-	if (allowance.gte(amount)) {
-		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
-		return { allowance, txReceipt: null }
-	} else {
-		console.log('Allowance only', allowance.toString(), ', need ' + amount.toString() + ', approving...')
-		const txOptions = await setFeeOptions({ verbose, provider: signer.provider, eip1559: true })
-		const tx = await tokenContract.approve(spender, amount, txOptions)
-		const txReceipt = await tx.wait()
-		allowance = await getAllowance(signer, tokenContract, spender, signerAddress, verbose)
-		console.log('New Allowance: ', allowance.toString())
-		return { allowance, txReceipt }
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
+
+	if (!spender) {
+		throw new Error('Spender address not found for the given chain and contract version')
 	}
+
+	const tx = tokenContract.populateTransaction.approve(spender, amount)
+	return tx
 }
 
 async function setFeeOptions({
 	txOptions,
 	provider,
-	eip1559,
+	eip1559 = true, // provide a default value
 	maxFeePerGas = null,
 	maxFeePerGasMultiplier = 1.1,
 	gasLimit = null,
 	gasPrice = null,
 	gasPriceMultiplier = 1.2,
-	maxPriorityFeePerGas = null,
+	maxPriorityFeePerGas, // don't provide a default value here
 	maxPriorityFeePerGasMultiplier = 2,
-	verbose = false,
 }: {
 	txOptions?: any
 	provider: any
-	eip1559: boolean
+	eip1559?: boolean
 	maxFeePerGas?: number | null
 	maxFeePerGasMultiplier?: number
 	gasLimit?: number | null
 	gasPrice?: number | null
 	gasPriceMultiplier?: number
-	maxPriorityFeePerGas?: BigNumber | null
+	maxPriorityFeePerGas?: number | BigNumber | null // change this to number | null
 	maxPriorityFeePerGasMultiplier?: number
 	verbose?: boolean
 }) {
@@ -273,7 +278,7 @@ async function setFeeOptions({
 	}
 
 	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
-	let chainId = await provider.getNetwork().then((network: any) => network.chainId)
+	const chainId = await provider.getNetwork().then((network: any) => network.chainId)
 	if (chainId == 137) {
 		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
 		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
@@ -295,7 +300,7 @@ async function setFeeOptions({
 				maxPriorityFeePerGas ||
 				(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 					BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-					BigInt(10)
+				BigInt(10)
 
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
 			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
@@ -309,15 +314,13 @@ async function setFeeOptions({
 	}
 	if (!eip1559) {
 		let gasPrice
-		if (!txOptions.gasPrice) {
-			if (feeData.gasPrice == null) {
-				// operating in a EIP-1559 environment
-				eip1559 = true
-				console.log("Couldn't fetch gas price from provider, trying an eip1559 transaction")
-			} else {
-				txOptions.gasPrice = feeData.gasPrice.toString()
-				gasPrice = BigInt(feeData.gasPrice.toString())
-			}
+		if (gasPrice) {
+			txOptions.gasPrice = gasPrice
+		} else if (txOptions.gasPrice) {
+			gasPrice = txOptions.gasPrice
+		} else if (feeData.gasPrice != null) {
+			txOptions.gasPrice = feeData.gasPrice.toString()
+			gasPrice = BigInt(feeData.gasPrice.toString())
 		}
 		const proposedGasPrice = gasPrice && (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
 		txOptions.gasPrice = proposedGasPrice && proposedGasPrice.toString()
@@ -348,7 +351,7 @@ async function estimateGasLimit(contract: any, functionName: string, params: any
 	}
 }
 
-export function formatNumberAvoidScientific(n: number) {
+function formatNumberAvoidScientific(n: number) {
 	if (typeof n === 'number') {
 		const str = n.toString()
 
@@ -377,8 +380,8 @@ export function formatNumberAvoidScientific(n: number) {
 }
 
 // trim some number to a certain number of decimals
-export function trim_decimal_overflow(_n: number, decimals: number) {
-	var n = formatNumberAvoidScientific(_n)
+function trim_decimal_overflow(_n: number, decimals: number) {
+	let n = formatNumberAvoidScientific(_n)
 	n += ''
 
 	if (n.indexOf('.') === -1) return n
@@ -389,173 +392,283 @@ export function trim_decimal_overflow(_n: number, decimals: number) {
 }
 
 /**
- * Generates a link with the specified parameters
- *
- * @param {Object} options - An object containing the options to use for the link creation
- * @returns {Object} - An object containing the link and the txReceipt
- * @example
- * const result = await createLink({
- *   signer,
- *   chainId: 1,
- *   tokenAmount: 100,
- *   tokenAddress: "0xYourTokenAddress",
- *   tokenType: 1,
- *   tokenId: 0,
- *   tokenDecimals: 18,
- *   password: "yourPassword",
- *   baseUrl: "https://peanut.to/claim",
- *   trackId: "sdk",
- *   maxFeePerGas: null,
- *   maxPriorityFeePerGas: null,
- *   gasLimit: null,
- *   eip1559: true,
- *   verbose: false,
- *   contractVersion: "v4",
- *   nonce: null
- * });
- * console.log(result); // { link: "https://peanut.to/claim?c=1&v=v4&i=123&p=yourPassword", txReceipt: TransactionReceipt }
+ * Returns an array of transactions necessary to create a link (e.g. 1. approve, 2. makeDeposit)
+ * all values obligatory
  */
-export async function createLink({
-	signer,
-	chainId,
-	tokenAmount,
-	tokenAddress = '0x0000000000000000000000000000000000000000',
-	tokenType = 0,
-	tokenId = 0,
-	tokenDecimals = 18,
-	password = '',
-	baseUrl = 'https://peanut.to/claim',
-	trackId = 'sdk',
-	maxFeePerGas = null,
-	maxPriorityFeePerGas = null,
-	gasLimit = null,
-	eip1559 = true,
-	verbose = false,
-	contractVersion = DEFAULT_CONTRACT_VERSION,
-	fallBackContractVersion = FALLBACK_CONTRACT_VERSION,
-	nonce = null,
-}) {
-	//TODO: implement the ICreatelinkParams interface and ICreateLinkResponse interface
+export async function prepareTxs({
+	structSigner,
+	linkDetails,
+	peanutContractVersion = 'v4',
+}: ICreateLinkParams): Promise<IPrepareCreateTxsResponse> {
+	linkDetails = validateLinkDetails(linkDetails)
 
-	assert(signer, 'signer arg is required')
-	assert(chainId, 'chainId arg is required')
-	assert(tokenAmount, 'amount arg is required')
-	assert(
-		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
-		'tokenAddress must be provided for non-native tokens'
+	let txOptions: interfaces.ITxOptions = {}
+	txOptions.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount())
+
+	// TODO: q: linkDetails interface has some optional params. but prepareTxs (should) assume everth is provided.
+	//  So should we create a new interface?
+	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
+	const tokenAmountBignum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
+	assert(tokenAmountBignum.gt(0), 'tokenAmount must be greater than 0')
+	if (linkDetails.tokenType == 0) {
+		txOptions = {
+			...txOptions,
+			value: tokenAmountBignum,
+		}
+	} else if (linkDetails.tokenType == 1) {
+		// check allowance
+		// TODO: check for erc721 and erc1155
+		console.log('checking allowance...')
+		// if token is erc20, check allowance
+		// TODO: prepare tx
+		// TODO: there should be a version of this without signer. It makes no sense to have this fn if it takes in a signer. that's dumb. the types are dumb.
+		prepareApproveERC20Tx
+		// const allowance = await approveSpendERC20(
+		// 	structSigner.signer,
+		// 	String(linkDetails.chainId),
+		// 	linkDetails.tokenAddress!,
+		// 	tokenAmountBignum,
+		// 	linkDetails.tokenDecimals,
+		// 	true,
+		// 	peanutContractVersion
+		// )
+		// console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmountBignum)
+		if (allowance.lt(tokenAmountBignum)) {
+			throw new Error('Allowance not enough')
+		}
+	}
+
+	if (linkDetails.password == null || linkDetails.password == '') {
+		// if no password is provided, generate a random one
+		linkDetails.password = getRandomString(16)
+	}
+
+	const keys = generateKeysFromString(linkDetails.password) // deterministically generate keys from password
+	const contract = await getContract(String(linkDetails.chainId), structSigner.signer, peanutContractVersion) // get the contract instance
+
+	console.log('Generating link...')
+
+	// set transaction options
+	txOptions = await setFeeOptions({
+		txOptions,
+		provider: structSigner.signer.provider,
+		eip1559: structSigner.eip1559,
+		maxFeePerGas: structSigner.maxFeePerGas,
+		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+		gasLimit: structSigner.gasLimit,
+	})
+
+	const depositParams = [
+		linkDetails.tokenAddress,
+		linkDetails.tokenType,
+		tokenAmountBignum,
+		linkDetails.tokenId,
+		keys.address,
+	]
+	if (!txOptions.gasLimit) {
+		const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+		if (estimatedGasLimit) {
+			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
+		}
+	}
+
+	return
+	const signer = structSigner.signer
+	const recipientAddress = await signer.getAddress()
+	const contract = await getContract(linkDetails.chainId.toString(), signer, peanutContractVersion)
+	const depositParams = [
+		linkDetails.tokenAddress,
+		linkDetails.tokenType,
+		linkDetails.tokenAmount,
+		linkDetails.tokenId,
+		recipientAddress,
+	]
+	const gasLimit = await contract.estimateGas.makeDeposit(...depositParams)
+	const gasPrice = await signer.getGasPrice()
+	const nonce = structSigner.nonce || (await signer.getTransactionCount())
+	const unsignedTxs = depositParams.map((param) =>
+		contract.populateTransaction.makeDeposit(...param, { gasLimit, gasPrice, nonce })
 	)
+	return { success: { success: true }, unsignedTxs }
+}
+
+export async function signAndSubmitTx({ structSigner, unsignedTx }: ISignAndSubmitTxParams): Promise<IClaimLinkParams> {
+	const signer = structSigner.signer
+	const signedTx = await signer.signTransaction(unsignedTx)
+	const tx = await signer.sendTransaction(signedTx)
+	const txReceipt = await tx.wait()
+	return { structSigner, link: txReceipt.transactionHash }
+}
+
+export async function getLinkFromTx({ linkDetails, txHash }: IGetLinkDetailsParams): Promise<string> {
+	const txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId)
+	// TODO: get contract version & idx from tx receipt
+	return getLinkFromParams(
+		linkDetails.chainId,
+		params.contractVersion,
+		params.depositIdx,
+		linkDetails.password,
+		linkDetails.baseUrl,
+		linkDetails.trackId
+	)
+}
+
+async function getTxReceiptFromHash(txHash: string, chainId: number, signerOrProvider?: any): Promise<any> {
+	const provider = signerOrProvider || getDefaultProvider(String(chainId))
+	const txReceipt = await provider.getTransactionReceipt(txHash)
+	return txReceipt
+}
+
+function validateLinkDetails(linkDetails: interfaces.IPeanutLinkDetails): Required<interfaces.IPeanutLinkDetails> {
+	if (!linkDetails || !linkDetails.chainId || !linkDetails.tokenAmount) {
+		throw new Error('createLink function requires linkDetails object with chainId and tokenAmount properties')
+	}
+
+	// Assert that linkDetails conforms to IPeanutLinkDetails
+	linkDetails = linkDetails as interfaces.IPeanutLinkDetails
+
+	// Use nullish coalescing operator to provide default values
+	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
+	linkDetails.tokenType = linkDetails.tokenType ?? 0
+	linkDetails.tokenId = linkDetails.tokenId ?? 0
+	linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 18
+	linkDetails.password = linkDetails.password ?? ''
+	linkDetails.baseUrl = linkDetails.baseUrl ?? 'https://peanut.to/claim'
+	linkDetails.trackId = linkDetails.trackId ?? 'sdk'
+
 	assert(
-		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+		linkDetails.tokenType == 0 || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+		'tokenAddress must be provided for non-ETH tokens'
+	)
+	assert(linkDetails.tokenType == 0 || linkDetails.tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
+	assert(
+		!(linkDetails.tokenType == 1 || linkDetails.tokenType == 3) || linkDetails.tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
+	if (linkDetails.tokenType !== 0 && linkDetails.tokenAddress === '0x0000000000000000000000000000000000000000') {
+		throw new Error('need to provide tokenAddress if tokenType is not 0')
+	}
+
+	return linkDetails
+}
+
+/**
+ * Generates a link with the specified parameters
+ */
+export async function createLink({
+	structSigner,
+	linkDetails,
+	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+}: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
+	// validate linkDetails
+	linkDetails = validateLinkDetails(linkDetails)
+
 	// check if contractVersion exists
-	if (!PEANUT_CONTRACTS[chainId][contractVersion]) {
+	if (!PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion]) {
 		// if not, use fallback contract version if it is not null or false, else throw error
-		if (fallBackContractVersion) {
-			contractVersion = fallBackContractVersion
-			console.warn(
-				'WARNING: Contract version ' + contractVersion + ' not deployed on chain ' + chainId,
-				'Using fallback contract version ' + fallBackContractVersion
-			)
-		} else {
-			throw new Error('Contract version ' + contractVersion + ' not deployed on chain ' + chainId)
-		}
+		// if (fallBackPeanutContractVersion) {
+		// 	peanutContractVersion = fallBackPeanutContractVersion
+		// 	console.warn(
+		// 		'WARNING: Contract version ' + peanutContractVersion + ' not deployed on chain ' + chainId,
+		// 		'Using fallback contract version ' + fallBackPeanutContractVersion
+		// 	)
+		// } else {
+		// 	throw new Error('Contract version ' + peanutContractVersion + ' not deployed on chain ' + chainId)
+		// }
+		throw new Error('Contract version ' + peanutContractVersion + ' not deployed on chain ' + linkDetails.chainId)
 	}
 
-	signer = await getAbstractSigner(signer)
+	// signer = await getAbstractSigner(signer)
 
-	if (tokenAddress == null) {
-		tokenAddress = '0x0000000000000000000000000000000000000000'
-		if (tokenType != 0) {
-			throw new Error('tokenAddress is null but tokenType is not 0')
-		}
-	}
 	// limit tokenAmount to 18 decimals
 	// if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
 	// 	tokenAmount = parseFloat(tokenAmount)
 	// }
 	// tokenAmount = tokenAmount.toFixed(18)
-	tokenAmount = trim_decimal_overflow(tokenAmount, tokenDecimals)
-	tokenAmount = ethers.utils.parseUnits(tokenAmount, tokenDecimals) // v5
-	assert(tokenAmount > 0, 'tokenAmount must be greater than 0')
+	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const tokenAmountBignum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
+	assert(tokenAmountBignum.gt(0), 'tokenAmount must be greater than 0')
 
 	// if native token (tokentype == 0), add value to txOptions
-	let txOptions = {}
+	let txOptions: interfaces.ITxOptions = {}
 	// set nonce
 	// nonce = nonce || (await signer.getNonce()); // v6
-	nonce = nonce || (await signer.getTransactionCount()) // v5
-	txOptions.nonce = nonce
-	if (tokenType == 0) {
+	structSigner.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // v5
+	txOptions.nonce = structSigner.nonce
+	if (linkDetails.tokenType == 0) {
 		txOptions = {
 			...txOptions,
-			value: tokenAmount,
+			value: tokenAmountBignum,
 		}
-	} else if (tokenType == 1) {
+	} else if (linkDetails.tokenType == 1) {
 		// check allowance
 		// TODO: check for erc721 and erc1155
-		verbose && console.log('checking allowance...')
+		console.log('checking allowance...')
 		// if token is erc20, check allowance
 		const allowance = await approveSpendERC20(
-			signer,
-			chainId,
-			tokenAddress,
-			tokenAmount,
-			tokenDecimals,
+			structSigner.signer,
+			String(linkDetails.chainId),
+			linkDetails.tokenAddress,
+			tokenAmountBignum,
+			linkDetails.tokenDecimals,
 			true,
-			contractVersion
+			peanutContractVersion
 		)
-		verbose && console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmount)
-		if (allowance < tokenAmount) {
+		console.log('allowance: ', allowance, ' tokenAmount: ', tokenAmountBignum)
+		if (allowance.allowance.lt(tokenAmountBignum)) {
 			throw new Error('Allowance not enough')
 		}
 	}
 
-	if (password == null || password == '') {
+	if (linkDetails.password == null || linkDetails.password == '') {
 		// if no password is provided, generate a random one
-		password = getRandomString(16)
+		linkDetails.password = getRandomString(16)
 	}
 
-	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(chainId, signer, contractVersion) // get the contract instance
+	const keys = generateKeysFromString(linkDetails.password) // deterministically generate keys from password
+	const contract = await getContract(String(linkDetails.chainId), structSigner.signer, peanutContractVersion) // get the contract instance
 
-	verbose && console.log('Generating link...')
+	console.log('Generating link...')
 
 	// set transaction options
 	txOptions = await setFeeOptions({
 		txOptions,
-		provider: signer.provider,
-		eip1559,
-		maxFeePerGas,
-		maxPriorityFeePerGas,
-		gasLimit,
-		verbose, // Include verbose in the object passed to setFeeOptions
+		provider: structSigner.signer.provider,
+		eip1559: structSigner.eip1559,
+		maxFeePerGas: structSigner.maxFeePerGas,
+		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+		gasLimit: structSigner.gasLimit,
 	})
 
-	verbose && console.log('post txOptions: ', txOptions)
-	const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address]
+	const depositParams = [
+		linkDetails.tokenAddress,
+		linkDetails.tokenType,
+		tokenAmountBignum,
+		linkDetails.tokenId,
+		keys.address,
+	]
 	if (!txOptions.gasLimit) {
 		const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
 		if (estimatedGasLimit) {
-			txOptions.gasLimit = estimatedGasLimit.toString()
+			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 		}
 	}
-	verbose && console.log('final txOptions: ', txOptions)
+	console.log('final txOptions: ', txOptions)
 	// const depositParams = [tokenAddress, tokenType, tokenAmount, tokenId, keys.address, txOptions];
-	verbose && console.log('depositParams: ', depositParams)
-	// var tx = await contract.makeDeposit(...depositParams);
+	console.log('depositParams: ', depositParams)
 
 	// store in localstorage in case tx falls through (only if in web environment)
 	// TODO: refactor in future
 	if (typeof window !== 'undefined') {
-		const tempDeposits = JSON.parse(localStorage.getItem('tempDeposits')) || []
+		const tempDeposits = JSON.parse(localStorage.getItem('tempDeposits') || '[]')
 		const tempDeposit = {
-			chain: chainId,
-			tokenAmount: tokenAmount.toString(),
-			contractType: tokenType,
-			contractVersion: contractVersion,
-			tokenAddress: tokenAddress,
-			password: password,
+			chain: linkDetails.chainId,
+			tokenAmount: tokenAmountBignum,
+			contractType: linkDetails.tokenType,
+			peanutContractVersion: peanutContractVersion,
+			tokenAddress: linkDetails.tokenAddress,
+			password: linkDetails.password,
 			idx: null,
 			link: null,
 			txHash: null,
@@ -564,170 +677,134 @@ export async function createLink({
 		localStorage.setItem('tempDeposits', JSON.stringify(tempDeposits))
 	}
 
-	var tx = await contract.makeDeposit(...depositParams, txOptions)
+	const tx = await contract.makeDeposit(...depositParams, txOptions)
 
 	console.log('submitted tx: ', tx.hash)
 
 	// now we need the deposit index from the tx receipt
-	var txReceipt = await tx.wait()
-	var depositIdx = getDepositIdx(txReceipt, chainId, contractVersion)
-	verbose && console.log('Deposit finalized. Deposit index: ', depositIdx)
+	const txReceipt = await tx.wait()
+	const depositIdx = getDepositIdx(txReceipt, String(linkDetails.chainId), peanutContractVersion)
+	console.log('Deposit finalized. Deposit index: ', depositIdx)
 
 	// now we can create the link
-	const link = getLinkFromParams(chainId, contractVersion, depositIdx, password, baseUrl, trackId)
-	verbose && console.log('created link: ', link)
-	// return the link and the tx receipt
-	return { link, txReceipt }
+	const link = getLinkFromParams(
+		linkDetails.chainId,
+		peanutContractVersion,
+		depositIdx,
+		linkDetails.password,
+		linkDetails.baseUrl,
+		linkDetails.trackId
+	)
+
+	console.log('created link: ', link)
+
+	const response: interfaces.ICreateLinkResponse = {
+		createdLink: { link: link, txHash: tx.hash },
+		success: { success: true },
+	}
+
+	return response
 }
 
 export async function createLinks({
-	signer, // ethers signer object
-	chainId, // chain id of the network (only EVM for now)
-	tokenAmount = null, // tokenAmount to put in each link
-	numberOfLinks = null, // number of links to create
-	tokenAmounts = [], // array of token amounts, if different amounts are needed for links
-	tokenAddress = '0x0000000000000000000000000000000000000000',
-	tokenAddresses = [], // array of token addresses, if different tokens are needed for links
-	tokenType = 0, // 0: ETH, 1: ERC20, 2: ERC721, 3: ERC1155
-	tokenId = 0, // only used for ERC721 and ERC1155
-	tokenDecimals = null, // only used for ERC20 and ERC1155
-	passwords = [], // passwords that each link should have
-	baseUrl = 'https://peanut.to/claim',
-	trackId = 'sdk', // optional tracker id to track the link source
-	maxFeePerGas = null,
-	maxPriorityFeePerGas = null,
-	gasLimit = null,
-	eip1559 = true,
-	nonce = null,
-	verbose = false,
-	contractVersion = DEFAULT_CONTRACT_VERSION, // need this for passing in an address to the batcher
-	batcherContractVersion = 'Bv4', // TODO: group with DEFAULT_CONTRACT_VERSION
-	fallBackcontractInstance = null, // TODO:
-	mock = false,
-}) {
-	// implement the ICreateLinksParams interface and ICreateLinksResponse interface
-	assert(signer, 'signer arg is required')
-	assert(chainId, 'chainId arg is required')
-	assert(
-		tokenAmounts.length == 0 && tokenAddresses.length == 0,
-		'variable tokenAmounts & tokenAddresses is not supported yet. Please use a single value instead'
-	)
+	structSigner,
+	linkDetails,
+	numberOfLinks = 2,
+	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+}: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
+	if (!structSigner || !structSigner.signer) {
+		throw new Error('createLinks function requires a structSigner object with a signer property')
+	}
+	if (!linkDetails || !linkDetails.chainId || !linkDetails.tokenAmount) {
+		throw new Error('createLinks function requires linkDetails object with chainId and tokenAmount properties')
+	}
+
+	// Assert that linkDetails conforms to IPeanutLinkDetails
+	linkDetails = linkDetails as interfaces.IPeanutLinkDetails
+
+	// Use nullish coalescing operator to provide default values
+	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
+	linkDetails.tokenType = linkDetails.tokenType ?? 0
+	linkDetails.tokenId = linkDetails.tokenId ?? 0
+	linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 18
+	linkDetails.password = linkDetails.password ?? ''
+	linkDetails.baseUrl = linkDetails.baseUrl ?? 'https://peanut.to/claim'
+	linkDetails.trackId = linkDetails.trackId ?? 'sdk'
+	const batcherContractVersion: string = DEFAULT_BATCHER_VERSION
 
 	assert(
-		tokenType == 0 || tokenAddress != '0x0000000000000000000000000000000000000000',
+		linkDetails.tokenType == 0 || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
-	assert(tokenAmount == null || tokenAmounts.length == 0, "can't have both tokenAmount and tokenAmounts defined")
-	assert(tokenAmounts.length > 0 || numberOfLinks > 0, 'either numberOfLinks or tokenAmounts must be provided')
-	numberOfLinks = numberOfLinks || tokenAmounts.length
+	assert(linkDetails.tokenType == 0 || linkDetails.tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
 	assert(
-		tokenAmounts.length == 0 || tokenAmounts.length == numberOfLinks,
-		'length of tokenAmounts must be equal to numberOfLinks'
-	)
-	assert(tokenType == 0 || tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
-	// tokendecimals must be provided for erc20 and erc1155 tokens
-	assert(
-		!(tokenType == 1 || tokenType == 3) || tokenDecimals != null,
+		!(linkDetails.tokenType == 1 || linkDetails.tokenType == 3) || linkDetails.tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
-	verbose && console.log('Asserts passed')
 
-	// set tokenDecimals for native token
-	if (tokenDecimals == null) {
-		tokenDecimals = 18
-	}
-
-	// // limit tokenAmount to 18 decimals
-	// if (typeof tokenAmount == 'string' || tokenAmount instanceof String) {
-	// 	tokenAmount = parseFloat(tokenAmount)
-	// }
-	// tokenAmount = tokenAmount.toFixed(18)
-
-	tokenAmount = trim_decimal_overflow(tokenAmount, tokenDecimals)
-	tokenAmount = ethers.utils.parseUnits(tokenAmount, tokenDecimals)
-	assert(tokenAmount > 0, 'tokenAmount must be greater than 0')
-	let totalTokenAmount
-	if (tokenAmounts.length > 0) {
-		totalTokenAmount = tokenAmounts.reduce((acc, curr) => {
-			return acc.add(ethers.utils.parseUnits(curr.toString(), tokenDecimals))
-		}, ethers.BigNumber.from(0))
-	} else if (tokenAmount) {
-		verbose && console.log('calculating tokenAmount * numberOfLinks')
-		totalTokenAmount = tokenAmount.mul(ethers.BigNumber.from(numberOfLinks.toString()))
-		verbose && console.log('totalTokenAmount: ', totalTokenAmount.toString())
-	} else {
-		throw new Error('Either tokenAmount or tokenAmounts must be provided')
-	}
-	assert(totalTokenAmount > 0, 'totalTokenAmount must be greater than 0')
+	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
+	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
+	const totalTokenAmount = tokenAmountBigNum.mul(ethers.BigNumber.from(numberOfLinks.toString()))
 
 	// Get the batcher Contract
-	const batcherContract = await getContract(chainId, signer, batcherContractVersion)
+	const batcherContract = await getContract(String(linkDetails.chainId), structSigner.signer, batcherContractVersion)
 
 	// Determine the pubKeys from the passwords
-	if (passwords.length == 0) {
-		passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
-	}
+	const passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
 	const pubKeys = passwords.map((password) => generateKeysFromString(password).address)
 
-	verbose && console.log('created pubKeys')
-
 	// If the token is ERC20, approve the contract to spend tokens
-	if (tokenType === 1) {
-		verbose && console.log('Checking && requesting approval of a total of ', totalTokenAmount, ' tokens')
-		const { allowance, txReceipt } = await approveSpendERC20(
-			signer,
-			chainId,
-			tokenAddress,
+	if (linkDetails.tokenType === 1) {
+		console.log('Checking && requesting approval of a total of ', totalTokenAmount, ' tokens')
+		const { allowance } = await approveSpendERC20(
+			structSigner.signer,
+			String(linkDetails.chainId),
+			linkDetails.tokenAddress,
 			totalTokenAmount,
-			tokenDecimals,
+			linkDetails.tokenDecimals,
 			true,
 			batcherContractVersion
 		)
-		verbose && console.log('Allowance: ', allowance)
+		console.log('Allowance: ', allowance)
 	}
 
 	// Set transaction options
-	let txOptions = {}
-	nonce = nonce || (await signer.getTransactionCount())
+	let txOptions: interfaces.ITxOptions = {}
+	const nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount())
 	txOptions.nonce = nonce
-	if (tokenType == 0) {
+	if (linkDetails.tokenType == 0) {
 		txOptions = {
 			...txOptions,
-			value: tokenAmount.mul(ethers.BigNumber.from(numberOfLinks.toString())),
+			value: tokenAmountBigNum.mul(ethers.BigNumber.from(numberOfLinks.toString())),
 		}
 	}
 
 	txOptions = await setFeeOptions({
 		txOptions,
-		provider: signer.provider,
-		eip1559,
-		maxFeePerGas,
-		maxPriorityFeePerGas,
-		gasLimit,
-		verbose,
+		provider: structSigner.signer.provider,
+		eip1559: structSigner.eip1559,
+		maxFeePerGas: structSigner.maxFeePerGas,
+		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+		gasLimit: structSigner.gasLimit,
 	})
 
-	verbose && console.log('post txOptions: ', txOptions)
 	// Make the batch deposit (amount of deposits is determined by length of pubKeys). tokenAmount is for each individual deposit
 	const depositParams = [
-		PEANUT_CONTRACTS[chainId][contractVersion], // The address of the PeanutV4 contract
-		tokenAddress,
-		tokenType,
-		tokenAmount,
-		tokenId,
+		PEANUT_CONTRACTS[String(linkDetails.chainId)][batcherContractVersion], // The address of the PeanutV4 contract
+		linkDetails.tokenAddress,
+		linkDetails.tokenType,
+		tokenAmountBigNum,
+		linkDetails.tokenId,
 		pubKeys,
 	]
-	verbose && console.log('depositParams: ', depositParams)
+	console.log('depositParams: ', depositParams)
 
 	if (!txOptions.gasLimit) {
 		const estimatedGasLimit = await estimateGasLimit(batcherContract, 'batchMakeDeposit', depositParams, txOptions)
 		if (estimatedGasLimit) {
-			txOptions.gasLimit = estimatedGasLimit.toString()
+			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 		}
-	}
-
-	if (mock) {
-		return { links: [], txReceipt: null }
 	}
 
 	const tx = await batcherContract.batchMakeDeposit(...depositParams, txOptions)
@@ -735,47 +812,33 @@ export async function createLinks({
 
 	// Wait for the transaction to be mined and get the receipt
 	const txReceipt = await tx.wait()
-	verbose && console.log('txReceipt: ', txReceipt)
+	const txHash = txReceipt.transactionHash
 
 	// Extract the deposit indices from the transaction receipt
-	const depositIdxs = getDepositIdxs(txReceipt, chainId, contractVersion)
+	const depositIdxs = getDepositIdxs(txReceipt, linkDetails.chainId, peanutContractVersion)
 
 	// Generate the links based on the deposit indices
-	const links = depositIdxs.map((depositIdx, i) =>
-		getLinkFromParams(chainId, contractVersion, depositIdx, passwords[i], baseUrl, trackId)
-	)
+	const links: interfaces.ICreatedPeanutLink[] = depositIdxs.map((depositIdx, i) => {
+		const link = getLinkFromParams(
+			linkDetails.chainId,
+			peanutContractVersion,
+			depositIdx,
+			passwords[i],
+			linkDetails.baseUrl,
+			linkDetails.trackId
+		)
+		return {
+			link: link,
+			txHash: txHash,
+		}
+	})
 
-	// Return the links and the transaction receipt
-	return { links, txReceipt }
-}
+	const response: interfaces.ICreateLinksResponse = {
+		createdLinks: links,
+		success: { success: true },
+	}
 
-/**
- * Checks if a link has been claimed
- *
- * @param {Object} options - An object containing the signer and link to check
- * @returns {Object} - An object containing whether the link has been claimed and the deposit
- */
-export async function getLinkStatus({ signer, link }: { signer: ethers.providers.JsonRpcSigner; link: string }) {
-	//TODO: This can be removed I think? It's deprecated and merged into getLinkDetails
-	// warning deprecated
-	console.warn('WARNING: getLinkStatus is deprecated. Use getLinkDetails instead.')
-	// assert(signer, 'signer arg is required')
-	// assert(link, 'link arg is required')
-
-	// signer = await getAbstractSigner(signer)
-
-	// const params = getParamsFromLink(link)
-	// const chainId = params.chainId
-	// const contractVersion = params.contractVersion
-	// const depositIdx = params.depositIdx
-	// const contract = await getContract(chainId, signer, contractVersion)
-	// const deposit = await contract.deposits(depositIdx)
-
-	// // if the deposit is claimed, the pubKey20 will be 0x000....
-	// if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
-	// 	return { claimed: true, deposit }
-	// }
-	// return { claimed: false, deposit }
+	return response
 }
 
 /**
@@ -817,11 +880,11 @@ export async function claimLink({
 	const contract = await getContract(chainId, signer, contractVersion, verbose)
 
 	// cryptography
-	var addressHash = solidityHashAddress(recipient)
-	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
+	const addressHash = solidityHashAddress(recipient)
+	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
-	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	var signature = signAddress(recipient, keys.privateKey) // sign with link keys
+	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+	const signature = signAddress(recipient, keys.privateKey) // sign with link keys
 
 	if (verbose) {
 		// print the params
@@ -879,7 +942,7 @@ export async function getAllDepositsForSigner({
 		deposits = []
 		for (let i = 0; i < depositCount; i++) {
 			verbose && console.log('fetching deposit: ', i)
-			let deposit = await contract.deposits(i)
+			const deposit = await contract.deposits(i)
 			deposits.push(deposit)
 		}
 	} else {
@@ -965,11 +1028,11 @@ async function createClaimPayload(link: string, recipientAddress: string) {
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
 
 	// cryptography
-	var addressHash = solidityHashAddress(recipientAddress)
+	const addressHash = solidityHashAddress(recipientAddress)
 	// var addressHashBinary = ethers.getBytes(addressHash); // v6
-	var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
-	var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	var signature = await signAddress(recipientAddress, keys.privateKey) // sign with link keys
+	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
+	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+	const signature = await signAddress(recipientAddress, keys.privateKey) // sign with link keys
 
 	return {
 		recipientAddress: recipientAddress,
@@ -1006,7 +1069,7 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
 	// const deposit = await contract.getDeposit(depositIdx)
 	console.log('deposit: ', deposit)
 	verbose && console.log('fetched deposit: ', deposit)
-	var tokenAddress = deposit.tokenAddress
+	let tokenAddress = deposit.tokenAddress
 
 	let claimed = false
 	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
