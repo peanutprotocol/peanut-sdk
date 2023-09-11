@@ -271,7 +271,7 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
  * @param {string} contractAddress - The contract address
  * @returns {Array} - The deposit indices
  */
-export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string) {
+export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
 	const logs = txReceipt.logs
 	const depositIdxs = []
 
