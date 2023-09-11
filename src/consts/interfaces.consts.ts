@@ -106,7 +106,11 @@ export interface IClaimLinkResponse {
 }
 
 //prepareCreatetxs
-export interface IPrepareCreateTxsParams extends ICreateLinkParams {} // we can remove this export interface  since it is the same as ICreateLinkParams
+export interface IPrepareCreateTxsParams {
+	address: string
+	linkDetails: IPeanutLinkDetails
+	peanutContractVersion?: string
+}
 
 export interface IPrepareCreateTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransactions
@@ -128,6 +132,7 @@ export interface ISignAndSubmitTxResponse {
 export interface IGetLinkParams {
 	linkDetails: IPeanutLinkDetails
 	txHash: string
+	signerOrProvider?: ethers.Signer | ethers.providers.Provider
 }
 
 export interface IGetLinkResponse {
@@ -136,7 +141,7 @@ export interface IGetLinkResponse {
 }
 
 //prepareClaimTx
-export interface IPrepareClaimTxParams extends IClaimLinkParams {} // we can remove this export interface  since it is the same as IClaimLinkParams
+export interface IPrepareClaimTxParams extends IClaimLinkParams { } // we can remove this export interface  since it is the same as IClaimLinkParams
 
 export interface IPrepareClaimTxResponse {
 	unsignedTx: IPeanutUnsignedTransactions

@@ -204,6 +204,7 @@ export async function approveSpendERC20(
 }
 
 export async function prepareApproveERC20Tx(
+	address: string,
 	chainId: string,
 	tokenAddress: string,
 	spenderAddress: string | undefined,
@@ -503,6 +504,8 @@ export async function signAndSubmitTx({ structSigner, unsignedTx }: ISignAndSubm
 export async function getLinkFromTx({ linkDetails, txHash }: IGetLinkDetailsParams): Promise<string> {
 	const txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId)
 	// TODO: get contract version & idx from tx receipt
+	// map from json
+
 	return getLinkFromParams(
 		linkDetails.chainId,
 		params.contractVersion,
