@@ -17,7 +17,7 @@
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",
-		"build": "npm run clean && webpack --config webpack.config.cjs",
+		"build": "bun bun.build.js",
 		"build:prod": "npm run clean && webpack --config webpack.config.cjs --mode production",
 		"build:dev": "npm run clean && webpack --config webpack.config.cjs --mode development",
 		"pre-git": "npm run prettier && npm run lint:fix && npm run test && npm run build:prod",
