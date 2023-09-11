@@ -4,10 +4,10 @@ import peanut from '../index' // import directly from source code
 
 // import { ethers } from 'ethersv6'; // v6
 import { ethers } from 'ethersv5' // v5
-import dotenv from 'dotenv'
+// import dotenv from 'dotenv'
 
 // load .env file
-dotenv.config()
+// dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'

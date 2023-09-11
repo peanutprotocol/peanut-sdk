@@ -2,11 +2,10 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
 // import { ethers } from 'ethersv6'; // v6
 import peanut from '../index' // import directly from source code
-
 import { ethers } from 'ethersv5' // v5
-import dotenv from 'dotenv'
-import { expect } from '@jest/globals'
-dotenv.config()
+// import dotenv from 'dotenv'
+// import { expect } from '@jest/globals'
+// dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'

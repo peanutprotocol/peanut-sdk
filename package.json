@@ -86,6 +86,7 @@
 		"utf-8-validate": "^5.0.10",
 		"webpack": "^5.88.1",
 		"webpack-cli": "^5.1.4",
-		"webpack-node-externals": "^3.0.0"
+		"webpack-node-externals": "^3.0.0",
+		"bun-types": "latest"
 	}
 }

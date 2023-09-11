@@ -2,10 +2,8 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
 import peanut from '../index' // import directly from source code
 import { ethers } from 'ethers'
-import dotenv from 'dotenv'
-
-// load .env file
-dotenv.config()
+// import dotenv from 'dotenv'
+// dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 

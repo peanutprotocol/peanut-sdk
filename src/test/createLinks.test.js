@@ -2,11 +2,10 @@
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
 // import { ethers } from 'ethersv6'; // v6
 import peanut from '../index' // import directly from source code
-
 import { ethers } from 'ethersv5' // v5
-import dotenv from 'dotenv'
-import { expect } from '@jest/globals'
-dotenv.config()
+// import dotenv from 'dotenv'
+// import { expect } from '@jest/globals'
+// dotenv.config()
 
 describe('createLinks tests', function () {
 	const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli

@@ -1,9 +1,5 @@
-import peanut from '../../index'
+import peanut from '../index'
 import { ethers } from 'ethersv5'
-import dotenv from 'dotenv'
-import { expect } from '@jest/globals'
-
-dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
