@@ -22,9 +22,9 @@ describe('getLinkDetails', function () {
 			/** simple usdc test */
 			const link = 'https://peanut.to/claim?c=137&v=v3&i=1479&p=NMuAQpGTV7KvtGQD'
 			const polygonProviderUrl = 'https://polygon-mainnet.infura.io/v3/' + INFURA_API_KEY
-			console.log("url", polygonProviderUrl)
+			console.log('url', polygonProviderUrl)
 			const polygonProvider = new ethers.providers.JsonRpcProvider(polygonProviderUrl)
-			const defaultProvider = await peanut.getDefaultProvider("137", true)
+			const defaultProvider = await peanut.getDefaultProvider('137', true)
 			const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, polygonProvider)
 			// test default provider by getting blocknumber and wallet balance
 			const blockNumber = await defaultProvider.getBlockNumber()
@@ -33,9 +33,8 @@ describe('getLinkDetails', function () {
 			console.log(walletBalance)
 			// should have 1 usdc inside
 			const linkDetails = await peanut.getLinkDetails({
-				link // this works
+				link, // this works
 				// link // this doesn't work
-
 			})
 			console.log(linkDetails)
 		}, 1000000)
@@ -76,7 +75,7 @@ describe('getLinkDetails', function () {
 			console.log(linkDetails)
 			// should not be empty
 			expect(linkDetails).not.toBe(undefined)
-		},  1000000)
+		}, 1000000)
 	})
 
 	describe('v4', function () {

@@ -7,7 +7,6 @@ import { ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
 dotenv.config()
 
-
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
 const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
@@ -23,11 +22,9 @@ describe('Peanut API Integration Tests', function () {
 
 	it('get Link Details', async function () {
 		const link = 'https://peanut.to/claim?c=420&v=v3&i=382&p=PdOR8bfWUuP4MGzw&t=sdk'
-		const stat = await peanut.getLinkDetails({link, provider: optimismGoerliProvider})
+		const stat = await peanut.getLinkDetails({ link, provider: optimismGoerliProvider })
 		expect(stat.claimed).toBe(false)
 	}, 20000)
-
-	
 })
 describe('create and claim BASE link on opt-goerli', function () {
 	return
@@ -48,8 +45,8 @@ describe('create and claim BASE link on opt-goerli', function () {
 				chainId: chainId,
 				tokenAmount: tokenAmount,
 				tokenType: tokenType,
-			}})
-
+			},
+		})
 
 		// check status of link
 		setTimeout(() => {}, 2000)
@@ -58,6 +55,10 @@ describe('create and claim BASE link on opt-goerli', function () {
 		// claim link using api
 		const receiverAddress = optimism_goerli_wallet.address
 		setTimeout(() => {}, 9000)
-		const res = await peanut.claimLinkGasless({link: resp.createdLink.link[0] , recipientAddress: receiverAddress, APIKey: apiToken})
+		const res = await peanut.claimLinkGasless({
+			link: resp.createdLink.link[0],
+			recipientAddress: receiverAddress,
+			APIKey: apiToken,
+		})
 	}, 60000) // 60 seconds timeout
 })

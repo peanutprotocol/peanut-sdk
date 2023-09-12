@@ -45,16 +45,19 @@ describe('optimism goerli', function () {
 	const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismGoerliProvider)
 
 	it.only('should create a native link and claim it', async function () {
-		await createAndClaimLink({
-			structSigner: {
-				signer: optimismGoerliWallet,
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: optimismGoerliWallet,
+				},
+				linkDetails: {
+					chainId: 420,
+					tokenAmount: 0.00001,
+					tokenType: 0,
+				},
 			},
-			linkDetails: {
-				chainId: 420,
-				tokenAmount: 0.00001,
-				tokenType: 0,
-			},
-		}, 9000)
+			9000
+		)
 		// Add assertion here
 	}, 60000)
 	// it('should create an erc20 link and claim it', async function () {
@@ -84,12 +87,10 @@ describe('polygon', function () {
 					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenType: 0,
-				}
+				},
 			},
 			9000
 		)
-
-
 	}, 60000)
 	it('polygon should create an erc20 link and claim it', async function () {
 		const tokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' // polygon usdc
@@ -108,7 +109,7 @@ describe('polygon', function () {
 					tokenDecimals: tokenDecimals,
 					tokenAddress: tokenAddress,
 					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-				}
+				},
 			},
 			9000
 		)
@@ -124,7 +125,6 @@ describe('goerli', function () {
 	const tokenAmount = 0.0001
 
 	it('should create a native link and claim it', async function () {
-
 		await createAndClaimLink(
 			{
 				structSigner: {
@@ -135,7 +135,7 @@ describe('goerli', function () {
 					tokenAmount: tokenAmount,
 
 					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-				}
+				},
 			},
 			9000
 		)
@@ -156,8 +156,8 @@ describe('goerli', function () {
 
 					tokenDecimals: tokenDecimals,
 					tokenAddress: tokenAddress,
-					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155		
-				}
+					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
 			},
 			9000
 		)
@@ -173,8 +173,8 @@ describe('goerli', function () {
 						chainId: chainId,
 						tokenAmount: tokenAmount,
 						tokenDecimals: 18,
-						tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155		
-					}
+						tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+					},
 				},
 				9000
 			)
@@ -188,14 +188,12 @@ describe('goerli', function () {
 		const response = await peanut.createLink({
 			structSigner: {
 				signer: goerliWallet,
-
 			},
 			linkDetails: {
 				chainId: chainId,
 				tokenAmount: tokenAmount,
 				tokenType: 0,
 			},
-
 		})
 
 		// wait for 7 seconds
@@ -205,7 +203,11 @@ describe('goerli', function () {
 		const receiverAddress = goerliWallet.address
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		// const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken, true, 'http://127.0.0.1:5001/claim')
-		const res = await peanut.claimLinkGasless({ link: response.createdLink.link[0], recipientAddress: receiverAddress, APIKey: apiToken })
+		const res = await peanut.claimLinkGasless({
+			link: response.createdLink.link[0],
+			recipientAddress: receiverAddress,
+			APIKey: apiToken,
+		})
 
 		console.log(res)
 	}, 60000)
@@ -241,11 +243,10 @@ describe('bnb', function () {
 				linkDetails: {
 					chainId: chainId,
 					tokenAmount: tokenAmount,
-					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155		
-				}
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
 			},
 			9000
 		)
-
 	}, 60000)
 })

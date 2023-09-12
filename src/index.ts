@@ -54,20 +54,21 @@ function timeout(ms: number, promise: any) {
 	return new Promise((resolve, reject) => {
 		setTimeout(() => {
 			reject(new Error(`Timed out after ${ms} ms`))
-		}, ms);
-		promise.then(resolve, reject);
-	});
+		}, ms)
+		promise.then(resolve, reject)
+	})
 }
-
 
 async function checkRpc(rpc: string, verbose = false) {
 	try {
-		const provider = new ethers.providers.JsonRpcProvider(rpc);
-		const balance = await timeout(2000, provider.getBalance("0xCEd763C2Ff8d5B726b8a5D480c17C24B6686837F"));
-		return true;
+		const provider = new ethers.providers.JsonRpcProvider(rpc)
+		// wait for provider to be ready
+		const balance = await timeout(2000, provider.getBalance('0xCEd763C2Ff8d5B726b8a5D480c17C24B6686837F'))
+		console.log('checkRpc balance:', balance)
+		return true
 	} catch (error) {
-		console.log('Error checking provider:', rpc, 'Error:', error);
-		return false;
+		console.log('Error checking provider:', rpc, 'Error:', error)
+		return false
 	}
 }
 
@@ -81,11 +82,11 @@ export async function getDefaultProvider(chainId: string, verbose = false) {
 	verbose && console.log('rpcs', rpcs)
 
 	for (let i = 0; i < rpcs.length; i++) {
-		var rpc = rpcs[i]
+		let rpc = rpcs[i]
 
 		// Skip if the rpc string contains '${'
-		if (rpc.includes('${')) continue
-		// rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+		// if (rpc.includes('${')) continue
+		rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
 
 		verbose && console.log('Checking rpc', rpc)
 		if (await checkRpc(rpc, verbose)) {
@@ -309,12 +310,17 @@ async function setFeeOptions({
 			verbose && console.log('Setting eip1559 tx options...', txOptions)
 			txOptions.maxFeePerGas =
 				maxFeePerGas ||
-				((BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)).toString()
+				(
+					(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) /
+					BigInt(10)
+				).toString()
 			txOptions.maxPriorityFeePerGas =
 				maxPriorityFeePerGas ||
-				((BigInt(feeData.maxPriorityFeePerGas.toString()) *
-					BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-					BigInt(10)).toString()
+				(
+					(BigInt(feeData.maxPriorityFeePerGas.toString()) *
+						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
+					BigInt(10)
+				).toString()
 
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
 			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
@@ -430,7 +436,7 @@ export async function prepareTxs({
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
 	// multiply tokenAmountBigNum by numberOfLinks
-	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks);
+	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks)
 
 	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
 	if (linkDetails.tokenType == 0) {
@@ -515,11 +521,11 @@ export async function signAndSubmitTx({
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
 	const verbose = false
-	verbose && console.log("unsigned tx: ", unsignedTx)
+	verbose && console.log('unsigned tx: ', unsignedTx)
 	// const signedTx = await structSigner.signer.signTransaction(unsignedTx)
 	// console.log("signed tx: ", signedTx)
 	const tx = await structSigner.signer.sendTransaction(unsignedTx)
-	verbose && console.log("tx: ", tx)
+	verbose && console.log('tx: ', tx)
 	await tx.wait()
 
 	return { txHash: tx.hash, success: { success: true } }
@@ -565,12 +571,12 @@ export function detectContractVersionFromTxReceipt(txReceipt: any, chainId: stri
 	const contractVersions = Object.keys(PEANUT_CONTRACTS[chainId])
 	const txReceiptContractAddresses = txReceipt.logs.map((log: any) => log.address.toLowerCase())
 
-	let txReceiptContractVersion = -1;
+	let txReceiptContractVersion = -1
 
 	for (let i = 0; i < contractAddresses.length; i++) {
 		if (txReceiptContractAddresses.includes(contractAddresses[i].toLowerCase())) {
-			txReceiptContractVersion = i;
-			break;
+			txReceiptContractVersion = i
+			break
 		}
 	}
 
@@ -653,7 +659,6 @@ export async function createLink({
 	const password = getRandomString(16)
 	linkDetails = validateLinkDetails(linkDetails, [password], 1)
 
-
 	// Prepare the transactions
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
@@ -669,7 +674,9 @@ export async function createLink({
 	)
 
 	// Get the links from the transactions
-	const link = (await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords: [password] })).links
+	const link = (
+		await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords: [password] })
+	).links
 
 	return { createdLink: { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }, success: { success: true } }
 }
@@ -684,7 +691,6 @@ export async function createLinks({
 	const passwords = Array(numberOfLinks).fill(getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 
-
 	// Prepare the transactions
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
@@ -694,15 +700,16 @@ export async function createLinks({
 		passwords: passwords,
 	})
 
-	verbose && console.log("prepareTxsResponse: ", prepareTxsResponse)
+	verbose && console.log('prepareTxsResponse: ', prepareTxsResponse)
 	// Sign and submit the transactions
 	const signedTxs = await Promise.all(
 		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
-	verbose && console.log("signedTxs: ", signedTxs)
+	verbose && console.log('signedTxs: ', signedTxs)
 
 	// Get the links from the transactions
-	const links = (await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords })).links
+	const links = (await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords }))
+		.links
 	const createdLinks = links.map((link) => {
 		return { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }
 	})

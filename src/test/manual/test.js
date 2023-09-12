@@ -1,4 +1,3 @@
-
 import peanut from '../index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
 
@@ -16,8 +15,7 @@ const link = 'https://peanut.to/claim?c=137&v=v3&i=1479&p=NMuAQpGTV7KvtGQD'
 const polygonProviderUrl = 'https://polygon-mainnet.infura.io/v3/' + INFURA_API_KEY
 const polygonProvider = new ethers.providers.JsonRpcProvider(polygonProviderUrl)
 console.log('before gfp')
-console.log(await peanut.checkRpc("https://polygon-rpc.com"))
-
+console.log(await peanut.checkRpc('https://polygon-rpc.com'))
 
 // const defaultProvider = await peanut.getDefaultProvider("137", true)
 // console.log('after gfp')

@@ -1,6 +1,6 @@
 import { ethers } from 'ethersv5'
 import { formatNumberAvoidScientific, trim_decimal_overflow } from '..'
-import { expect, describe , it} from '@jest/globals';
+import { expect, describe, it } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 
