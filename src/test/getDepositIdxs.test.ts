@@ -1,5 +1,7 @@
 import peanut from '../index'
 import { ethers } from 'ethersv5'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
@@ -55,5 +57,42 @@ describe('getDepositIdxs', function () {
 		const depositIdxs2 = await peanut.getDepositIdxs(txReceipt2, 5, 'v4')
 		console.log(depositIdxs2)
 		expect(depositIdxs2).toEqual([18, 19, 20, 21, 22])
+	})
+})
+
+describe('getDepositIdxs for single event and not batch', function () {
+	let txReceipt1, txReceipt2
+
+	beforeAll(async () => {
+		const response1 = await fetch(
+			`https://api-goerli.etherscan.io/api?module=proxy&action=eth_getTransactionReceipt&txhash=0x0021ba224cb261735ee57076565732aa631320530ee2736e1465a2795df2b23f&apikey=${ETHERSCAN_API_KEY}`
+		)
+		const data1 = await response1.json()
+		if (!data1 || !data1.result) {
+			throw new Error('Failed to fetch the first transaction receipt from Etherscan.')
+		}
+		txReceipt1 = data1.result
+
+		// // wait for 1 second
+		await new Promise((res) => setTimeout(res, 1000))
+
+		// const response2 = await fetch(
+		// 	`https://api-goerli.etherscan.io/api?module=proxy&action=eth_getTransactionReceipt&txhash=0x0021ba224cb261735ee57076565732aa631320530ee2736e1465a2795df2b23f&apikey=${ETHERSCAN_API_KEY}`
+		// )
+		// const data2 = await response2.json()
+		// if (!data2 || !data2.result) {
+		// 	throw new Error('Failed to fetch the second transaction receipt from Etherscan.')
+		// }
+		// txReceipt2 = data2.result
+	})
+
+	it.only('should return an array of deposit indices from the first batch transaction receipt', async () => {
+		for (let i = 0; i < txReceipt1.logs.length; i++) {
+			console.log(txReceipt1.logs[i])
+			console.log(txReceipt1.logs[i].topics)
+		}
+		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, 5, 'v4')
+		console.log(depositIdxs1)
+		expect(depositIdxs1).toEqual([190])
 	})
 })

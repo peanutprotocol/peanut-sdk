@@ -1,6 +1,8 @@
-import { ethers } from 'ethers'
-import { formatNumberAvoidScientific, trim_decimal_overflow } from '../index' // Assuming both functions are exported from a specific file
-// import { expect } from '@jest/globals'
+import { ethers } from 'ethersv5'
+import { formatNumberAvoidScientific, trim_decimal_overflow } from '..'
+import { expect, describe , it} from '@jest/globals';
+import dotenv from 'dotenv'
+dotenv.config()
 
 describe('Number Formatting Tests', function () {
 	// Fuzzer utility for generating random numbers with scientific notation

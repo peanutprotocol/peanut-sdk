@@ -3,7 +3,7 @@ import { TransactionRequest } from '@ethersproject/abstract-provider'
 
 //General export interface s and enums
 export interface IPeanutSigner {
-	signer: ethers.providers.JsonRpcSigner
+	signer: ethers.Signer
 	nonce?: number
 	maxFeePerGas?: number
 	maxPriorityFeePerGas?: number
@@ -147,7 +147,7 @@ export interface IGetLinkFromTxResponse {
 }
 
 //prepareClaimTx
-export interface IPrepareClaimTxParams extends IClaimLinkParams {}
+export interface IPrepareClaimTxParams extends IClaimLinkParams { }
 
 export interface IPrepareClaimTxResponse {
 	unsignedTx: TransactionRequest
@@ -157,7 +157,7 @@ export interface IPrepareClaimTxResponse {
 //getLinkDetails
 export interface IGetLinkDetailsParams {
 	link: string
-	RPCProvider?: string
+	provider?: ethers.providers.Provider
 }
 
 export interface IGetLinkDetailsResponse {

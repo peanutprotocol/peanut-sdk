@@ -3,11 +3,11 @@
 // import { ethers } from 'ethersv6'; // v6
 import peanut from '../index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
-// import dotenv from 'dotenv'
-// import { expect } from '@jest/globals'
-// dotenv.config()
+import { expect, it, describe } from '@jest/globals'
+import dotenv from 'dotenv'
+dotenv.config()
 
-describe('createLinks tests', function () {
+describe.only('createLinks tests', function () {
 	const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli
 	const TOKEN_AMOUNT = 0.0002
 	const TOKEN_TYPE = 0
@@ -25,17 +25,18 @@ describe('createLinks tests', function () {
 	console.log('Chain Name: ', CHAIN_NAME, 'Chain ID: ', CHAIN_ID)
 	console.log('RPC_URL: ', RPC_URL)
 
-	it('1', async function () {
-		const { links, txReceipt } = await peanut.createLinks({
-			signer: WALLET,
-			chainId: CHAIN_ID,
-			tokenAmount: TOKEN_AMOUNT,
-			numberOfLinks: NUM_LINKS,
-			tokenType: TOKEN_TYPE, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-			tokenAddress: TOKEN_ADDRESS,
-			tokenDecimals: TOKEN_DECIMALS,
-			verbose: true,
-			mock: true,
+	it.only('1', async function () {
+		const { createdLinks, success } = await peanut.createLinks({
+			structSigner: {
+				signer: WALLET,
+			},
+			linkDetails: {
+				chainId: CHAIN_ID,
+				tokenAmount: TOKEN_AMOUNT,
+				tokenType: TOKEN_TYPE, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				tokenAddress: TOKEN_ADDRESS,
+				tokenDecimals: TOKEN_DECIMALS,
+			}
 		})
 	})
 	it('variable token Amounts', async function () {

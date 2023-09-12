@@ -272,6 +272,7 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
  * @returns {Array} - The deposit indices
  */
 export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
+	const verbose = true
 	const logs = txReceipt.logs
 	const depositIdxs = []
 
@@ -284,7 +285,7 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const contractAddress = _PEANUT_CONTRACTS[chainId][contractVersion]
-	console.log('contractAddress: ', contractAddress)
+	console.log(contractAddress, contractVersion, chainId)
 
 	for (let i = 0; i < logs.length; i++) {
 		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase() && logs[i].topics[0] === logTopic) {

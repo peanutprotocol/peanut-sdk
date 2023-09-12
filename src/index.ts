@@ -50,36 +50,46 @@ async function getAbstractSigner(signer: any) {
 	return signer
 }
 
+function timeout(ms: number, promise: any) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			reject(new Error(`Timed out after ${ms} ms`))
+		}, ms);
+		promise.then(resolve, reject);
+	});
+}
+
+
 async function checkRpc(rpc: string, verbose = false) {
 	try {
-		verbose && console.log('Checking provider:', rpc)
-		const provider = new ethers.providers.JsonRpcProvider(rpc)
-		verbose && console.log('provider blocknumber:', await provider.getBlockNumber())
-		return true
+		const provider = new ethers.providers.JsonRpcProvider(rpc);
+		const balance = await timeout(2000, provider.getBalance("0xCEd763C2Ff8d5B726b8a5D480c17C24B6686837F"));
+		return true;
 	} catch (error) {
-		verbose && console.error('Error checking provider:', rpc)
-		return false
+		console.log('Error checking provider:', rpc, 'Error:', error);
+		return false;
 	}
 }
+
 /**
  * Returns the default provider for a given chainId
  */
 export async function getDefaultProvider(chainId: string, verbose = false) {
 	verbose && console.log('Getting default provider for chainId ', chainId)
-	chainId = String(chainId)
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
 	verbose && console.log('rpcs', rpcs)
 
 	for (let i = 0; i < rpcs.length; i++) {
-		const rpc = rpcs[i]
+		var rpc = rpcs[i]
 
 		// Skip if the rpc string contains '${'
-		if (rpc.includes('${')) continue
+		// if (rpc.includes('${')) continue
+		// for debug: replace and include infura api key: 4478656478ab4945a1b013fb1d8f20fd
+		rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd')
 
 		verbose && console.log('Checking rpc', rpc)
 		if (await checkRpc(rpc, verbose)) {
-			verbose && console.log('Provider is alive:', rpc)
 			return new ethers.providers.JsonRpcProvider(rpc)
 		} else {
 			verbose && console.log('Provider is down:', rpc)
@@ -93,7 +103,7 @@ export async function getContract(
 	_chainId: string,
 	signerOrProvider: any,
 	version = DEFAULT_CONTRACT_VERSION,
-	verbose = true
+	verbose = false
 ) {
 	if (signerOrProvider == null) {
 		verbose && console.log('signerOrProvider is null, getting default provider...')
@@ -262,12 +272,14 @@ async function setFeeOptions({
 	maxPriorityFeePerGasMultiplier?: number
 	verbose?: boolean
 }) {
+	eip1559 = false
 	const verbose = true // TODO: move this to initializing the sdk
 	verbose && console.log('Setting tx options...')
 	let feeData
 	// if not txOptions, create it (oneliner)
 	txOptions = txOptions || {}
 	try {
+		verbose && console.log('getting Fee data')
 		feeData = await provider.getFeeData()
 		verbose && console.log('Fetched gas price from provider:', feeData)
 	} catch (error) {
@@ -298,12 +310,12 @@ async function setFeeOptions({
 			verbose && console.log('Setting eip1559 tx options...', txOptions)
 			txOptions.maxFeePerGas =
 				maxFeePerGas ||
-				(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)
+				((BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) / BigInt(10)).toString()
 			txOptions.maxPriorityFeePerGas =
 				maxPriorityFeePerGas ||
-				(BigInt(feeData.maxPriorityFeePerGas.toString()) *
+				((BigInt(feeData.maxPriorityFeePerGas.toString()) *
 					BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-					BigInt(10)
+					BigInt(10)).toString()
 
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
 			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
@@ -334,10 +346,10 @@ async function setFeeOptions({
 	return txOptions
 }
 
-async function estimateGasLimit(contract: any, functionName: string, params: any, txOptions: any) {
+async function estimateGasLimit(contract: any, functionName: string, params: any, txOptions: any, multiplier = 1.3) {
 	try {
 		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
-		return BigInt(Math.floor(Number(estimatedGas) * 1.1)) // safety margin
+		return BigInt(Math.floor(Number(estimatedGas) * multiplier))
 	} catch (error) {
 		console.error(`Error estimating gas for ${functionName}:`, error)
 		console.error(
@@ -354,7 +366,7 @@ async function estimateGasLimit(contract: any, functionName: string, params: any
 	}
 }
 
-function formatNumberAvoidScientific(n: number) {
+export function formatNumberAvoidScientific(n: number) {
 	if (typeof n === 'number') {
 		const str = n.toString()
 
@@ -383,7 +395,7 @@ function formatNumberAvoidScientific(n: number) {
 }
 
 // trim some number to a certain number of decimals
-function trim_decimal_overflow(_n: number, decimals: number) {
+export function trim_decimal_overflow(_n: number, decimals: number) {
 	let n = formatNumberAvoidScientific(_n)
 	n += ''
 
@@ -498,9 +510,11 @@ export async function signAndSubmitTx({
 	structSigner,
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
-	const signedTx = await structSigner.signer.signTransaction(unsignedTx)
-	//@ts-ignore
-	const tx = await structSigner.signer.sendTransaction(signedTx)
+	console.log("unsigned tx: ", unsignedTx)
+	// const signedTx = await structSigner.signer.signTransaction(unsignedTx)
+	// console.log("signed tx: ", signedTx)
+	const tx = await structSigner.signer.sendTransaction(unsignedTx)
+	console.log("tx: ", tx)
 	await tx.wait()
 
 	return { txHash: tx.hash, success: { success: true } }
@@ -541,15 +555,31 @@ export async function getLinksFromTx({
 	}
 }
 
-function detectContractVersionFromTxReceipt(txReceipt: any, chainId: string): string {
+export function detectContractVersionFromTxReceipt(txReceipt: any, chainId: string): string {
 	const contractAddresses = Object.values(PEANUT_CONTRACTS[chainId])
 	const contractVersions = Object.keys(PEANUT_CONTRACTS[chainId])
 	const txReceiptContractAddresses = txReceipt.logs.map((log: any) => log.address)
+	console.log('txReceiptContractAddresses: ', txReceiptContractAddresses)
+	console.log('contractAddresses: ', contractAddresses)
+	console.log('contractVersions: ', contractVersions)
+	console.log(txReceipt)
 	// loop through the txReceiptContractAddresses and find the index of the first one that matches
 	const txReceiptContractVersion = contractAddresses.findIndex((contractAddress) =>
 		txReceiptContractAddresses.includes(contractAddress)
 	)
-	return contractVersions[txReceiptContractVersion]
+	console.log('txReceiptContractVersion: ', txReceiptContractVersion)
+
+	let txReceiptContractVersion2 = -1;
+
+	for (let i = 0; i < contractAddresses.length; i++) {
+		if (txReceiptContractAddresses.includes(contractAddresses[i])) {
+			txReceiptContractVersion2 = i;
+			break;
+		}
+	}
+
+	console.log('txReceiptContractVersion2: ', txReceiptContractVersion2)
+	return contractVersions[txReceiptContractVersion2]
 }
 
 async function getTxReceiptFromHash(
@@ -596,7 +626,7 @@ function validateLinkDetails(
 	linkDetails.trackId = linkDetails.trackId ?? 'sdk'
 
 	assert(
-		numberOfLinks > 0 && passwords.length == numberOfLinks,
+		numberOfLinks > 1 || passwords.length === numberOfLinks,
 		'when creating multiple links, passwords must be an array of length numberOfLinks'
 	)
 
@@ -610,7 +640,7 @@ function validateLinkDetails(
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
-	if (linkDetails.tokenType !== 0 && linkDetails.tokenAddress === '0x0000000000000000000000000000000000000000') {
+	if (linkDetails.tokenType !== 0 && linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000') {
 		throw new Error('need to provide tokenAddress if tokenType is not 0')
 	}
 
@@ -625,8 +655,9 @@ export async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
-	linkDetails = validateLinkDetails(linkDetails, [], 1)
 	const password = getRandomString(16)
+	linkDetails = validateLinkDetails(linkDetails, [password], 1)
+
 
 	// Prepare the transactions
 	const prepareTxsResponse = await prepareTxs({
@@ -643,9 +674,9 @@ export async function createLink({
 	)
 
 	// Get the links from the transactions
-	const link = (await getLinksFromTx({ linkDetails, txHash: signedTxs[-1].txHash, passwords: [password] })).links
+	const link = (await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords: [password] })).links
 
-	return { createdLink: { link: link, txHash: signedTxs[-1].txHash }, success: { success: true } }
+	return { createdLink: { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }, success: { success: true } }
 }
 
 export async function createLinks({
@@ -672,9 +703,9 @@ export async function createLinks({
 	)
 
 	// Get the links from the transactions
-	const links = (await getLinksFromTx({ linkDetails, txHash: signedTxs[-1].txHash, passwords })).links
+	const links = (await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords })).links
 	const createdLinks = links.map((link) => {
-		return { link: link, txHash: signedTxs[-1].txHash }
+		return { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }
 	})
 	return { createdLinks: createdLinks, success: { success: true } }
 }
@@ -692,7 +723,7 @@ export async function claimLink({
 	gasLimit = null,
 	eip1559 = true,
 }: {
-	signer: ethers.providers.JsonRpcSigner
+	signer: ethers.Signer
 	link: string
 	recipient?: string | null
 	verbose?: boolean
@@ -881,7 +912,7 @@ async function createClaimPayload(link: string, recipientAddress: string) {
 /**
  * Gets the details of a Link: what token it is, how much it holds, etc.
  */
-export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkDetailsParams) {
+export async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsParams) {
 	const verbose = false // TODO: move this to initializing the SDK
 	verbose && console.log('getLinkDetails called with link: ', link)
 	assert(link, 'link arg is required')
@@ -891,12 +922,17 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
 	const contractVersion = params.contractVersion
 	const depositIdx = params.depositIdx
 	const password = params.password
-	const contract = await getContract(chainId.toString(), RPCProvider, contractVersion, verbose)
+	provider = provider || (await getDefaultProvider(String(chainId)))
+	const contract = await getContract(chainId.toString(), provider, contractVersion, verbose)
+	// check contract works
+	verbose && console.log('contract address: ', contract.address)
+	// check provider works (get addrss balance)
+	verbose && console.log('contract balance: ', await provider.getBalance(contract.address))
 
 	verbose && console.log('fetching deposit: ', depositIdx)
 	const deposit = await contract.deposits(depositIdx)
 	// const deposit = await contract.getDeposit(depositIdx)
-	console.log('deposit: ', deposit)
+	verbose && console.log('deposit: ', deposit)
 	verbose && console.log('fetched deposit: ', deposit)
 	let tokenAddress = deposit.tokenAddress
 
@@ -932,7 +968,7 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
 	// Retrieve the token's details from the tokenDetails.json file
 	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
-	console.log('chainId: ', chainId)
+	verbose && console.log('chainId: ', chainId)
 	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 	if (!chainDetails) {
 		throw new Error('Chain details not found')
@@ -960,7 +996,7 @@ export async function getLinkDetails({ RPCProvider, link }: interfaces.IGetLinkD
 		tokenSymbol: tokenDetails.symbol,
 		tokenName: tokenDetails.name,
 		tokenAmount: tokenAmount,
-		clamed: claimed,
+		claimed: claimed,
 		depositDate: depositDate,
 	}
 
@@ -1030,8 +1066,10 @@ const peanut = {
 	solidityHashAddress,
 	signAddress,
 	getRandomString,
+	detectContractVersionFromTxReceipt,
 	getContract,
 	getDefaultProvider,
+	checkRpc,
 	getDepositIdx,
 	getDepositIdxs,
 	getAllDepositsForSigner,

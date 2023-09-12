@@ -1,10 +1,12 @@
 import peanut from '../index'
 import { dirname, join } from 'path'
 import { readFileSync } from 'fs'
+import dotenv from 'dotenv'
+dotenv.config()
+const directName = dirname(__filename)
 
-const __dirname = dirname(__filename)
-
-const packagePath = join(__dirname, '../package.json')
+const packagePath = join(directName, '../../package.json')
+console.log(packagePath)
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'))
 const version = packageJson.version
 

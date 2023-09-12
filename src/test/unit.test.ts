@@ -3,18 +3,19 @@
 import peanut from '../index' // import directly from source code
 // import { ethers } from 'ethersv6'; // v6
 import { ethers } from 'ethersv5' // v5
+import { expect, describe , it} from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY)
+const TEST_WALLET_PRIVATE_KEY  = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
+const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '' ?? '')
 
 describe('Unit tests', function () {
 	// test wallet from private key should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02
 	describe('test wallet from private key', function () {
 		it('should have address 0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', function () {
-			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY)
+			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
+			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '' ?? '')
 			expect(wallet.address).toBe('0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02')
 		})
 	})
@@ -43,8 +44,8 @@ describe('Unit tests', function () {
 	describe('signMessageWithPrivatekey()', function () {
 		it('should produce the same signature for the same message and private key', async function () {
 			const message = 'test'
-			const signature1 = await peanut.signMessageWithPrivatekey(message, TEST_WALLET_PRIVATE_KEY)
-			const signature2 = await peanut.signMessageWithPrivatekey(message, TEST_WALLET_PRIVATE_KEY)
+			const signature1 = await peanut.signMessageWithPrivatekey(message, TEST_WALLET_PRIVATE_KEY ?? '' ?? '')
+			const signature2 = await peanut.signMessageWithPrivatekey(message, TEST_WALLET_PRIVATE_KEY ?? '' ?? '')
 			expect(signature1).toBe(signature2)
 
 			// assert that the signature is valid
@@ -70,8 +71,8 @@ describe('Unit tests', function () {
 		it('should produce a different signature for a different message and the same private key', async function () {
 			const message1 = 'test'
 			const message2 = 'test2'
-			const signature1 = await peanut.signMessageWithPrivatekey(message1, TEST_WALLET_PRIVATE_KEY)
-			const signature2 = await peanut.signMessageWithPrivatekey(message2, TEST_WALLET_PRIVATE_KEY)
+			const signature1 = await peanut.signMessageWithPrivatekey(message1, TEST_WALLET_PRIVATE_KEY ?? '')
+			const signature2 = await peanut.signMessageWithPrivatekey(message2, TEST_WALLET_PRIVATE_KEY ?? '')
 			expect(signature1).not.toBe(signature2)
 		})
 	})
