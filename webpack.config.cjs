@@ -4,16 +4,16 @@ const nodeExternals = require('webpack-node-externals')
 
 // Common Configuration
 const common = {
-	entry: './index.js',
+	entry: './src/index.ts',
 	module: {
 		rules: [
 			{
-				test: /\.m?js$/,
+				test: /\.(m?js|ts)$/,
 				exclude: /(node_modules|bower_components|examples|test|other|dist)/, // exclude these folders from being transpiled
 				use: {
 					loader: 'babel-loader',
 					options: {
-						presets: [['@babel/preset-env']],
+						presets: ['@babel/preset-env', '@babel/preset-typescript'],
 						plugins: ['@babel/plugin-syntax-dynamic-import', '@babel/plugin-syntax-import-assertions'],
 					},
 				},
@@ -47,6 +47,9 @@ const common = {
 	},
 	experiments: {
 		outputModule: true,
+	},
+	resolve: {
+		extensions: ['.tsx', '.ts', '.js'],
 	},
 }
 

@@ -1,9 +1,9 @@
 const config = {
 	testEnvironment: 'node',
-	roots: ['<rootDir>/test'],
+	roots: ['<rootDir>/src/test'],
+	preset: 'ts-jest',
 	transform: {
-		'^.+\\.(js|jsx|mjs)?$': 'babel-jest',
-		'^.+\\.tsx?$': 'ts-jest',
+		'^.+\\.(ts|tsx)?$': 'ts-jest',
 	},
 	testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|tsx|js|jsx|mjs)?$',
 	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node', 'mjs'],
@@ -11,14 +11,14 @@ const config = {
 	coveragePathIgnorePatterns: [
 		'/node_modules/',
 		'peanut-sdk/node_modules/',
-		'<rootDir>/test/',
+		'<rootDir>/src/test/',
 		'<rootDir>/node_modules/',
 	],
 	transformIgnorePatterns: [
 		'/node_modules/(?!(\\@squirrel-labs\\/peanut-sdk)/)',
 		'/node_modules/(?!(\\@squirrel-labs\\/peanut-sdk)/)',
 	],
-	testPathIgnorePatterns: ['<rootDir>/test/manual/'],
+	testPathIgnorePatterns: ['<rootDir>/src/test/manual/'],
 	// try to test directly on index.js
 	// moduleDirectories: ["node_modules", "src"],
 	// moduleNameMapper: {

@@ -10,7 +10,7 @@ module.exports = {
 		sourceType: 'module', // Allows for the use of imports
 	},
 	rules: {
-		// Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
-		// e.g. "@typescript-eslint/explicit-function-return-type": "off",
+		'padding-line-between-statements': ['error', { blankLine: 'always', prev: 'function', next: 'function' }],
+		'@typescript-eslint/no-explicit-any': 'off', // Disables the no-explicit-any rule
 	},
 }
