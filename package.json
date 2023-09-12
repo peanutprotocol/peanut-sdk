@@ -1,6 +1,6 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
 	"module": "dist/peanut-sdk.browser.js",
@@ -58,6 +58,7 @@
 		"@babel/plugin-syntax-import-assertions": "^7.22.5",
 		"@babel/preset-env": "^7.22.10",
 		"@babel/preset-typescript": "^7.22.5",
+		"@ethersproject/abstract-provider": "^5.7.0",
 		"@jest/globals": "^29.6.2",
 		"@jest/transform": "^29.6.2",
 		"@types/jest": "^29.5.4",

@@ -138,4 +138,34 @@ describe('createLinks tests', function () {
 
 		// Additional assertions as needed
 	}, 60000)
+	it.only('30 goerli 0.1 eth linkgs', async function () {
+		const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli
+		const TOKEN_AMOUNT = 0.2
+		const TOKEN_TYPE = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+		const TOKEN_ADDRESS = ethers.constants.AddressZero
+		const TOKEN_DECIMALS = 18
+		const NUM_LINKS = 30
+
+		// Create links for live testing
+		const { createdLinks, success } = await peanut.createLinks({
+			structSigner: {
+				signer: WALLET,
+			},
+			linkDetails: {
+				chainId: CHAIN_ID,
+				tokenAmount: TOKEN_AMOUNT,
+				tokenType: TOKEN_TYPE, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				tokenAddress: TOKEN_ADDRESS,
+				tokenDecimals: TOKEN_DECIMALS,
+			},
+			numberOfLinks: NUM_LINKS,
+		})
+
+		console.log('links: ', createdLinks)
+
+		// print all createdLinks.link sequentially
+		for (let i = 0; i < createdLinks.length; i++) {
+			console.log('link: ', createdLinks[i].link)
+		}
+	}, 60000)
 })

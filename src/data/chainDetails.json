@@ -7,11 +7,10 @@
 			"format": "png"
 		},
 		"rpc": [
-			"https://mainnet.infura.io/v3/${INFURA_API_KEY}",
-			"wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}",
 			"https://cloudflare-eth.com",
 			"https://ethereum.publicnode.com",
-			"https://mainnet.gateway.tenderly.co"
+			"https://mainnet.gateway.tenderly.co",
+			"https://mainnet.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"features": [
 			{
@@ -55,10 +54,9 @@
 		"title": "Ethereum Testnet Goerli",
 		"chain": "ETH",
 		"rpc": [
-			"https://goerli.infura.io/v3/${INFURA_API_KEY}",
-			"wss://goerli.infura.io/v3/${INFURA_API_KEY}",
 			"https://ethereum-goerli.publicnode.com",
-			"https://goerli.gateway.tenderly.co"
+			"https://goerli.gateway.tenderly.co",
+			"https://goerli.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"faucets": [
 			"http://fauceth.komputing.org?chain=5&address=${ADDRESS}",
@@ -104,13 +102,13 @@
 			"format": "png"
 		},
 		"rpc": [
-			"https://polygon-mainnet.infura.io/v3/${INFURA_API_KEY}",
 			"https://polygon-rpc.com",
 			"https://polygon.llamarpc.com",
 			"https://rpc-mainnet.maticvigil.com",
 			"https://rpc-mainnet.matic.quiknode.pro",
 			"https://polygon-bor.publicnode.com",
-			"https://polygon.gateway.tenderly.co"
+			"https://polygon.gateway.tenderly.co",
+			"https://polygon-mainnet.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"faucets": [],
 		"nativeCurrency": {
@@ -141,10 +139,10 @@
 			"format": "png"
 		},
 		"rpc": [
-			"https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}",
 			"https://rpc-mumbai.maticvigil.com",
 			"https://polygon-mumbai-bor.publicnode.com",
-			"https://polygon-mumbai.gateway.tenderly.co"
+			"https://polygon-mumbai.gateway.tenderly.co",
+			"https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"faucets": ["https://faucet.polygon.technology/"],
 		"nativeCurrency": {
@@ -169,10 +167,10 @@
 		"name": "OP Mainnet",
 		"chain": "ETH",
 		"rpc": [
-			"https://optimism-mainnet.infura.io/v3/${INFURA_API_KEY}",
 			"https://mainnet.optimism.io",
 			"https://optimism.publicnode.com",
-			"https://optimism.gateway.tenderly.co"
+			"https://optimism.gateway.tenderly.co",
+			"https://optimism-mainnet.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"faucets": [],
 		"nativeCurrency": {
@@ -207,10 +205,10 @@
 		"name": "Optimism Goerli Testnet",
 		"chain": "ETH",
 		"rpc": [
-			"https://optimism-goerli.infura.io/v3/${INFURA_API_KEY}",
 			"https://goerli.optimism.io",
 			"https://optimism-goerli.publicnode.com",
-			"https://optimism-goerli.gateway.tenderly.co"
+			"https://optimism-goerli.gateway.tenderly.co",
+			"https://optimism-goerli.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"faucets": [],
 		"nativeCurrency": {
@@ -248,9 +246,9 @@
 			"decimals": 18
 		},
 		"rpc": [
-			"https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
 			"https://arb1.arbitrum.io/rpc",
-			"https://arbitrum-one.publicnode.com"
+			"https://arbitrum-one.publicnode.com",
+			"https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}"
 		],
 		"faucets": [],
 		"explorers": [

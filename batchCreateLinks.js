@@ -1,6 +1,7 @@
 // import peanut from '@squirrel-labs/peanut-sdk'
 // import peanut from '../../index.ts' // can also import directly from source code if clone repo
 import peanut from './dist/peanut-sdk.node.js' // can also import directly from source code if clone repo
+// import peanut from './dist/peanut-sdk.browser.js' // can also import directly from source code if clone repo
 import { ethers } from 'ethersv5' // ethers v5
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env' })
@@ -8,7 +9,7 @@ dotenv.config({ path: '.env' })
 console.log('Peanut Version: ', peanut.version)
 
 ////////////////////////////////////////////////////////////
-const CHAIN_ID = 420
+const CHAIN_ID = 137
 const TOKEN_AMOUNT = 0.001
 const TOKEN_TYPE = 0
 const TOKEN_ADDRESS = ethers.constants.AddressZero
@@ -28,7 +29,7 @@ console.log('Chain Name: ', CHAIN_NAME, 'Chain ID: ', CHAIN_ID)
 console.log('RPC_URL: ', RPC_URL)
 
 // create wallet
-const provider = new ethers.providers.JsonRpcBatchProvider(RPC_URL)
+const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
 const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, provider)
 // test provider with simple call
 const blockNumber = await provider.getBlockNumber()
@@ -36,7 +37,16 @@ const balance = await provider.getBalance(wallet.address)
 console.log
 console.log('blockNumber: ', blockNumber)
 console.log('balance: ', balance.toString())
+console.log(await provider.send('eth_chainId', []))
 ////////////////////////////////////////////////////////////
+
+console.log(await provider.send('eth_chainId', []))
+
+console.log(await provider.getBlockNumber())
+console.log(await provider.getBalance('0x0000000000000000000000000000000000000000'))
+
+const defaultProvider = await peanut.getDefaultProvider(String(CHAIN_ID))
+console.log('defaultProvider: ', defaultProvider)
 
 // create links
 const { links, txReceipt } = await peanut.createLinks({

@@ -50,24 +50,36 @@ async function getAbstractSigner(signer: any) {
 	return signer
 }
 
-function timeout(ms: number, promise: any) {
+function timeout(ms: number, promise: Promise<any>) {
 	return new Promise((resolve, reject) => {
-		setTimeout(() => {
+		const timer = setTimeout(() => {
 			reject(new Error(`Timed out after ${ms} ms`))
 		}, ms)
-		promise.then(resolve, reject)
+
+		promise
+			.then((value) => {
+				clearTimeout(timer)
+				resolve(value)
+			})
+			.catch((err) => {
+				clearTimeout(timer)
+				reject(err)
+			})
 	})
 }
 
-async function checkRpc(rpc: string, verbose = false) {
+async function checkRpc(rpc: string, verbose = false): Promise<boolean> {
+	console.log('checkRpc rpc:', rpc)
+
 	try {
 		const provider = new ethers.providers.JsonRpcProvider(rpc)
-		// wait for provider to be ready
-		console.log('checkRpc provider:', rpc)
-		console.log(await provider.getBlockNumber())
-		console.log(await provider.getNetwork())
-		const balance = await timeout(2000, provider.getBalance('0x0000000000000000000000000000000000000000'))
-		console.log('checkRpc balance:', balance)
+		await timeout(
+			2000,
+			new Promise((resolve, reject) => {
+				provider.ready // added this, it hangs forever
+				provider.getBalance('0x0000000000000000000000000000000000000000').then(resolve).catch(reject)
+			})
+		)
 		return true
 	} catch (error) {
 		console.log('Error checking provider:', rpc, 'Error:', error)
@@ -84,7 +96,8 @@ export async function getDefaultProvider(chainId: string, verbose = false) {
 
 	verbose && console.log('rpcs', rpcs)
 
-	for (let i = 0; i < rpcs.length; i++) {
+	let i = 0
+	while (i < rpcs.length) {
 		let rpc = rpcs[i]
 
 		// Skip if the rpc string contains '${'
@@ -92,14 +105,36 @@ export async function getDefaultProvider(chainId: string, verbose = false) {
 		rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
 
 		verbose && console.log('Checking rpc', rpc)
-		if (await checkRpc(rpc, verbose)) {
+
+		const isRpcValid = await checkRpc(rpc, verbose)
+		if (isRpcValid) {
 			return new ethers.providers.JsonRpcProvider(rpc)
 		} else {
 			verbose && console.log('Provider is down:', rpc)
 		}
+
+		i++ // Move to the next rpc in the list.
 	}
 
 	throw new Error('No alive provider found for chainId ' + chainId)
+
+	// for (let i = 0; i < rpcs.length; i++) {
+	// 	let rpc = rpcs[i]
+
+	// 	// Skip if the rpc string contains '${'
+	// 	// if (rpc.includes('${')) continue
+	// 	rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+
+	// 	verbose && console.log('Checking rpc', rpc)
+
+	// 	if (await checkRpc(rpc, verbose)) {
+	// 		return new ethers.providers.JsonRpcProvider(rpc)
+	// 	} else {
+	// 		verbose && console.log('Provider is down:', rpc)
+	// 	}
+	// }
+
+	// throw new Error('No alive provider found for chainId ' + chainId)
 }
 
 export async function getContract(
@@ -691,7 +726,7 @@ export async function createLinks({
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
 	const verbose = false
-	const passwords = Array(numberOfLinks).fill(getRandomString(16))
+	const passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 
 	// Prepare the transactions
