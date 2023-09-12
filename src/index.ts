@@ -63,7 +63,10 @@ async function checkRpc(rpc: string, verbose = false) {
 	try {
 		const provider = new ethers.providers.JsonRpcProvider(rpc)
 		// wait for provider to be ready
-		const balance = await timeout(2000, provider.getBalance('0xCEd763C2Ff8d5B726b8a5D480c17C24B6686837F'))
+		console.log('checkRpc provider:', rpc)
+		console.log(await provider.getBlockNumber())
+		console.log(await provider.getNetwork())
+		const balance = await timeout(2000, provider.getBalance('0x0000000000000000000000000000000000000000'))
 		console.log('checkRpc balance:', balance)
 		return true
 	} catch (error) {
