@@ -123,7 +123,7 @@ describe('goerli', function () {
 	const chainId = 5
 	const tokenAmount = 0.0001
 
-	it.only('should create a native link and claim it', async function () {
+	it('should create a native link and claim it', async function () {
 
 		await createAndClaimLink(
 			{

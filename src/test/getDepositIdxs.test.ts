@@ -86,7 +86,7 @@ describe('getDepositIdxs for single event and not batch', function () {
 		// txReceipt2 = data2.result
 	})
 
-	it.only('should return an array of deposit indices from the first batch transaction receipt', async () => {
+	it('should return an array of deposit indices from the first batch transaction receipt', async () => {
 		for (let i = 0; i < txReceipt1.logs.length; i++) {
 			console.log(txReceipt1.logs[i])
 			console.log(txReceipt1.logs[i].topics)

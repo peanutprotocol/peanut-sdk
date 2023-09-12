@@ -32,25 +32,25 @@ describe('detect contract version, function ()', () => {
         txReceipt2 = data2.result
 
         const response3 = await fetch(
-            `https://api-goerli.etherscan.io/api?module=proxy&action=eth_getTransactionReceipt&txhash=0xdb2bcd6a77cc131bd6a0999b4c6a59cb19d30ab9705f36a9d5bea633d3418afd&apikey=${ETHERSCAN_API_KEY}`
+            `https://api-goerli.etherscan.io/api?module=proxy&action=eth_getTransactionReceipt&txhash=0xa1c9462c94aa101994af95f98abb452589733d1030799352818374b7eb6f67a7&apikey=${ETHERSCAN_API_KEY}`
         )
         const data3 = await response3.json()
         if (!data3 || !data3.result) {
             throw new Error('Failed to fetch the second transaction receipt from Etherscan.')
         }
-        txReceipt2 = data2.result
+        txReceipt3 = data3.result
     })
 
     it('detect contract version should return v4', async () => {
         const version = peanut.detectContractVersionFromTxReceipt(txReceipt1, "5") // goerli
         expect(version).toEqual('v4')
     })
-    it.only('detect v3', async () => {
+    it('detect v3', async () => {
         const version = peanut.detectContractVersionFromTxReceipt(txReceipt2, "5") // goerli
         expect(version).toEqual('v3')
     })
     it('detect v4 for batch fn', async () => {
-        const version = peanut.detectContractVersionFromTxReceipt(txReceipt2, "5") // goerli
+        const version = peanut.detectContractVersionFromTxReceipt(txReceipt3, "5") // goerli
         expect(version).toEqual('v4')
     })
 })

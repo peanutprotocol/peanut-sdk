@@ -109,9 +109,7 @@ export async function signAddress(string: string, privateKey: string) {
 
 /**
  * Generates a random string of the specified length
- *
- * @param {number} length - The length of the string to generate
- * @returns {string} - The generated string
+ * TODO: crypto.randomBytes
  */
 export function getRandomString(length: number) {
 	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -124,8 +122,6 @@ export function getRandomString(length: number) {
 
 /**
  * Returns the parameters from the current page url
- *
- * @returns {Object} - The parameters
  */
 export function getParamsFromPageURL() {
 	/* returns the parameters from the current page url */

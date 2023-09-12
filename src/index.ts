@@ -558,21 +558,22 @@ export async function getLinksFromTx({
 export function detectContractVersionFromTxReceipt(txReceipt: any, chainId: string): string {
 	const contractAddresses = Object.values(PEANUT_CONTRACTS[chainId])
 	const contractVersions = Object.keys(PEANUT_CONTRACTS[chainId])
-	const txReceiptContractAddresses = txReceipt.logs.map((log: any) => log.address)
+	const txReceiptContractAddresses = txReceipt.logs.map((log: any) => log.address.toLowerCase())
 	console.log('txReceiptContractAddresses: ', txReceiptContractAddresses)
 	console.log('contractAddresses: ', contractAddresses)
 	console.log('contractVersions: ', contractVersions)
 	console.log(txReceipt)
+
 	// loop through the txReceiptContractAddresses and find the index of the first one that matches
-	const txReceiptContractVersion = contractAddresses.findIndex((contractAddress) =>
-		txReceiptContractAddresses.includes(contractAddress)
-	)
-	console.log('txReceiptContractVersion: ', txReceiptContractVersion)
+	// const txReceiptContractVersion = contractAddresses.findIndex((contractAddress) =>
+	// 	txReceiptContractAddresses.includes(contractAddress.toLowerCase())
+	// )
+	// console.log('txReceiptContractVersion: ', txReceiptContractVersion)
 
 	let txReceiptContractVersion2 = -1;
 
 	for (let i = 0; i < contractAddresses.length; i++) {
-		if (txReceiptContractAddresses.includes(contractAddresses[i])) {
+		if (txReceiptContractAddresses.includes(contractAddresses[i].toLowerCase())) {
 			txReceiptContractVersion2 = i;
 			break;
 		}
@@ -685,8 +686,9 @@ export async function createLinks({
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
-	linkDetails = validateLinkDetails(linkDetails, [], numberOfLinks)
 	const passwords = Array(numberOfLinks).fill(getRandomString(16))
+	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
+
 
 	// Prepare the transactions
 	const prepareTxsResponse = await prepareTxs({
