@@ -14,7 +14,7 @@ async function createAndClaimLink(options: interfaces.ICreateLinkParams, inbetwe
 	if (response.createdLink.link && response.success.success) {
 		await waitForTransaction(options.structSigner.signer.provider, response.createdLink.txHash)
 	}
-	console.log('Link created: ' + response.createdLink)
+	console.log('Link created: ' + response.createdLink.link)
 	await new Promise((res) => setTimeout(res, inbetweenDelay)) // Wait for 1 second before claiming
 	return peanut.claimLink({
 		signer: options.structSigner.signer,
@@ -44,7 +44,7 @@ describe('optimism goerli', function () {
 	const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL) // v5
 	const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismGoerliProvider)
 
-	it('should create a native link and claim it', async function () {
+	it.only('should create a native link and claim it', async function () {
 		await createAndClaimLink({
 			structSigner: {
 				signer: optimismGoerliWallet,

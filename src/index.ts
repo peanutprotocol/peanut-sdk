@@ -84,9 +84,8 @@ export async function getDefaultProvider(chainId: string, verbose = false) {
 		var rpc = rpcs[i]
 
 		// Skip if the rpc string contains '${'
-		// if (rpc.includes('${')) continue
-		// for debug: replace and include infura api key: 4478656478ab4945a1b013fb1d8f20fd
-		rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd')
+		if (rpc.includes('${')) continue
+		// rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
 
 		verbose && console.log('Checking rpc', rpc)
 		if (await checkRpc(rpc, verbose)) {
@@ -272,7 +271,7 @@ async function setFeeOptions({
 	maxPriorityFeePerGasMultiplier?: number
 	verbose?: boolean
 }) {
-	eip1559 = false
+	// eip1559 = true
 	const verbose = true // TODO: move this to initializing the sdk
 	verbose && console.log('Setting tx options...')
 	let feeData
@@ -348,6 +347,7 @@ async function setFeeOptions({
 
 async function estimateGasLimit(contract: any, functionName: string, params: any, txOptions: any, multiplier = 1.3) {
 	try {
+		console.log('called estimate gas limit. contract.address:', contract.address, params, txOptions)
 		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
 		return BigInt(Math.floor(Number(estimatedGas) * multiplier))
 	} catch (error) {
@@ -429,11 +429,14 @@ export async function prepareTxs({
 
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
+	// multiply tokenAmountBigNum by numberOfLinks
+	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks);
+
 	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
 	if (linkDetails.tokenType == 0) {
 		txOptions = {
 			...txOptions,
-			value: tokenAmountBigNum,
+			value: totalTokenAmount,
 		}
 	} else if (linkDetails.tokenType == 1) {
 		// TODO: check for erc721 and erc1155
@@ -471,6 +474,7 @@ export async function prepareTxs({
 
 	let contract
 	let depositParams
+	let depositTx
 	if (numberOfLinks == 1) {
 		depositParams = [
 			linkDetails.tokenAddress,
@@ -484,6 +488,7 @@ export async function prepareTxs({
 		if (estimatedGasLimit) {
 			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 		}
+		depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
 	} else {
 		depositParams = [
 			PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion], // The address of the PeanutV4 contract
@@ -498,9 +503,8 @@ export async function prepareTxs({
 		if (estimatedGasLimit) {
 			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 		}
+		depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
 	}
-
-	const depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
 	unsignedTxs.push(depositTx)
 
 	return { success: { success: true }, unsignedTxs }
@@ -510,11 +514,12 @@ export async function signAndSubmitTx({
 	structSigner,
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
-	console.log("unsigned tx: ", unsignedTx)
+	const verbose = false
+	verbose && console.log("unsigned tx: ", unsignedTx)
 	// const signedTx = await structSigner.signer.signTransaction(unsignedTx)
 	// console.log("signed tx: ", signedTx)
 	const tx = await structSigner.signer.sendTransaction(unsignedTx)
-	console.log("tx: ", tx)
+	verbose && console.log("tx: ", tx)
 	await tx.wait()
 
 	return { txHash: tx.hash, success: { success: true } }
@@ -559,28 +564,17 @@ export function detectContractVersionFromTxReceipt(txReceipt: any, chainId: stri
 	const contractAddresses = Object.values(PEANUT_CONTRACTS[chainId])
 	const contractVersions = Object.keys(PEANUT_CONTRACTS[chainId])
 	const txReceiptContractAddresses = txReceipt.logs.map((log: any) => log.address.toLowerCase())
-	console.log('txReceiptContractAddresses: ', txReceiptContractAddresses)
-	console.log('contractAddresses: ', contractAddresses)
-	console.log('contractVersions: ', contractVersions)
-	console.log(txReceipt)
 
-	// loop through the txReceiptContractAddresses and find the index of the first one that matches
-	// const txReceiptContractVersion = contractAddresses.findIndex((contractAddress) =>
-	// 	txReceiptContractAddresses.includes(contractAddress.toLowerCase())
-	// )
-	// console.log('txReceiptContractVersion: ', txReceiptContractVersion)
-
-	let txReceiptContractVersion2 = -1;
+	let txReceiptContractVersion = -1;
 
 	for (let i = 0; i < contractAddresses.length; i++) {
 		if (txReceiptContractAddresses.includes(contractAddresses[i].toLowerCase())) {
-			txReceiptContractVersion2 = i;
+			txReceiptContractVersion = i;
 			break;
 		}
 	}
 
-	console.log('txReceiptContractVersion2: ', txReceiptContractVersion2)
-	return contractVersions[txReceiptContractVersion2]
+	return contractVersions[txReceiptContractVersion]
 }
 
 async function getTxReceiptFromHash(
@@ -686,6 +680,7 @@ export async function createLinks({
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
+	const verbose = false
 	const passwords = Array(numberOfLinks).fill(getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 
@@ -699,10 +694,12 @@ export async function createLinks({
 		passwords: passwords,
 	})
 
+	verbose && console.log("prepareTxsResponse: ", prepareTxsResponse)
 	// Sign and submit the transactions
 	const signedTxs = await Promise.all(
 		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
+	verbose && console.log("signedTxs: ", signedTxs)
 
 	// Get the links from the transactions
 	const links = (await getLinksFromTx({ linkDetails, txHash: signedTxs[signedTxs.length - 1].txHash, passwords })).links
@@ -840,52 +837,8 @@ export async function claimLinkSender({
 	link: string
 	verbose?: boolean
 }) {
-	// TOD
-	// raise error, not implemented yet
+	// TODO:
 	throw new Error('Not implemented yet')
-	// assert(signer, 'signer arg is required')
-	// assert(link, 'link arg is required')
-
-	// signer = await getAbstractSigner(signer)
-
-	// const params = getParamsFromLink(link)
-	// const chainId = params.chainId
-	// const contractVersion = params.contractVersion
-	// const depositIdx = params.depositIdx
-	// const password = params.password
-	// if (recipient == null) {
-	// 	recipient = await signer.getAddress()
-
-	// 	verbose && console.log('recipient not provided, using signer address: ', recipient)
-	// }
-	// const keys = generateKeysFromString(password) // deterministically generate keys from password
-	// const contract = await getContract(chainId, signer, contractVersion)
-
-	// // cryptography
-	// var addressHash = solidityHashAddress(recipient)
-	// // var addressHashBinary = ethers.getBytes(addressHash); // v6
-	// var addressHashBinary = ethers.utils.arrayify(addressHash) // v5
-	// verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
-	// var addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	// var signature = await signAddress(recipient, keys.privateKey) // sign with link keys
-
-	// if (verbose) {
-	// 	// print the params
-	// 	console.log('params: ', params)
-	// 	console.log('addressHash: ', addressHash)
-	// 	console.log('addressHashEIP191: ', addressHashEIP191)
-	// 	console.log('signature: ', signature)
-	// }
-
-	// // TODO: use createClaimPayload instead
-
-	// // withdraw the deposit
-	// // address hash is hash(prefix + hash(address))
-	// const tx = await contract.withdrawDeposit(depositIdx, recipient, addressHashEIP191, signature)
-	// console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
-	// const txReceipt = await tx.wait()
-
-	// return txReceipt
 }
 
 async function createClaimPayload(link: string, recipientAddress: string) {
