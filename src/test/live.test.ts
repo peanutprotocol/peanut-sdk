@@ -1,25 +1,25 @@
 // // import peanut from '@squirrel-labs/peanut-sdk'; // v6
 // import peanut from '@squirrel-labs/peanut-sdk'; // v5
 import peanut from '../index' // import directly from source code
-import { ethers } from 'ethers'
+import { ethers } from 'ethersv5'
+import { expect, describe, it } from '@jest/globals'
+import * as interfaces from '../consts/interfaces.consts'
 import dotenv from 'dotenv'
-
-// load .env file
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
 
-async function createAndClaimLink(options, inbetweenDelay = 1000) {
-	const { link, txReceipt } = await peanut.createLink(options)
-	if (txReceipt && txReceipt.hash) {
-		await waitForTransaction(options.signer.provider, txReceipt.hash)
+async function createAndClaimLink(options: interfaces.ICreateLinkParams, inbetweenDelay = 1000) {
+	const response = await peanut.createLink(options)
+	if (response.createdLink.link && response.success.success) {
+		await waitForTransaction(options.structSigner.signer.provider, response.createdLink.txHash)
 	}
-	console.log('Link created: ' + link)
+	console.log('Link created: ' + response.createdLink.link)
 	await new Promise((res) => setTimeout(res, inbetweenDelay)) // Wait for 1 second before claiming
 	return peanut.claimLink({
-		signer: options.signer,
-		link: link,
-		verbose: options.verbose,
+		signer: options.structSigner.signer,
+		link: response.createdLink.link[0],
+		verbose: true,
 	})
 }
 
@@ -42,16 +42,19 @@ describe('optimism goerli', function () {
 
 	// const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v6
 	const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL) // v5
-	const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
+	const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismGoerliProvider)
 
-	it('should create a native link and claim it', async function () {
+	it.only('should create a native link and claim it', async function () {
 		await createAndClaimLink({
-			signer: optimismGoerliWallet,
-			chainId: 420,
-			tokenAmount: 0.00001,
-			tokenType: 0,
-			verbose: true,
-		})
+			structSigner: {
+				signer: optimismGoerliWallet,
+			},
+			linkDetails: {
+				chainId: 420,
+				tokenAmount: 0.00001,
+				tokenType: 0,
+			},
+		}, 9000)
 		// Add assertion here
 	}, 60000)
 	// it('should create an erc20 link and claim it', async function () {
@@ -62,36 +65,50 @@ describe('optimism goerli', function () {
 describe('polygon', function () {
 	const POLYGON_RPC_URL = 'https://polygon-mainnet.infura.io/v3/' + process.env.INFURA_API_KEY
 	const polygonProvider = new ethers.providers.JsonRpcProvider(POLYGON_RPC_URL)
-	const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, polygonProvider)
+	const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)
 	const chainId = 137
 	const tokenAmount = 0.0001
 
+	console.log('getting fee data in test file')
+	console.log(POLYGON_RPC_URL)
+
 	it('should create a native link and claim it', async function () {
+		console.log('hello')
+
 		await createAndClaimLink(
 			{
-				signer: polygonWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenType: 0,
-				verbose: true,
+				structSigner: {
+					signer: polygonWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0,
+				}
 			},
 			9000
 		)
+
+
 	}, 60000)
 	it('polygon should create an erc20 link and claim it', async function () {
 		const tokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' // polygon usdc
 		const tokenDecimals = 6
 
 		// create link
+
 		await createAndClaimLink(
 			{
-				signer: polygonWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenDecimals: tokenDecimals,
-				tokenAddress: tokenAddress,
-				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-				verbose: true,
+				structSigner: {
+					signer: polygonWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenDecimals: tokenDecimals,
+					tokenAddress: tokenAddress,
+					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				}
 			},
 			9000
 		)
@@ -102,20 +119,25 @@ describe('goerli', function () {
 	const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
 	// // const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6
 	const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL) // v5
-	const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
+	const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 	const chainId = 5
 	const tokenAmount = 0.0001
 
 	it('should create a native link and claim it', async function () {
+
 		await createAndClaimLink(
 			{
-				signer: goerliWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenType: 0,
-				verbose: true,
+				structSigner: {
+					signer: goerliWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				}
 			},
-			7000
+			9000
 		)
 	}, 60000)
 	it('should create an erc20 link and claim it', async function () {
@@ -125,27 +147,37 @@ describe('goerli', function () {
 		// create link
 		await createAndClaimLink(
 			{
-				signer: goerliWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenDecimals: tokenDecimals,
-				tokenAddress: tokenAddress,
-				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-				verbose: true,
+				structSigner: {
+					signer: goerliWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+
+					tokenDecimals: tokenDecimals,
+					tokenAddress: tokenAddress,
+					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155		
+				}
 			},
-			7000
+			9000
 		)
 	}, 180000)
 	it('should fail when no tokenAddress', async function () {
 		try {
-			await createAndClaimLink({
-				signer: goerliWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenDecimals: 18,
-				tokenType: 1,
-				verbose: true,
-			})
+			await createAndClaimLink(
+				{
+					structSigner: {
+						signer: goerliWallet,
+					},
+					linkDetails: {
+						chainId: chainId,
+						tokenAmount: tokenAmount,
+						tokenDecimals: 18,
+						tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155		
+					}
+				},
+				9000
+			)
 			throw new Error('Test should have thrown an error but did not.')
 		} catch (e) {
 			expect(e.message).toContain('tokenAddress must be provided for non-native tokens') // Replace with expected error message
@@ -153,12 +185,17 @@ describe('goerli', function () {
 	}, 60000)
 	it('API gasless claim test', async function () {
 		// create link
-		const { link } = await peanut.createLink({
-			signer: goerliWallet,
-			chainId: chainId,
-			tokenAmount: tokenAmount,
-			tokenType: 0,
-			verbose: true,
+		const response = await peanut.createLink({
+			structSigner: {
+				signer: goerliWallet,
+
+			},
+			linkDetails: {
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenType: 0,
+			},
+
 		})
 
 		// wait for 7 seconds
@@ -166,9 +203,10 @@ describe('goerli', function () {
 
 		// claim link using api
 		const receiverAddress = goerliWallet.address
-		const apiToken = process.env.PEANUT_DEV_API_KEY
+		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		// const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken, true, 'http://127.0.0.1:5001/claim')
-		const res = await peanut.claimLinkGasless(link, receiverAddress, apiToken, true)
+		const res = await peanut.claimLinkGasless({ link: response.createdLink.link[0], recipientAddress: receiverAddress, APIKey: apiToken })
+
 		console.log(res)
 	}, 60000)
 
@@ -177,9 +215,9 @@ describe('goerli', function () {
 		const link = 'https://peanut.to/claim?c=5&v=v3&i=31&p=FjEditsxpzOafssaffsafsasx6IrI&t=sdk'
 
 		const receiverAddress = goerliWallet.address
-		const apiToken = process.env.PEANUT_DEV_API_KEY
+		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		try {
-			await peanut.claimLinkGasless(link, receiverAddress, apiToken)
+			await peanut.claimLinkGasless({ link: link, recipientAddress: receiverAddress, APIKey: apiToken })
 			throw new Error('Test should have thrown an error but did not.')
 		} catch (e) {
 			console.log(e)
@@ -193,17 +231,21 @@ describe('bnb', function () {
 		let tokenAmount = 0.0000455228296990941
 		const BNB_RPC_URL = 'https://bsc-dataseed.binance.org/'
 		const bnbProvider = new ethers.providers.JsonRpcProvider(BNB_RPC_URL)
-		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, bnbProvider)
+		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', bnbProvider)
 		const chainId = 56
 		await createAndClaimLink(
 			{
-				signer: bnbWallet,
-				chainId: chainId,
-				tokenAmount: tokenAmount,
-				tokenType: 0,
-				verbose: true,
+				structSigner: {
+					signer: bnbWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155		
+				}
 			},
-			7000
+			9000
 		)
+
 	}, 60000)
 })

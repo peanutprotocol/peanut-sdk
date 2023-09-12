@@ -109,9 +109,7 @@ export async function signAddress(string: string, privateKey: string) {
 
 /**
  * Generates a random string of the specified length
- *
- * @param {number} length - The length of the string to generate
- * @returns {string} - The generated string
+ * TODO: crypto.randomBytes
  */
 export function getRandomString(length: number) {
 	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -124,8 +122,6 @@ export function getRandomString(length: number) {
 
 /**
  * Returns the parameters from the current page url
- *
- * @returns {Object} - The parameters
  */
 export function getParamsFromPageURL() {
 	/* returns the parameters from the current page url */
@@ -271,7 +267,8 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
  * @param {string} contractAddress - The contract address
  * @returns {Array} - The deposit indices
  */
-export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string) {
+export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
+	const verbose = true
 	const logs = txReceipt.logs
 	const depositIdxs = []
 
@@ -284,7 +281,7 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const contractAddress = _PEANUT_CONTRACTS[chainId][contractVersion]
-	console.log('contractAddress: ', contractAddress)
+	console.log(contractAddress, contractVersion, chainId)
 
 	for (let i = 0; i < logs.length; i++) {
 		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase() && logs[i].topics[0] === logTopic) {

@@ -1,13 +1,23 @@
 import { ethers } from 'ethersv5'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
 
 //General export interface s and enums
 export interface IPeanutSigner {
-	signer: ethers.providers.JsonRpcSigner
+	signer: ethers.Signer
 	nonce?: number
 	maxFeePerGas?: number
 	maxPriorityFeePerGas?: number
 	gasLimit?: number
 	eip1559?: boolean
+}
+
+export interface ITxOptions {
+	nonce?: number
+	value?: ethers.BigNumber
+	gasLimit?: ethers.BigNumber
+	gasPrice?: ethers.BigNumber
+	maxFeePerGas?: ethers.BigNumber
+	maxPriorityFeePerGas?: ethers.BigNumber
 }
 
 enum EPeanutLinkType {
@@ -24,8 +34,7 @@ export interface IPeanutLinkDetails {
 	tokenType: EPeanutLinkType
 	tokenAddress?: string
 	tokenId?: number
-	tokenDecimal?: number
-	password?: string
+	tokenDecimals?: number
 	baseUrl?: string
 	trackId?: string
 }
@@ -42,7 +51,7 @@ export interface IPeanutLinkChainDetails {
 }
 
 export interface IPeanutUnsignedTransactions {
-	unsignedTxs: any[] // change this any type to correct type
+	unsignedTxs: TransactionRequest // change this any type to correct type
 }
 
 export interface IReturnSuccessObject {
@@ -56,6 +65,7 @@ export interface ICreateLinkParams {
 	structSigner: IPeanutSigner
 	linkDetails: IPeanutLinkDetails
 	peanutContractVersion?: string
+	password?: string
 }
 export interface ICreateLinkResponse {
 	createdLink: ICreatedPeanutLink
@@ -63,8 +73,9 @@ export interface ICreateLinkResponse {
 }
 
 //createLinks
-export interface ICreateLinksParams extends ICreateLinkParams {
-	NumberOfLinks: number
+export interface ICreateLinksParams extends Omit<ICreateLinkParams, 'password'> {
+	numberOfLinks: number
+	passwords?: string[]
 }
 
 export interface ICreateLinksResponse {
@@ -97,17 +108,24 @@ export interface IClaimLinkResponse {
 }
 
 //prepareCreatetxs
-export interface IPrepareCreateTxsParams extends ICreateLinkParams {} // we can remove this export interface  since it is the same as ICreateLinkParams
+export interface IPrepareCreateTxsParams {
+	address: string
+	linkDetails: IPeanutLinkDetails
+	peanutContractVersion?: string
+	batcherContractVersion?: string
+	numberOfLinks?: number
+	passwords: string[]
+}
 
 export interface IPrepareCreateTxsResponse {
-	unsignedTxs: IPeanutUnsignedTransactions
+	unsignedTxs: TransactionRequest[]
 	success: IReturnSuccessObject
 }
 
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
-	unsignedTx: IPeanutUnsignedTransactions
+	unsignedTx: TransactionRequest
 }
 
 export interface ISignAndSubmitTxResponse {
@@ -116,28 +134,30 @@ export interface ISignAndSubmitTxResponse {
 }
 
 //getLink
-export interface IGetLinkParams {
+export interface IGetLinkFromTxParams {
 	linkDetails: IPeanutLinkDetails
 	txHash: string
+	signerOrProvider?: ethers.Signer | ethers.providers.Provider
+	passwords: string[]
 }
 
-export interface IGetLinkResponse {
-	link: string
+export interface IGetLinkFromTxResponse {
+	links: string[]
 	success: IReturnSuccessObject
 }
 
 //prepareClaimTx
-export interface IPrapareClaimTxParams extends IClaimLinkParams {} // we can remove this export interface  since it is the same as IClaimLinkParams
+export interface IPrepareClaimTxParams extends IClaimLinkParams { }
 
-export interface IPrapareClaimTxResponse {
-	unsignedTx: IPeanutUnsignedTransactions
+export interface IPrepareClaimTxResponse {
+	unsignedTx: TransactionRequest
 	success: IReturnSuccessObject
 }
 
 //getLinkDetails
 export interface IGetLinkDetailsParams {
 	link: string
-	RPCProvider?: string
+	provider?: ethers.providers.Provider
 }
 
 export interface IGetLinkDetailsResponse {
