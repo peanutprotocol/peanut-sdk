@@ -23,8 +23,8 @@ export function greeting() {
  * @returns {Object} - An object containing the address and privateKey
  */
 export function generateKeysFromString(string: string) {
-	var privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)) // v5
-	var wallet = new ethers.Wallet(privateKey)
+	const privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)) // v5
+	const wallet = new ethers.Wallet(privateKey)
 	return {
 		address: wallet.address,
 		privateKey: privateKey,
@@ -33,9 +33,6 @@ export function generateKeysFromString(string: string) {
 
 /**
  * Converts a string to bytes, pads it to 32 bytes and hashes it
- *
- * @param {string} str - The string to convert and hash
- * @returns {string} - The hashed string
  */
 export function hash_string(str: string) {
 	//@HUGO: I've added in a .toString() here, but I'm not sure if it's good
@@ -49,23 +46,14 @@ export function hash_string(str: string) {
 /**
  * Signs a message with a private key and returns the signature
  * THIS SHOULD BE AN UNHASHED, UNPREFIXED MESSAGE
- *
- * @param {string} message - The message to sign
- * @param {string} privateKey - The private key to use for signing
- * @returns {string} - The signature
  */
 export async function signMessageWithPrivatekey(message: string, privateKey: string) {
-	var signer = new ethers.Wallet(privateKey)
+	const signer = new ethers.Wallet(privateKey)
 	return signer.signMessage(message) // this calls ethers.hashMessage and prefixes the hash
 }
 
 /**
  * Verifies a signature with a public key and returns true if valid
- *
- * @param {string} message - The message that was signed
- * @param {string} signature - The signature to verify
- * @param {string} address - The public key to use for verification
- * @returns {boolean} - True if the signature is valid, false otherwise
  */
 export function verifySignature(message: string, signature: string, address: string) {
 	const messageSigner = ethers.utils.verifyMessage(message, signature) // v5
@@ -74,9 +62,6 @@ export function verifySignature(message: string, signature: string, address: str
 
 /**
  * Adds the EIP191 prefix to a message and hashes it same as solidity
- *
- * @param {Uint8Array} bytes - The bytes to prefix and hash
- * @returns {string} - The hashed bytes
  */
 export function solidityHashBytesEIP191(bytes: any) {
 	return ethers.utils.hashMessage(bytes) // v5
@@ -84,9 +69,6 @@ export function solidityHashBytesEIP191(bytes: any) {
 
 /**
  * Hashes an address to a 32 byte hex string
- *
- * @param {string} address - The address to hash
- * @returns {string} - The hashed address
  */
 export function solidityHashAddress(address: string) {
 	return ethers.utils.solidityKeccak256(['address'], [address]) // v5
@@ -94,16 +76,12 @@ export function solidityHashAddress(address: string) {
 
 /**
  * Hashes a plain address, adds an Ethereum message prefix, hashes it again and then signs it
- *
- * @param {string} string - The plain address to hash and sign
- * @param {string} privateKey - The private key to use for signing
- * @returns {string} - The signature
  */
 export async function signAddress(string: string, privateKey: string) {
 	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]) // v5
 	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
-	var signer = new ethers.Wallet(privateKey)
-	var signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
+	const signer = new ethers.Wallet(privateKey)
+	const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
 	return signature
 }
 
@@ -126,10 +104,10 @@ export function getRandomString(length: number) {
 export function getParamsFromPageURL() {
 	/* returns the parameters from the current page url */
 	const params = new URLSearchParams(window.location.search)
-	var chainId = params.get('c') // can be chain name or chain id
+	const chainId = params.get('c') // can be chain name or chain id
 	chainId = CHAIN_MAP[String(chainId) as keyof typeof CHAIN_MAP].toString()
 	const contractVersion = params.get('v')
-	var depositIdx = params.get('i') ?? ''
+	const depositIdx = params.get('i') ?? ''
 	depositIdx = parseInt(depositIdx).toString()
 	const password = params.get('p')
 
@@ -138,10 +116,6 @@ export function getParamsFromPageURL() {
 
 /**
  * Returns the parameters from a link
- *
- * @param {string} link - The link to get the parameters from
- *
- * @returns {Object} - The parameters from the link
  */
 export function getParamsFromLink(link: string): {
 	chainId: number
@@ -161,8 +135,8 @@ export function getParamsFromLink(link: string): {
 
 	const params = new URLSearchParams(search)
 
-	var _chainId: string | number = params.get('c') ?? '' // can be chain name or chain id
-	var chainId: number = 0
+	const _chainId: string | number = params.get('c') ?? '' // can be chain name or chain id
+	let chainId: number = 0
 	// if can be casted to int, then it's a chain id
 	if (parseInt(_chainId)) {
 		chainId = parseInt(_chainId)
@@ -172,7 +146,7 @@ export function getParamsFromLink(link: string): {
 	}
 
 	const contractVersion = params.get('v') ?? ''
-	var depositIdx: string | number = params.get('i') ?? ''
+	let depositIdx: string | number = params.get('i') ?? ''
 	depositIdx = parseInt(depositIdx)
 	const password = params.get('p') ?? ''
 	let trackId = '' // optional
@@ -185,14 +159,6 @@ export function getParamsFromLink(link: string): {
 
 /**
  * Returns a link from the given parameters
- *
- * @param {number|string} chainId - The chainId to use for the link
- * @param {string} contractVersion - The contract version to use for the link
- * @param {number} depositIdx - The deposit index to use for the link
- * @param {string} password - The password to use for the link
- * @param {string} baseUrl - The base URL to use for the link
- * @param {string} trackId - The trackId to use for the link
- * @returns {string} - The generated link
  */
 export function getLinkFromParams(
 	chainId: number | string,
@@ -214,10 +180,6 @@ export function getLinkFromParams(
 
 /**
  * Returns the deposit index from a tx receipt
- *
- * @param {Object} txReceipt - The transaction receipt to get the deposit index from
- * @param {number|string} chainId - The chainId of the contract
- * @returns {number} - The deposit index
  */
 export function getDepositIdx(txReceipt: any, chainId: number | string, contractVersion: string) {
 	/* returns the deposit index from a tx receipt */
@@ -261,14 +223,9 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
 
 /**
  * Returns an array of deposit indices from a batch transaction receipt
- *
- * @param {Object} txReceipt - The transaction receipt to get the deposit indices from
- * @param {number|string} chainId - The chainId of the contract
- * @param {string} contractAddress - The contract address
- * @returns {Array} - The deposit indices
  */
 export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
-	const verbose = true
+	// const verbose = true
 	const logs = txReceipt.logs
 	const depositIdxs = []
 

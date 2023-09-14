@@ -13,6 +13,7 @@ coverage/
 docs/
 data/**.py
 src/test/
+src/
 
 # config files
 *.conf.js

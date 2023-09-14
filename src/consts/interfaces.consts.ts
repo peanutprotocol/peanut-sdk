@@ -115,6 +115,7 @@ export interface IPrepareCreateTxsParams {
 	batcherContractVersion?: string
 	numberOfLinks?: number
 	passwords: string[]
+	provider?: ethers.providers.Provider
 }
 
 export interface IPrepareCreateTxsResponse {
@@ -137,7 +138,7 @@ export interface ISignAndSubmitTxResponse {
 export interface IGetLinkFromTxParams {
 	linkDetails: IPeanutLinkDetails
 	txHash: string
-	signerOrProvider?: ethers.Signer | ethers.providers.Provider
+	provider?: ethers.providers.Provider
 	passwords: string[]
 }
 
