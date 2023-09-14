@@ -84,8 +84,8 @@ const nodeConfig = {
 		filename: 'peanut-sdk.node.js',
 		path: path.resolve(__dirname, 'dist'),
 		library: {
-			type: 'commonjs2',
-			// type: 'module',
+			// type: 'commonjs2',
+			type: 'module',
 		},
 	},
 	target: ['node', 'es2020'],

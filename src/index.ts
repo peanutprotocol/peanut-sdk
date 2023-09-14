@@ -760,30 +760,18 @@ async function createLinks({
  * Claims the contents of a link
  */
 async function claimLink({
-	signer,
+	structSigner,
 	link,
 	recipient = null,
-	verbose = false,
-	maxFeePerGas = null,
-	maxPriorityFeePerGas = null,
-	gasLimit = null,
-	eip1559 = true,
-}: {
-	signer: ethers.Signer
-	link: string
-	recipient?: string | null
-	verbose?: boolean
-	maxFeePerGas?: number | null
-	maxPriorityFeePerGas?: number | null
-	gasLimit?: number | null
-	eip1559?: boolean
-}) {
+	// maxFeePerGas = null,
+	// maxPriorityFeePerGas = null,
+	// gasLimit = null,
+	// eip1559 = true,
+}: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+	const verbose = true
 	// TODO: split into 2
 
-	// claims the contents of a link
-	assert(signer, 'signer arg is required')
-	assert(link, 'link arg is required')
-
+	const signer = structSigner.signer
 	const params = getParamsFromLink(link)
 	const chainId = params.chainId
 	const contractVersion = params.contractVersion
@@ -816,11 +804,11 @@ async function claimLink({
 	txOptions = await setFeeOptions({
 		txOptions,
 		provider: signer.provider,
-		eip1559,
-		maxFeePerGas,
-		maxPriorityFeePerGas,
-		gasLimit,
-		verbose,
+		// eip1559,
+		// maxFeePerGas,
+		// maxPriorityFeePerGas,
+		// gasLimit,
+		// verbose,
 	})
 
 	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
@@ -832,7 +820,10 @@ async function claimLink({
 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
 	const txReceipt = await tx.wait()
 
-	return txReceipt
+	return {
+		success: { success: true },
+		txHash: txReceipt.transactionHash,
+	}
 }
 
 /**
@@ -1083,6 +1074,9 @@ const peanut = {
 	createLinks,
 	claimLink,
 	claimLinkGasless,
+	prepareTxs,
+	signAndSubmitTx,
+	getLinksFromTx,
 	// approveSpendERC20,
 	// approveSpendERC721,
 	// approveSpendERC1155,
@@ -1103,17 +1097,11 @@ export default peanut
 export {
 	peanut,
 	greeting,
-	generateKeysFromString,
-	hash_string,
-	signMessageWithPrivatekey,
-	verifySignature,
-	solidityHashBytesEIP191,
-	solidityHashAddress,
-	signAddress,
-	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
 	getParamsFromPageURL,
-	getDepositIdx,
-	getDepositIdxs,
+	prepareTxs,
+	signAndSubmitTx,
+	getLinksFromTx,
+	createLink,
 }
