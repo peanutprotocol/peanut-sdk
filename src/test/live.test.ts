@@ -17,9 +17,10 @@ async function createAndClaimLink(options: interfaces.ICreateLinkParams, inbetwe
 	console.log('Link created: ' + response.createdLink.link)
 	await new Promise((res) => setTimeout(res, inbetweenDelay)) // Wait for 1 second before claiming
 	return peanut.claimLink({
-		signer: options.structSigner.signer,
+		structSigner: {
+			signer: options.structSigner.signer,
+		},
 		link: response.createdLink.link[0],
-		verbose: true,
 	})
 }
 

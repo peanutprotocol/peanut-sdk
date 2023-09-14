@@ -14,6 +14,7 @@ docs/
 data/**.py
 src/test/
 src/
+src/data/package.json
 bun.build.js
 tsconfig.json
 tsconfig.tsbuildinfo

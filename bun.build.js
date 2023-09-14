@@ -20,7 +20,7 @@ await Bun.build({
 	target: 'browser',
 	sourcemap: 'inline',
 	minify: false,
-	naming: './dist/peanut-sdk.browser.js',
+	naming: 'bun.peanut-sdk.browser.js',
 	// plugins: ['@babel/plugin-syntax-dynamic-import', '@babel/plugin-syntax-import-assertions'],
 })
 
@@ -31,6 +31,6 @@ await Bun.build({
 	target: 'node',
 	sourcemap: 'inline',
 	minify: false,
-	naming: './dist/peanut-sdk.node.js',
+	naming: 'bun.peanut-sdk.node.js',
 	// plugins: ['@babel/plugin-syntax-dynamic-import', '@babel/plugin-syntax-import-assertions'],
 })

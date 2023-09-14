@@ -101,7 +101,6 @@ export interface IClaimLinkParams {
 	structSigner: IPeanutSigner
 	link: string
 	recipient?: string
-	
 }
 
 export interface IClaimLinkResponse {

@@ -13,4 +13,16 @@ describe('checkRpc & getDefaultProvider', function () {
 		const balance = await provider.getBalance(ethers.constants.AddressZero)
 		console.log('balance: ', balance)
 	})
+	it('getDefaultProvider goerli', async function () {
+		const provider = await peanut.getDefaultProvider('5')
+		// try getting block number and balance of zero adddress
+		const blockNumber = await provider.getBlockNumber()
+		expect(blockNumber).toBeGreaterThan(0)
+		const balance = await provider.getBalance(ethers.constants.AddressZero)
+		console.log('balance: ', balance)
+	})
+	it('checkRpc goerli', async function () {
+		const LIVE_RPC_URL = 'https://eth.llamarpc.com'
+		expect(await peanut.checkRpc(LIVE_RPC_URL)).toBeTruthy
+	})
 })

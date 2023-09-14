@@ -49,21 +49,16 @@ import * as interfaces from './consts/interfaces.consts.ts'
 // 	return signer
 // }
 
-function timeout(ms: number, promise: Promise<any>) {
+function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
 	return new Promise((resolve, reject) => {
 		const timer = setTimeout(() => {
 			reject(new Error(`Timed out after ${ms} ms`))
 		}, ms)
 
 		promise
-			.then((value) => {
-				clearTimeout(timer)
-				resolve(value)
-			})
-			.catch((err) => {
-				clearTimeout(timer)
-				reject(err)
-			})
+			.then(resolve)
+			.catch(reject)
+			.finally(() => clearTimeout(timer))
 	})
 }
 
@@ -71,14 +66,19 @@ async function checkRpc(rpc: string): Promise<boolean> {
 	console.log('checkRpc rpc:', rpc)
 
 	try {
-		const provider = new ethers.providers.JsonRpcProvider(rpc)
-		await timeout(
-			2000,
-			new Promise((resolve, reject) => {
-				provider.ready // added this, it hangs forever
-				provider.getBalance('0x0000000000000000000000000000000000000000').then(resolve).catch(reject)
-			})
-		)
+		// Use the timeout function to wrap the fetchGetBalance call and give it a timeout.
+		const response = await timeout(2000, fetchGetBalance(rpc))
+
+		// If the JSON RPC response contains an error, we can consider it a failure.
+		if (response.error) {
+			console.log('JSON RPC Error:', response.error.message)
+			return false
+		}
+
+		// check balance is larger than 0
+		// TODO:
+
+		// This will be a successful RPC if the result (the balance in this case) is returned.
 		return true
 	} catch (error) {
 		console.log('Error checking provider:', rpc, 'Error:', error)
@@ -86,54 +86,53 @@ async function checkRpc(rpc: string): Promise<boolean> {
 	}
 }
 
+async function fetchGetBalance(rpcUrl: string) {
+	const res = await fetch(rpcUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			jsonrpc: '2.0',
+			method: 'eth_getBalance',
+			params: ['0x0000000000000000000000000000000000000000', 'latest'],
+			id: 1,
+		}),
+	})
+	const json = await res.json()
+	return json
+}
+
 /**
  * Returns the default provider for a given chainId
  */
-async function getDefaultProvider(chainId: string, verbose = false) {
+async function getDefaultProvider(chainId: string, verbose = false): Promise<ethers.providers.JsonRpcProvider> {
 	verbose && console.log('Getting default provider for chainId ', chainId)
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
 	verbose && console.log('rpcs', rpcs)
 
-	let i = 0
-	while (i < rpcs.length) {
-		let rpc = rpcs[i]
-
-		// Skip if the rpc string contains '${'
-		// if (rpc.includes('${')) continue
+	// Map each RPC URL to a promise that checks its validity.
+	const checkPromises = rpcs.map((rpc) => {
+		// If the RPC string contains a placeholder for the API key, replace it.
 		rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+		63
+		return checkRpc(rpc).then((isValid) => {
+			verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
+			return { isValid, rpc }
+		})
+	})
 
-		verbose && console.log('Checking rpc', rpc)
+	// Wait for all RPC URLs to be checked.
+	const results = await Promise.allSettled(checkPromises)
 
-		const isRpcValid = await checkRpc(rpc)
-		if (isRpcValid) {
-			return new ethers.providers.JsonRpcProvider(rpc)
-		} else {
-			verbose && console.log('Provider is down:', rpc)
+	for (const result of results) {
+		if (result.status === 'fulfilled' && result.value.isValid) {
+			return new ethers.providers.JsonRpcProvider(result.value.rpc)
 		}
-
-		i++ // Move to the next rpc in the list.
 	}
 
 	throw new Error('No alive provider found for chainId ' + chainId)
-
-	// for (let i = 0; i < rpcs.length; i++) {
-	// 	let rpc = rpcs[i]
-
-	// 	// Skip if the rpc string contains '${'
-	// 	// if (rpc.includes('${')) continue
-	// 	rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
-
-	// 	verbose && console.log('Checking rpc', rpc)
-
-	// 	if (await checkRpc(rpc, verbose)) {
-	// 		return new ethers.providers.JsonRpcProvider(rpc)
-	// 	} else {
-	// 		verbose && console.log('Provider is down:', rpc)
-	// 	}
-	// }
-
-	// throw new Error('No alive provider found for chainId ' + chainId)
 }
 
 async function getContract(
@@ -763,11 +762,11 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null,
-	// maxFeePerGas = null,
-	// maxPriorityFeePerGas = null,
-	// gasLimit = null,
-	// eip1559 = true,
-}: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+} // maxFeePerGas = null,
+// maxPriorityFeePerGas = null,
+// gasLimit = null,
+// eip1559 = true,
+: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = true
 	// TODO: split into 2
 
