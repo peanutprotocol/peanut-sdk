@@ -1,6 +1,6 @@
 const config = {
 	testEnvironment: 'node',
-	roots: ['<rootDir>/src/test'],
+	roots: ['<rootDir>/test'],
 	preset: 'ts-jest',
 	transform: {
 		'^.+\\.(ts|tsx)?$': 'ts-jest',

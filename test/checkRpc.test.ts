@@ -1,4 +1,4 @@
-import peanut from '../index' // import directly from source code
+import peanut from '../src/index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
 import { expect, describe, it } from '@jest/globals'
 import dotenv from 'dotenv'

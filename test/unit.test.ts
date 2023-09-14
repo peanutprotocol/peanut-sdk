@@ -1,9 +1,6 @@
-// import peanut from '@squirrel-labs/peanut-sdk'; // v6
-// import peanut from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../index' // import directly from source code
-// import { ethers } from 'ethersv6'; // v6
+import peanut from '../src/index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
-import { expect, describe, it } from '@jest/globals'
+import { expect, it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 

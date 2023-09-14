@@ -1,4 +1,4 @@
-import peanut from '../index'
+import peanut from '../src/index'
 import { dirname, join } from 'path'
 import { readFileSync } from 'fs'
 import dotenv from 'dotenv'
