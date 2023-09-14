@@ -1,5 +1,5 @@
 import { ethers } from 'ethersv5'
-import { formatNumberAvoidScientific, trim_decimal_overflow } from '..'
+import { peanut } from '../index'
 import { expect, describe, it } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
@@ -16,7 +16,7 @@ describe('Number Formatting Tests', function () {
 		for (let i = 0; i < 100; i++) {
 			// Test 100 times with different random numbers
 			const num = generateRandomScientificNumber()
-			const result = formatNumberAvoidScientific(num)
+			const result = peanut.formatNumberAvoidScientific(num)
 			expect(result.includes('e')).toBeFalsy()
 			expect(result.includes('E')).toBeFalsy()
 		}
@@ -28,7 +28,7 @@ describe('Number Formatting Tests', function () {
 		for (let i = 0; i < 100; i++) {
 			// Test 100 times
 			const num = generateRandomScientificNumber()
-			const result = trim_decimal_overflow(num, decimals)
+			const result = peanut.trim_decimal_overflow(num, decimals)
 
 			// Check if the result after trimming is equivalent to 0; if so, skip the iteration
 			if (parseFloat(result) === 0) continue

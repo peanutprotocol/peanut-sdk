@@ -465,7 +465,7 @@ async function prepareTxs({
 
 	const unsignedTxs: ethers.providers.TransactionRequest[] = []
 	let txOptions: interfaces.ITxOptions = {}
-	if (!provider._isProvider) {
+	if (!provider) {
 		provider = await getDefaultProvider(String(linkDetails.chainId))
 	}
 	// txOptions.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // no nonce anymore?
@@ -1097,6 +1097,8 @@ const peanut = {
 	// approveSpendERC20,
 	// approveSpendERC721,
 	// approveSpendERC1155,
+	formatNumberAvoidScientific,
+	trim_decimal_overflow,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,

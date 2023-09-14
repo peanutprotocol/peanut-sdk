@@ -104,10 +104,10 @@ export function getRandomString(length: number) {
 export function getParamsFromPageURL() {
 	/* returns the parameters from the current page url */
 	const params = new URLSearchParams(window.location.search)
-	const chainId = params.get('c') // can be chain name or chain id
+	let chainId = params.get('c') // can be chain name or chain id
 	chainId = CHAIN_MAP[String(chainId) as keyof typeof CHAIN_MAP].toString()
 	const contractVersion = params.get('v')
-	const depositIdx = params.get('i') ?? ''
+	let depositIdx = params.get('i') ?? ''
 	depositIdx = parseInt(depositIdx).toString()
 	const password = params.get('p')
 
