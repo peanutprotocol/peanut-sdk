@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 const directName = dirname(__filename)
 
-const packagePath = join(directName, '../../package.json')
+const packagePath = join(directName, '../package.json')
 console.log(packagePath)
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'))
 const version = packageJson.version
