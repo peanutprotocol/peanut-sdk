@@ -4,7 +4,7 @@
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
 	"module": "dist/peanut-sdk.browser.js",
-	"types": "dist/my-sdk.d.ts",
+	"types": "dist/index.d.ts",
 	"browser": {
 		"./dist/peanut-sdk.node.js": "./dist/peanut-sdk.browser.js",
 		"fs": false,
@@ -62,6 +62,7 @@
 		"@ethersproject/abstract-provider": "^5.7.0",
 		"@jest/globals": "^29.6.2",
 		"@jest/transform": "^29.6.2",
+		"@types/isomorphic-fetch": "^0.0.36",
 		"@types/jest": "^29.5.4",
 		"@typescript-eslint/eslint-plugin": "^6.3.0",
 		"@typescript-eslint/parser": "^6.3.0",

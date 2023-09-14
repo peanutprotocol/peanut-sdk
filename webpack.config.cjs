@@ -1,6 +1,8 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
-const nodeExternals = require('webpack-node-externals')
+const webpack = require('webpack');
+const packageJSON = require('./package.json');
+// const nodeExternals = require('webpack-node-externals')
 
 // Common Configuration
 const common = {
@@ -29,6 +31,11 @@ const common = {
 			},
 		],
 	},
+	plugins: [
+		new webpack.DefinePlugin({
+			'process.env.VERSION': JSON.stringify(packageJSON.version),
+		}),
+	],
 	optimization: {
 		minimize: false,
 		minimizer: [
