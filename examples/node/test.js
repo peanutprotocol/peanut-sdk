@@ -1,46 +1,46 @@
-// import { peanut } from '@squirrel-labs/peanut-sdk'; // v5
-import peanut from '../../index.js'
-import { ethers } from 'ethers'
-import dotenv from 'dotenv'
-dotenv.config({ path: '../../.env' })
+import peanut from '@squirrel-labs/peanut-sdk';
+import { ethers } from "ethers";
 
-console.log('Ethers version: ', ethers.version)
-console.log('Peanut version: ', peanut.version)
-
-////////////////////////////////////////////////////////////
-// replace with ethers signer from browser wallet
 const CHAINID = 5 // goerli
-const RPC_URL = 'https://rpc.ankr.com/eth_goerli'
-////////////////////////////////////////////////////////////
-// create goerli wallet with optimism rpc
-const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY, new ethers.providers.JsonRpcProvider(RPC_URL))
-////////////////////////////////////////////////////////////
+const RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
+
+const mnemonic = "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol"
+let walletMnemonic = ethers.Wallet.fromMnemonic(mnemonic)
+const address = await walletMnemonic.getAddress();
+console.log("Test address: " + address);
+
+const wallet = new ethers.Wallet(
+    walletMnemonic.privateKey,
+    new ethers.providers.JsonRpcProvider(RPC_URL));
 
 // create link
-const { link, txReceipt } = await peanut.createLink({
-	signer: wallet,
-	chainId: CHAINID,
-	tokenAmount: 0.001,
-	tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-	verbose: true,
-})
+const createLinkResponse = await peanut.createLink({
+  structSigner:{
+    signer: wallet
+  },
+  linkDetails:{
+    chainId: CHAINID,
+    tokenAmount: 0.01,
+    tokenType: 0,  // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+  }
+});
+
+console.log("New link: " + createLinkResponse.createdLink.link[0]);
+
+const link = createLinkResponse.createdLink.link[0];
+const provider = wallet.provider;
 
 // get status of link
-await new Promise((r) => setTimeout(r, 3000))
-var { claimed, deposit } = await peanut.getLinkStatus({
-	signer: wallet,
-	link: link,
+const getLinkDetailsResponse = await peanut.getLinkDetails({
+	link, provider
 })
-console.log('The link is claimed: ', claimed)
+console.log('The link is claimed: ' + getLinkDetailsResponse.claimed)
 
 // claim link
-const claimTx = await peanut.claimLink({ signer: wallet, link: link })
-console.log('claimTx: ', claimTx.hash)
-
-// check status of link again
-await new Promise((r) => setTimeout(r, 3000))
-;({ claimed, deposit } = await peanut.getLinkStatus({
-	signer: wallet,
-	link: link,
-}))
-console.log('The link is claimed: ', claimed)
+const claimTx = await peanut.claimLink({
+  structSigner:{
+    signer: wallet
+  },
+  link: link
+})
+console.log('success: ' + claimTx.success + 'claimTx: ' + claimTx.txHash)
