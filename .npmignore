@@ -14,8 +14,11 @@ docs/
 data/**.py
 src/test/
 src/
+bun.build.js
+tsconfig.json
+tsconfig.tsbuildinfo
 
-# config files
+
 *.conf.js
 *.config.js
 *.conf.cjs
