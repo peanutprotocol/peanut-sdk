@@ -1,7 +1,7 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
-const webpack = require('webpack');
-const packageJSON = require('./package.json');
+const webpack = require('webpack')
+const packageJSON = require('./package.json')
 // const nodeExternals = require('webpack-node-externals')
 
 // Common Configuration
@@ -84,8 +84,8 @@ const nodeConfig = {
 		filename: 'peanut-sdk.node.js',
 		path: path.resolve(__dirname, 'dist'),
 		library: {
-			// type: 'commonjs2',
-			type: 'module',
+			type: 'commonjs2',
+			// type: 'module',
 		},
 	},
 	target: ['node', 'es2020'],

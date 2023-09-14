@@ -21,7 +21,7 @@
 		"build:prod": "npm run clean && webpack --config webpack.config.cjs --mode production",
 		"build:dev": "npm run clean && webpack --config webpack.config.cjs --mode development",
 		"build": "npm run clean && npm run generate-types && webpack --config webpack.config.cjs --mode development",
-		"generate-types": "tsc --emitDeclarationOnly",
+		"generate-types": "rm tsconfig.tsbuildinfo || true && tsc --emitDeclarationOnly",
 		"pre-git": "npm run prettier && npm run lint:fix && npm run test && npm run build:prod",
 		"git": "git add . && git commit -m 'Release' && git push",
 		"lint": "eslint '**/*.{js,ts,tsx}' --quiet",
