@@ -627,20 +627,14 @@ async function getTxReceiptFromHash(
 	chainId: number,
 	provider?: ethers.providers.Provider
 ): Promise<TransactionReceipt> {
-	let _provider: ethers.providers.Provider
-
 	if (provider) {
-		if (provider instanceof ethers.providers.Provider) {
-			_provider = provider
-		} else {
-			_provider = await getDefaultProvider(String(chainId))
-		}
+		const txReceipt = await provider.getTransactionReceipt(txHash)
+		return txReceipt
 	} else {
-		_provider = await getDefaultProvider(String(chainId))
+		const _provider = await getDefaultProvider(String(chainId))
+		const txReceipt = await _provider.getTransactionReceipt(txHash)
+		return txReceipt
 	}
-
-	const txReceipt = await _provider.getTransactionReceipt(txHash)
-	return txReceipt
 }
 
 function validateLinkDetails(
@@ -718,7 +712,7 @@ async function createLink({
 			linkDetails,
 			txHash: signedTxs[signedTxs.length - 1].txHash,
 			passwords: [password],
-			provider,
+			provider: provider,
 		})
 	).links
 
