@@ -16,7 +16,7 @@ or via CDN:
 
 ### Usage
 
-* [Usage and example code available here]([https://docs.peanut.to/](https://docs.peanut.to/integrations/sdk-quick-start))
+* [Usage and example code available here](https://docs.peanut.to/integrations/sdk-quick-start)
 
 ### Feedback
 
