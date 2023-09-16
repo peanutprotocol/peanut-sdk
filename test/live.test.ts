@@ -9,7 +9,7 @@ const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
 
 async function createAndClaimLink(options: interfaces.ICreateLinkParams, inbetweenDelay = 1000) {
 	const response = await peanut.createLink(options)
-	if (response.createdLink.link && response.success.success) {
+	if (response.createdLink.link && response.status.code == interfaces.ECreateLinkStatusCodes.SUCCESS) {
 		await waitForTransaction(options.structSigner.signer.provider, response.createdLink.txHash)
 	}
 	console.log('Link created: ' + response.createdLink.link)

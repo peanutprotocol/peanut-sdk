@@ -55,7 +55,7 @@ export interface IPeanutUnsignedTransactions {
 }
 
 export interface IReturnSuccessObject {
-	success: boolean
+	status: boolean
 	errorCode?: number
 	errorMessage?: string
 }
@@ -69,7 +69,7 @@ export interface ICreateLinkParams {
 }
 export interface ICreateLinkResponse {
 	createdLink: ICreatedPeanutLink
-	success: IReturnSuccessObject
+	status: SDKStatus
 }
 
 //createLinks
@@ -80,7 +80,14 @@ export interface ICreateLinksParams extends Omit<ICreateLinkParams, 'password'> 
 
 export interface ICreateLinksResponse {
 	createdLinks: ICreatedPeanutLink[]
-	success: IReturnSuccessObject
+	status: SDKStatus
+}
+
+export enum ECreateLinksStatusCodes {
+	SUCCESS,
+	ERROR_PREPARING_TXs,
+	ERROR_SIGNING_AND_SUBMITTING_TX,
+	ERROR_GETTING_LINKS_FROM_TX,
 }
 
 //claimLinkGasless
@@ -93,7 +100,7 @@ export interface IClaimLinkGaslessParams {
 
 export interface IClaimLinkGaslessResponse {
 	txHash: string
-	success: IReturnSuccessObject // change this to correct error handling
+	status: SDKStatus
 }
 
 //ClaimLink
@@ -105,7 +112,7 @@ export interface IClaimLinkParams {
 
 export interface IClaimLinkResponse {
 	txHash: string
-	success: IReturnSuccessObject // change this to correct error handling
+	status: SDKStatus
 }
 
 //prepareCreatetxs
@@ -121,7 +128,7 @@ export interface IPrepareCreateTxsParams {
 
 export interface IPrepareCreateTxsResponse {
 	unsignedTxs: TransactionRequest[]
-	success: IReturnSuccessObject
+	status: SDKStatus
 }
 
 //signAndSubmitTx
@@ -132,7 +139,7 @@ export interface ISignAndSubmitTxParams {
 
 export interface ISignAndSubmitTxResponse {
 	txHash: string
-	success: IReturnSuccessObject
+	status: SDKStatus
 }
 
 //getLink
@@ -145,7 +152,7 @@ export interface IGetLinkFromTxParams {
 
 export interface IGetLinkFromTxResponse {
 	links: string[]
-	success: IReturnSuccessObject
+	status: SDKStatus
 }
 
 //prepareClaimTx
@@ -153,7 +160,7 @@ export interface IPrepareClaimTxParams extends IClaimLinkParams {}
 
 export interface IPrepareClaimTxResponse {
 	unsignedTx: TransactionRequest
-	success: IReturnSuccessObject
+	status: SDKStatus
 }
 
 //getLinkDetails
@@ -164,5 +171,62 @@ export interface IGetLinkDetailsParams {
 
 export interface IGetLinkDetailsResponse {
 	linkDetails: IPeanutLinkChainDetails
-	success: IReturnSuccessObject
+	success: SDKStatus
+}
+
+//error object and enums
+
+export enum ECreateLinkStatusCodes {
+	SUCCESS,
+	ERROR_VALIDATING_LINK_DETAILS,
+	ERROR_PREPARING_TX,
+	ERROR_SIGNING_AND_SUBMITTING_TX,
+	ERROR_GETTING_LINKS_FROM_TX,
+}
+
+export enum EPrepareCreateTxsStatusCodes {
+	SUCCESS,
+	ERROR_VALIDATING_LINK_DETAILS,
+	ERROR_GETTING_DEFAULT_PROVIDER,
+	ERROR_GETTING_TX_COUNT,
+	ERROR_PREPARING_APPROVE_ERC20_TX,
+	ERROR_SETTING_FEE_OPTIONS,
+	ERROR_ESTIMATING_GAS_LIMIT,
+	ERROR_MAKING_DEPOSIT,
+}
+
+export enum ESignAndSubmitTx {
+	SUCCESS,
+	ERROR_SENDING_TX,
+}
+
+export enum EGetLinkFromTxStatusCodes {
+	SUCCESS,
+	ERROR_GETTING_TX_RECEIPT_FROM_HASH,
+}
+
+export enum EClaimLinkStatusCodes {
+	SUCCESS,
+	ERROR,
+}
+
+export type allErrorEnums =
+	| ECreateLinkStatusCodes
+	| EPrepareCreateTxsStatusCodes
+	| ESignAndSubmitTx
+	| EGetLinkFromTxStatusCodes
+	| EClaimLinkStatusCodes
+
+export class SDKStatus extends Error {
+	code: allErrorEnums
+	extraInfo?: any
+
+	constructor(code: allErrorEnums, message?: string, extraInfo?: any) {
+		super(message)
+		this.code = code
+		this.message = extraInfo
+
+		// Ensure the instance of is correct
+		Object.setPrototypeOf(this, SDKStatus.prototype)
+	}
 }

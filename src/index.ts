@@ -459,16 +459,43 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
-	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
+	try {
+		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
+	} catch (error) {
+		console.error(error)
+		return {
+			unsignedTxs: [],
+			status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS, ''),
+		}
+	}
 	assert(numberOfLinks == passwords.length, 'numberOfLinks must be equal to passwords.length')
 
 	const unsignedTxs: ethers.providers.TransactionRequest[] = []
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
-		provider = await getDefaultProvider(String(linkDetails.chainId))
+		try {
+			provider = await getDefaultProvider(String(linkDetails.chainId))
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
+					''
+				),
+			}
+		}
 	}
 	// txOptions.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // no nonce anymore?
-	txOptions.nonce = await provider.getTransactionCount(address)
+	try {
+		txOptions.nonce = await provider.getTransactionCount(address)
+	} catch (error) {
+		console.error(error)
+		return {
+			unsignedTxs: [],
+			status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_TX_COUNT, ''),
+		}
+	}
 
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
@@ -484,17 +511,29 @@ async function prepareTxs({
 	} else if (linkDetails.tokenType == 1) {
 		// TODO: check for erc721 and erc1155
 		console.log('checking allowance...')
-		const approveTx = await prepareApproveERC20Tx(
-			// returns null
-			address,
-			String(linkDetails.chainId),
-			linkDetails.tokenAddress!,
-			tokenAmountBigNum,
-			linkDetails.tokenDecimals,
-			true,
-			peanutContractVersion
-		)
-		approveTx && unsignedTxs.push(approveTx)
+		let approveTx
+		try {
+			approveTx = await prepareApproveERC20Tx(
+				// returns null
+				address,
+				String(linkDetails.chainId),
+				linkDetails.tokenAddress!,
+				tokenAmountBigNum,
+				linkDetails.tokenDecimals,
+				true,
+				peanutContractVersion
+			)
+			approveTx && unsignedTxs.push(approveTx)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,
+					''
+				),
+			}
+		}
 	}
 
 	if (passwords.length == 0) {
@@ -505,15 +544,23 @@ async function prepareTxs({
 	console.log('Generating link...')
 
 	// set transaction options
-	txOptions = await setFeeOptions({
-		txOptions,
-		provider: provider,
-		// TODO: setFeeOptions should take into account if chain supports eip1559? or should we just set this to empty?
-		// eip1559: structSigner.eip1559,
-		// maxFeePerGas: structSigner.maxFeePerGas,
-		// maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
-		// gasLimit: structSigner.gasLimit,
-	})
+	try {
+		txOptions = await setFeeOptions({
+			txOptions,
+			provider: provider,
+			// TODO: setFeeOptions should take into account if chain supports eip1559? or should we just set this to empty?
+			// eip1559: structSigner.eip1559,
+			// maxFeePerGas: structSigner.maxFeePerGas,
+			// maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+			// gasLimit: structSigner.gasLimit,
+		})
+	} catch (error) {
+		console.error(error)
+		return {
+			unsignedTxs: [],
+			status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_SETTING_FEE_OPTIONS, ''),
+		}
+	}
 
 	let contract
 	let depositParams
@@ -527,11 +574,31 @@ async function prepareTxs({
 			keys[0].address,
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
-		const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+		let estimatedGasLimit
+		try {
+			estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
+					''
+				),
+			}
+		}
 		if (estimatedGasLimit) {
 			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 		}
-		depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
+		try {
+			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT, ''),
+			}
+		}
 	} else {
 		depositParams = [
 			PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion], // The address of the PeanutV4 contract
@@ -542,15 +609,36 @@ async function prepareTxs({
 			keys.map((key) => key.address),
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, batcherContractVersion) // get the contract instance
-		const estimatedGasLimit = await estimateGasLimit(contract, 'batchMakeDeposit', depositParams, txOptions)
+		let estimatedGasLimit
+		try {
+			estimatedGasLimit = await estimateGasLimit(contract, 'batchMakeDeposit', depositParams, txOptions)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
+					''
+				),
+			}
+		}
 		if (estimatedGasLimit) {
 			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 		}
-		depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
+		try {
+			depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT, ''),
+			}
+		}
 	}
+
 	unsignedTxs.push(depositTx)
 
-	return { success: { success: true }, unsignedTxs }
+	return { status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.SUCCESS), unsignedTxs }
 }
 
 async function signAndSubmitTx({
@@ -559,13 +647,19 @@ async function signAndSubmitTx({
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
 	const verbose = false
 	verbose && console.log('unsigned tx: ', unsignedTx)
-	// const signedTx = await structSigner.signer.signTransaction(unsignedTx)
-	// console.log("signed tx: ", signedTx)
-	const tx = await structSigner.signer.sendTransaction(unsignedTx)
+
+	let tx
+	try {
+		tx = await structSigner.signer.sendTransaction(unsignedTx)
+	} catch (error) {
+		console.error(error)
+		return { txHash: '', status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_SENDING_TX, '') }
+	}
+
 	verbose && console.log('tx: ', tx)
 	await tx.wait()
 
-	return { txHash: tx.hash, success: { success: true } }
+	return { txHash: tx.hash, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 }
 
 // takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
@@ -575,12 +669,23 @@ async function getLinksFromTx({
 	passwords,
 	provider,
 }: interfaces.IGetLinkFromTxParams): Promise<interfaces.IGetLinkFromTxResponse> {
-	const txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId, provider)
-	// TODO: get contract version & idx from tx receipt
-	/// get chainid
+	let txReceipt
+	try {
+		txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId, provider)
+	} catch (error) {
+		console.error(error)
+		return {
+			links: [],
+			status: new interfaces.SDKStatus(
+				interfaces.EGetLinkFromTxStatusCodes.ERROR_GETTING_TX_RECEIPT_FROM_HASH,
+				''
+			),
+		}
+	}
 
 	// get deposit idx
 	const peanutContractVersion = detectContractVersionFromTxReceipt(txReceipt, String(linkDetails.chainId))
+
 	// TODO: See if its one deposit or many, and call getDepositIdx or getDepositIdxs accordingly
 	// or: always call getDepositIdxs? <-- bingo
 	const idxs: number[] = getDepositIdxs(txReceipt, String(linkDetails.chainId), peanutContractVersion) // doesn't work on V3!
@@ -600,7 +705,7 @@ async function getLinksFromTx({
 
 	return {
 		links: links,
-		success: { success: true },
+		status: new interfaces.SDKStatus(interfaces.EGetLinkFromTxStatusCodes.SUCCESS),
 	}
 }
 
@@ -682,10 +787,10 @@ async function createLink({
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
 	const password = getRandomString(16)
-	linkDetails = validateLinkDetails(linkDetails, [password], 1)
-
 	const provider = structSigner.signer.provider
+
 	// Prepare the transactions
+
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
 		linkDetails,
@@ -694,23 +799,41 @@ async function createLink({
 		passwords: [password],
 		provider: provider,
 	})
+	if (prepareTxsResponse.status.code != interfaces.EPrepareCreateTxsStatusCodes.SUCCESS) {
+		return {
+			createdLink: { link: '', txHash: '' },
+			status: prepareTxsResponse.status,
+		}
+	}
 
 	// Sign and submit the transactions
+
 	const signedTxs = await Promise.all(
 		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
 
-	// Get the links from the transactions
-	const link = (
-		await getLinksFromTx({
-			linkDetails,
-			txHash: signedTxs[signedTxs.length - 1].txHash,
-			passwords: [password],
-			provider: provider,
-		})
-	).links
+	if (prepareTxsResponse.status.code != interfaces.EPrepareCreateTxsStatusCodes.SUCCESS) {
+		return {
+			createdLink: { link: '', txHash: '' },
+			status: prepareTxsResponse.status,
+		}
+	}
 
-	return { createdLink: { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }, success: { success: true } }
+	// Get the links from the transactions
+	const linksFromTxResp = await getLinksFromTx({
+		linkDetails,
+		txHash: signedTxs[signedTxs.length - 1].txHash,
+		passwords: [password],
+		provider: provider,
+	})
+
+	if (linksFromTxResp.status.code != interfaces.EGetLinkFromTxStatusCodes.SUCCESS) {
+		return { createdLink: { link: '', txHash: '' }, status: linksFromTxResp.status }
+	}
+	return {
+		createdLink: { link: linksFromTxResp.links, txHash: signedTxs[signedTxs.length - 1].txHash },
+		status: new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.SUCCESS),
+	}
 }
 
 async function createLinks({
@@ -733,26 +856,41 @@ async function createLinks({
 		passwords: passwords,
 		provider: provider,
 	})
+	if (prepareTxsResponse.status.code != interfaces.EPrepareCreateTxsStatusCodes.SUCCESS) {
+		return {
+			createdLinks: [],
+			status: prepareTxsResponse.status,
+		}
+	}
 
 	verbose && console.log('prepareTxsResponse: ', prepareTxsResponse)
 	// Sign and submit the transactions
 	const signedTxs = await Promise.all(
 		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
+	if (prepareTxsResponse.status.code != interfaces.EPrepareCreateTxsStatusCodes.SUCCESS) {
+		return {
+			createdLinks: [],
+			status: prepareTxsResponse.status,
+		}
+	}
+
 	verbose && console.log('signedTxs: ', signedTxs)
 
-	const links = (
-		await getLinksFromTx({
-			linkDetails,
-			txHash: signedTxs[signedTxs.length - 1].txHash,
-			passwords: passwords,
-			provider,
-		})
-	).links
-	const createdLinks = links.map((link) => {
+	const linksFromTxResp = await getLinksFromTx({
+		linkDetails,
+		txHash: signedTxs[signedTxs.length - 1].txHash,
+		passwords: passwords,
+		provider,
+	})
+	if (linksFromTxResp.status.code != interfaces.EGetLinkFromTxStatusCodes.SUCCESS) {
+		return { createdLinks: [], status: linksFromTxResp.status }
+	}
+	const createdLinks = linksFromTxResp.links.map((link) => {
 		return { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }
 	})
-	return { createdLinks: createdLinks, success: { success: true } }
+
+	return { createdLinks: createdLinks, status: new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.SUCCESS) }
 }
 
 /**
@@ -761,10 +899,9 @@ async function createLinks({
 async function claimLink({
 	structSigner,
 	link,
-	recipient = null,
-} // maxFeePerGas = null,
-// maxPriorityFeePerGas = null,
-// gasLimit = null,
+	recipient = null, // maxFeePerGas = null,
+	// maxPriorityFeePerGas = null,
+} // gasLimit = null,
 // eip1559 = true,
 : interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = true
@@ -820,7 +957,7 @@ async function claimLink({
 	const txReceipt = await tx.wait()
 
 	return {
-		success: { success: true },
+		status: new interfaces.SDKStatus(interfaces.EClaimLinkStatusCodes.SUCCESS),
 		txHash: txReceipt.transactionHash,
 	}
 }
@@ -1049,6 +1186,7 @@ async function claimLinkGasless({
 	}
 }
 
+//do not remove everything, will break with testing
 const peanut = {
 	greeting,
 	generateKeysFromString,
@@ -1076,9 +1214,6 @@ const peanut = {
 	prepareTxs,
 	signAndSubmitTx,
 	getLinksFromTx,
-	// approveSpendERC20,
-	// approveSpendERC721,
-	// approveSpendERC1155,
 	formatNumberAvoidScientific,
 	trim_decimal_overflow,
 	VERSION,
@@ -1103,4 +1238,13 @@ export {
 	signAndSubmitTx,
 	getLinksFromTx,
 	createLink,
+	createLinks,
+	claimLink,
+	claimLinkGasless,
+	VERSION,
+	CHAIN_DETAILS,
+	TOKEN_DETAILS,
+	TOKEN_TYPES,
+	DEFAULT_CONTRACT_VERSION,
+	PEANUT_CONTRACTS,
 }
