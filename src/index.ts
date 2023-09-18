@@ -787,10 +787,10 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-} // maxPriorityFeePerGas = null,
-	// gasLimit = null,
-	// eip1559 = true,
-	: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+	// maxPriorityFeePerGas = null,
+} // gasLimit = null,
+// eip1559 = true,
+: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = true
 	// TODO: split into 2
 
@@ -1112,6 +1112,7 @@ const peanut = {
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
 	PEANUT_CONTRACTS,
+	interfaces,
 }
 
 console.log('peanut-sdk version: ', VERSION)
