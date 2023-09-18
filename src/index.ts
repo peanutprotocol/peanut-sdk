@@ -918,8 +918,8 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-	// gasLimit = null,
-} // maxPriorityFeePerGas = null,
+	// maxPriorityFeePerGas = null,
+} // gasLimit = null,
 // eip1559 = true,
 : interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = true
