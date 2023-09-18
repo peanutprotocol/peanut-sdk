@@ -4,6 +4,7 @@ playground/
 !playground/preprompt.py
 dist/
 archive/
+src/data/package.json
 
 # Logs
 logs

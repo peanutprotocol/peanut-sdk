@@ -277,10 +277,11 @@ async function prepareApproveERC20Tx(
 	tokenDecimals = 18,
 	isRawAmount = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
+	provider?: any, // why does TS complain about string here?
 	spenderAddress?: string | undefined
 ): Promise<ethers.providers.TransactionRequest | null> {
 	//TODO: implement address
-	const defaultProvider = await getDefaultProvider(chainId)
+	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, defaultProvider)
 
 	let amount: BigNumber | number = _amount
@@ -482,6 +483,7 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
+	const verbose = VERBOSE
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	assert(numberOfLinks == passwords.length, 'numberOfLinks must be equal to passwords.length')
 
@@ -508,14 +510,14 @@ async function prepareTxs({
 		// TODO: check for erc721 and erc1155
 		console.log('checking allowance...')
 		const approveTx = await prepareApproveERC20Tx(
-			// returns null
 			address,
 			String(linkDetails.chainId),
 			linkDetails.tokenAddress!,
 			tokenAmountBigNum,
 			linkDetails.tokenDecimals,
 			true,
-			peanutContractVersion
+			peanutContractVersion,
+			provider
 		)
 		approveTx && unsignedTxs.push(approveTx)
 	}
@@ -550,9 +552,15 @@ async function prepareTxs({
 			keys[0].address,
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
-		const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
-		if (estimatedGasLimit) {
-			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
+		// TODO: this will fail if allowance is not enough
+		try {
+			const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+			if (estimatedGasLimit) {
+				txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
+			}
+		} catch (error) {
+			// do nothing
+			verbose && console.log('Error estimating gas limit:', error)
 		}
 		depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
 	} else {
