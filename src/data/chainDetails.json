@@ -144,7 +144,9 @@
 			"https://polygon-mumbai.gateway.tenderly.co",
 			"https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}"
 		],
-		"faucets": ["https://faucet.polygon.technology/"],
+		"faucets": [
+			"https://faucet.polygon.technology/"
+		],
 		"nativeCurrency": {
 			"name": "MATIC",
 			"symbol": "MATIC",
@@ -179,7 +181,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://optimism.io",
-		"shortName": "oeth",
+		"shortName": "OP",
 		"chainId": 10,
 		"networkId": 10,
 		"explorers": [
@@ -197,7 +199,7 @@
 		],
 		"mainnet": true,
 		"icon": {
-			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
+			"url": "https://optimistic.etherscan.io/images/svg/brands/main.svg",
 			"format": "svg"
 		}
 	},
@@ -237,7 +239,7 @@
 	"42161": {
 		"name": "Arbitrum One",
 		"chainId": 42161,
-		"shortName": "arb1",
+		"shortName": "Arbitrum One",
 		"chain": "ETH",
 		"networkId": 42161,
 		"nativeCurrency": {
@@ -275,7 +277,7 @@
 		},
 		"mainnet": true,
 		"icon": {
-			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
+			"url": "https://arbiscan.io/images/svg/brands/arbitrum.svg",
 			"format": "svg"
 		}
 	},
@@ -307,7 +309,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://docs.gnosischain.com",
-		"shortName": "gno",
+		"shortName": "Gnosis",
 		"chainId": 100,
 		"networkId": 100,
 		"slip44": 700,
@@ -333,7 +335,9 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": ["https://rpc-devnet-cardano-evm.c1.milkomeda.com"],
+		"rpc": [
+			"https://rpc-devnet-cardano-evm.c1.milkomeda.com"
+		],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkTAda",
@@ -360,7 +364,9 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": ["https://rpc-mainnet-cardano-evm.c1.milkomeda.com"],
+		"rpc": [
+			"https://rpc-mainnet-cardano-evm.c1.milkomeda.com"
+		],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkAda",
@@ -398,7 +404,9 @@
 			"https://bsc-dataseed4.ninicoin.io",
 			"https://bsc.publicnode.com"
 		],
-		"faucets": ["https://free-online-app.com/faucet-for-eth-evm-chains/"],
+		"faucets": [
+			"https://free-online-app.com/faucet-for-eth-evm-chains/"
+		],
 		"nativeCurrency": {
 			"name": "BNB Chain Native Token",
 			"symbol": "BNB",
@@ -425,8 +433,12 @@
 	"5001": {
 		"name": "Mantle Testnet",
 		"chain": "ETH",
-		"rpc": ["https://rpc.testnet.mantle.xyz"],
-		"faucets": ["https://faucet.testnet.mantle.xyz"],
+		"rpc": [
+			"https://rpc.testnet.mantle.xyz"
+		],
+		"faucets": [
+			"https://faucet.testnet.mantle.xyz"
+		],
 		"nativeCurrency": {
 			"name": "Testnet Mantle",
 			"symbol": "MNT",
@@ -462,7 +474,9 @@
 			"wss://sepolia.infura.io/v3/${INFURA_API_KEY}",
 			"https://sepolia.gateway.tenderly.co"
 		],
-		"faucets": ["http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"],
+		"faucets": [
+			"http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"
+		],
 		"nativeCurrency": {
 			"name": "Sepolia Ether",
 			"symbol": "ETH",
@@ -498,7 +512,9 @@
 			"url": "https://ipfs.io/ipfs/QmcHdmVr5VRUJq13jnM6tgah5Ge7hn3Dm14eY6vwivJ5ui",
 			"format": "png"
 		},
-		"rpc": ["https://rpc.test.taiko.xyz"],
+		"rpc": [
+			"https://rpc.test.taiko.xyz"
+		],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
