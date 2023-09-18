@@ -22,7 +22,7 @@ describe('getLinkDetails', function () {
 			console.log('url', polygonProviderUrl)
 			const polygonProvider = new ethers.providers.JsonRpcProvider(polygonProviderUrl)
 			const defaultProvider = await peanut.getDefaultProvider('137', true)
-			const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, polygonProvider)
+			const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)
 			// test default provider by getting blocknumber and wallet balance
 			const blockNumber = await defaultProvider.getBlockNumber()
 			console.log(blockNumber)
@@ -47,7 +47,7 @@ describe('getLinkDetails', function () {
 		}, 1000000)
 
 		it('should have 1 goerli eth inside', async function () {
-			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
+			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 			const link = 'https://peanut.to/claim?c=5&v=v3&i=314&p=FjEditsxpzOx6IrI'
 			// should have 1 goerli eth inside
 			const linkDetails = await peanut.getLinkDetails({ link })
@@ -62,12 +62,12 @@ describe('getLinkDetails', function () {
 			const link = 'https://peanut.to/claim?c=10&v=v3&i=307&p=1VNvLYMOG14xr0fO'
 			const optimismProviderUrl = 'https://optimism-mainnet.infura.io/v3/' + INFURA_API_KEY
 			const optimismProvider = new ethers.providers.JsonRpcProvider(optimismProviderUrl)
-			const optimismWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismProvider)
+			const optimismWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismProvider)
 			await expect(peanut.getLinkDetails({ link })).rejects.toThrow()
 		})
 		it('Localhost should work', async function () {
 			const link = 'http://localhost:3000/claim#?c=5&v=v3&i=415&p=pCEABanDLd9kReTW&t=sdk'
-			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
+			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 			const linkDetails = await peanut.getLinkDetails({ link })
 			console.log(linkDetails)
 			// should not be empty
@@ -78,7 +78,7 @@ describe('getLinkDetails', function () {
 	describe('v4', function () {
 		it('v4 should include timestamp', async function () {
 			const link = 'https://peanut.to/claim#?c=5&v=v4&i=7&p=j6mafJ95hFuzAAX5&t=sdk'
-			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
+			const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 			const linkDetails = await peanut.getLinkDetails({ link })
 			console.log(linkDetails)
 			// should not be empty
@@ -96,7 +96,7 @@ describe('getLinkDetails', function () {
 			)
 			const CHAIN_NAME = peanut.CHAIN_DETAILS[String(CHAIN_ID)].name
 			const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
-			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 			const linkDetails = await peanut.getLinkDetails({ link })
 			console.log(linkDetails)
 

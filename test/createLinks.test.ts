@@ -16,7 +16,7 @@ describe('createLinks tests', function () {
 	const RPC_URL = process.env.INFURA_GOERLI_RPC
 	const CHAIN_NAME = peanut.CHAIN_DETAILS[String(CHAIN_ID)].name
 	const WALLET = new ethers.Wallet(
-		process.env.TEST_WALLET_PRIVATE_KEY,
+		process.env.TEST_WALLET_PRIVATE_KEY ?? '',
 		new ethers.providers.JsonRpcBatchProvider(RPC_URL)
 	)
 	console.log('Chain Name: ', CHAIN_NAME, 'Chain ID: ', CHAIN_ID)
@@ -114,7 +114,7 @@ describe('createLinks tests', function () {
 		const NUM_LINKS = 2
 
 		// Create links for live testing
-		const { createdLinks, success } = await peanut.createLinks({
+		const { createdLinks, status } = await peanut.createLinks({
 			structSigner: {
 				signer: WALLET,
 			},
@@ -130,8 +130,8 @@ describe('createLinks tests', function () {
 
 		console.log('links: ', createdLinks)
 		expect(createdLinks).toBeDefined() // Basic checks to ensure the result has data
-		expect(success).toBeDefined()
-		expect(success.success).toBe(true) // Expecting transaction to be successful
+		expect(status).toBeDefined()
+		expect(status.code).toBe('SUCCESS') // Expecting transaction to be successful
 
 		// Additional assertions as needed
 	}, 60000)
@@ -144,7 +144,7 @@ describe('createLinks tests', function () {
 		const NUM_LINKS = 30
 
 		// Create links for live testing
-		const { createdLinks, success } = await peanut.createLinks({
+		const { createdLinks, status } = await peanut.createLinks({
 			structSigner: {
 				signer: WALLET,
 			},
