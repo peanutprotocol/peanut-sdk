@@ -465,7 +465,10 @@ async function prepareTxs({
 		console.error(error)
 		return {
 			unsignedTxs: [],
-			status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS, ''),
+			status: new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+				'Error validating link details: please make sure all required fields are provided and valid'
+			),
 		}
 	}
 	assert(numberOfLinks == passwords.length, 'numberOfLinks must be equal to passwords.length')
@@ -481,7 +484,7 @@ async function prepareTxs({
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
-					''
+					'Error getting the default provider'
 				),
 			}
 		}
@@ -493,7 +496,10 @@ async function prepareTxs({
 		console.error(error)
 		return {
 			unsignedTxs: [],
-			status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_TX_COUNT, ''),
+			status: new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_TX_COUNT,
+				'Error getting the transaction count'
+			),
 		}
 	}
 
@@ -530,7 +536,7 @@ async function prepareTxs({
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,
-					''
+					'Error preparing the approve ERC20 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
 				),
 			}
 		}
@@ -558,7 +564,10 @@ async function prepareTxs({
 		console.error(error)
 		return {
 			unsignedTxs: [],
-			status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_SETTING_FEE_OPTIONS, ''),
+			status: new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_SETTING_FEE_OPTIONS,
+				'Error setting fee options'
+			),
 		}
 	}
 
@@ -583,7 +592,7 @@ async function prepareTxs({
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
-					''
+					'Error estimating gas limit'
 				),
 			}
 		}
@@ -596,7 +605,10 @@ async function prepareTxs({
 			console.error(error)
 			return {
 				unsignedTxs: [],
-				status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT, ''),
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
+					'Error making the deposit to the contract'
+				),
 			}
 		}
 	} else {
@@ -618,7 +630,7 @@ async function prepareTxs({
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
-					''
+					'Error estimating gas limit'
 				),
 			}
 		}
@@ -631,7 +643,10 @@ async function prepareTxs({
 			console.error(error)
 			return {
 				unsignedTxs: [],
-				status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT, ''),
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
+					'Error making the deposit to the contract'
+				),
 			}
 		}
 	}
@@ -653,7 +668,10 @@ async function signAndSubmitTx({
 		tx = await structSigner.signer.sendTransaction(unsignedTx)
 	} catch (error) {
 		console.error(error)
-		return { txHash: '', status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_SENDING_TX, '') }
+		return {
+			txHash: '',
+			status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_SENDING_TX, 'Error sending the Tx'),
+		}
 	}
 
 	verbose && console.log('tx: ', tx)
@@ -678,7 +696,7 @@ async function getLinksFromTx({
 			links: [],
 			status: new interfaces.SDKStatus(
 				interfaces.EGetLinkFromTxStatusCodes.ERROR_GETTING_TX_RECEIPT_FROM_HASH,
-				''
+				'Error getting the transaction receipt from the hash'
 			),
 		}
 	}
@@ -900,8 +918,8 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-	// maxPriorityFeePerGas = null,
-} // gasLimit = null,
+	// gasLimit = null,
+} // maxPriorityFeePerGas = null,
 // eip1559 = true,
 : interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = true

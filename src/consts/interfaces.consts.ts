@@ -221,7 +221,7 @@ export class SDKStatus extends Error {
 	code: allErrorEnums
 	extraInfo?: any
 
-	constructor(code: allErrorEnums, message?: string, extraInfo?: any) {
+	constructor(code: allErrorEnums, message?: string, extraInfo?: string) {
 		super(message)
 		this.code = code
 		this.message = extraInfo
