@@ -44,6 +44,8 @@ import {
 
 import * as interfaces from './consts/interfaces.consts.ts'
 
+const VERBOSE = true // temp
+
 // async function getAbstractSigner(signer: any) {
 // 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
 // 	return signer
@@ -63,7 +65,8 @@ function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
 }
 
 async function checkRpc(rpc: string): Promise<boolean> {
-	console.log('checkRpc rpc:', rpc)
+	const verbose = VERBOSE
+	verbose && console.log('checkRpc rpc:', rpc)
 
 	try {
 		// Use the timeout function to wrap the fetchGetBalance call and give it a timeout.
@@ -71,7 +74,7 @@ async function checkRpc(rpc: string): Promise<boolean> {
 
 		// If the JSON RPC response contains an error, we can consider it a failure.
 		if (response.error) {
-			console.log('JSON RPC Error:', response.error.message)
+			verbose && console.log('JSON RPC Error for:', rpc, response.error.message)
 			return false
 		}
 
@@ -107,32 +110,52 @@ async function fetchGetBalance(rpcUrl: string) {
  * Returns the default provider for a given chainId
  */
 async function getDefaultProvider(chainId: string, verbose = false): Promise<ethers.providers.JsonRpcProvider> {
+	verbose = true
 	verbose && console.log('Getting default provider for chainId ', chainId)
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
 	verbose && console.log('rpcs', rpcs)
 
-	// Map each RPC URL to a promise that checks its validity.
+	// this code goes through all RPCs. If any one of them is alive, the promise is resolved and a valid provider is returned.
+	// If all of them fail, the promise is rejected.
 	const checkPromises = rpcs.map((rpc) => {
-		// If the RPC string contains a placeholder for the API key, replace it.
-		rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
-		63
-		return checkRpc(rpc).then((isValid) => {
-			verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
-			return { isValid, rpc }
+		return new Promise<{ isValid: boolean; rpc: string }>(async (resolve, reject) => {
+			try {
+				// If the RPC string contains a placeholder for the API key, replace it.
+				rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+				const isValid = await checkRpc(rpc)
+
+				verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
+
+				// Only resolve when the RPC is valid.
+				if (isValid) {
+					resolve({ isValid, rpc })
+				}
+			} catch (err) {
+				// Do nothing here, because we only want to resolve if the RPC is valid.
+			}
 		})
 	})
 
-	// Wait for all RPC URLs to be checked.
-	const results = await Promise.allSettled(checkPromises)
+	return new Promise((resolve, reject) => {
+		// Use Promise.race to get the first valid RPC.
+		Promise.race(checkPromises)
+			.then((result) => {
+				if (result && result.isValid) {
+					verbose && console.log('Valid RPC found:', result.rpc)
+					const provider = new ethers.providers.JsonRpcProvider(result.rpc)
+					resolve(provider)
+				}
+			})
+			.catch(() => {
+				// Do nothing here. This catch block will not be triggered.
+			})
 
-	for (const result of results) {
-		if (result.status === 'fulfilled' && result.value.isValid) {
-			return new ethers.providers.JsonRpcProvider(result.value.rpc)
-		}
-	}
-
-	throw new Error('No alive provider found for chainId ' + chainId)
+		// Fallback: If none of the RPCs are valid after they've all been checked.
+		Promise.allSettled(checkPromises).then(() => {
+			reject(new Error('No alive provider found for chainId ' + chainId))
+		})
+	})
 }
 
 async function getContract(
@@ -254,10 +277,11 @@ async function prepareApproveERC20Tx(
 	tokenDecimals = 18,
 	isRawAmount = false,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
+	provider?: any, // why does TS complain about string here?
 	spenderAddress?: string | undefined
 ): Promise<ethers.providers.TransactionRequest | null> {
 	//TODO: implement address
-	const defaultProvider = await getDefaultProvider(chainId)
+	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, defaultProvider)
 
 	let amount: BigNumber | number = _amount
@@ -459,6 +483,7 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
+	const verbose = VERBOSE
 	try {
 		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	} catch (error) {
@@ -519,16 +544,16 @@ async function prepareTxs({
 		console.log('checking allowance...')
 		let approveTx
 		try {
-			approveTx = await prepareApproveERC20Tx(
-				// returns null
-				address,
-				String(linkDetails.chainId),
-				linkDetails.tokenAddress!,
-				tokenAmountBigNum,
-				linkDetails.tokenDecimals,
-				true,
-				peanutContractVersion
-			)
+        const approveTx = await prepareApproveERC20Tx(
+        address,
+        String(linkDetails.chainId),
+        linkDetails.tokenAddress!,
+        tokenAmountBigNum,
+        linkDetails.tokenDecimals,
+        true,
+        peanutContractVersion,
+        provider
+      )
 			approveTx && unsignedTxs.push(approveTx)
 		} catch (error) {
 			console.error(error)
@@ -583,21 +608,16 @@ async function prepareTxs({
 			keys[0].address,
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
-		let estimatedGasLimit
+
+		// TODO: this will fail if allowance is not enough
 		try {
-			estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
-		} catch (error) {
-			console.error(error)
-			return {
-				unsignedTxs: [],
-				status: new interfaces.SDKStatus(
-					interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
-					'Error estimating gas limit'
-				),
+			const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+			if (estimatedGasLimit) {
+				txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
 			}
-		}
-		if (estimatedGasLimit) {
-			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
+		} catch (error) {
+			// do nothing
+			verbose && console.log('Error estimating gas limit:', error)
 		}
 		try {
 			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
@@ -783,7 +803,9 @@ function validateLinkDetails(
 		linkDetails.tokenType == 0 || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
-	assert(linkDetails.tokenType == 0 || linkDetails.tokenType == 1, 'ERC721 and ERC1155 are not supported yet')
+	if (linkDetails.tokenType == 2) {
+		assert(numberOfLinks == 1, 'can only send one ERC721 at a time')
+	}
 	assert(
 		!(linkDetails.tokenType == 1 || linkDetails.tokenType == 3) || linkDetails.tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
@@ -860,7 +882,7 @@ async function createLinks({
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
-	const verbose = false
+	const verbose = VERBOSE
 	const passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 
@@ -1241,6 +1263,7 @@ const peanut = {
 	TOKEN_TYPES,
 	DEFAULT_CONTRACT_VERSION,
 	PEANUT_CONTRACTS,
+	interfaces,
 }
 
 console.log('peanut-sdk version: ', VERSION)
