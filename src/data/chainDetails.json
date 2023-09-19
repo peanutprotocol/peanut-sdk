@@ -144,9 +144,7 @@
 			"https://polygon-mumbai.gateway.tenderly.co",
 			"https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}"
 		],
-		"faucets": [
-			"https://faucet.polygon.technology/"
-		],
+		"faucets": ["https://faucet.polygon.technology/"],
 		"nativeCurrency": {
 			"name": "MATIC",
 			"symbol": "MATIC",
@@ -335,9 +333,7 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": [
-			"https://rpc-devnet-cardano-evm.c1.milkomeda.com"
-		],
+		"rpc": ["https://rpc-devnet-cardano-evm.c1.milkomeda.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkTAda",
@@ -364,9 +360,7 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": [
-			"https://rpc-mainnet-cardano-evm.c1.milkomeda.com"
-		],
+		"rpc": ["https://rpc-mainnet-cardano-evm.c1.milkomeda.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkAda",
@@ -404,9 +398,7 @@
 			"https://bsc-dataseed4.ninicoin.io",
 			"https://bsc.publicnode.com"
 		],
-		"faucets": [
-			"https://free-online-app.com/faucet-for-eth-evm-chains/"
-		],
+		"faucets": ["https://free-online-app.com/faucet-for-eth-evm-chains/"],
 		"nativeCurrency": {
 			"name": "BNB Chain Native Token",
 			"symbol": "BNB",
@@ -433,12 +425,8 @@
 	"5001": {
 		"name": "Mantle Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.testnet.mantle.xyz"
-		],
-		"faucets": [
-			"https://faucet.testnet.mantle.xyz"
-		],
+		"rpc": ["https://rpc.testnet.mantle.xyz"],
+		"faucets": ["https://faucet.testnet.mantle.xyz"],
 		"nativeCurrency": {
 			"name": "Testnet Mantle",
 			"symbol": "MNT",
@@ -474,9 +462,7 @@
 			"wss://sepolia.infura.io/v3/${INFURA_API_KEY}",
 			"https://sepolia.gateway.tenderly.co"
 		],
-		"faucets": [
-			"http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"
-		],
+		"faucets": ["http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"],
 		"nativeCurrency": {
 			"name": "Sepolia Ether",
 			"symbol": "ETH",
@@ -512,9 +498,7 @@
 			"url": "https://ipfs.io/ipfs/QmcHdmVr5VRUJq13jnM6tgah5Ge7hn3Dm14eY6vwivJ5ui",
 			"format": "png"
 		},
-		"rpc": [
-			"https://rpc.test.taiko.xyz"
-		],
+		"rpc": ["https://rpc.test.taiko.xyz"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
