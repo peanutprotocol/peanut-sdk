@@ -22,6 +22,7 @@ import {
 	DEFAULT_CONTRACT_VERSION,
 	DEFAULT_BATCHER_VERSION,
 	TOKEN_TYPES,
+	VERBOSE,
 } from './data.ts'
 
 import {
@@ -43,8 +44,6 @@ import {
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
-
-const VERBOSE = true // temp
 
 // async function getAbstractSigner(signer: any) {
 // 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
@@ -331,7 +330,7 @@ async function setFeeOptions({
 	verbose?: boolean
 }) {
 	// eip1559 = true
-	const verbose = true // TODO: move this to initializing the sdk
+	const verbose = VERBOSE // TODO: move this to initializing the sdk
 	verbose && console.log('Setting tx options...')
 	let feeData
 	// if not txOptions, create it (oneliner)
@@ -411,7 +410,7 @@ async function setFeeOptions({
 
 async function estimateGasLimit(contract: any, functionName: string, params: any, txOptions: any, multiplier = 1.3) {
 	try {
-		console.log('called estimate gas limit. contract.address:', contract.address, params, txOptions)
+		VERBOSE && console.log('called estimate gas limit. contract.address:', contract.address, params, txOptions)
 		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
 		return BigInt(Math.floor(Number(estimatedGas) * multiplier))
 	} catch (error) {
@@ -496,7 +495,9 @@ async function prepareTxs({
 			),
 		}
 	}
-	assert(numberOfLinks == passwords.length, 'numberOfLinks must be equal to passwords.length')
+	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
+	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
+	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks)
 
 	const unsignedTxs: ethers.providers.TransactionRequest[] = []
 	let txOptions: interfaces.ITxOptions = {}
@@ -528,12 +529,6 @@ async function prepareTxs({
 		}
 	}
 
-	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
-	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
-	// multiply tokenAmountBigNum by numberOfLinks
-	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks)
-
-	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
 	if (linkDetails.tokenType == 0) {
 		txOptions = {
 			...txOptions,
@@ -541,7 +536,7 @@ async function prepareTxs({
 		}
 	} else if (linkDetails.tokenType == 1) {
 		// TODO: check for erc721 and erc1155
-		console.log('checking allowance...')
+		VERBOSE && console.log('checking allowance...')
 		let approveTx
 		try {
 			const approveTx = await prepareApproveERC20Tx(
@@ -572,7 +567,6 @@ async function prepareTxs({
 	}
 
 	const keys = passwords.map((password) => generateKeysFromString(password)) // deterministically generate keys from password
-	console.log('Generating link...')
 
 	// set transaction options
 	try {
@@ -680,7 +674,7 @@ async function signAndSubmitTx({
 	structSigner,
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
-	const verbose = false
+	const verbose = VERBOSE
 	verbose && console.log('unsigned tx: ', unsignedTx)
 
 	let tx: ethers.providers.TransactionResponse
@@ -793,10 +787,12 @@ function validateLinkDetails(
 	linkDetails.baseUrl = linkDetails.baseUrl ?? 'https://peanut.to/claim'
 	linkDetails.trackId = linkDetails.trackId ?? 'sdk'
 
-	assert(
-		numberOfLinks > 1 || passwords.length === numberOfLinks,
-		'when creating multiple links, passwords must be an array of length numberOfLinks'
-	)
+	if (numberOfLinks > 1) {
+		assert(
+			passwords.length === numberOfLinks,
+			'when creating multiple links, passwords must be an array of length numberOfLinks'
+		)
+	}
 
 	assert(
 		linkDetails.tokenType == 0 || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
@@ -813,6 +809,10 @@ function validateLinkDetails(
 	if (linkDetails.tokenType !== 0 && linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000') {
 		throw new Error('need to provide tokenAddress if tokenType is not 0')
 	}
+
+	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
+	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
+	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
 
 	return linkDetails
 }
@@ -941,11 +941,11 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-	// gasLimit = null,
-} // maxPriorityFeePerGas = null,
+	// maxPriorityFeePerGas = null,
+} // gasLimit = null,
 // eip1559 = true,
 : interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
-	const verbose = true
+	const verbose = VERBOSE
 	// TODO: split into 2
 
 	const signer = structSigner.signer
@@ -1083,7 +1083,7 @@ async function createClaimPayload(link: string, recipientAddress: string) {
  * Gets the details of a Link: what token it is, how much it holds, etc.
  */
 async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsParams) {
-	const verbose = false // TODO: move this to initializing the SDK
+	const verbose = VERBOSE // TODO: move this to initializing the SDK
 	verbose && console.log('getLinkDetails called with link: ', link)
 	assert(link, 'link arg is required')
 
@@ -1182,7 +1182,7 @@ async function claimLinkGasless({
 	APIKey,
 	baseUrl = 'https://api.peanut.to/claim',
 }: interfaces.IClaimLinkGaslessParams) {
-	const verbose = true
+	const verbose = VERBOSE
 	verbose && console.log('claiming link through Peanut API...')
 	verbose &&
 		console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', APIKey, ' url: ', baseUrl)
