@@ -139,6 +139,7 @@ export interface ISignAndSubmitTxParams {
 
 export interface ISignAndSubmitTxResponse {
 	txHash: string
+	tx: ethers.providers.TransactionResponse
 	status: SDKStatus
 }
 

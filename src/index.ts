@@ -544,16 +544,16 @@ async function prepareTxs({
 		console.log('checking allowance...')
 		let approveTx
 		try {
-        const approveTx = await prepareApproveERC20Tx(
-        address,
-        String(linkDetails.chainId),
-        linkDetails.tokenAddress!,
-        tokenAmountBigNum,
-        linkDetails.tokenDecimals,
-        true,
-        peanutContractVersion,
-        provider
-      )
+			const approveTx = await prepareApproveERC20Tx(
+				address,
+				String(linkDetails.chainId),
+				linkDetails.tokenAddress!,
+				tokenAmountBigNum,
+				linkDetails.tokenDecimals,
+				true,
+				peanutContractVersion,
+				provider
+			)
 			approveTx && unsignedTxs.push(approveTx)
 		} catch (error) {
 			console.error(error)
@@ -683,21 +683,20 @@ async function signAndSubmitTx({
 	const verbose = false
 	verbose && console.log('unsigned tx: ', unsignedTx)
 
-	let tx
+	let tx: ethers.providers.TransactionResponse
 	try {
 		tx = await structSigner.signer.sendTransaction(unsignedTx)
 	} catch (error) {
 		console.error(error)
 		return {
 			txHash: '',
+			tx: null,
 			status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_SENDING_TX, 'Error sending the Tx'),
 		}
 	}
 
 	verbose && console.log('tx: ', tx)
-	await tx.wait()
-
-	return { txHash: tx.hash, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
+	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 }
 
 // takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
@@ -940,8 +939,8 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-	// maxPriorityFeePerGas = null,
-} // gasLimit = null,
+	// gasLimit = null,
+} // maxPriorityFeePerGas = null,
 // eip1559 = true,
 : interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = true
