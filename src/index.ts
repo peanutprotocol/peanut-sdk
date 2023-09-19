@@ -846,15 +846,15 @@ async function createLink({
 	}
 
 	// Sign and submit the transactions
-
 	const signedTxs = await Promise.all(
 		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
 
-	if (prepareTxsResponse.status.code != interfaces.EPrepareCreateTxsStatusCodes.SUCCESS) {
+	await signedTxs[signedTxs.length - 1].tx.wait()
+	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
 		return {
 			createdLink: { link: '', txHash: '' },
-			status: prepareTxsResponse.status,
+			status: signedTxs.find((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS).status,
 		}
 	}
 
@@ -907,10 +907,12 @@ async function createLinks({
 	const signedTxs = await Promise.all(
 		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
 	)
-	if (prepareTxsResponse.status.code != interfaces.EPrepareCreateTxsStatusCodes.SUCCESS) {
+
+	await signedTxs[signedTxs.length - 1].tx.wait()
+	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
 		return {
 			createdLinks: [],
-			status: prepareTxsResponse.status,
+			status: signedTxs.find((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS).status,
 		}
 	}
 
