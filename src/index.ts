@@ -109,7 +109,7 @@ async function fetchGetBalance(rpcUrl: string) {
  * Returns the default provider for a given chainId
  */
 async function getDefaultProvider(chainId: string, verbose = false): Promise<ethers.providers.JsonRpcProvider> {
-	verbose = true
+	verbose = VERBOSE
 	verbose && console.log('Getting default provider for chainId ', chainId)
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
@@ -563,7 +563,7 @@ async function prepareTxs({
 	}
 
 	if (passwords.length == 0) {
-		passwords = Array(numberOfLinks).fill(getRandomString(16))
+		passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
 	}
 
 	const keys = passwords.map((password) => generateKeysFromString(password)) // deterministically generate keys from password
@@ -825,7 +825,7 @@ async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
-	const password = getRandomString(16)
+	const password = await getRandomString(16)
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
@@ -882,7 +882,7 @@ async function createLinks({
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
 	const verbose = VERBOSE
-	const passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
+	const passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 
 	const provider = structSigner.signer.provider
