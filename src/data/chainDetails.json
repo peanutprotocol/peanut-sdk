@@ -27,7 +27,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://ethereum.org",
-		"shortName": "eth",
+		"shortName": "Ethereum",
 		"chainId": 1,
 		"networkId": 1,
 		"slip44": 60,
@@ -69,7 +69,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://goerli.net/#about",
-		"shortName": "gor",
+		"shortName": "Goerli",
 		"chainId": 5,
 		"networkId": 5,
 		"ens": {
@@ -117,7 +117,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://polygon.technology/",
-		"shortName": "matic",
+		"shortName": "Polygon PoS",
 		"chainId": 137,
 		"networkId": 137,
 		"slip44": 966,
@@ -151,7 +151,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://polygon.technology/",
-		"shortName": "maticmum",
+		"shortName": "Polygon Mumbai",
 		"chainId": 80001,
 		"networkId": 80001,
 		"explorers": [
@@ -179,7 +179,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://optimism.io",
-		"shortName": "OP",
+		"shortName": "Optimism",
 		"chainId": 10,
 		"networkId": 10,
 		"explorers": [
@@ -217,7 +217,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://optimism.io",
-		"shortName": "ogor",
+		"shortName": "Optimism Goerli",
 		"chainId": 420,
 		"networkId": 420,
 		"explorers": [
@@ -341,7 +341,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://milkomeda.com",
-		"shortName": "milkTAda",
+		"shortName": "Milkomeda Testnet",
 		"chainId": 200101,
 		"networkId": 200101,
 		"explorers": [
@@ -368,7 +368,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://milkomeda.com",
-		"shortName": "milkAda",
+		"shortName": "Milkomeda",
 		"chainId": 2001,
 		"networkId": 2001,
 		"explorers": [
@@ -405,7 +405,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://www.bnbchain.org/en",
-		"shortName": "bnb",
+		"shortName": "Binance Smart Chain",
 		"chainId": 56,
 		"networkId": 56,
 		"slip44": 714,
@@ -433,7 +433,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://mantle.xyz",
-		"shortName": "mantle-testnet",
+		"shortName": "Mantle Testnet",
 		"chainId": 5001,
 		"networkId": 5001,
 		"explorers": [
@@ -469,7 +469,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://sepolia.otterscan.io",
-		"shortName": "sep",
+		"shortName": "Sepolia",
 		"chainId": 11155111,
 		"networkId": 11155111,
 		"explorers": [
@@ -506,7 +506,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://taiko.xyz",
-		"shortName": "taiko-l2",
+		"shortName": "Taiko Testnet",
 		"chainId": 167005,
 		"networkId": 167005,
 		"explorers": [
