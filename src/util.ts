@@ -1,6 +1,8 @@
 import { ethers } from 'ethersv5' // v5
 import { CHAIN_MAP, PEANUT_CONTRACTS, VERBOSE } from './data.ts'
 
+import crypto from 'crypto'
+
 export function assert(condition: any, message: string) {
 	if (!condition) {
 		throw new Error(message || 'Assertion failed')
@@ -87,15 +89,28 @@ export async function signAddress(string: string, privateKey: string) {
 
 /**
  * Generates a random string of the specified length
- * TODO: crypto.randomBytes
  */
-export function getRandomString(length: number) {
-	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-	let result_str = ''
-	for (let i = 0; i < length; i++) {
-		result_str += chars[Math.floor(Math.random() * chars.length)]
+export function getRandomString(n: number = 18): string {
+	const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+	const charsetLength = charset.length
+	const maxByteValue = 256 // Each byte has 256 possible values
+	const maxUnbiasedByte = maxByteValue - (maxByteValue % charsetLength)
+
+	// need to avoid bias: https://gist.github.com/joepie91/7105003c3b26e65efcea63f3db82dfba#so-how-do-i-obtain-random-values-securely
+	// h/t to Nanak Nihal from Holonym
+
+	let randomString = ''
+	while (randomString.length < n) {
+		const randomBytes = crypto.randomBytes(n - randomString.length)
+		for (const byte of randomBytes) {
+			if (byte < maxUnbiasedByte) {
+				const randomIndex = byte % charsetLength
+				randomString += charset.charAt(randomIndex)
+			}
+		}
 	}
-	return result_str
+
+	return randomString
 }
 
 /**
