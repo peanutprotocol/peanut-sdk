@@ -43,10 +43,10 @@ describe('Unit tests', function () {
 			expect(validSignature1).toBe(true)
 
 			// generate some new keys from random string
-			const keys1 = peanut.generateKeysFromString(peanut.getRandomString(16))
+			const keys1 = peanut.generateKeysFromString(await peanut.getRandomString(16))
 
 			// sign a message with the private key
-			const randomMessage = peanut.getRandomString(16)
+			const randomMessage = await peanut.getRandomString(16)
 			const signature3 = await peanut.signMessageWithPrivatekey(randomMessage, keys1.privateKey)
 			const signature4 = await peanut.signMessageWithPrivatekey(randomMessage, keys1.privateKey)
 

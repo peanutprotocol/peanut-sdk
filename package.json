@@ -9,7 +9,8 @@
 		"./dist/peanut-sdk.node.js": "./dist/peanut-sdk.browser.js",
 		"fs": false,
 		"path": false,
-		"os": false
+		"os": false,
+		"crypto": false
 	},
 	"type": "module",
 	"scripts": {

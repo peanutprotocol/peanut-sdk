@@ -9,6 +9,13 @@ const commonConfig = {
 
 module.exports = {
 	...commonConfig,
-	// overrides: [
-	// ],
+	overrides: [
+		{
+			files: '*.yaml',
+			options: {
+				parser: 'yaml',
+				ignore: true,
+			},
+		},
+	],
 }

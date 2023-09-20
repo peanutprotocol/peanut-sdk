@@ -51,6 +51,10 @@ const common = {
 		outputModule: true,
 	},
 	resolve: {
+		fallback: {
+			// we're using different libraries now, so no need for crypto-browserify
+			// crypto: require.resolve('crypto-browserify'),
+		},
 		extensions: ['.tsx', '.ts', '.js'],
 	},
 }
