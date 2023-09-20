@@ -1227,7 +1227,6 @@ async function claimLinkGasless({
 	}
 }
 
-//do not remove everything, will break with testing
 const peanut = {
 	greeting,
 	generateKeysFromString,
@@ -1273,6 +1272,7 @@ export default peanut
 export {
 	peanut,
 	greeting,
+	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
 	getParamsFromPageURL,
