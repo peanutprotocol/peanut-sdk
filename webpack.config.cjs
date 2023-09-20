@@ -8,7 +8,8 @@ console.log('Building for production:', isProduction)
 
 const common = {
 	entry: './src/index.ts',
-	devtool: isProduction ? 'cheap-module-source-map' : 'eval-source-map',
+	// devtool: isProduction ? 'cheap-module-source-map' : 'eval-source-map',
+	devtool: 'source-map',
 	mode: isProduction ? 'production' : 'development',
 	module: {
 		rules: [
