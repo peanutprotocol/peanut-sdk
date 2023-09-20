@@ -941,10 +941,10 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-	// gasLimit = null,
-} // maxPriorityFeePerGas = null,
-	// eip1559 = true,
-	: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+	// maxPriorityFeePerGas = null,
+} // gasLimit = null,
+// eip1559 = true,
+: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = VERBOSE
 	// TODO: split into 2
 

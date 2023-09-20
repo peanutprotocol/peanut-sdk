@@ -90,7 +90,7 @@ export async function signAddress(string: string, privateKey: string) {
 /**
  * Generates a random string of the specified length
  */
-export function getRandomString(n: number = 18): string {
+export function getRandomString(n: number = 16): string {
 	const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 	const charsetLength = charset.length
 	const maxByteValue = 256 // Each byte has 256 possible values
