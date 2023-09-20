@@ -136,13 +136,18 @@ async function getDefaultProvider(chainId: string, verbose = false): Promise<eth
 		})
 	})
 
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		// Use Promise.race to get the first valid RPC.
 		Promise.race(checkPromises)
-			.then((result) => {
+			.then(async (result) => {
 				if (result && result.isValid) {
 					verbose && console.log('Valid RPC found:', result.rpc)
-					const provider = new ethers.providers.JsonRpcProvider(result.rpc)
+					const provider = new ethers.providers.JsonRpcProvider({
+						url: result.rpc,
+						skipFetchSetup: true,
+					})
+					// const provider = new ethers.providers.JsonRpcProvider(result.rpc)
+					// await provider.ready
 					resolve(provider)
 				}
 			})
@@ -940,11 +945,12 @@ async function createLinks({
 async function claimLink({
 	structSigner,
 	link,
-	recipient = null, // maxFeePerGas = null,
 	// maxPriorityFeePerGas = null,
-} // gasLimit = null,
-// eip1559 = true,
-: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+	// gasLimit = null,
+	// eip1559 = true,
+	// maxFeePerGas = null,
+	recipient = null,
+}: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = VERBOSE
 	// TODO: split into 2
 
