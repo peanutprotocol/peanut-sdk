@@ -941,10 +941,10 @@ async function claimLink({
 	structSigner,
 	link,
 	recipient = null, // maxFeePerGas = null,
-	// maxPriorityFeePerGas = null,
-} // gasLimit = null,
-// eip1559 = true,
-: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+	// gasLimit = null,
+} // maxPriorityFeePerGas = null,
+	// eip1559 = true,
+	: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = VERBOSE
 	// TODO: split into 2
 
@@ -1227,7 +1227,6 @@ async function claimLinkGasless({
 	}
 }
 
-//do not remove everything, will break with testing
 const peanut = {
 	greeting,
 	generateKeysFromString,
@@ -1273,6 +1272,7 @@ export default peanut
 export {
 	peanut,
 	greeting,
+	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
 	getParamsFromPageURL,
