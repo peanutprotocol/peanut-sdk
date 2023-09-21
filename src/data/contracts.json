@@ -39,7 +39,8 @@
 	"420": {
 		"optimism-goerli": "",
 		"v3": "0xDC608f2Bc4f0AFf02D12d51Ca8b543B343525c8a",
-		"v4": "0xD3fBCb1AF168e985c5Ab20B0D2dbe39840043291"
+		"v4": "0xD3fBCb1AF168e985c5Ab20B0D2dbe39840043291",
+		"Bv4": "0x131562e5b24F1aE3931750114fC541c104b835Ff"
 	},
 	"42161": {
 		"arbitrum-mainnet": "",
