@@ -356,9 +356,21 @@ async function setFeeOptions({
 
 	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
 	const chainId = await provider.getNetwork().then((network: any) => network.chainId)
+	const chainDetails = CHAIN_DETAILS[chainId]
+
 	if (chainId == 137) {
 		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
 		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
+	}
+
+	// Check if EIP-1559 is supported
+	verbose && console.log('checking if eip1559 is supported...')
+	if (chainDetails && chainDetails.features) {
+		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
+		verbose && console.log('Setting eip1559 to false chainid:', chainId)
+	} else {
+		verbose && console.log('Setting eip1559 to false chainid:', chainId)
+		eip1559 = false
 	}
 
 	// if on milkomeda, set eip1559 to false
@@ -692,6 +704,16 @@ async function signAndSubmitTx({
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
 	const verbose = VERBOSE
 	verbose && console.log('unsigned tx: ', unsignedTx)
+
+	// Set the transaction options using setFeeOptions
+	const txOptions = await setFeeOptions({
+		provider: structSigner.signer.provider,
+		eip1559: true, // or any other value you want to set
+		// set other options as needed
+	})
+
+	// Merge the transaction options into the unsigned transaction
+	unsignedTx = { ...unsignedTx, ...txOptions }
 
 	let tx: ethers.providers.TransactionResponse
 	try {
