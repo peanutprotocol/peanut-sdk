@@ -39,7 +39,8 @@
 	"420": {
 		"optimism-goerli": "",
 		"v3": "0xDC608f2Bc4f0AFf02D12d51Ca8b543B343525c8a",
-		"v4": "0xD3fBCb1AF168e985c5Ab20B0D2dbe39840043291"
+		"v4": "0xD3fBCb1AF168e985c5Ab20B0D2dbe39840043291",
+		"Bv4": "0x131562e5b24F1aE3931750114fC541c104b835Ff"
 	},
 	"42161": {
 		"arbitrum-mainnet": "",
@@ -64,7 +65,12 @@
 		"v4": "0x1851359AB8B002217cf4D108d7F027B63563754C"
 	},
 	"bsctestnet": {},
-	"56": { "bsc-mainnet": "", "v3": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7" },
+	"56": {
+		"bsc-mainnet": "",
+		"v3": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
+		"v4": "0x0abfA78f307920e0C1a463BCf5A16cA3F586c43c",
+		"Bv4": "0x287b67a4D320c15CE5569A09de4D8f6Cea1198f6"
+	},
 	"97": { "bsc-testnet": "" },
 	"43114": { "avalanche-mainnet": "", "v1": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7" },
 	"43113": { "avalanche-fuji": "" },

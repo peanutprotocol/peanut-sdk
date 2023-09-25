@@ -1,6 +1,6 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.2.11",
+	"version": "0.2.13",
 	"description": "The Peanut Protocol SDK! See examples/ folder",
 	"main": "dist/peanut-sdk.node.js",
 	"module": "dist/peanut-sdk.browser.js",
@@ -20,7 +20,8 @@
 		"clean": "rm -r dist || true",
 		"build:bun": "bun bun.build.js",
 		"build:dev": "npm run clean && npm run pkg-move && npm run generate-types && webpack --config webpack.config.cjs --mode development",
-		"build": "NODE_ENV=production npm run clean && npm run pkg-move && npm run generate-types && webpack --config webpack.config.cjs --mode production",
+		"build": "npm run clean && npm run pkg-move && npm run generate-types && NODE_ENV=production webpack --config webpack.config.cjs --mode production",
+		"analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer stats.json",
 		"pkg-move": "cp package.json src/data/package.json",
 		"generate-types": "rm tsconfig.tsbuildinfo || true && tsc --emitDeclarationOnly",
 		"pre-git": "npm run prettier && npm run lint:fix && npm run test && npm run build:prod",
@@ -92,6 +93,7 @@
 		"url": "^0.11.1",
 		"utf-8-validate": "^5.0.10",
 		"webpack": "^5.88.1",
+		"webpack-bundle-analyzer": "^4.9.1",
 		"webpack-cli": "^5.1.4",
 		"webpack-node-externals": "^3.0.0"
 	}
