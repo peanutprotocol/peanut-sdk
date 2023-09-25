@@ -16,6 +16,7 @@ import {
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
+	ERC721_ABI,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	VERSION,
@@ -226,6 +227,24 @@ async function getAllowance(
 	return allowance
 }
 
+async function getApproved(
+	tokenContract: any,
+	tokenId: number,
+	signerOrProvider?: ethers.providers.JsonRpcSigner | ethers.providers.Provider
+) {
+	let approved
+	try {
+		if (!signerOrProvider) {
+			signerOrProvider = await getDefaultProvider(tokenContract.chainId)
+		}
+
+		approved = await tokenContract.getApproved(tokenId)
+	} catch (error) {
+		console.error('Error fetching approval:', error)
+	}
+	return approved
+}
+
 // async function approveSpendERC20(
 // 	signer: ethers.providers.JsonRpcSigner,
 // 	chainId: string,
@@ -305,6 +324,39 @@ async function prepareApproveERC20Tx(
 
 	const tx = tokenContract.populateTransaction.approve(spender, amount)
 	return tx
+}
+
+async function prepareApproveERC721Tx(
+    address: string,
+    chainId: string,
+    tokenAddress: string,
+    tokenId: number,
+	provider?: any,
+	spenderAddress?: string | undefined,
+    contractVersion = DEFAULT_CONTRACT_VERSION
+): Promise<ethers.providers.TransactionRequest | null> {
+	//return null;
+	const defaultProvider = provider || (await getDefaultProvider(chainId))
+    const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider);
+
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
+
+	console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId);
+    // Check if approval is already sufficient
+    const currentApproval = await getApproved(tokenContract, tokenId, defaultProvider);
+    if (currentApproval.toLowerCase() === spender.toLowerCase()) {
+        console.log('Approval already granted to the spender for token ID: ' + tokenId);
+        return null;
+    }
+	else{
+		console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId);
+	}
+
+    // Prepare the transaction to approve the spender for the specified token ID
+    const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address });
+    return tx;
+	//return null;
 }
 
 async function setFeeOptions({
@@ -535,7 +587,6 @@ async function prepareTxs({
 			value: totalTokenAmount,
 		}
 	} else if (linkDetails.tokenType == 1) {
-		// TODO: check for erc721 and erc1155
 		VERBOSE && console.log('checking allowance...')
 		let approveTx
 		try {
@@ -558,6 +609,26 @@ async function prepareTxs({
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,
 					'Error preparing the approve ERC20 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
 				),
+			}
+		}
+	} else if (linkDetails.tokenType == 2) {
+		/*VERBOSE &&*/ console.log('checking ERC721 allowance...')
+		try {
+			const approveTx = await prepareApproveERC721Tx(
+				address,
+				String(linkDetails.chainId),
+				linkDetails.tokenAddress!,
+				linkDetails.tokenId)
+
+			approveTx && unsignedTxs.push(approveTx)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,//ERROR_PREPARING_APPROVE_ERC721_TX,
+					'Error preparing the approve ERC721 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
+				)
 			}
 		}
 	}
