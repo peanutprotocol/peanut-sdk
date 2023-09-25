@@ -110,7 +110,7 @@ async function fetchGetBalance(rpcUrl: string) {
  * Returns the default provider for a given chainId
  */
 async function getDefaultProvider(chainId: string, verbose = false): Promise<ethers.providers.JsonRpcProvider> {
-	verbose = true
+	verbose = VERBOSE
 	verbose && console.log('Getting default provider for chainId ', chainId)
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
@@ -137,13 +137,18 @@ async function getDefaultProvider(chainId: string, verbose = false): Promise<eth
 		})
 	})
 
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		// Use Promise.race to get the first valid RPC.
 		Promise.race(checkPromises)
-			.then((result) => {
+			.then(async (result) => {
 				if (result && result.isValid) {
 					verbose && console.log('Valid RPC found:', result.rpc)
-					const provider = new ethers.providers.JsonRpcProvider(result.rpc)
+					const provider = new ethers.providers.JsonRpcProvider({
+						url: result.rpc,
+						skipFetchSetup: true,
+					})
+					// const provider = new ethers.providers.JsonRpcProvider(result.rpc)
+					// await provider.ready
 					resolve(provider)
 				}
 			})
@@ -634,7 +639,7 @@ async function prepareTxs({
 	}
 
 	if (passwords.length == 0) {
-		passwords = Array(numberOfLinks).fill(getRandomString(16))
+		passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
 	}
 
 	const keys = passwords.map((password) => generateKeysFromString(password)) // deterministically generate keys from password
@@ -896,7 +901,7 @@ async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
-	const password = getRandomString(16)
+	const password = await getRandomString(16)
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
@@ -953,7 +958,7 @@ async function createLinks({
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
 	const verbose = VERBOSE
-	const passwords = Array.from({ length: numberOfLinks }, () => getRandomString(16))
+	const passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 
 	const provider = structSigner.signer.provider
@@ -1011,11 +1016,12 @@ async function createLinks({
 async function claimLink({
 	structSigner,
 	link,
-	recipient = null, // maxFeePerGas = null,
 	// maxPriorityFeePerGas = null,
-} // gasLimit = null,
-// eip1559 = true,
-: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
+	// gasLimit = null,
+	// eip1559 = true,
+	// maxFeePerGas = null,
+	recipient = null,
+}: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
 	const verbose = VERBOSE
 	// TODO: split into 2
 
@@ -1298,7 +1304,6 @@ async function claimLinkGasless({
 	}
 }
 
-//do not remove everything, will break with testing
 const peanut = {
 	greeting,
 	generateKeysFromString,
@@ -1344,6 +1349,7 @@ export default peanut
 export {
 	peanut,
 	greeting,
+	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
 	getParamsFromPageURL,

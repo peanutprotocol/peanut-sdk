@@ -1,6 +1,8 @@
 import { ethers } from 'ethersv5' // v5
 import { CHAIN_MAP, PEANUT_CONTRACTS, VERBOSE } from './data.ts'
 
+import crypto from 'crypto'
+
 export function assert(condition: any, message: string) {
 	if (!condition) {
 		throw new Error(message || 'Assertion failed')
@@ -87,15 +89,68 @@ export async function signAddress(string: string, privateKey: string) {
 
 /**
  * Generates a random string of the specified length
- * TODO: crypto.randomBytes
+ *  need to avoid bias: https://gist.github.com/joepie91/7105003c3b26e65efcea63f3db82dfba#so-how-do-i-obtain-random-values-securely
+ * h/t to Nanak Nihal from Holonym
+ * browser: tries to use secure generateKey if available, otherwise falls back to getRandomValues
+ * node: uses secure crypto.randomBytes
  */
-export function getRandomString(length: number) {
-	const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-	let result_str = ''
-	for (let i = 0; i < length; i++) {
-		result_str += chars[Math.floor(Math.random() * chars.length)]
+export async function getRandomString(n: number = 16): Promise<string> {
+	const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+	const charsetLength = charset.length
+	const maxByteValue = 256 // Each byte has 256 possible values
+	const maxUnbiasedByte = maxByteValue - (maxByteValue % charsetLength)
+
+	let randomString = ''
+
+	const generateKeyRandomBytes = async (length: number): Promise<Uint8Array> => {
+		const cryptoSubtle =
+			typeof window !== 'undefined' && window.crypto && window.crypto.subtle ? window.crypto.subtle : undefined
+		if (cryptoSubtle) {
+			try {
+				// Use generateKey to generate a symmetric key of sufficient length
+				const key = await cryptoSubtle.generateKey(
+					{
+						name: 'AES-GCM',
+						length: length * 8, // Convert byte length to bit length
+					},
+					true,
+					['encrypt', 'decrypt']
+				)
+				// Export the key to raw bytes
+				const keyBuffer = await cryptoSubtle.exportKey('raw', key)
+				return new Uint8Array(keyBuffer)
+			} catch (error) {
+				console.warn('Failed to use generateKey. Falling back to getRandomValues.', error)
+			}
+		}
+		return getRandomValuesRandomBytes(length)
 	}
-	return result_str
+
+	const getRandomValuesRandomBytes = (length: number): Uint8Array => {
+		if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+			// Browser
+			const array = new Uint8Array(length)
+			window.crypto.getRandomValues(array)
+			return array
+		} else {
+			// Node
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const crypto = require('crypto')
+			return crypto.randomBytes(length)
+		}
+	}
+
+	while (randomString.length < n) {
+		const randomBytes = await generateKeyRandomBytes(n - randomString.length)
+		for (const byte of randomBytes) {
+			if (byte < maxUnbiasedByte) {
+				const randomIndex = byte % charsetLength
+				randomString += charset.charAt(randomIndex)
+			}
+		}
+	}
+
+	return randomString
 }
 
 /**
