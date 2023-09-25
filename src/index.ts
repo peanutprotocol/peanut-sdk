@@ -340,7 +340,6 @@ async function prepareApproveERC721Tx(
 	spenderAddress?: string | undefined,
     contractVersion = DEFAULT_CONTRACT_VERSION
 ): Promise<ethers.providers.TransactionRequest | null> {
-	//return null;
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
     const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider);
 
@@ -361,7 +360,6 @@ async function prepareApproveERC721Tx(
     // Prepare the transaction to approve the spender for the specified token ID
     const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address });
     return tx;
-	//return null;
 }
 
 async function setFeeOptions({
@@ -617,7 +615,7 @@ async function prepareTxs({
 			}
 		}
 	} else if (linkDetails.tokenType == 2) {
-		/*VERBOSE &&*/ console.log('checking ERC721 allowance...')
+		VERBOSE && console.log('checking ERC721 allowance...')
 		try {
 			const approveTx = await prepareApproveERC721Tx(
 				address,
@@ -631,7 +629,7 @@ async function prepareTxs({
 			return {
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
-					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,//ERROR_PREPARING_APPROVE_ERC721_TX,
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC721_TX,
 					'Error preparing the approve ERC721 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
 				)
 			}
