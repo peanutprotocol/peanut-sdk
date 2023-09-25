@@ -1214,19 +1214,41 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
 	verbose && console.log('chainId: ', chainId)
-	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
-	if (!chainDetails) {
-		throw new Error('Chain details not found')
-	}
 
-	// Find the token within the tokens array of the chain
-	const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
-	if (!tokenDetails) {
-		throw new Error('Token details not found')
-	}
+	let tokenAmount = "0"
+	let symbol = "?"
+	let name = "?"
+	
+	if (tokenType == 1) {
+		// ERC20 tokens exist in details colelction
+		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
+		if (!chainDetails) {
+			throw new Error('Chain details not found')
+		}
 
-	// Format the token amount
-	const tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+		// Find the token within the tokens array of the chain
+		const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
+		if (!tokenDetails) {
+			throw new Error('Token details not found')
+		}
+
+		symbol = tokenDetails.symbol
+		name = tokenDetails.name
+
+		// Format the token amount
+		tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+	}
+	else if (tokenType == 2) {
+		// get name and symbol from ERC721 contract directly
+		try {
+			const contract721 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
+			name = await contract721.name()
+			symbol = await contract721.symbol()
+		} catch (error) {
+			console.error('Error fetching ERC721 info:', error)
+		}
+		tokenAmount = "1"
+	}
 
 	// TODO: Fetch token price using API
 
@@ -1238,8 +1260,8 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		password: password,
 		tokenType: deposit.contractType,
 		tokenAddress: deposit.tokenAddress,
-		tokenSymbol: tokenDetails.symbol,
-		tokenName: tokenDetails.name,
+		tokenSymbol: symbol,
+		tokenName: name,
 		tokenAmount: tokenAmount,
 		claimed: claimed,
 		depositDate: depositDate,
