@@ -520,19 +520,6 @@ async function prepareTxs({
 			}
 		}
 	}
-	// txOptions.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // no nonce anymore?
-	try {
-		txOptions.nonce = await provider.getTransactionCount(address)
-	} catch (error) {
-		console.error(error)
-		return {
-			unsignedTxs: [],
-			status: new interfaces.SDKStatus(
-				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_TX_COUNT,
-				'Error getting the transaction count'
-			),
-		}
-	}
 
 	if (linkDetails.tokenType == 0) {
 		txOptions = {
@@ -542,7 +529,6 @@ async function prepareTxs({
 	} else if (linkDetails.tokenType == 1) {
 		// TODO: check for erc721 and erc1155
 		VERBOSE && console.log('checking allowance...')
-		let approveTx
 		try {
 			const approveTx = await prepareApproveERC20Tx(
 				address,
@@ -573,27 +559,28 @@ async function prepareTxs({
 
 	const keys = passwords.map((password) => generateKeysFromString(password)) // deterministically generate keys from password
 
+	// HAVE TO SET FEE OPTIONS AT SIGNING TIME
 	// set transaction options
-	try {
-		txOptions = await setFeeOptions({
-			txOptions,
-			provider: provider,
-			// TODO: setFeeOptions should take into account if chain supports eip1559? or should we just set this to empty?
-			// eip1559: structSigner.eip1559,
-			// maxFeePerGas: structSigner.maxFeePerGas,
-			// maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
-			// gasLimit: structSigner.gasLimit,
-		})
-	} catch (error) {
-		console.error(error)
-		return {
-			unsignedTxs: [],
-			status: new interfaces.SDKStatus(
-				interfaces.EPrepareCreateTxsStatusCodes.ERROR_SETTING_FEE_OPTIONS,
-				'Error setting fee options'
-			),
-		}
-	}
+	// try {
+	// 	txOptions = await setFeeOptions({
+	// 		txOptions,
+	// 		provider: provider,
+	// 		// TODO: setFeeOptions should take into account if chain supports eip1559? or should we just set this to empty?
+	// 		// eip1559: structSigner.eip1559,
+	// 		// maxFeePerGas: structSigner.maxFeePerGas,
+	// 		// maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+	// 		// gasLimit: structSigner.gasLimit,
+	// 	})
+	// } catch (error) {
+	// 	console.error(error)
+	// 	return {
+	// 		unsignedTxs: [],
+	// 		status: new interfaces.SDKStatus(
+	// 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_SETTING_FEE_OPTIONS,
+	// 			'Error setting fee options'
+	// 		),
+	// 	}
+	// }
 
 	let contract
 	let depositParams
@@ -609,15 +596,16 @@ async function prepareTxs({
 		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
 
 		// TODO: this will fail if allowance is not enough
-		try {
-			const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
-			if (estimatedGasLimit) {
-				txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
-			}
-		} catch (error) {
-			// do nothing
-			verbose && console.log('Error estimating gas limit:', error)
-		}
+		// removing estimating gas limit from here
+		// try {
+		// 	const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
+		// 	if (estimatedGasLimit) {
+		// 		txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
+		// 	}
+		// } catch (error) {
+		// 	// do nothing
+		// 	verbose && console.log('Error estimating gas limit:', error)
+		// }
 		try {
 			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
 		} catch (error) {
@@ -640,22 +628,25 @@ async function prepareTxs({
 			keys.map((key) => key.address),
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, batcherContractVersion) // get the contract instance
-		let estimatedGasLimit
-		try {
-			estimatedGasLimit = await estimateGasLimit(contract, 'batchMakeDeposit', depositParams, txOptions)
-		} catch (error) {
-			console.error(error)
-			return {
-				unsignedTxs: [],
-				status: new interfaces.SDKStatus(
-					interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
-					'Error estimating gas limit'
-				),
-			}
-		}
-		if (estimatedGasLimit) {
-			txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
-		}
+
+		// HAVE TO ESTIMATE GAS IN SIGNING PROCESS
+		// let estimatedGasLimit
+		// try {
+		// 	estimatedGasLimit = await estimateGasLimit(contract, 'batchMakeDeposit', depositParams, txOptions)
+		// } catch (error) {
+		// 	console.error(error)
+		// 	return {
+		// 		unsignedTxs: [],
+		// 		status: new interfaces.SDKStatus(
+		// 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
+		// 			'Error estimating gas limit'
+		// 		),
+		// 	}
+		// }
+		// if (estimatedGasLimit) {
+		// 	txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
+		// }
+
 		try {
 			depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
 		} catch (error) {
@@ -671,6 +662,26 @@ async function prepareTxs({
 	}
 
 	unsignedTxs.push(depositTx)
+
+	// if 2 or more transactions, assign them sequential nonces
+	if (unsignedTxs.length > 1) {
+		// txOptions.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // no nonce anymore?
+		let nonce
+		try {
+			nonce = await provider.getTransactionCount(address)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_TX_COUNT,
+					'Error getting the transaction count'
+				),
+			}
+		}
+
+		unsignedTxs.forEach((tx, i) => (tx.nonce = nonce + i))
+	}
 
 	return { status: new interfaces.SDKStatus(interfaces.EPrepareCreateTxsStatusCodes.SUCCESS), unsignedTxs }
 }
@@ -697,6 +708,26 @@ async function signAndSubmitTx({
 	verbose && console.log('tx: ', tx)
 	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 }
+
+// async function signAndSubmitTx({
+// 	structSigner,
+// 	unsignedTx,
+// }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
+// 	const verbose = VERBOSE
+// 	verbose && console.log('unsigned tx: ', unsignedTx)
+
+// 	let tx: ethers.providers.TransactionResponse
+// 	try {
+// 		tx = await structSigner.signer.sendTransaction(unsignedTx)
+// 	} catch (error) {
+// 		console.error('Error estimating gas, sending with a predefined gas limit: ', error)
+// 		unsignedTx.gasLimit = ethers.utils.hexlify(300000) // Set a predefined gas limit here
+// 		tx = await structSigner.signer.sendTransaction(unsignedTx)
+// 	}
+
+// 	verbose && console.log('tx: ', tx)
+// 	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
+// }
 
 // takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
 async function getLinksFromTx({
@@ -830,6 +861,7 @@ async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
+	const verbose = VERBOSE
 	const password = await getRandomString(16)
 	const provider = structSigner.signer.provider
 
@@ -850,18 +882,27 @@ async function createLink({
 		}
 	}
 
-	// Sign and submit the transactions
-	const signedTxs = await Promise.all(
-		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
-	)
-
-	await signedTxs[signedTxs.length - 1].tx.wait()
-	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
-		return {
-			createdLink: { link: '', txHash: '' },
-			status: signedTxs.find((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS).status,
+	// Sign and submit the transactions sequentially
+	const signedTxs = []
+	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
+		const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
+		signedTxs.push(signedTx)
+		// wait for the transaction to be mined before sending the next one
+		// we could bundle both in one block, but only works if we set custom gas limits.
+		try {
+			await signedTx.tx.wait()
+		} catch (error) {
+			console.error(error)
+			return {
+				createdLink: { link: '', txHash: '' },
+				status: new interfaces.SDKStatus(
+					interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+					'Error waiting for the transaction'
+				),
+			}
 		}
 	}
+	// await signedTxs[signedTxs.length - 1].tx.wait() // rpcs not fast enough
 
 	// Get the links from the transactions
 	const linksFromTxResp = await getLinksFromTx({
@@ -909,15 +950,29 @@ async function createLinks({
 
 	verbose && console.log('prepareTxsResponse: ', prepareTxsResponse)
 	// Sign and submit the transactions
-	const signedTxs = await Promise.all(
-		prepareTxsResponse.unsignedTxs.map((unsignedTx) => signAndSubmitTx({ structSigner, unsignedTx }))
-	)
+	const signedTxs = []
+	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
+		const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
+		signedTxs.push(signedTx)
+	}
+	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
+		return {
+			createdLinks: [],
+			status: new interfaces.SDKStatus(
+				interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+				'Error signing and submitting the transaction'
+			),
+		}
+	}
 
 	await signedTxs[signedTxs.length - 1].tx.wait()
 	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
 		return {
 			createdLinks: [],
-			status: signedTxs.find((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS).status,
+			status: new interfaces.SDKStatus(
+				interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+				'Error waiting for the transaction'
+			),
 		}
 	}
 

@@ -1,6 +1,7 @@
 import peanut from '../src/index' // import directly from source code
 import { ethers } from 'ethersv5'
 import { expect, describe, it } from '@jest/globals'
+import { ERC20_ABI } from '../src/data'
 import * as interfaces from '../src/consts/interfaces.consts'
 import dotenv from 'dotenv'
 dotenv.config()
@@ -43,7 +44,7 @@ describe('optimism goerli', function () {
 	const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL) // v5
 	const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismGoerliProvider)
 
-	it.only('should create a native link and claim it', async function () {
+	it('should create a native link and claim it', async function () {
 		await createAndClaimLink(
 			{
 				structSigner: {
@@ -229,7 +230,7 @@ describe('goerli', function () {
 
 describe('bnb', function () {
 	it('bnb should create a native link with weird tokendecimals and claim it', async function () {
-		let tokenAmount = 0.0000455228296990941
+		const tokenAmount = 0.0000455228296990941
 		const BNB_RPC_URL = 'https://bsc-dataseed.binance.org/'
 		const bnbProvider = new ethers.providers.JsonRpcProvider(BNB_RPC_URL)
 		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', bnbProvider)
@@ -248,4 +249,75 @@ describe('bnb', function () {
 			9000
 		)
 	}, 60000)
+})
+
+// will take a loong time, goerli...
+describe('new wallet test', function () {
+	const TEST_WALLET_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
+	const testWalletProvider = new ethers.providers.JsonRpcProvider(TEST_WALLET_RPC_URL)
+	const testWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', testWalletProvider)
+
+	it('should create a new wallet, load it with native token and erc20, and test both', async function () {
+		// Create a new random wallet from seed
+		const newWallet = ethers.Wallet.createRandom()
+		// const newWallet = ethers.Wallet.fromMnemonic(
+		// 	'loud music eyebrow wasp entire genre switch lemon shield judge aware dash'
+		// )
+		const newWalletConnected = newWallet.connect(testWalletProvider)
+		console.log('new wallet address: ' + newWallet.address)
+
+		// Define token details
+		const tokenAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB' // goerli LINK
+		const tokenDecimals = 18
+		const tokenAmount = ethers.utils.parseUnits('0.0001', tokenDecimals) // 10 LINK
+
+		// Transfer native token to new wallet
+		console.log('sending native token to new wallet')
+		let transaction = await testWallet.sendTransaction({
+			to: newWallet.address,
+			value: ethers.utils.parseEther('0.01'),
+		})
+		await transaction.wait()
+		console.log('native token sent to new wallet. txHash: ' + transaction.hash)
+
+		// Test native token
+		console.log('testing native token')
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: newWalletConnected,
+				},
+				linkDetails: {
+					chainId: 5,
+					tokenAmount: 0.00005,
+					tokenType: 0, // 0 for ether
+				},
+			},
+			9000
+		)
+
+		// Transfer ERC20 token to new wallet
+		console.log('sending erc20 token to new wallet')
+		const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, testWallet)
+		transaction = await tokenContract.transfer(newWallet.address, tokenAmount)
+		await transaction.wait()
+		console.log('erc20 token sent to new wallet. txHash: ' + transaction.hash)
+
+		console.log('testing erc20 token')
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: newWalletConnected,
+				},
+				linkDetails: {
+					chainId: 5,
+					tokenAmount: 0.00001,
+					tokenDecimals: tokenDecimals,
+					tokenAddress: tokenAddress,
+					tokenType: 1, // 1 for erc20
+				},
+			},
+			9000
+		)
+	}, 240000)
 })
