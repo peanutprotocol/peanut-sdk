@@ -874,10 +874,10 @@ async function createLink({
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
 	const password = await getRandomString(16)
+	linkDetails = validateLinkDetails(linkDetails, [password], 1)
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
-
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
 		linkDetails,
@@ -940,8 +940,8 @@ async function createLinks({
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
 	const passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
-
 	const provider = structSigner.signer.provider
+
 	// Prepare the transactions
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
@@ -958,24 +958,28 @@ async function createLinks({
 		}
 	}
 
-	config.verbose && console.log('prepareTxsResponse: ', prepareTxsResponse)
 	// Sign and submit the transactions
 	const signedTxs = []
 	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
 		const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
 		signedTxs.push(signedTx)
-	}
-	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
-		return {
-			createdLinks: [],
-			status: new interfaces.SDKStatus(
-				interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
-				'Error signing and submitting the transaction'
-			),
+		// wait for the transaction to be mined before sending the next one
+		// we could bundle both in one block, but only works if we set custom gas limits.
+		try {
+			await signedTx.tx.wait()
+		} catch (error) {
+			console.error(error)
+			return {
+				createdLinks: [],
+				status: new interfaces.SDKStatus(
+					interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+					'Error awaiting transaction'
+				),
+			}
 		}
 	}
+	// await signedTxs[signedTxs.length - 1].tx.wait()
 
-	await signedTxs[signedTxs.length - 1].tx.wait()
 	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
 		return {
 			createdLinks: [],
@@ -1311,11 +1315,13 @@ async function claimLinkGasless({
 	}
 }
 
+function toggleVerbose() {
+	config.verbose = !config.verbose
+	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
+}
+
 const peanut = {
-	toggleVerbose() {
-		config.verbose = !config.verbose
-		console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
-	},
+	toggleVerbose,
 	greeting,
 	generateKeysFromString,
 	signMessageWithPrivatekey,
@@ -1361,6 +1367,7 @@ console.log('peanut-sdk version: ', VERSION)
 export default peanut
 export {
 	peanut,
+	toggleVerbose,
 	greeting,
 	getRandomString,
 	getLinkFromParams,
