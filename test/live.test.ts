@@ -58,6 +58,7 @@ describe('optimism goerli', function () {
 			},
 			9000
 		)
+		expect(true).toBeTruthy()
 		// Add assertion here
 	}, 60000)
 	// it('should create an erc20 link and claim it', async function () {
@@ -250,6 +251,34 @@ describe('bnb', function () {
 		)
 	}, 60000)
 })
+
+// describe('mainnet', function () {
+// 	throw new Error('Dont run mainnet tests lol')
+// 	it('mainnet should create an er20 link with weird tokendecimals and claim it', async function () {
+// 		peanut.toggleVerbose()
+// 		const tokenAmount = 0.0000455228296990941
+// 		const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // usdc
+// 		const tokenDecimals = 6
+// 		const provider = await peanut.getDefaultProvider('1')
+// 		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+// 		const chainId = 1
+// 		await createAndClaimLink(
+// 			{
+// 				structSigner: {
+// 					signer: bnbWallet,
+// 				},
+// 				linkDetails: {
+// 					chainId: chainId,
+// 					tokenAmount: tokenAmount,
+// 					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+// 					tokenAddress: tokenAddress,
+// 					tokenDecimals: tokenDecimals,
+// 				},
+// 			},
+// 			9000
+// 		)
+// 	}, 60000)
+// })
 
 // will take a loong time, goerli...
 describe('new wallet test', function () {

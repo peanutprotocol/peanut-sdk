@@ -1,7 +1,6 @@
 import { ethers } from 'ethersv5' // v5
-import { CHAIN_MAP, PEANUT_CONTRACTS, VERBOSE } from './data.ts'
-
-import crypto from 'crypto'
+import { CHAIN_MAP, PEANUT_CONTRACTS } from './data.ts'
+import { config } from './config.ts'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -280,7 +279,6 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
  * Returns an array of deposit indices from a batch transaction receipt
  */
 export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
-	const verbose = VERBOSE
 	const logs = txReceipt.logs
 	const depositIdxs = []
 
@@ -293,7 +291,7 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const contractAddress = _PEANUT_CONTRACTS[chainId][contractVersion]
-	verbose && console.log(contractAddress, contractVersion, chainId)
+	config.verbose && console.log(contractAddress, contractVersion, chainId)
 
 	for (let i = 0; i < logs.length; i++) {
 		if (logs[i].address.toLowerCase() === contractAddress.toLowerCase() && logs[i].topics[0] === logTopic) {

@@ -6,12 +6,12 @@ dotenv.config()
 
 describe('createLinks tests', function () {
 	const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli
-	const TOKEN_AMOUNT = 0.0002
-	const TOKEN_TYPE = 0
-	const TOKEN_ADDRESS = ethers.constants.AddressZero
-	const TOKEN_DECIMALS = 18
-	const NUM_LINKS = 1
-	const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY
+	// const TOKEN_AMOUNT = 0.0002
+	// const TOKEN_TYPE = 0
+	// const TOKEN_ADDRESS = ethers.constants.AddressZero
+	// const TOKEN_DECIMALS = 18
+	// const NUM_LINKS = 1
+	// const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY
 	// const RPC_URL = peanut.CHAIN_DETAILS[String(CHAIN_ID)].rpc[0].replace('${INFURA_API_KEY}', process.env.INFURA_API_KEY)
 	const RPC_URL = process.env.INFURA_GOERLI_RPC
 	const CHAIN_NAME = peanut.CHAIN_DETAILS[String(CHAIN_ID)].name
@@ -135,7 +135,7 @@ describe('createLinks tests', function () {
 
 		// Additional assertions as needed
 	}, 60000)
-	it.only('30 goerli linkgs', async function () {
+	it.only('30 goerli links', async function () {
 		const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli
 		const TOKEN_AMOUNT = 0.0001
 		const TOKEN_TYPE = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
@@ -157,7 +157,7 @@ describe('createLinks tests', function () {
 			},
 			numberOfLinks: NUM_LINKS,
 		})
-
+		console.log(status)
 		console.log('links: ', createdLinks)
 
 		// print all createdLinks.link sequentially
