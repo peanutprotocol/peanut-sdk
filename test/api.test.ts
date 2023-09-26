@@ -251,6 +251,6 @@ describe('Peanut API Integration Tests', function () {
 			// Add created links to the links array
 			resp.createdLinks.forEach((link) => links.push(link.link))
 		},
-		numLinks * 24000
+		numLinks * 120000
 	) // Adjust timeout based on number of links
 })

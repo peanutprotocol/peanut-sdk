@@ -22,7 +22,7 @@ const TOKEN_TYPES = Object.freeze({
 const DEFAULT_CONTRACT_VERSION = 'v4'
 const FALLBACK_CONTRACT_VERSION = 'v3'
 const DEFAULT_BATCHER_VERSION = 'Bv4'
-const VERBOSE = false
+const VERBOSE = process.env.VERBOSE ? process.env.VERBOSE === 'true' : false
 
 // export all these functions (imported in index.js)
 export {

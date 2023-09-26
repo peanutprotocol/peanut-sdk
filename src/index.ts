@@ -1127,16 +1127,37 @@ async function getAllDepositsForSigner({
  * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
  */
 // async function claimLinkSender({
-// 	signer,
-// 	link,
-// 	verbose = false,
+// 	structSigner,
+// 	depositIndex,
+// 	contractVersion = DEFAULT_CONTRACT_VERSION,
 // }: {
-// 	signer: ethers.providers.JsonRpcSigner
-// 	link: string
-// 	verbose?: boolean
-// }) {
-// 	// TODO:
-// 	throw new Error('Not implemented yet')
+// 	structSigner: ethers.providers.JsonRpcSigner
+// 	depositIndex: number
+// 	contractVersion?: string
+// }): Promise<interfaces.IClaimLinkSenderResponse> {
+// 	const verbose = VERBOSE
+// 	const signer = structSigner.signer
+// 	const chainId = await signer.getChainId()
+// 	const contract = await getContract(String(chainId), signer, contractVersion, verbose)
+
+// 	// Prepare transaction options
+// 	let txOptions = {}
+// 	txOptions = await setFeeOptions({
+// 		txOptions,
+// 		provider: signer.provider,
+// 	})
+
+// 	verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+
+// 	// withdraw the deposit
+// 	const tx = await contract.withdrawDepositSender(depositIndex, txOptions)
+// 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+// 	const txReceipt = await tx.wait()
+
+// 	return {
+// 		status: new interfaces.SDKStatus(interfaces.EClaimLinkSenderStatusCodes.SUCCESS),
+// 		txHash: txReceipt.transactionHash,
+// 	}
 // }
 
 async function createClaimPayload(link: string, recipientAddress: string) {
@@ -1334,6 +1355,7 @@ const peanut = {
 	createLinks,
 	claimLink,
 	claimLinkGasless,
+	// claimLinkSender,
 	prepareTxs,
 	signAndSubmitTx,
 	getLinksFromTx,
