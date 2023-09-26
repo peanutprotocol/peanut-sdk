@@ -298,9 +298,11 @@ async function prepareApproveERC20Tx(
 	// get allowance
 	const allowance = await getAllowance(tokenContract, spender, address, defaultProvider)
 	if (allowance.gte(amount)) {
-		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
+		config.verbose &&
+			console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
 		return null
 	}
+	config.verbose && console.log('Approving ' + amount.toString() + ' tokens for spender ' + spender)
 
 	const tx = tokenContract.populateTransaction.approve(spender, amount)
 	return tx
@@ -545,6 +547,7 @@ async function prepareTxs({
 				provider
 			)
 			approveTx && unsignedTxs.push(approveTx)
+			approveTx && config.verbose && console.log('approveTx:', approveTx)
 		} catch (error) {
 			console.error(error)
 			return {
