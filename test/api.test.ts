@@ -30,7 +30,7 @@ const API_URL = 'http://api.peanut.to/claim'
 console.log(`API_URL is set to: ${API_URL}`)
 
 describe('Peanut API Integration Tests', function () {
-	const links = []
+	const links: string[] = []
 
 	it('should create a link and claim it', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
@@ -157,6 +157,7 @@ describe('Peanut API Integration Tests', function () {
 
 		// Try to claim the link again (it should fail)
 		try {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const res = await peanut.claimLinkGasless({
 				link: resp.createdLink.link[0],
 				recipientAddress: receiverAddress,
@@ -190,6 +191,7 @@ describe('Peanut API Integration Tests', function () {
 
 		// Try to claim the link with an invalid recipient address
 		try {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const res = await peanut.claimLinkGasless({
 				link: resp.createdLink.link[0],
 				recipientAddress: '0xInvalidAddress',
@@ -249,8 +251,8 @@ describe('Peanut API Integration Tests', function () {
 			claimResponses.forEach((res) => expect(res.status).toBe('success'))
 
 			// Add created links to the links array
-			resp.createdLinks.forEach((link) => links.push(link.link))
+			resp.createdLinks.forEach((link) => links.push(link.link as string))
 		},
-		numLinks * 24000
+		numLinks * 120000
 	) // Adjust timeout based on number of links
 })

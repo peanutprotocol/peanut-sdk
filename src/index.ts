@@ -23,14 +23,15 @@ import {
 	DEFAULT_CONTRACT_VERSION,
 	DEFAULT_BATCHER_VERSION,
 	TOKEN_TYPES,
-	VERBOSE,
 } from './data.ts'
+
+import { config } from './config.ts'
 
 import {
 	assert,
 	greeting,
 	generateKeysFromString,
-	hash_string,
+	// hash_string,
 	signMessageWithPrivatekey,
 	verifySignature,
 	solidityHashBytesEIP191,
@@ -65,8 +66,7 @@ function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
 }
 
 async function checkRpc(rpc: string): Promise<boolean> {
-	const verbose = VERBOSE
-	verbose && console.log('checkRpc rpc:', rpc)
+	config.verbose && console.log('checkRpc rpc:', rpc)
 
 	try {
 		// Use the timeout function to wrap the fetchGetBalance call and give it a timeout.
@@ -74,7 +74,7 @@ async function checkRpc(rpc: string): Promise<boolean> {
 
 		// If the JSON RPC response contains an error, we can consider it a failure.
 		if (response.error) {
-			verbose && console.log('JSON RPC Error for:', rpc, response.error.message)
+			config.verbose && console.log('JSON RPC Error for:', rpc, response.error.message)
 			return false
 		}
 
@@ -109,23 +109,22 @@ async function fetchGetBalance(rpcUrl: string) {
 /**
  * Returns the default provider for a given chainId
  */
-async function getDefaultProvider(chainId: string, verbose = false): Promise<ethers.providers.JsonRpcProvider> {
-	verbose = VERBOSE
-	verbose && console.log('Getting default provider for chainId ', chainId)
+async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
+	config.verbose && console.log('Getting default provider for chainId ', chainId)
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
-	verbose && console.log('rpcs', rpcs)
+	config.verbose && console.log('rpcs', rpcs)
 
 	// this code goes through all RPCs. If any one of them is alive, the promise is resolved and a valid provider is returned.
 	// If all of them fail, the promise is rejected.
 	const checkPromises = rpcs.map((rpc) => {
-		return new Promise<{ isValid: boolean; rpc: string }>(async (resolve, reject) => {
+		return new Promise<{ isValid: boolean; rpc: string }>(async (resolve) => {
 			try {
 				// If the RPC string contains a placeholder for the API key, replace it.
 				rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
 				const isValid = await checkRpc(rpc)
 
-				verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
+				config.verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
 
 				// Only resolve when the RPC is valid.
 				if (isValid) {
@@ -142,7 +141,7 @@ async function getDefaultProvider(chainId: string, verbose = false): Promise<eth
 		Promise.race(checkPromises)
 			.then(async (result) => {
 				if (result && result.isValid) {
-					verbose && console.log('Valid RPC found:', result.rpc)
+					config.verbose && console.log('Valid RPC found:', result.rpc)
 					const provider = new ethers.providers.JsonRpcProvider({
 						url: result.rpc,
 						skipFetchSetup: true,
@@ -163,15 +162,10 @@ async function getDefaultProvider(chainId: string, verbose = false): Promise<eth
 	})
 }
 
-async function getContract(
-	_chainId: string,
-	signerOrProvider: any,
-	version = DEFAULT_CONTRACT_VERSION,
-	verbose = false
-) {
+async function getContract(_chainId: string, signerOrProvider: any, version = DEFAULT_CONTRACT_VERSION) {
 	if (signerOrProvider == null) {
-		verbose && console.log('signerOrProvider is null, getting default provider...')
-		signerOrProvider = await getDefaultProvider(_chainId, verbose)
+		config.verbose && console.log('signerOrProvider is null, getting default provider...')
+		signerOrProvider = await getDefaultProvider(_chainId)
 	}
 
 	const chainId = parseInt(_chainId)
@@ -203,7 +197,7 @@ async function getContract(
 
 	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
 
-	verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`)
+	config.verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`)
 
 	return contract
 	// TODO: return class
@@ -323,9 +317,11 @@ async function prepareApproveERC20Tx(
 	// get allowance
 	const allowance = await getAllowanceERC20(tokenContract, spender, address, defaultProvider)
 	if (allowance.gte(amount)) {
-		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
+		config.verbose &&
+			console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
 		return null
 	}
+	config.verbose && console.log('Approving ' + amount.toString() + ' tokens for spender ' + spender)
 
 	const tx = tokenContract.populateTransaction.approve(spender, amount)
 	return tx
@@ -346,14 +342,14 @@ async function prepareApproveERC721Tx(
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
 
-	VERBOSE && console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId)
+	config.verbose && console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId)
 	// Check if approval is already sufficient
 	const currentApproval = await getApprovedERC721(tokenContract, tokenId, defaultProvider)
 	if (currentApproval.toLowerCase() === spender.toLowerCase()) {
-		VERBOSE && console.log('Approval already granted to the spender for token ID: ' + tokenId)
+		config.verbose && console.log('Approval already granted to the spender for token ID: ' + tokenId)
 		return null
 	} else {
-		VERBOSE && console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId)
+		config.verbose && console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId)
 	}
 
 	// Prepare the transaction to approve the spender for the specified token ID
@@ -381,18 +377,16 @@ async function setFeeOptions({
 	gasPriceMultiplier?: number
 	maxPriorityFeePerGas?: number | BigNumber | null // change this to number | null
 	maxPriorityFeePerGasMultiplier?: number
-	verbose?: boolean
 }) {
 	// eip1559 = true
-	const verbose = VERBOSE // TODO: move this to initializing the sdk
-	verbose && console.log('Setting tx options...')
+	config.verbose && console.log('Setting tx options...')
 	let feeData
 	// if not txOptions, create it (oneliner)
 	txOptions = txOptions || {}
 	try {
-		verbose && console.log('getting Fee data')
+		config.verbose && console.log('getting Fee data')
 		feeData = await provider.getFeeData()
-		verbose && console.log('Fetched gas price from provider:', feeData)
+		config.verbose && console.log('Fetched gas price from provider:', feeData)
 	} catch (error) {
 		console.error('Failed to fetch gas price from provider:', error)
 		throw error
@@ -409,28 +403,28 @@ async function setFeeOptions({
 
 	if (chainId == 137) {
 		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
-		verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
+		config.verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
 	}
 
 	// Check if EIP-1559 is supported
-	verbose && console.log('checking if eip1559 is supported...')
+	config.verbose && console.log('checking if eip1559 is supported...')
 	if (chainDetails && chainDetails.features) {
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
-		verbose && console.log('Setting eip1559 to false chainid:', chainId)
+		config.verbose && console.log('Setting eip1559 to false chainid:', chainId)
 	} else {
-		verbose && console.log('Setting eip1559 to false chainid:', chainId)
+		config.verbose && console.log('Setting eip1559 to false chainid:', chainId)
 		eip1559 = false
 	}
 
 	// if on milkomeda, set eip1559 to false
 	if (chainId == '2001' || chainId == '200101' || chainId == 2001 || chainId == 200101) {
 		eip1559 = false
-		verbose && console.log('Setting eip1559 to false for milkomeda')
+		config.verbose && console.log('Setting eip1559 to false for milkomeda')
 	}
 
 	if (eip1559) {
 		try {
-			verbose && console.log('Setting eip1559 tx options...', txOptions)
+			config.verbose && console.log('Setting eip1559 tx options...', txOptions)
 			txOptions.maxFeePerGas =
 				maxFeePerGas ||
 				(
@@ -469,14 +463,15 @@ async function setFeeOptions({
 		txOptions.gasPrice = proposedGasPrice && proposedGasPrice.toString()
 	}
 
-	verbose && console.log('FINAL txOptions:', txOptions)
+	config.verbose && console.log('FINAL txOptions:', txOptions)
 
 	return txOptions
 }
 
 async function estimateGasLimit(contract: any, functionName: string, params: any, txOptions: any, multiplier = 1.3) {
 	try {
-		VERBOSE && console.log('called estimate gas limit. contract.address:', contract.address, params, txOptions)
+		config.verbose &&
+			console.log('called estimate gas limit. contract.address:', contract.address, params, txOptions)
 		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
 		return BigInt(Math.floor(Number(estimatedGas) * multiplier))
 	} catch (error) {
@@ -548,7 +543,6 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
-	const verbose = VERBOSE
 	try {
 		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	} catch (error) {
@@ -588,7 +582,7 @@ async function prepareTxs({
 			value: totalTokenAmount,
 		}
 	} else if (linkDetails.tokenType == 1) {
-		VERBOSE && console.log('checking allowance...')
+		config.verbose && console.log('checking allowance...')
 		try {
 			const approveTx = await prepareApproveERC20Tx(
 				address,
@@ -601,6 +595,7 @@ async function prepareTxs({
 				provider
 			)
 			approveTx && unsignedTxs.push(approveTx)
+			approveTx && config.verbose && console.log('approveTx:', approveTx)
 		} catch (error) {
 			console.error(error)
 			return {
@@ -612,7 +607,7 @@ async function prepareTxs({
 			}
 		}
 	} else if (linkDetails.tokenType == 2) {
-		VERBOSE && console.log('checking ERC721 allowance...')
+		config.verbose && console.log('checking ERC721 allowance...')
 		try {
 			const approveTx = await prepareApproveERC721Tx(
 				address,
@@ -685,7 +680,7 @@ async function prepareTxs({
 		// 	}
 		// } catch (error) {
 		// 	// do nothing
-		// 	verbose && console.log('Error estimating gas limit:', error)
+		// 	config.verbose && console.log('Error estimating gas limit:', error)
 		// }
 		try {
 			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
@@ -771,8 +766,7 @@ async function signAndSubmitTx({
 	structSigner,
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
-	const verbose = VERBOSE
-	verbose && console.log('unsigned tx: ', unsignedTx)
+	config.verbose && console.log('unsigned tx: ', unsignedTx)
 
 	// Set the transaction options using setFeeOptions
 	const txOptions = await setFeeOptions({
@@ -796,7 +790,7 @@ async function signAndSubmitTx({
 		}
 	}
 
-	verbose && console.log('tx: ', tx)
+	config.verbose && console.log('tx: ', tx)
 	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 }
 
@@ -804,8 +798,7 @@ async function signAndSubmitTx({
 // 	structSigner,
 // 	unsignedTx,
 // }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
-// 	const verbose = VERBOSE
-// 	verbose && console.log('unsigned tx: ', unsignedTx)
+// 	config.verbose && console.log('unsigned tx: ', unsignedTx)
 
 // 	let tx: ethers.providers.TransactionResponse
 // 	try {
@@ -816,7 +809,7 @@ async function signAndSubmitTx({
 // 		tx = await structSigner.signer.sendTransaction(unsignedTx)
 // 	}
 
-// 	verbose && console.log('tx: ', tx)
+// 	config.verbose && console.log('tx: ', tx)
 // 	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 // }
 
@@ -952,12 +945,11 @@ async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
-	const verbose = VERBOSE
 	const password = await getRandomString(16)
+	linkDetails = validateLinkDetails(linkDetails, [password], 1)
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
-
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
 		linkDetails,
@@ -1018,11 +1010,10 @@ async function createLinks({
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
-	const verbose = VERBOSE
 	const passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
-
 	const provider = structSigner.signer.provider
+
 	// Prepare the transactions
 	const prepareTxsResponse = await prepareTxs({
 		address: await structSigner.signer.getAddress(),
@@ -1039,24 +1030,28 @@ async function createLinks({
 		}
 	}
 
-	verbose && console.log('prepareTxsResponse: ', prepareTxsResponse)
 	// Sign and submit the transactions
 	const signedTxs = []
 	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
 		const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
 		signedTxs.push(signedTx)
-	}
-	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
-		return {
-			createdLinks: [],
-			status: new interfaces.SDKStatus(
-				interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
-				'Error signing and submitting the transaction'
-			),
+		// wait for the transaction to be mined before sending the next one
+		// we could bundle both in one block, but only works if we set custom gas limits.
+		try {
+			await signedTx.tx.wait()
+		} catch (error) {
+			console.error(error)
+			return {
+				createdLinks: [],
+				status: new interfaces.SDKStatus(
+					interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+					'Error awaiting transaction'
+				),
+			}
 		}
 	}
+	// await signedTxs[signedTxs.length - 1].tx.wait()
 
-	await signedTxs[signedTxs.length - 1].tx.wait()
 	if (signedTxs.some((tx) => tx.status.code !== peanut.interfaces.ESignAndSubmitTx.SUCCESS)) {
 		return {
 			createdLinks: [],
@@ -1067,7 +1062,7 @@ async function createLinks({
 		}
 	}
 
-	verbose && console.log('signedTxs: ', signedTxs)
+	config.verbose && console.log('signedTxs: ', signedTxs)
 
 	const linksFromTxResp = await getLinksFromTx({
 		linkDetails,
@@ -1097,7 +1092,6 @@ async function claimLink({
 	// maxFeePerGas = null,
 	recipient = null,
 }: interfaces.IClaimLinkParams): Promise<interfaces.IClaimLinkResponse> {
-	const verbose = VERBOSE
 	// TODO: split into 2
 
 	const signer = structSigner.signer
@@ -1108,19 +1102,19 @@ async function claimLink({
 	const password = params.password
 	if (recipient == null) {
 		recipient = await signer.getAddress()
-		verbose && console.log('recipient not provided, using signer address: ', recipient)
+		config.verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(String(chainId), signer, contractVersion, verbose)
+	const contract = await getContract(String(chainId), signer, contractVersion)
 
 	// cryptography
 	const addressHash = solidityHashAddress(recipient)
 	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
-	verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
+	config.verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
 	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
 	const signature = signAddress(recipient, keys.privateKey) // sign with link keys
 
-	if (verbose) {
+	if (config.verbose) {
 		// print the params
 		console.log('params: ', params)
 		console.log('addressHash: ', addressHash)
@@ -1141,8 +1135,8 @@ async function claimLink({
 	})
 
 	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
-	verbose && console.log('claimParams: ', claimParams)
-	verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+	config.verbose && console.log('claimParams: ', claimParams)
+	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
@@ -1163,7 +1157,6 @@ async function getAllDepositsForSigner({
 	signer,
 	chainId,
 	contractVersion = DEFAULT_CONTRACT_VERSION,
-	verbose = false,
 }: {
 	signer: ethers.providers.JsonRpcSigner
 	chainId: string
@@ -1178,7 +1171,7 @@ async function getAllDepositsForSigner({
 		const depositCount = await contract.getDepositCount()
 		deposits = []
 		for (let i = 0; i < depositCount; i++) {
-			verbose && console.log('fetching deposit: ', i)
+			config.verbose && console.log('fetching deposit: ', i)
 			const deposit = await contract.deposits(i)
 			deposits.push(deposit)
 		}
@@ -1196,16 +1189,36 @@ async function getAllDepositsForSigner({
  * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
  */
 // async function claimLinkSender({
-// 	signer,
-// 	link,
-// 	verbose = false,
+// 	structSigner,
+// 	depositIndex,
+// 	contractVersion = DEFAULT_CONTRACT_VERSION,
 // }: {
-// 	signer: ethers.providers.JsonRpcSigner
-// 	link: string
-// 	verbose?: boolean
-// }) {
-// 	// TODO:
-// 	throw new Error('Not implemented yet')
+// 	structSigner: ethers.providers.JsonRpcSigner
+// 	depositIndex: number
+// 	contractVersion?: string
+// }): Promise<interfaces.IClaimLinkSenderResponse> {
+// 	const signer = structSigner.signer
+// 	const chainId = await signer.getChainId()
+// 	const contract = await getContract(String(chainId), signer, contractVersion, verbose)
+
+// 	// Prepare transaction options
+// 	let txOptions = {}
+// 	txOptions = await setFeeOptions({
+// 		txOptions,
+// 		provider: signer.provider,
+// 	})
+
+// 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+
+// 	// withdraw the deposit
+// 	const tx = await contract.withdrawDepositSender(depositIndex, txOptions)
+// 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+// 	const txReceipt = await tx.wait()
+
+// 	return {
+// 		status: new interfaces.SDKStatus(interfaces.EClaimLinkSenderStatusCodes.SUCCESS),
+// 		txHash: txReceipt.transactionHash,
+// 	}
 // }
 
 async function createClaimPayload(link: string, recipientAddress: string) {
@@ -1235,8 +1248,7 @@ async function createClaimPayload(link: string, recipientAddress: string) {
  * Gets the details of a Link: what token it is, how much it holds, etc.
  */
 async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsParams) {
-	const verbose = VERBOSE // TODO: move this to initializing the SDK
-	verbose && console.log('getLinkDetails called with link: ', link)
+	config.verbose && console.log('getLinkDetails called with link: ', link)
 	assert(link, 'link arg is required')
 
 	const params = getParamsFromLink(link)
@@ -1245,17 +1257,13 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const depositIdx = params.depositIdx
 	const password = params.password
 	provider = provider || (await getDefaultProvider(String(chainId)))
-	const contract = await getContract(chainId.toString(), provider, contractVersion, verbose)
-	// check contract works
-	verbose && console.log('contract address: ', contract.address)
-	// check provider works (get addrss balance)
-	verbose && console.log('contract balance: ', await provider.getBalance(contract.address))
+	const contract = await getContract(chainId.toString(), provider, contractVersion)
 
-	verbose && console.log('fetching deposit: ', depositIdx)
+	config.verbose && console.log('fetching deposit: ', depositIdx)
 	const deposit = await contract.deposits(depositIdx)
 	// const deposit = await contract.getDeposit(depositIdx)
-	verbose && console.log('deposit: ', deposit)
-	verbose && console.log('fetched deposit: ', deposit)
+	config.verbose && console.log('deposit: ', deposit)
+	config.verbose && console.log('fetched deposit: ', deposit)
 	let tokenAddress = deposit.tokenAddress
 
 	let claimed = false
@@ -1272,25 +1280,27 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 				depositDate = null // for deleted deposits (TODO: we'd like to keep this in the future contract versions)
 			}
 		} else {
-			verbose && console.log('No timestamp found in deposit for version', contractVersion)
+			config.verbose && console.log('No timestamp found in deposit for version', contractVersion)
 		}
 	}
 
 	const tokenType = deposit.contractType
-	verbose && console.log('tokenType: ', tokenType, typeof tokenType)
+	config.verbose && console.log('tokenType: ', tokenType, typeof tokenType)
 
 	if (tokenType == 0) {
 		// native token, set zero address
 		// TODO: is this a potential footgun or no? Why is matic 0xeeeeee....? Is this a problem?
-		verbose && console.log('tokenType is 0, setting tokenAddress to zero address')
+		config.verbose && console.log('tokenType is 0, setting tokenAddress to zero address')
 		tokenAddress = ethers.constants.AddressZero
 	}
-	verbose && console.log('deposit: ', deposit)
+	config.verbose && console.log('deposit: ', deposit)
 
 	// Retrieve the token's details from the tokenDetails.json file
-	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
+	config.verbose &&
+		console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
-	verbose && console.log('chainId: ', chainId)
+
+	config.verbose && console.log('chainId: ', chainId)
 
 	let tokenAmount = '0'
 	let symbol = '?'
@@ -1298,10 +1308,10 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 
 	if (tokenType == 0 || tokenType == 1) {
 		// ERC20 tokens exist in details colelction
-		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
-		if (!chainDetails) {
-			throw new Error('Chain details not found')
-		}
+	  const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
+	  if (!chainDetails) {
+		  throw new Error('Chain details not found')
+	  }
 
 		// Find the token within the tokens array of the chain
 		const tokenDetails = chainDetails.tokens.find(
@@ -1357,15 +1367,14 @@ async function claimLinkGasless({
 	APIKey,
 	baseUrl = 'https://api.peanut.to/claim',
 }: interfaces.IClaimLinkGaslessParams) {
-	const verbose = VERBOSE
-	verbose && console.log('claiming link through Peanut API...')
-	verbose &&
+	config.verbose && console.log('claiming link through Peanut API...')
+	config.verbose &&
 		console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', APIKey, ' url: ', baseUrl)
 	const payload = await createClaimPayload(link, recipientAddress)
-	verbose && console.log('payload: ', payload)
+	config.verbose && console.log('payload: ', payload)
 	//  url = "https://api.peanut.to/claim";
 	if (baseUrl == 'local') {
-		verbose && console.log('using local api')
+		config.verbose && console.log('using local api')
 		baseUrl = 'http://127.0.0.1:5001/claim'
 	}
 
@@ -1391,7 +1400,7 @@ async function claimLinkGasless({
 		body: JSON.stringify(body),
 	})
 
-	verbose && console.log('response status: ', response.status)
+	config.verbose && console.log('response status: ', response.status)
 
 	if (!response.ok) {
 		const error = await response.text()
@@ -1402,7 +1411,13 @@ async function claimLinkGasless({
 	}
 }
 
+function toggleVerbose() {
+	config.verbose = !config.verbose
+	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
+}
+
 const peanut = {
+	toggleVerbose,
 	greeting,
 	generateKeysFromString,
 	signMessageWithPrivatekey,
@@ -1426,6 +1441,8 @@ const peanut = {
 	createLinks,
 	claimLink,
 	claimLinkGasless,
+	estimateGasLimit,
+	// claimLinkSender,
 	prepareTxs,
 	signAndSubmitTx,
 	getLinksFromTx,
@@ -1446,6 +1463,7 @@ console.log('peanut-sdk version: ', VERSION)
 export default peanut
 export {
 	peanut,
+	toggleVerbose,
 	greeting,
 	getRandomString,
 	getLinkFromParams,
@@ -1458,6 +1476,7 @@ export {
 	createLinks,
 	claimLink,
 	claimLinkGasless,
+	estimateGasLimit,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
