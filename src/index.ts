@@ -209,7 +209,7 @@ async function getContract(
 	// TODO: return class
 }
 
-async function getAllowance(
+async function getAllowanceERC20(
 	tokenContract: any,
 	spender: any,
 	address: string,
@@ -232,7 +232,7 @@ async function getAllowance(
 	return allowance
 }
 
-async function getApproved(
+async function getApprovedERC721(
 	tokenContract: any,
 	tokenId: number,
 	signerOrProvider?: ethers.providers.JsonRpcSigner | ethers.providers.Provider
@@ -268,7 +268,7 @@ async function getApproved(
 // 	if (!spender) throw new Error('Spender address not found for the given chain and contract version')
 
 // 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
-// 	let allowance = await getAllowance(tokenContract, spender, signerAddress, signer)
+// 	let allowance = await getAllowanceERC20(tokenContract, spender, signerAddress, signer)
 
 // 	const txDetails = await prepareApproveERC20Tx(
 // 		chainId,
@@ -284,7 +284,7 @@ async function getApproved(
 // 		const txOptions = await setFeeOptions({ provider: signer.provider, eip1559: true })
 // 		const tx = await signer.sendTransaction({ ...txDetails, ...txOptions })
 // 		const txReceipt = await tx.wait()
-// 		let allowance = await getAllowance(tokenContract, spender, signerAddress, signer)
+// 		let allowance = await getAllowanceERC20(tokenContract, spender, signerAddress, signer)
 // 		return { allowance, txReceipt }
 // 	} else {
 // 		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
@@ -321,7 +321,7 @@ async function prepareApproveERC20Tx(
 	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
 
 	// get allowance
-	const allowance = await getAllowance(tokenContract, spender, address, defaultProvider)
+	const allowance = await getAllowanceERC20(tokenContract, spender, address, defaultProvider)
 	if (allowance.gte(amount)) {
 		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
 		return null
@@ -346,14 +346,14 @@ async function prepareApproveERC721Tx(
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
 
-	console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId)
+	VERBOSE && console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId)
 	// Check if approval is already sufficient
-	const currentApproval = await getApproved(tokenContract, tokenId, defaultProvider)
+	const currentApproval = await getApprovedERC721(tokenContract, tokenId, defaultProvider)
 	if (currentApproval.toLowerCase() === spender.toLowerCase()) {
-		console.log('Approval already granted to the spender for token ID: ' + tokenId)
+		VERBOSE && console.log('Approval already granted to the spender for token ID: ' + tokenId)
 		return null
 	} else {
-		console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId)
+		VERBOSE && console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId)
 	}
 
 	// Prepare the transaction to approve the spender for the specified token ID
@@ -628,7 +628,7 @@ async function prepareTxs({
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC721_TX,
-					'Error preparing the approve ERC721 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
+					'Error preparing the approve ERC721 tx, please make sure you have approved the contract to spend your tokens'
 				),
 			}
 		}
@@ -1296,7 +1296,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	let symbol = '?'
 	let name = '?'
 
-	if (tokenType == 1) {
+	if (tokenType == 0 || tokenType == 1) {
 		// ERC20 tokens exist in details colelction
 		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 		if (!chainDetails) {
