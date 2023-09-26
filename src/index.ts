@@ -332,34 +332,33 @@ async function prepareApproveERC20Tx(
 }
 
 async function prepareApproveERC721Tx(
-    address: string,
-    chainId: string,
-    tokenAddress: string,
-    tokenId: number,
+	address: string,
+	chainId: string,
+	tokenAddress: string,
+	tokenId: number,
 	provider?: any,
 	spenderAddress?: string | undefined,
-    contractVersion = DEFAULT_CONTRACT_VERSION
+	contractVersion = DEFAULT_CONTRACT_VERSION
 ): Promise<ethers.providers.TransactionRequest | null> {
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
-    const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider);
+	const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider)
 
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
 
-	console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId);
-    // Check if approval is already sufficient
-    const currentApproval = await getApproved(tokenContract, tokenId, defaultProvider);
-    if (currentApproval.toLowerCase() === spender.toLowerCase()) {
-        console.log('Approval already granted to the spender for token ID: ' + tokenId);
-        return null;
-    }
-	else{
-		console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId);
+	console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId)
+	// Check if approval is already sufficient
+	const currentApproval = await getApproved(tokenContract, tokenId, defaultProvider)
+	if (currentApproval.toLowerCase() === spender.toLowerCase()) {
+		console.log('Approval already granted to the spender for token ID: ' + tokenId)
+		return null
+	} else {
+		console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId)
 	}
 
-    // Prepare the transaction to approve the spender for the specified token ID
-    const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address });
-    return tx;
+	// Prepare the transaction to approve the spender for the specified token ID
+	const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address })
+	return tx
 }
 
 async function setFeeOptions({
@@ -619,7 +618,8 @@ async function prepareTxs({
 				address,
 				String(linkDetails.chainId),
 				linkDetails.tokenAddress!,
-				linkDetails.tokenId)
+				linkDetails.tokenId
+			)
 
 			approveTx && unsignedTxs.push(approveTx)
 		} catch (error) {
@@ -629,7 +629,7 @@ async function prepareTxs({
 				status: new interfaces.SDKStatus(
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC721_TX,
 					'Error preparing the approve ERC721 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
-				)
+				),
 			}
 		}
 	}
@@ -1292,10 +1292,10 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	// Find the correct chain details using chainId
 	verbose && console.log('chainId: ', chainId)
 
-	let tokenAmount = "0"
-	let symbol = "?"
-	let name = "?"
-	
+	let tokenAmount = '0'
+	let symbol = '?'
+	let name = '?'
+
 	if (tokenType == 1) {
 		// ERC20 tokens exist in details colelction
 		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
@@ -1304,7 +1304,9 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		}
 
 		// Find the token within the tokens array of the chain
-		const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
+		const tokenDetails = chainDetails.tokens.find(
+			(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
+		)
 		if (!tokenDetails) {
 			throw new Error('Token details not found')
 		}
@@ -1314,8 +1316,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 
 		// Format the token amount
 		tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
-	}
-	else if (tokenType == 2) {
+	} else if (tokenType == 2) {
 		// get name and symbol from ERC721 contract directly
 		try {
 			const contract721 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
@@ -1324,7 +1325,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		} catch (error) {
 			console.error('Error fetching ERC721 info:', error)
 		}
-		tokenAmount = "1"
+		tokenAmount = '1'
 	}
 
 	// TODO: Fetch token price using API
