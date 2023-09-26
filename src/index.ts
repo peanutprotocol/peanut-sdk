@@ -16,6 +16,7 @@ import {
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
+	ERC721_ABI,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	VERSION,
@@ -231,6 +232,24 @@ async function getAllowance(
 	return allowance
 }
 
+async function getApproved(
+	tokenContract: any,
+	tokenId: number,
+	signerOrProvider?: ethers.providers.JsonRpcSigner | ethers.providers.Provider
+) {
+	let approved
+	try {
+		if (!signerOrProvider) {
+			signerOrProvider = await getDefaultProvider(tokenContract.chainId)
+		}
+
+		approved = await tokenContract.getApproved(tokenId)
+	} catch (error) {
+		console.error('Error fetching approval:', error)
+	}
+	return approved
+}
+
 // async function approveSpendERC20(
 // 	signer: ethers.providers.JsonRpcSigner,
 // 	chainId: string,
@@ -310,6 +329,37 @@ async function prepareApproveERC20Tx(
 
 	const tx = tokenContract.populateTransaction.approve(spender, amount)
 	return tx
+}
+
+async function prepareApproveERC721Tx(
+    address: string,
+    chainId: string,
+    tokenAddress: string,
+    tokenId: number,
+	provider?: any,
+	spenderAddress?: string | undefined,
+    contractVersion = DEFAULT_CONTRACT_VERSION
+): Promise<ethers.providers.TransactionRequest | null> {
+	const defaultProvider = provider || (await getDefaultProvider(chainId))
+    const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider);
+
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
+
+	console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId);
+    // Check if approval is already sufficient
+    const currentApproval = await getApproved(tokenContract, tokenId, defaultProvider);
+    if (currentApproval.toLowerCase() === spender.toLowerCase()) {
+        console.log('Approval already granted to the spender for token ID: ' + tokenId);
+        return null;
+    }
+	else{
+		console.log('Approval granted to different address: ' + currentApproval + ' for token ID: ' + tokenId);
+	}
+
+    // Prepare the transaction to approve the spender for the specified token ID
+    const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address });
+    return tx;
 }
 
 async function setFeeOptions({
@@ -539,7 +589,6 @@ async function prepareTxs({
 			value: totalTokenAmount,
 		}
 	} else if (linkDetails.tokenType == 1) {
-		// TODO: check for erc721 and erc1155
 		VERBOSE && console.log('checking allowance...')
 		try {
 			const approveTx = await prepareApproveERC20Tx(
@@ -561,6 +610,26 @@ async function prepareTxs({
 					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,
 					'Error preparing the approve ERC20 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
 				),
+			}
+		}
+	} else if (linkDetails.tokenType == 2) {
+		VERBOSE && console.log('checking ERC721 allowance...')
+		try {
+			const approveTx = await prepareApproveERC721Tx(
+				address,
+				String(linkDetails.chainId),
+				linkDetails.tokenAddress!,
+				linkDetails.tokenId)
+
+			approveTx && unsignedTxs.push(approveTx)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC721_TX,
+					'Error preparing the approve ERC721 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
+				)
 			}
 		}
 	}
@@ -1222,19 +1291,41 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	verbose && console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 	// Find the correct chain details using chainId
 	verbose && console.log('chainId: ', chainId)
-	const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
-	if (!chainDetails) {
-		throw new Error('Chain details not found')
-	}
 
-	// Find the token within the tokens array of the chain
-	const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
-	if (!tokenDetails) {
-		throw new Error('Token details not found')
-	}
+	let tokenAmount = "0"
+	let symbol = "?"
+	let name = "?"
+	
+	if (tokenType == 1) {
+		// ERC20 tokens exist in details colelction
+		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
+		if (!chainDetails) {
+			throw new Error('Chain details not found')
+		}
 
-	// Format the token amount
-	const tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+		// Find the token within the tokens array of the chain
+		const tokenDetails = chainDetails.tokens.find((token) => token.address.toLowerCase() === tokenAddress.toLowerCase())
+		if (!tokenDetails) {
+			throw new Error('Token details not found')
+		}
+
+		symbol = tokenDetails.symbol
+		name = tokenDetails.name
+
+		// Format the token amount
+		tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+	}
+	else if (tokenType == 2) {
+		// get name and symbol from ERC721 contract directly
+		try {
+			const contract721 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
+			name = await contract721.name()
+			symbol = await contract721.symbol()
+		} catch (error) {
+			console.error('Error fetching ERC721 info:', error)
+		}
+		tokenAmount = "1"
+	}
 
 	// TODO: Fetch token price using API
 
@@ -1246,8 +1337,8 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		password: password,
 		tokenType: deposit.contractType,
 		tokenAddress: deposit.tokenAddress,
-		tokenSymbol: tokenDetails.symbol,
-		tokenName: tokenDetails.name,
+		tokenSymbol: symbol,
+		tokenName: name,
 		tokenAmount: tokenAmount,
 		claimed: claimed,
 		depositDate: depositDate,
