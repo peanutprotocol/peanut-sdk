@@ -305,17 +305,29 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 
 export function getLinksFromMultilink(link: string): string[] {
 	const url = new URL(link)
-	const cParams = url.searchParams.get('c')?.split(',') || []
-	const iParams = url.searchParams.get('i')?.split(',') || []
+	const searchParams = new URLSearchParams(url.search)
+
+	// If there is a hash, treat the part after the hash as additional search parameters
+	if (url.hash.startsWith('#?')) {
+		const hashParams = new URLSearchParams(url.hash.slice(2))
+		for (const [key, value] of hashParams) {
+			searchParams.append(key, value)
+		}
+	}
+
+	const cParams = searchParams.get('c')?.split(',') || []
+	const iParams = searchParams.get('i')?.split(',') || []
 
 	if (cParams.length !== iParams.length && cParams.length !== 1) {
 		throw new Error('Mismatch in length of c and i parameters')
 	}
 
 	const links = iParams.map((i, index) => {
-		const newUrl = new URL(url.toString()) // clone the original URL
-		newUrl.searchParams.set('c', cParams.length === 1 ? cParams[0] : cParams[index])
-		newUrl.searchParams.set('i', i)
+		const newUrl = new URL(url.origin + url.pathname) // clone the original URL without search and hash
+		const newSearchParams = new URLSearchParams(searchParams.toString()) // clone the original search parameters
+		newSearchParams.set('c', cParams.length === 1 ? cParams[0] : cParams[index])
+		newSearchParams.set('i', i)
+		newUrl.hash = '#?' + newSearchParams.toString()
 		return newUrl.toString()
 	})
 
