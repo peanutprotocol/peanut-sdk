@@ -135,7 +135,7 @@ describe('createLinks tests', function () {
 
 		// Additional assertions as needed
 	}, 60000)
-	it.only('30 goerli links', async function () {
+	it('30 goerli links', async function () {
 		const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli
 		const TOKEN_AMOUNT = 0.0001
 		const TOKEN_TYPE = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155

@@ -88,7 +88,7 @@ describe('polygon', function () {
 					tokenType: 0,
 				},
 			},
-			9000
+			12000
 		)
 	}, 60000)
 	it('polygon should create an erc20 link and claim it', async function () {
