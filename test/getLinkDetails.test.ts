@@ -111,3 +111,32 @@ describe('getLinkDetails', function () {
 
 	// TODO: test with unsupported chain
 })
+
+describe('getLinkDetails for NFT', function () {
+	it('should work for NFT', async function () {
+		const link = 'https://peanut.to/claim#?c=5&v=v4&i=1271&p=6ZPOKZdIZzGItRq4&t=sdk'
+		const linkDetails = await peanut.getLinkDetails({ link })
+
+		console.log(linkDetails)
+
+		// Add your expectations here
+		expect(linkDetails).not.toBe(undefined)
+		expect(linkDetails.link).toBe(link)
+		expect(linkDetails.chainId).toBe(5)
+		expect(linkDetails.depositIndex).toBe(1271)
+		expect(linkDetails.contractVersion).toBe('v4')
+		expect(linkDetails.password).toBe('6ZPOKZdIZzGItRq4')
+		expect(linkDetails.tokenType).toBe(2)
+		expect(linkDetails.tokenAddress).toBe('0x932Ca55B9Ef0b3094E8Fa82435b3b4c50d713043')
+		expect(linkDetails.tokenSymbol).toBe('G_NFTS')
+		expect(linkDetails.tokenName).toBe('Goerli_NFTS')
+		expect(linkDetails.tokenAmount).toBe('1')
+		expect(linkDetails.claimed).toBe(false)
+		expect(linkDetails.tokenURI).not.toBe(undefined)
+		expect(linkDetails.metadata).not.toBe(undefined)
+		expect(linkDetails.metadata.token).toBe('26770')
+		expect(linkDetails.metadata.image).not.toBe(undefined)
+		expect(linkDetails.metadata.attributes[0].trait_type).toBe('Type')
+		expect(linkDetails.metadata.attributes[0].value).toBe('crimson')
+	})
+})
