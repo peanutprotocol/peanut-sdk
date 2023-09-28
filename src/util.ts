@@ -302,21 +302,22 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 
 	return depositIdxs
 }
-// export function getDepositIdxs(txReceipt, chainId, contractAddress) {
-/* returns an array of deposit indices from a batch transaction receipt */
-// const logs = txReceipt.logs
-// var depositIdxs = []
-// // loop through all the logs and extract the deposit index from each
-// for (var i = 0; i < logs.length; i++) {
-// 	// check if the log was emitted by our contract
-// 	if (logs[i].address.toLowerCase() === contractAddress.toLowerCase()) {
-// 		if (chainId == 137) {
-// 			depositIdxs.push(logs[i].args[0])
-// 		} else {
-// 			depositIdxs.push(logs[i].args[0])
-// 		}
-// 	}
-// }
-// return depositIdxs
-// OLD CODE. Get inspiration from new getDepositIdx function, or merge them together potentially
-// }
+
+export function getLinksFromMultilink(link: string): string[] {
+	const url = new URL(link)
+	const cParams = url.searchParams.get('c')?.split(',') || []
+	const iParams = url.searchParams.get('i')?.split(',') || []
+
+	if (cParams.length !== iParams.length && cParams.length !== 1) {
+		throw new Error('Mismatch in length of c and i parameters')
+	}
+
+	const links = iParams.map((i, index) => {
+		const newUrl = new URL(url.toString()) // clone the original URL
+		newUrl.searchParams.set('c', cParams.length === 1 ? cParams[0] : cParams[index])
+		newUrl.searchParams.set('i', i)
+		return newUrl.toString()
+	})
+
+	return links
+}

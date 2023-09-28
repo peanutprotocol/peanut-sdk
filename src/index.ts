@@ -42,6 +42,7 @@ import {
 	getParamsFromPageURL,
 	getDepositIdx,
 	getDepositIdxs,
+	getLinksFromMultilink,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -1353,6 +1354,7 @@ const peanut = {
 	prepareTxs,
 	signAndSubmitTx,
 	getLinksFromTx,
+	getLinksFromMultilink,
 	formatNumberAvoidScientific,
 	trim_decimal_overflow,
 	VERSION,
