@@ -1417,16 +1417,15 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		tokenAmount = '1'
 	} else if (tokenType == interfaces.EPeanutLinkType.erc1155) {
 		try {
-			assert(false, "UNIMPLEMENTED")
-			//const contract1155 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
-			//name = await contract1155.name()
-			//symbol = await contract1155.symbol()
-			//tokenURI = await contract721.tokenURI(deposit.tokenId)
+			const contract1155 = new ethers.Contract(tokenAddress, ERC1155_ABI, provider)
+			name = "ERC1155 Token (" + deposit.tokenId + ")"
+			symbol = "1155"
+			tokenURI = await contract1155.tokenURI(deposit.tokenId)
 
-			//const response = await fetch(tokenURI)
-			//if (response.ok) {
-			//	metadata = await response.json()
-			//}
+			const response = await fetch(tokenURI)
+			if (response.ok) {
+				metadata = await response.json()
+			}
 		} catch (error) {
 			console.error('Error fetching ERC721 info:', error)
 		}
