@@ -700,7 +700,7 @@ async function prepareTxs({
 			return {
 				unsignedTxs: [],
 				status: new interfaces.SDKStatus(
-					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC721_TX,
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC1155_TX,
 					'Error preparing the approve ERC1155 tx, please make sure you have approved the contract to spend your tokens'
 				),
 			}
