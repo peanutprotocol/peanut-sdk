@@ -393,7 +393,7 @@ async function prepareApproveERC1155Tx(
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
 
-	/*config.verbose &&*/ console.log('Checking approval for ' + tokenAddress + ' owner: ' + address + ' operator: ' + spender)
+	config.verbose && console.log('Checking approval for ' + tokenAddress + ' owner: ' + address + ' operator: ' + spender)
 	// Check if approval is already granted for the operator
 	const isApproved = await getApprovedERC1155(
 		tokenContract,
@@ -402,13 +402,13 @@ async function prepareApproveERC1155Tx(
 		defaultProvider)
 
 	if (isApproved) {
-		/*config.verbose &&*/ console.log('Approval already granted to the operator')
+		config.verbose && console.log('Approval already granted to the operator')
 		return null
 	}
 
 	// Prepare the transaction to approve the spender for the specified token ID
 	const tx = tokenContract.populateTransaction.setApprovalForAll(spender, true, { from: address })
-	console.log('Approval needed for operator')
+	config.verbose && console.log('Approval needed for operator')
 	return tx
 }
 
@@ -684,7 +684,7 @@ async function prepareTxs({
 			}
 		}
 	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
-		/*config.verbose &&*/ console.log('checking ERC1155 allowance...')
+		config.verbose && console.log('checking ERC1155 allowance...')
 		// Note for testing https://goerli.etherscan.io/address/0x246c7802c82598bff1521eea314cf3beabc33197
 		// can be used for generating and playing with 1155s
 		try {
@@ -749,8 +749,6 @@ async function prepareTxs({
 			linkDetails.tokenId,
 			keys[0].address,
 		]
-
-		console.log(depositParams)
 		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
 
 		// TODO: this will fail if allowance is not enough
@@ -1011,7 +1009,6 @@ function validateLinkDetails(
 		assert('tokenId' in linkDetails, 'tokenId needed')
 	}
 	assert(
-		// TODO 1155s need this?
 		!(linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 || linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) || linkDetails.tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
