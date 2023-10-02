@@ -20,7 +20,7 @@ export interface ITxOptions {
 	maxPriorityFeePerGas?: ethers.BigNumber
 }
 
-enum EPeanutLinkType {
+export enum EPeanutLinkType {
 	native,
 	erc20,
 	erc721,

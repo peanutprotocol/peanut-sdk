@@ -17,6 +17,7 @@ import {
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
 	ERC721_ABI,
+	ERC1155_ABI,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	VERSION,
@@ -245,6 +246,24 @@ async function getApprovedERC721(
 	return approved
 }
 
+async function getApprovedERC1155(
+	tokenContract: any,
+	tokenId: number,
+	signerOrProvider?: ethers.providers.JsonRpcSigner | ethers.providers.Provider
+) {
+	let approved
+	try {
+		if (!signerOrProvider) {
+			signerOrProvider = await getDefaultProvider(tokenContract.chainId)
+		}
+
+		approved = await tokenContract.isApprovedForAll(tokenId)
+	} catch (error) {
+		console.error('Error fetching approval:', error)
+	}
+	return approved
+}
+
 // async function approveSpendERC20(
 // 	signer: ethers.providers.JsonRpcSigner,
 // 	chainId: string,
@@ -356,6 +375,34 @@ async function prepareApproveERC721Tx(
 
 	// Prepare the transaction to approve the spender for the specified token ID
 	const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address })
+	return tx
+}
+
+async function prepareApproveERC1155Tx(
+	address: string,
+	chainId: string,
+	tokenAddress: string,
+	tokenId: number,
+	provider?: any,
+	spenderAddress?: string | undefined,
+	contractVersion = DEFAULT_CONTRACT_VERSION
+): Promise<ethers.providers.TransactionRequest | null> {
+	const defaultProvider = provider || (await getDefaultProvider(chainId))
+	const tokenContract = new ethers.Contract(tokenAddress, ERC1155_ABI, defaultProvider)
+
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
+
+	config.verbose && console.log('Checking approval for ' + tokenAddress + ' token ID: ' + tokenId)
+	// Check if approval is already granted for the operator
+	const isApproved = await getApprovedERC1155(tokenContract, tokenId, defaultProvider)
+	if (isApproved) {
+		config.verbose && console.log('Approval already granted to the operator for token ID: ' + tokenId)
+		return null
+	}
+
+	// Prepare the transaction to approve the spender for the specified token ID
+	const tx = tokenContract.populateTransaction.setApprovalForAll(spender, true, { from: address })
 	return tx
 }
 
@@ -578,12 +625,12 @@ async function prepareTxs({
 		}
 	}
 
-	if (linkDetails.tokenType == 0) {
+	if (linkDetails.tokenType == interfaces.EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
 			value: totalTokenAmount,
 		}
-	} else if (linkDetails.tokenType == 1) {
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
 		try {
 			const approveTx = await prepareApproveERC20Tx(
@@ -608,7 +655,7 @@ async function prepareTxs({
 				),
 			}
 		}
-	} else if (linkDetails.tokenType == 2) {
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc721) {
 		config.verbose && console.log('checking ERC721 allowance...')
 		try {
 			const approveTx = await prepareApproveERC721Tx(
@@ -629,6 +676,31 @@ async function prepareTxs({
 				),
 			}
 		}
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
+		config.verbose && console.log('checking ERC1155 allowance...')
+		// Note for testing https://goerli.etherscan.io/address/0x246c7802c82598bff1521eea314cf3beabc33197
+		// can be used for generating and playing with 1155s
+		try {
+			const approveTx = await prepareApproveERC1155Tx(
+				address,
+				String(linkDetails.chainId),
+				linkDetails.tokenAddress!,
+				linkDetails.tokenId
+			)
+
+			approveTx && unsignedTxs.push(approveTx)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC721_TX,
+					'Error preparing the approve ERC721 tx, please make sure you have approved the contract to spend your tokens'
+				),
+			}
+		}
+	} else {
+		assert(false, "Unsupproted link type")
 	}
 
 	if (passwords.length == 0) {
