@@ -111,6 +111,7 @@ export async function getRandomString(n: number = 16): Promise<string> {
 					{
 						name: 'AES-GCM',
 						length: length * 8, // Convert byte length to bit length
+						// TODO: non 16/32 length passwords?
 					},
 					true,
 					['encrypt', 'decrypt']
