@@ -1,18 +1,27 @@
-import { getRandomString } from '../src/index' // Update this import path to match your setup
+import { peanut } from '../src/index' // Update this import path to match your setup
 import { expect, it, describe } from '@jest/globals'
 
-describe('getRandomString', function () {
+peanut.toggleVerbose()
+
+describe('peanut.getRandomString', function () {
 	// Basic Test
 	it('should produce a string of the desired length', async () => {
 		const length = 18
-		const result = await getRandomString(length)
+		const result = await peanut.getRandomString(length)
 		expect(result).toHaveLength(length)
+	})
+	// Length Test
+	it.only('should produce strings of lengths from 1 to 64', async () => {
+		for (let length = 1; length <= 64; length++) {
+			const result = await peanut.getRandomString(length)
+			expect(result).toHaveLength(length)
+		}
 	})
 
 	// Charset Test
 	it('should produce a string containing only valid characters', async () => {
 		const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-		const result = await getRandomString(1000) // test a long string to get a variety of characters
+		const result = await peanut.getRandomString(1000) // test a long string to get a variety of characters
 		for (const char of result) {
 			expect(charset).toContain(char)
 		}
@@ -23,7 +32,7 @@ describe('getRandomString', function () {
 		const results = new Set()
 		for (let i = 0; i < 1000; i++) {
 			// invoke the function 1000 times
-			results.add(await getRandomString(10))
+			results.add(await peanut.getRandomString(10))
 		}
 		expect(results.size).toBe(1000)
 		// ensure that all have the same length
