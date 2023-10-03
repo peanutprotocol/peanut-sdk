@@ -17,6 +17,7 @@ import {
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
 	ERC721_ABI,
+	ERC1155_ABI,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	VERSION,
@@ -240,7 +241,26 @@ async function getApprovedERC721(
 
 		approved = await tokenContract.getApproved(tokenId)
 	} catch (error) {
-		console.error('Error fetching approval:', error)
+		console.error('Error fetching 721 approval:', error)
+	}
+	return approved
+}
+
+async function getApprovedERC1155(
+	tokenContract: any,
+	addressOwner: string,
+	addressOperator: string,
+	signerOrProvider?: ethers.providers.JsonRpcSigner | ethers.providers.Provider
+) {
+	let approved
+	try {
+		if (!signerOrProvider) {
+			signerOrProvider = await getDefaultProvider(tokenContract.chainId)
+		}
+
+		approved = await tokenContract.isApprovedForAll(addressOwner, addressOperator)
+	} catch (error) {
+		console.error('Error fetching 1155 approval:', error)
 	}
 	return approved
 }
@@ -356,6 +376,39 @@ async function prepareApproveERC721Tx(
 
 	// Prepare the transaction to approve the spender for the specified token ID
 	const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address })
+	return tx
+}
+
+async function prepareApproveERC1155Tx(
+	address: string,
+	chainId: string,
+	tokenAddress: string,
+	provider?: any,
+	spenderAddress?: string | undefined,
+	contractVersion = DEFAULT_CONTRACT_VERSION
+): Promise<ethers.providers.TransactionRequest | null> {
+	const defaultProvider = provider || (await getDefaultProvider(chainId))
+	const tokenContract = new ethers.Contract(tokenAddress, ERC1155_ABI, defaultProvider)
+
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
+
+	config.verbose && console.log('Checking approval for ' + tokenAddress + ' owner: ' + address + ' operator: ' + spender)
+	// Check if approval is already granted for the operator
+	const isApproved = await getApprovedERC1155(
+		tokenContract,
+		address,
+		spender,
+		defaultProvider)
+
+	if (isApproved) {
+		config.verbose && console.log('Approval already granted to the operator')
+		return null
+	}
+
+	// Prepare the transaction to approve the spender for the specified token ID
+	const tx = tokenContract.populateTransaction.setApprovalForAll(spender, true, { from: address })
+	config.verbose && console.log('Approval needed for operator')
 	return tx
 }
 
@@ -545,6 +598,7 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
+
 	try {
 		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	} catch (error) {
@@ -578,12 +632,12 @@ async function prepareTxs({
 		}
 	}
 
-	if (linkDetails.tokenType == 0) {
+	if (linkDetails.tokenType == interfaces.EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
 			value: totalTokenAmount,
 		}
-	} else if (linkDetails.tokenType == 1) {
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
 		try {
 			const approveTx = await prepareApproveERC20Tx(
@@ -608,7 +662,7 @@ async function prepareTxs({
 				),
 			}
 		}
-	} else if (linkDetails.tokenType == 2) {
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc721) {
 		config.verbose && console.log('checking ERC721 allowance...')
 		try {
 			const approveTx = await prepareApproveERC721Tx(
@@ -629,6 +683,30 @@ async function prepareTxs({
 				),
 			}
 		}
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
+		config.verbose && console.log('checking ERC1155 allowance...')
+		// Note for testing https://goerli.etherscan.io/address/0x246c7802c82598bff1521eea314cf3beabc33197
+		// can be used for generating and playing with 1155s
+		try {
+			const approveTx = await prepareApproveERC1155Tx(
+				address,
+				String(linkDetails.chainId),
+				linkDetails.tokenAddress!
+			)
+
+			approveTx && unsignedTxs.push(approveTx)
+		} catch (error) {
+			console.error(error)
+			return {
+				unsignedTxs: [],
+				status: new interfaces.SDKStatus(
+					interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC1155_TX,
+					'Error preparing the approve ERC1155 tx, please make sure you have approved the contract to spend your tokens'
+				),
+			}
+		}
+	} else {
+		assert(false, "Unsupported link type")
 	}
 
 	if (passwords.length == 0) {
@@ -895,17 +973,22 @@ function validateLinkDetails(
 	numberOfLinks: number
 ): interfaces.IPeanutLinkDetails {
 	if (!linkDetails || !linkDetails.chainId || !linkDetails.tokenAmount) {
-		throw new Error('createLink function requires linkDetails object with chainId and tokenAmount properties')
+		throw new Error('validateLinkDetails function requires linkDetails object with chainId and tokenAmount properties')
 	}
 
 	// Assert that linkDetails conforms to IPeanutLinkDetails
 	linkDetails = linkDetails as interfaces.IPeanutLinkDetails
 
+	if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
+		linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 0;
+	} else {
+		linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 18
+	}
+
 	// Use nullish coalescing operator to provide default values
 	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
 	linkDetails.tokenType = linkDetails.tokenType ?? 0
 	linkDetails.tokenId = linkDetails.tokenId ?? 0
-	linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 18
 	linkDetails.baseUrl = linkDetails.baseUrl ?? 'https://peanut.to/claim'
 	linkDetails.trackId = linkDetails.trackId ?? 'sdk'
 
@@ -917,18 +1000,20 @@ function validateLinkDetails(
 	}
 
 	assert(
-		linkDetails.tokenType == 0 || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+		linkDetails.tokenType == interfaces.EPeanutLinkType.native || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
-	if (linkDetails.tokenType == 2) {
-		assert(numberOfLinks == 1, 'can only send one ERC721 at a time')
+	if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc721
+		|| linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
+		assert(numberOfLinks == 1, 'can only send one ERC721 or ERC1155 at a time')
+		assert('tokenId' in linkDetails, 'tokenId needed')
 	}
 	assert(
-		!(linkDetails.tokenType == 1 || linkDetails.tokenType == 3) || linkDetails.tokenDecimals != null,
+		!(linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 || linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) || linkDetails.tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
-	if (linkDetails.tokenType !== 0 && linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000') {
+	if (linkDetails.tokenType !== interfaces.EPeanutLinkType.native && linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000') {
 		throw new Error('need to provide tokenAddress if tokenType is not 0')
 	}
 
@@ -1290,11 +1375,11 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	let tokenURI = null
 	let metadata = null
 
-	if (tokenType == 0) {
+	if (tokenType == interfaces.EPeanutLinkType.native) {
 		config.verbose && console.log('tokenType is 0, setting tokenAddress to zero address')
 		tokenAddress = ethers.constants.AddressZero
 	}
-	if (tokenType == 0 || tokenType == 1) {
+	if (tokenType == interfaces.EPeanutLinkType.native || tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.verbose &&
 			console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
@@ -1312,12 +1397,27 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		symbol = tokenDetails.symbol
 		name = tokenDetails.name
 		tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
-	} else if (tokenType == 2) {
+	} else if (tokenType == interfaces.EPeanutLinkType.erc721) {
 		try {
 			const contract721 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
 			name = await contract721.name()
 			symbol = await contract721.symbol()
 			tokenURI = await contract721.tokenURI(deposit.tokenId)
+
+			const response = await fetch(tokenURI)
+			if (response.ok) {
+				metadata = await response.json()
+			}
+		} catch (error) {
+			console.error('Error fetching ERC721 info:', error)
+		}
+		tokenAmount = '1'
+	} else if (tokenType == interfaces.EPeanutLinkType.erc1155) {
+		try {
+			const contract1155 = new ethers.Contract(tokenAddress, ERC1155_ABI, provider)
+			name = "ERC1155 Token (" + deposit.tokenId + ")"
+			symbol = "1155"
+			tokenURI = await contract1155.tokenURI(deposit.tokenId)
 
 			const response = await fetch(tokenURI)
 			if (response.ok) {

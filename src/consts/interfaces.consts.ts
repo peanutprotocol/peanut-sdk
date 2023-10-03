@@ -20,7 +20,7 @@ export interface ITxOptions {
 	maxPriorityFeePerGas?: ethers.BigNumber
 }
 
-enum EPeanutLinkType {
+export enum EPeanutLinkType {
 	native,
 	erc20,
 	erc721,
@@ -192,6 +192,7 @@ export enum EPrepareCreateTxsStatusCodes {
 	ERROR_GETTING_TX_COUNT,
 	ERROR_PREPARING_APPROVE_ERC20_TX,
 	ERROR_PREPARING_APPROVE_ERC721_TX,
+	ERROR_PREPARING_APPROVE_ERC1155_TX,
 	ERROR_SETTING_FEE_OPTIONS,
 	ERROR_ESTIMATING_GAS_LIMIT,
 	ERROR_MAKING_DEPOSIT,
