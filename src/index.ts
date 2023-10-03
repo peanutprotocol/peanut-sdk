@@ -185,7 +185,7 @@ async function getContract(_chainId: string, signerOrProvider: any, version = DE
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 			break
 		default:
-			throw new Error('Invalid version')
+			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
 	}
 
 	// Find the contract address based on the chainId and version provided
@@ -223,7 +223,7 @@ async function getAllowanceERC20(
 		}
 		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
-		console.error('Error fetching allowance:', error)
+		console.error('Error fetching ERC20 allowance status:', error)
 	}
 	return allowance
 }
@@ -241,7 +241,7 @@ async function getApprovedERC721(
 
 		approved = await tokenContract.getApproved(tokenId)
 	} catch (error) {
-		console.error('Error fetching 721 approval:', error)
+		console.error('Error fetching ERC721 approval status:', error)
 	}
 	return approved
 }
@@ -260,7 +260,7 @@ async function getApprovedERC1155(
 
 		approved = await tokenContract.isApprovedForAll(addressOwner, addressOperator)
 	} catch (error) {
-		console.error('Error fetching 1155 approval:', error)
+		console.error('Error fetching ERC1155 approval status:', error)
 	}
 	return approved
 }
@@ -1010,11 +1010,11 @@ function validateLinkDetails(
 	}
 	assert(
 		!(linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 || linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) || linkDetails.tokenDecimals != null,
-		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
+		'TokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
 	if (linkDetails.tokenType !== interfaces.EPeanutLinkType.native && linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000') {
-		throw new Error('need to provide tokenAddress if tokenType is not 0')
+		throw new Error('Need to provide tokenAddress if tokenType is not 0')
 	}
 
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
@@ -1384,14 +1384,14 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 			console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 		if (!chainDetails) {
-			throw new Error('Chain details not found')
+			throw new Error('Chain details not found, the chain may not be supported in this version of the SDK')
 		}
 
 		const tokenDetails = chainDetails.tokens.find(
 			(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
 		)
 		if (!tokenDetails) {
-			throw new Error('Token details not found')
+			throw new Error('Token details not found, the token may not be supported in this version of the SDK')
 		}
 
 		symbol = tokenDetails.symbol
@@ -1424,7 +1424,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 				metadata = await response.json()
 			}
 		} catch (error) {
-			console.error('Error fetching ERC721 info:', error)
+			console.error('Error fetching ERC1155 info:', error)
 		}
 		tokenAmount = '1'
 	}
