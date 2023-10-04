@@ -218,7 +218,7 @@ export function getParamsFromLink(link: string): {
 export function getLinkFromParams(
 	chainId: number | string,
 	contractVersion: string,
-	depositIdx: number,
+	depositIdx: number | string,
 	password: string,
 	baseUrl: string = 'https://peanut.to/claim',
 	trackId: string = ''
@@ -333,4 +333,66 @@ export function getLinksFromMultilink(link: string): string[] {
 	})
 
 	return links
+}
+
+export function createMultiLinkFromLinks(links: string[]): string {
+	if (links.length === 0) {
+		throw new Error('No links provided')
+	}
+
+	const cParams: string[] = []
+	const iParams: string[] = []
+	let baseUrl = ''
+	let contractVersion = ''
+	let password = ''
+	let trackId = ''
+	const additionalParams = new Map<string, string>()
+
+	links.forEach((link) => {
+		const url = new URL(link)
+		const searchParams = new URLSearchParams(url.search)
+
+		if (url.hash.startsWith('#?')) {
+			const hashParams = new URLSearchParams(url.hash.slice(2))
+			for (const [key, value] of hashParams) {
+				searchParams.append(key, value)
+			}
+		}
+
+		cParams.push(searchParams.get('c') || '')
+		iParams.push(searchParams.get('i') || '')
+		baseUrl = url.origin + url.pathname
+		contractVersion = searchParams.get('v') || ''
+		password = searchParams.get('p') || ''
+		trackId = searchParams.get('t') || ''
+
+		// Store all additional parameters
+		for (const [key, value] of searchParams.entries()) {
+			if (!['c', 'v', 'i', 'p', 't'].includes(key)) {
+				additionalParams.set(key, value)
+			}
+		}
+	})
+
+	// Check if all chainIds are the same
+	const allSameChainId = cParams.every((val) => val === cParams[0])
+
+	const multiLink = getLinkFromParams(
+		allSameChainId ? cParams[0] : cParams.join(','),
+		contractVersion,
+		iParams.join(','),
+		password,
+		baseUrl,
+		trackId
+	)
+
+	// Add all additional parameters to the hash of the multi-link
+	const url = new URL(multiLink)
+	let hashString = url.hash.slice(2) // remove the '#?' at the start
+	for (const [key, value] of additionalParams.entries()) {
+		hashString += `&${key}=${value}`
+	}
+	url.hash = '#?' + hashString
+
+	return url.toString()
 }

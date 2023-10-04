@@ -1,10 +1,10 @@
 {
 	"1": {
-		"name": "Ethereum Mainnet",
+		"name": "Ethereum",
 		"chain": "ETH",
 		"icon": {
-			"url": "https://ipfs.io/ipfs/QmdwQDr6vmBtXmK2TmknkEuZNoaDqTasFdZdu3DRw8b2wt",
-			"format": "png"
+			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
+			"format": "svg"
 		},
 		"rpc": [
 			"https://cloudflare-eth.com",
@@ -95,11 +95,11 @@
 		}
 	},
 	"137": {
-		"name": "Polygon Mainnet",
+		"name": "Polygon",
 		"chain": "Polygon",
 		"icon": {
-			"url": "https://ipfs.io/ipfs/QmRNqgazYuxUa5WdddFPftTWiP3KwzBMgV9Z19QWnLMETc",
-			"format": "png"
+			"url": "https://polygonscan.com/images/svg/brands/matic.svg",
+			"format": "svg"
 		},
 		"rpc": [
 			"https://polygon-rpc.com",
@@ -117,7 +117,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://polygon.technology/",
-		"shortName": "Polygon PoS",
+		"shortName": "Polygon",
 		"chainId": 137,
 		"networkId": 137,
 		"slip44": 966,
@@ -135,8 +135,8 @@
 		"title": "Polygon Testnet Mumbai",
 		"chain": "Polygon",
 		"icon": {
-			"url": "https://ipfs.io/ipfs/QmRNqgazYuxUa5WdddFPftTWiP3KwzBMgV9Z19QWnLMETc",
-			"format": "png"
+			"url": "https://polygonscan.com/images/svg/brands/matic.svg",
+			"format": "svg"
 		},
 		"rpc": [
 			"https://rpc-mumbai.maticvigil.com",
@@ -164,7 +164,7 @@
 		"mainnet": false
 	},
 	"10": {
-		"name": "OP Mainnet",
+		"name": "Optimism",
 		"chain": "ETH",
 		"rpc": [
 			"https://mainnet.optimism.io",
@@ -202,7 +202,7 @@
 		}
 	},
 	"420": {
-		"name": "Optimism Goerli Testnet",
+		"name": "Optimism Goerli",
 		"chain": "ETH",
 		"rpc": [
 			"https://goerli.optimism.io",
@@ -283,7 +283,7 @@
 		"name": "Gnosis",
 		"chain": "GNO",
 		"icon": {
-			"url": "https://ipfs.io/ipfs/bafybeidk4swpgdyqmpz6shd5onvpaujvwiwthrhypufnwr6xh3dausz2dm",
+			"url": "https://gnosisscan.io/token/images/gnosans_32.png",
 			"format": "png"
 		},
 		"rpc": [
@@ -354,7 +354,7 @@
 		"mainnet": false
 	},
 	"2001": {
-		"name": "Milkomeda C1 Mainnet",
+		"name": "Milkomeda C1",
 		"chain": "milkAda",
 		"icon": {
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
@@ -381,7 +381,7 @@
 		"mainnet": true
 	},
 	"56": {
-		"name": "BNB Smart Chain Mainnet",
+		"name": "BNB",
 		"chain": "BSC",
 		"rpc": [
 			"https://bsc-dataseed1.bnbchain.org",
@@ -405,7 +405,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://www.bnbchain.org/en",
-		"shortName": "Binance Smart Chain",
+		"shortName": "BNB",
 		"chainId": 56,
 		"networkId": 56,
 		"slip44": 714,
@@ -445,8 +445,8 @@
 		],
 		"mainnet": false,
 		"icon": {
-			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
-			"format": "svg"
+			"url": "https://cryptologos.cc/logos/mantle-mnt-logo.png",
+			"format": "png"
 		}
 	},
 	"11155111": {
@@ -506,7 +506,7 @@
 			"decimals": 18
 		},
 		"infoURL": "https://taiko.xyz",
-		"shortName": "Taiko Testnet",
+		"shortName": "Taiko Grimsvotn",
 		"chainId": 167005,
 		"networkId": 167005,
 		"explorers": [
@@ -517,5 +517,188 @@
 			}
 		],
 		"mainnet": false
+	},
+	"17000": {
+		"name": "Holesky",
+		"chain": "ETH",
+		"rpc": ["https://rpc.holesky.ethpandaops.io", "https://ethereum-holesky.publicnode.com"],
+		"faucets": ["https://faucet.holesky.ethpandaops.io", "https://holesky-faucet.pk910.de"],
+		"nativeCurrency": {
+			"name": "Testnet ETH",
+			"symbol": "ETH",
+			"decimals": 18
+		},
+		"infoURL": "https://holesky.ethpandaops.io",
+		"shortName": "holesky",
+		"chainId": 17000,
+		"networkId": 17000,
+		"icon": {
+			"url": "https://ipfs.io/ipfs/QmdwQDr6vmBtXmK2TmknkEuZNoaDqTasFdZdu3DRw8b2wt",
+			"format": "png"
+		},
+		"status": "incubating",
+		"explorers": [
+			{
+				"name": "Holesky Explorer",
+				"url": "https://holesky.beaconcha.in",
+				"icon": "ethereum",
+				"standard": "EIP3091"
+			},
+			{
+				"name": "otterscan-holesky",
+				"url": "https://holesky.otterscan.io",
+				"icon": "ethereum",
+				"standard": "EIP3091"
+			},
+			{
+				"name": "Holesky Etherscan",
+				"url": "https://holesky.etherscan.io",
+				"icon": "ethereum",
+				"standard": "EIP3091"
+			}
+		],
+		"mainnet": false
+	},
+	"8453": {
+		"name": "Base",
+		"chain": "ETH",
+		"rpc": [
+			"https://mainnet.base.org/",
+			"https://developer-access-mainnet.base.org/",
+			"https://base.publicnode.com"
+		],
+		"faucets": [],
+		"nativeCurrency": {
+			"name": "Ether",
+			"symbol": "ETH",
+			"decimals": 18
+		},
+		"infoURL": "https://base.org",
+		"shortName": "base",
+		"chainId": 8453,
+		"networkId": 8453,
+		"icon": {
+			"url": "https://ipfs.io/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv",
+			"format": "png"
+		},
+		"explorers": [
+			{
+				"name": "basescan",
+				"url": "https://basescan.org",
+				"standard": "none"
+			},
+			{
+				"name": "basescout",
+				"url": "https://base.blockscout.com",
+				"icon": "blockscout",
+				"standard": "EIP3091"
+			}
+		],
+		"status": "active",
+		"mainnet": true
+	},
+	"84531": {
+		"name": "Base Goerli",
+		"chain": "ETH",
+		"rpc": ["https://goerli.base.org", "https://base-goerli.publicnode.com"],
+		"faucets": ["https://www.coinbase.com/faucets/base-ethereum-goerli-faucet"],
+		"nativeCurrency": {
+			"name": "Goerli Ether",
+			"symbol": "ETH",
+			"decimals": 18
+		},
+		"infoURL": "https://base.org",
+		"shortName": "Base Goerli",
+		"chainId": 84531,
+		"networkId": 84531,
+		"icon": {
+			"url": "https://ipfs.io/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv",
+			"format": "png"
+		},
+		"explorers": [
+			{
+				"name": "basescan",
+				"url": "https://goerli.basescan.org",
+				"standard": "none"
+			},
+			{
+				"name": "basescout",
+				"url": "https://base-goerli.blockscout.com",
+				"icon": "blockscout",
+				"standard": "EIP3091"
+			}
+		],
+		"mainnet": false
+	},
+	"10200": {
+		"name": "Gnosis Chiado",
+		"chain": "GNO",
+		"icon": {
+			"url": "https://gnosisscan.io/token/images/gnosans_32.png",
+			"format": "png"
+		},
+		"rpc": [
+			"https://rpc.chiadochain.net",
+			"https://rpc.chiado.gnosis.gateway.fm",
+			"https://gnosis-chiado.publicnode.com"
+		],
+		"faucets": ["https://gnosisfaucet.com"],
+		"nativeCurrency": {
+			"name": "Chiado xDAI",
+			"symbol": "XDAI",
+			"decimals": 18
+		},
+		"infoURL": "https://docs.gnosischain.com",
+		"shortName": "Gnosis Chiado",
+		"chainId": 10200,
+		"networkId": 10200,
+		"explorers": [
+			{
+				"name": "blockscout-chiadochain",
+				"url": "https://blockscout.chiadochain.net",
+				"icon": "blockscout",
+				"standard": "EIP3091"
+			},
+			{
+				"name": "blockscout",
+				"url": "https://gnosis-chiado.blockscout.com",
+				"icon": "blockscout",
+				"standard": "EIP3091"
+			}
+		],
+		"mainnet": false
+	},
+	"43114": {
+		"name": "Avalanche",
+		"chain": "AVAX",
+		"icon": {
+			"url": "https://ipfs.io/ipfs/QmRALA5qvQBRwWre8ofuhCbr3wxVmPS3kGetRR9uJqbqqe",
+			"format": "png"
+		},
+		"rpc": ["https://api.avax.network/ext/bc/C/rpc", "https://avalanche-c-chain.publicnode.com"],
+		"features": [
+			{
+				"name": "EIP1559"
+			}
+		],
+		"faucets": [],
+		"nativeCurrency": {
+			"name": "Avalanche",
+			"symbol": "AVAX",
+			"decimals": 18
+		},
+		"infoURL": "https://www.avax.network/",
+		"shortName": "Avalanche",
+		"chainId": 43114,
+		"networkId": 43114,
+		"slip44": 9005,
+		"explorers": [
+			{
+				"name": "snowtrace",
+				"url": "https://snowtrace.io",
+				"standard": "EIP3091"
+			}
+		],
+		"mainnet": true
 	}
 }

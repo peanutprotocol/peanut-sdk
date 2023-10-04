@@ -45,6 +45,7 @@ import {
 	getDepositIdx,
 	getDepositIdxs,
 	getLinksFromMultilink,
+	createMultiLinkFromLinks,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -113,6 +114,9 @@ async function fetchGetBalance(rpcUrl: string) {
  */
 async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
 	config.verbose && console.log('Getting default provider for chainId ', chainId)
+	if (!CHAIN_DETAILS[chainId]) {
+		throw new Error(`Chain ID ${chainId} not supported yet`)
+	}
 	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
 	config.verbose && console.log('rpcs', rpcs)
@@ -393,13 +397,10 @@ async function prepareApproveERC1155Tx(
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const spender = spenderAddress || (_PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion])
 
-	config.verbose && console.log('Checking approval for ' + tokenAddress + ' owner: ' + address + ' operator: ' + spender)
+	config.verbose &&
+		console.log('Checking approval for ' + tokenAddress + ' owner: ' + address + ' operator: ' + spender)
 	// Check if approval is already granted for the operator
-	const isApproved = await getApprovedERC1155(
-		tokenContract,
-		address,
-		spender,
-		defaultProvider)
+	const isApproved = await getApprovedERC1155(tokenContract, address, spender, defaultProvider)
 
 	if (isApproved) {
 		config.verbose && console.log('Approval already granted to the operator')
@@ -598,7 +599,6 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
-
 	try {
 		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	} catch (error) {
@@ -706,7 +706,7 @@ async function prepareTxs({
 			}
 		}
 	} else {
-		assert(false, "Unsupported link type")
+		assert(false, 'Unsupported link type')
 	}
 
 	if (passwords.length == 0) {
@@ -973,14 +973,16 @@ function validateLinkDetails(
 	numberOfLinks: number
 ): interfaces.IPeanutLinkDetails {
 	if (!linkDetails || !linkDetails.chainId || !linkDetails.tokenAmount) {
-		throw new Error('validateLinkDetails function requires linkDetails object with chainId and tokenAmount properties')
+		throw new Error(
+			'validateLinkDetails function requires linkDetails object with chainId and tokenAmount properties'
+		)
 	}
 
 	// Assert that linkDetails conforms to IPeanutLinkDetails
 	linkDetails = linkDetails as interfaces.IPeanutLinkDetails
 
 	if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
-		linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 0;
+		linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 0
 	} else {
 		linkDetails.tokenDecimals = linkDetails.tokenDecimals ?? 18
 	}
@@ -1000,21 +1002,30 @@ function validateLinkDetails(
 	}
 
 	assert(
-		linkDetails.tokenType == interfaces.EPeanutLinkType.native || linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+		linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
+			linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
-	if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc721
-		|| linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) {
+	if (
+		linkDetails.tokenType == interfaces.EPeanutLinkType.erc721 ||
+		linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155
+	) {
 		assert(numberOfLinks == 1, 'can only send one ERC721 or ERC1155 at a time')
 		assert('tokenId' in linkDetails, 'tokenId needed')
 	}
 	assert(
-		!(linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 || linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155) || linkDetails.tokenDecimals != null,
-		'TokenDecimals must be provided for ERC20 and ERC1155 tokens'
+		!(
+			linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 ||
+			linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155
+		) || linkDetails.tokenDecimals != null,
+		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
 	)
 
-	if (linkDetails.tokenType !== interfaces.EPeanutLinkType.native && linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000') {
-		throw new Error('Need to provide tokenAddress if tokenType is not 0')
+	if (
+		linkDetails.tokenType !== interfaces.EPeanutLinkType.native &&
+		linkDetails.tokenAddress === '0x000000cl0000000000000000000000000000000000'
+	) {
+		throw new Error('need to provide tokenAddress if tokenType is not 0')
 	}
 
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
@@ -1031,8 +1042,9 @@ async function createLink({
 	structSigner,
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+	password = null,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
-	const password = await getRandomString(16)
+	password = password || (await getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, [password], 1)
 	const provider = structSigner.signer.provider
 
@@ -1096,8 +1108,9 @@ async function createLinks({
 	linkDetails,
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+	passwords = null,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
-	const passwords = await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16)))
+	passwords = passwords || (await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16))))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	const provider = structSigner.signer.provider
 
@@ -1415,8 +1428,8 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	} else if (tokenType == interfaces.EPeanutLinkType.erc1155) {
 		try {
 			const contract1155 = new ethers.Contract(tokenAddress, ERC1155_ABI, provider)
-			name = "ERC1155 Token (" + deposit.tokenId + ")"
-			symbol = "1155"
+			name = 'ERC1155 Token (' + deposit.tokenId + ')'
+			symbol = '1155'
 			tokenURI = await contract1155.tokenURI(deposit.tokenId)
 
 			const response = await fetch(tokenURI)
@@ -1537,6 +1550,7 @@ const peanut = {
 	signAndSubmitTx,
 	getLinksFromTx,
 	getLinksFromMultilink,
+	createMultiLinkFromLinks,
 	formatNumberAvoidScientific,
 	trim_decimal_overflow,
 	VERSION,

@@ -4,24 +4,6 @@ import os
 import time
 
 
-# these are all testnets and should be marked as such
-TESTNETS = [
-    5,
-    42,
-    4,
-    80001,
-    84531,
-    420,
-    200101,
-    97,
-    43113,
-    314159,
-    1442,
-    7001,
-    5001,
-    11155111,
-    167005,
-]
 # Existing constants
 CONTRACTS_URL = (
     "https://raw.githubusercontent.com/ProphetFund/peanut-contracts/main/contracts.json"
@@ -95,18 +77,17 @@ def get_chain_details(chain_id: int):
     # display a warning if no live rpcs found
     if len(live_rpcs) == 0:
         print(f"Warning: No live providers found for chain id {chain_id}")
-    
-    # add testnet flag if chain id is in TESTNETS
-    print(f"Checking if chain id {chain_id} is a testnet...", type(chain_id), type(TESTNETS[0]))
-    if chain_id in TESTNETS or int(chain_id) in TESTNETS:
-        details["mainnet"] = False
-    else:
-        details["mainnet"] = True
 
     return details
 
 
-def get_chain_icon(possible_chain_names):
+def get_chain_icon(possible_chain_names, existing_chain_details):
+    # Check if the icon already exists in the existing chain details
+    existing_icon = existing_chain_details.get("icon")
+    if existing_icon:
+        print(f"Icon already exists for {possible_chain_names[0]}...")
+        return existing_icon
+
     for name in possible_chain_names:
         print(f"Trying to get icon info for {name}...")
         # First attempt: Existing ICONS_URL
@@ -151,9 +132,17 @@ def main():
         print("Failed to get contracts.")
         return
 
+    TESTNETS = [
+        int(chain_id)
+        for chain_id, details in contracts.items()
+        if not details.get("mainnet")
+    ]
+    print(f"Found {len(TESTNETS)} testnets.")
+
     chain_ids = get_chain_ids(contracts)
-    print(f"Found {len(chain_ids)} chain ids with a v3 chain id. Fetching details...")
-    print(chain_ids)
+    print(
+        f"Found {len(chain_ids)} chain ids with a v3 / v4 & B4 chain id. Fetching details..."
+    )
 
     # Load existing chain details if the file exists
     if os.path.exists(CHAIN_DETAILS_PATH):
@@ -164,15 +153,16 @@ def main():
 
     for chain_id in chain_ids:
         # Only fetch details if chain_id is not already in chainDetails.json
-        # if chain_id in chain_ids:
-        #     user_input = input(
-        #         f"Chain id {chain_id} already exists in chainDetails.json. Overwrite? (y/n) "
-        #     )
-        #     if user_input.lower() != "y":
-        #         continue
+        if chain_id in chain_details:
+            user_input = input(
+                f"Chain id {chain_id} already exists in chainDetails.json. Overwrite? (y/n) "
+            )
+            if user_input.lower() != "y":
+                continue
         print(f"Fetching details for chain id {chain_id}...")
 
         details = get_chain_details(chain_id)
+        details["mainnet"] = contracts[str(chain_id)].get("mainnet", "false").lower() == "true"
 
         # get icon
         if details:
@@ -190,7 +180,7 @@ def main():
             if details.get("chain"):
                 possible_chain_names.append(details["chain"])
             possible_chain_names.extend([name.lower() for name in possible_chain_names])
-            icon = get_chain_icon(possible_chain_names)
+            icon = get_chain_icon(possible_chain_names, chain_details.get(chain_id, {}))
             details["icon"] = icon
 
             chain_details[chain_id] = details
@@ -199,11 +189,11 @@ def main():
         time.sleep(1)
 
     with open(CHAIN_DETAILS_PATH, "w") as file:
-        json.dump(chain_details, file)
+        json.dump(chain_details, file, indent="\t")
 
     # also overwrite contracts.json with the latest version
     with open("contracts.json", "w") as file:
-        json.dump(contracts, file)
+        json.dump(contracts, file, indent="\t")
 
     print("Done. Processed", len(chain_details), "chain ids: ", chain_details.keys())
 
