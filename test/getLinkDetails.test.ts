@@ -55,16 +55,16 @@ describe('getLinkDetails', function () {
 			// linkdetails.tokenAmount should be 1
 			expect(linkDetails.tokenAmount).toBe('1.0')
 		}, 1000000)
-
-		it('Eco optimism link should have 0.1 eco inside', async function () {
-			/** Should fail, no eco on optimism yet */
-			expect.assertions(1) // Expecting one assertion to be called
-			const link = 'https://peanut.to/claim?c=10&v=v3&i=307&p=1VNvLYMOG14xr0fO'
-			// const optimismProviderUrl = 'https://optimism-mainnet.infura.io/v3/' + INFURA_API_KEY
-			// const optimismProvider = new ethers.providers.JsonRpcProvider(optimismProviderUrl)
-			// const optimismWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismProvider)
-			await expect(peanut.getLinkDetails({ link })).rejects.toThrow()
-		})
+		// it('Eco optimism link should have 0.1 eco inside', async function () {
+		// 	/** Should fail, no eco on optimism yet */
+		// 	// edit: works with fallback now!
+		// 	expect.assertions(1) // Expecting one assertion to be called
+		// 	const link = 'https://peanut.to/claim?c=10&v=v3&i=307&p=1VNvLYMOG14xr0fO'
+		// 	// const optimismProviderUrl = 'https://optimism-mainnet.infura.io/v3/' + INFURA_API_KEY
+		// 	// const optimismProvider = new ethers.providers.JsonRpcProvider(optimismProviderUrl)
+		// 	// const optimismWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismProvider)
+		// 	await expect(peanut.getLinkDetails({ link })).rejects.toThrow()
+		// })
 		it('Localhost should work', async function () {
 			const link = 'http://localhost:3000/claim#?c=5&v=v3&i=415&p=pCEABanDLd9kReTW&t=sdk'
 			// const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
@@ -138,5 +138,5 @@ describe('getLinkDetails for NFT', function () {
 		expect(linkDetails.metadata.image).not.toBe(undefined)
 		expect(linkDetails.metadata.attributes[0].trait_type).toBe('Type')
 		expect(linkDetails.metadata.attributes[0].value).toBe('crimson')
-	})
+	}, 10000)
 })

@@ -1397,19 +1397,29 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 			console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
 		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
 		if (!chainDetails) {
-			throw new Error('Chain details not found, the chain may not be supported in this version of the SDK')
+			throw new Error("Couldn't find details for this token")
 		}
 
-		const tokenDetails = chainDetails.tokens.find(
+		let tokenDetails = chainDetails.tokens.find(
 			(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
 		)
-		if (!tokenDetails) {
-			throw new Error('Token details not found, the token may not be supported in this version of the SDK')
-		}
 
-		symbol = tokenDetails.symbol
-		name = tokenDetails.name
-		tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+		// If token details not found in TOKEN_DETAILS, fetch them from the contract
+		if (!tokenDetails) {
+			try {
+				const contractERC20 = new ethers.Contract(tokenAddress, ERC20_ABI, provider)
+				symbol = await contractERC20.symbol()
+				name = await contractERC20.name()
+				const decimals = await contractERC20.decimals()
+				tokenAmount = ethers.utils.formatUnits(deposit.amount, decimals)
+			} catch (error) {
+				console.error('Error fetching ERC20 info:', error)
+			}
+		} else {
+			symbol = tokenDetails.symbol
+			name = tokenDetails.name
+			tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+		}
 	} else if (tokenType == interfaces.EPeanutLinkType.erc721) {
 		try {
 			const contract721 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
