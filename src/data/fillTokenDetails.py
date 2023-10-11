@@ -50,7 +50,9 @@ def fetch_tokens_for_platform(platform_id):
             f"Warning: Some expected fields are missing in the tokens data for platform {platform_id}."
         )
 
-    return data["tokens"]
+    # Return only the first 200 tokens
+    # temp fix until we properly implement this (FILTER_TOKEN_DETAILS branch)
+    return data["tokens"][:200]
 
 
 def main():
@@ -118,9 +120,9 @@ def main():
         }
         tokenDetails.append(platform_data)
 
-    # Save to tokenDetails.json without indentation
+    # Save to tokenDetails.json
     with open("tokenDetails.json", "w") as f:
-        json.dump(tokenDetails, f)
+        json.dump(tokenDetails, f, indent='\t')
 
     # Print stats
     print(f"Total chains fetched: {chains_fetched}")
