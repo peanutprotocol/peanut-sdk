@@ -243,17 +243,17 @@ describe('Peanut API Integration Tests', function () {
 	) // Adjust timeout based on number of links
 })
 
-describe.only('Testnet Tests', function () {
+describe('Testnet Tests', function () {
 	const testnets = Object.values(peanut.CHAIN_DETAILS).filter((net) => !net.mainnet)
 	// peanut.toggleVerbose()
 
 	testnets.forEach((net) => {
 		it(`should run tests on ${net.name}`, async function () {
-			if (!['Holesky'].includes(net.name)) {
-				//  'Milkomeda C1 Testnet', 'Sepolia'
-				// if (!['Base Goerli'].includes(net.name)) {
-				return
-			}
+			// if (!['Linea'].includes(net.name)) {
+			// 	//  'Milkomeda C1 Testnet', 'Sepolia'
+			// 	// if (!['Base Goerli'].includes(net.name)) {
+			// 	return
+			// }
 			console.log(`Running tests on ${net.name}`)
 			// Set up your test parameters based on the current testnet
 			const chainId = net.chainId

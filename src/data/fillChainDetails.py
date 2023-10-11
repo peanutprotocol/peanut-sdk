@@ -25,7 +25,7 @@ DEFAULT_ICON_URL = "https://raw.githubusercontent.com/spothq/cryptocurrency-icon
 
 def check_rpc(rpc):
     print(f"Checking RPC {rpc}...")
-    if "infura" in rpc.lower():
+    if "infura" in rpc.lower() or rpc.startswith("wss://"):
         return True
     try:
         response = requests.post(

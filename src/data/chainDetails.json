@@ -649,11 +649,7 @@
 		"name": "Linea",
 		"title": "Linea Mainnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.linea.build",
-			"https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}",
-			"wss://linea-mainnet.infura.io/ws/v3/${INFURA_API_KEY}"
-		],
+		"rpc": ["https://rpc.linea.build", "https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Linea Ether",
@@ -704,11 +700,7 @@
 		"name": "Linea Testnet",
 		"title": "Linea Goerli Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.goerli.linea.build",
-			"https://linea-goerli.infura.io/v3/${INFURA_API_KEY}",
-			"wss://linea-goerli.infura.io/ws/v3/${INFURA_API_KEY}"
-		],
+		"rpc": ["https://rpc.goerli.linea.build", "https://linea-goerli.infura.io/v3/${INFURA_API_KEY}"],
 		"faucets": ["https://faucetlink.to/goerli"],
 		"nativeCurrency": {
 			"name": "Linea Ether",
