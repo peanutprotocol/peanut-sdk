@@ -125,5 +125,15 @@
 	"43113": {
 		"name": "avalanche-fuji",
 		"mainnet": "false"
+	},
+	"59144": {
+		"name": "linea",
+		"v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
+		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
+	},
+	"59140": {
+		"name": "linea-testnet",
+		"v4": "0x897F8EDdB345F0d16081615823F76055Ad60A00c",
+		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
 	}
 }

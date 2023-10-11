@@ -3,30 +3,16 @@ import { ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2 as string
-// const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
+// we want to use diff wallet than relayer
+var TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2 as string
 const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
-// const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6
-// const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL) // v5
-// const goerliProvider = await peanut.getDefaultProvider('5')
-const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL) // v5
-// const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v6
-
+const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
 
 const API_URL = 'http://api.peanut.to/claim'
 // let API_URL = 'http://127.0.0.1:5000/claim'
 // let API_URL = 'http://127.0.0.1:8000/claim'
 
-// fetch(API_URL)
-// 	.then((res) => {
-// 		if (!res.ok) {
-// 			throw new Error(res.statusText)
-// 		}
-// 	})
-// 	.catch(() => {
-// 		API_URL = 'https://api.peanut.to/claim'
-// 	})
 console.log(`API_URL is set to: ${API_URL}`)
 
 describe('Peanut API Integration Tests', function () {
@@ -255,4 +241,50 @@ describe('Peanut API Integration Tests', function () {
 		},
 		numLinks * 120000
 	) // Adjust timeout based on number of links
+})
+
+describe.only('Testnet Tests', function () {
+	const testnets = Object.values(peanut.CHAIN_DETAILS).filter((net) => !net.mainnet)
+	// peanut.toggleVerbose()
+
+	testnets.forEach((net) => {
+		it(`should run tests on ${net.name}`, async function () {
+			if (!['Holesky'].includes(net.name)) {
+				//  'Milkomeda C1 Testnet', 'Sepolia'
+				// if (!['Base Goerli'].includes(net.name)) {
+				return
+			}
+			console.log(`Running tests on ${net.name}`)
+			// Set up your test parameters based on the current testnet
+			const chainId = net.chainId
+			const provider = await peanut.getDefaultProvider(String(chainId))
+			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY as string
+			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+
+			// Create a link
+			console.log('Creating a link for', net.name)
+			const resp = await peanut.createLink({
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: 0.000001,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			})
+
+			// Claim the link
+			const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
+			const receiverAddress = wallet.address
+			const res = await peanut.claimLinkGasless({
+				link: resp.createdLink.link[0],
+				recipientAddress: receiverAddress,
+				APIKey: apiToken,
+				baseUrl: API_URL,
+			})
+
+			expect(res.status).toBe('success')
+		}, 120000) // 60 seconds timeout
+	})
 })

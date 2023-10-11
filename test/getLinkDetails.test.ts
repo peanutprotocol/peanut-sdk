@@ -140,3 +140,24 @@ describe('getLinkDetails for NFT', function () {
 		expect(linkDetails.metadata.attributes[0].value).toBe('crimson')
 	}, 10000)
 })
+
+describe.only('getLinkDetails for Polygon Mumbai', function () {
+	it('should work for Polygon Mumbai', async function () {
+		const links = [
+			'https://peanut.to/claim#?c=80001&v=v4&i=2&p=MepA9d6moFYDn0F2&t=sdk',
+			'https://peanut.to/claim#?c=80001&v=v4&i=0&p=8uJZLLhlTBicKhEY&t=sdk',
+		]
+
+		for (const link of links) {
+			const linkDetails = await peanut.getLinkDetails({ link })
+
+			console.log(linkDetails)
+
+			// Add your expectations here
+			expect(linkDetails).not.toBe(undefined)
+			expect(linkDetails.link).toBe(link)
+			expect(linkDetails.chainId).toBe(80001)
+			// Add more expectations based on your requirements
+		}
+	}, 10000)
+})

@@ -166,3 +166,37 @@ describe('createLinks tests', function () {
 		}
 	}, 60000)
 })
+
+describe('createLinks tests', function () {
+	it.only('live test on mumbai', async function () {
+		const provider = await peanut.getDefaultProvider('80001')
+		const WALLET = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
+		const CHAIN_ID = 80001 // 80001 for mumbai
+		const TOKEN_AMOUNT = 0.0001
+		const TOKEN_TYPE = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+		const TOKEN_ADDRESS = ethers.constants.AddressZero
+		const TOKEN_DECIMALS = 18
+		const NUM_LINKS = 2
+
+		// Create links for live testing
+		const { createdLinks, status } = await peanut.createLinks({
+			structSigner: {
+				signer: WALLET,
+			},
+			linkDetails: {
+				chainId: CHAIN_ID,
+				tokenAmount: TOKEN_AMOUNT,
+				tokenType: TOKEN_TYPE, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				tokenAddress: TOKEN_ADDRESS,
+				tokenDecimals: TOKEN_DECIMALS,
+			},
+			numberOfLinks: NUM_LINKS,
+		})
+
+		console.log('links: ', createdLinks)
+		expect(createdLinks).toBeDefined() // Basic checks to ensure the result has data
+		expect(status).toBeDefined()
+
+		// Additional assertions as needed
+	}, 60000)
+})

@@ -1400,7 +1400,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 			throw new Error("Couldn't find details for this token")
 		}
 
-		let tokenDetails = chainDetails.tokens.find(
+		const tokenDetails = chainDetails.tokens.find(
 			(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
 		)
 
@@ -1485,7 +1485,6 @@ async function claimLinkGasless({
 		console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', APIKey, ' url: ', baseUrl)
 	const payload = await createClaimPayload(link, recipientAddress)
 	config.verbose && console.log('payload: ', payload)
-	//  url = "https://api.peanut.to/claim";
 	if (baseUrl == 'local') {
 		config.verbose && console.log('using local api')
 		baseUrl = 'http://127.0.0.1:5001/claim'

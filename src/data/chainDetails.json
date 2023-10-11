@@ -422,33 +422,6 @@
 			"format": "svg"
 		}
 	},
-	"5001": {
-		"name": "Mantle Testnet",
-		"chain": "ETH",
-		"rpc": ["https://rpc.testnet.mantle.xyz"],
-		"faucets": ["https://faucet.testnet.mantle.xyz"],
-		"nativeCurrency": {
-			"name": "Testnet Mantle",
-			"symbol": "MNT",
-			"decimals": 18
-		},
-		"infoURL": "https://mantle.xyz",
-		"shortName": "Mantle Testnet",
-		"chainId": 5001,
-		"networkId": 5001,
-		"explorers": [
-			{
-				"name": "Mantle Testnet Explorer",
-				"url": "https://explorer.testnet.mantle.xyz",
-				"standard": "EIP3091"
-			}
-		],
-		"mainnet": false,
-		"icon": {
-			"url": "https://cryptologos.cc/logos/mantle-mnt-logo.png",
-			"format": "png"
-		}
-	},
 	"11155111": {
 		"name": "Sepolia",
 		"title": "Ethereum Testnet Sepolia",
@@ -459,7 +432,6 @@
 			"https://rpc-sepolia.rockx.com",
 			"https://rpc.sepolia.ethpandaops.io",
 			"https://sepolia.infura.io/v3/${INFURA_API_KEY}",
-			"wss://sepolia.infura.io/v3/${INFURA_API_KEY}",
 			"https://sepolia.gateway.tenderly.co"
 		],
 		"faucets": ["http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"],
@@ -489,34 +461,6 @@
 			"url": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/sepolia/info/logo.png",
 			"format": "png"
 		}
-	},
-	"167005": {
-		"name": "Taiko Grimsvotn L2",
-		"chain": "ETH",
-		"status": "active",
-		"icon": {
-			"url": "https://ipfs.io/ipfs/QmcHdmVr5VRUJq13jnM6tgah5Ge7hn3Dm14eY6vwivJ5ui",
-			"format": "png"
-		},
-		"rpc": ["https://rpc.test.taiko.xyz"],
-		"faucets": [],
-		"nativeCurrency": {
-			"name": "Ether",
-			"symbol": "ETH",
-			"decimals": 18
-		},
-		"infoURL": "https://taiko.xyz",
-		"shortName": "Taiko Grimsvotn",
-		"chainId": 167005,
-		"networkId": 167005,
-		"explorers": [
-			{
-				"name": "blockscout",
-				"url": "https://explorer.test.taiko.xyz",
-				"standard": "EIP3091"
-			}
-		],
-		"mainnet": false
 	},
 	"17000": {
 		"name": "Holesky",
