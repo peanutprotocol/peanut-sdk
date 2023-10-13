@@ -110,6 +110,14 @@ export interface IClaimLinkParams {
 	recipient?: string
 }
 
+export interface IClaimLinkXChainParams {
+	structSigner: IPeanutSigner
+	link: string
+	destinationChainId: string,
+	maxSlippage: number,
+	recipient?: string
+}
+
 export interface IClaimLinkResponse {
 	txHash: string
 	status: SDKStatus
