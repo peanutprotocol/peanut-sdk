@@ -61,7 +61,6 @@
 		"@babel/preset-env": "^7.22.10",
 		"@babel/preset-typescript": "^7.22.5",
 		"@ethersproject/abstract-provider": "^5.7.0",
-		"@0xsquid/sdk": "^1.0",
 		"@jest/globals": "^29.6.2",
 		"@jest/transform": "^29.6.2",
 		"@types/isomorphic-fetch": "^0.0.36",

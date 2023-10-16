@@ -8,7 +8,7 @@
 
 import { BigNumber, ethers } from 'ethersv5' // v5
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { Squid } from "@0xsquid/sdk";
+//import { Squid } from "@0xsquid/sdk";
 
 import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import {
@@ -191,7 +191,8 @@ async function getContract(_chainId: string, signerOrProvider: any, version = DE
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 			break
 		case 'vx':
-			PEANUT_ABI = PEANUT_ABI_V4
+			PEANUT_ABI = PEANUT_ABI_VX
+			break;
 		default:
 			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
 	}
@@ -1252,7 +1253,7 @@ async function claimLink({
 		txHash: txReceipt.transactionHash,
 	}
 }
-
+/*
 async function claimLinkXChain({
 	structSigner,
 	link,
@@ -1362,7 +1363,7 @@ async function claimLinkXChain({
 		status: new interfaces.SDKStatus(interfaces.EClaimLinkStatusCodes.SUCCESS),
 		txHash: txReceipt.transactionHash,
 	}
-}
+}*/
 
 /**
  * Gets all deposits for a given signer and chainId.
@@ -1668,7 +1669,7 @@ const peanut = {
 	createLinks,
 	claimLink,
 	claimLinkGasless,
-	claimLinkXChain,
+	//claimLinkXChain,
 	estimateGasLimit,
 	// claimLinkSender,
 	prepareTxs,
@@ -1678,6 +1679,7 @@ const peanut = {
 	createMultiLinkFromLinks,
 	formatNumberAvoidScientific,
 	trim_decimal_overflow,
+	setFeeOptions,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
