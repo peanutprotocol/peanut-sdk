@@ -536,8 +536,8 @@ async function estimateGasLimit(contract: any, functionName: string, params: any
 		const estimatedGas = await contract.estimateGas[functionName](...params, txOptions)
 		return BigInt(Math.floor(Number(estimatedGas) * multiplier))
 	} catch (error) {
-		console.error(`Error estimating gas for ${functionName}:`, error)
-		console.error(
+		console.warn(`Could not estimate gas for for ${functionName}:`, error)
+		console.warn(
 			'contract address:',
 			contract.address,
 			'txOptions:',
@@ -645,16 +645,31 @@ async function prepareTxs({
 	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
 		try {
-			const approveTx = await prepareApproveERC20Tx(
-				address,
-				String(linkDetails.chainId),
-				linkDetails.tokenAddress!,
-				tokenAmountBigNum,
-				linkDetails.tokenDecimals,
-				true,
-				peanutContractVersion,
-				provider
-			)
+			let approveTx
+			if (numberOfLinks == 1) {
+				approveTx = await prepareApproveERC20Tx(
+					address,
+					String(linkDetails.chainId),
+					linkDetails.tokenAddress!,
+					tokenAmountBigNum,
+					linkDetails.tokenDecimals,
+					true,
+					peanutContractVersion,
+					provider
+				)
+			} else {
+				// approve to the batcher contract
+				approveTx = await prepareApproveERC20Tx(
+					address,
+					String(linkDetails.chainId),
+					linkDetails.tokenAddress!,
+					totalTokenAmount,
+					linkDetails.tokenDecimals,
+					true,
+					batcherContractVersion,
+					provider
+				)
+			}
 			approveTx && unsignedTxs.push(approveTx)
 			approveTx && config.verbose && console.log('approveTx:', approveTx)
 		} catch (error) {
