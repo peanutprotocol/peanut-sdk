@@ -69,7 +69,6 @@ export interface ICreateLinkParams {
 }
 export interface ICreateLinkResponse {
 	createdLink: ICreatedPeanutLink
-	status: SDKStatus
 }
 
 //createLinks
@@ -80,14 +79,6 @@ export interface ICreateLinksParams extends Omit<ICreateLinkParams, 'password'> 
 
 export interface ICreateLinksResponse {
 	createdLinks: ICreatedPeanutLink[]
-	status: SDKStatus
-}
-
-export enum ECreateLinksStatusCodes {
-	SUCCESS,
-	ERROR_PREPARING_TXs,
-	ERROR_SIGNING_AND_SUBMITTING_TX,
-	ERROR_GETTING_LINKS_FROM_TX,
 }
 
 //claimLinkGasless
@@ -100,7 +91,6 @@ export interface IClaimLinkGaslessParams {
 
 export interface IClaimLinkGaslessResponse {
 	txHash: string
-	status: SDKStatus
 }
 
 //ClaimLink
@@ -112,7 +102,6 @@ export interface IClaimLinkParams {
 
 export interface IClaimLinkResponse {
 	txHash: string
-	status: SDKStatus
 }
 
 //prepareCreatetxs
@@ -128,7 +117,6 @@ export interface IPrepareCreateTxsParams {
 
 export interface IPrepareCreateTxsResponse {
 	unsignedTxs: TransactionRequest[]
-	status: SDKStatus
 }
 
 //signAndSubmitTx
@@ -140,7 +128,6 @@ export interface ISignAndSubmitTxParams {
 export interface ISignAndSubmitTxResponse {
 	txHash: string
 	tx: ethers.providers.TransactionResponse
-	status: SDKStatus
 }
 
 //getLink
@@ -153,7 +140,6 @@ export interface IGetLinkFromTxParams {
 
 export interface IGetLinkFromTxResponse {
 	links: string[]
-	status: SDKStatus
 }
 
 //prepareClaimTx
@@ -161,7 +147,6 @@ export interface IPrepareClaimTxParams extends IClaimLinkParams {}
 
 export interface IPrepareClaimTxResponse {
 	unsignedTx: TransactionRequest
-	status: SDKStatus
 }
 
 //getLinkDetails
@@ -172,21 +157,17 @@ export interface IGetLinkDetailsParams {
 
 export interface IGetLinkDetailsResponse {
 	linkDetails: IPeanutLinkChainDetails
-	success: SDKStatus
 }
 
 //error object and enums
 
 export enum ECreateLinkStatusCodes {
-	SUCCESS,
-	ERROR_VALIDATING_LINK_DETAILS,
 	ERROR_PREPARING_TX,
 	ERROR_SIGNING_AND_SUBMITTING_TX,
 	ERROR_GETTING_LINKS_FROM_TX,
 }
 
 export enum EPrepareCreateTxsStatusCodes {
-	SUCCESS,
 	ERROR_VALIDATING_LINK_DETAILS,
 	ERROR_GETTING_DEFAULT_PROVIDER,
 	ERROR_GETTING_TX_COUNT,
@@ -199,17 +180,14 @@ export enum EPrepareCreateTxsStatusCodes {
 }
 
 export enum ESignAndSubmitTx {
-	SUCCESS,
 	ERROR_SENDING_TX,
 }
 
 export enum EGetLinkFromTxStatusCodes {
-	SUCCESS,
 	ERROR_GETTING_TX_RECEIPT_FROM_HASH,
 }
 
 export enum EClaimLinkStatusCodes {
-	SUCCESS,
 	ERROR,
 }
 
