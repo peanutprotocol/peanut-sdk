@@ -40,7 +40,7 @@ export interface IPeanutLinkDetails {
 }
 
 export interface ICreatedPeanutLink {
-	link: string | string[]
+	link: string
 	txHash: string
 }
 
@@ -67,18 +67,11 @@ export interface ICreateLinkParams {
 	peanutContractVersion?: string
 	password?: string
 }
-export interface ICreateLinkResponse {
-	createdLink: ICreatedPeanutLink
-}
 
 //createLinks
 export interface ICreateLinksParams extends Omit<ICreateLinkParams, 'password'> {
 	numberOfLinks: number
 	passwords?: string[]
-}
-
-export interface ICreateLinksResponse {
-	createdLinks: ICreatedPeanutLink[]
 }
 
 //claimLinkGasless
@@ -113,7 +106,7 @@ export interface IClaimLinkResponse {
 }
 
 //prepareCreatetxs
-export interface IPrepareCreateTxsParams {
+export interface IPrepareTxsParams {
 	address: string
 	linkDetails: IPeanutLinkDetails
 	peanutContractVersion?: string
@@ -123,7 +116,7 @@ export interface IPrepareCreateTxsParams {
 	provider?: ethers.providers.Provider
 }
 
-export interface IPrepareCreateTxsResponse {
+export interface IPrepareTxsResponse {
 	unsignedTxs: TransactionRequest[]
 }
 
@@ -148,13 +141,6 @@ export interface IGetLinkFromTxParams {
 
 export interface IGetLinkFromTxResponse {
 	links: string[]
-}
-
-//prepareClaimTx
-export interface IPrepareClaimTxParams extends IClaimLinkParams {}
-
-export interface IPrepareClaimTxResponse {
-	unsignedTx: TransactionRequest
 }
 
 //getLinkDetails

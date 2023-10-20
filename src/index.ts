@@ -603,7 +603,7 @@ async function prepareTxs({
 	numberOfLinks = 1,
 	passwords = [],
 	provider,
-}: interfaces.IPrepareCreateTxsParams): Promise<interfaces.IPrepareCreateTxsResponse> {
+}: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
 	try {
 		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	} catch (error) {
@@ -1024,7 +1024,7 @@ async function createLink({
 	linkDetails,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 	password = null,
-}: interfaces.ICreateLinkParams): Promise<interfaces.ICreateLinkResponse> {
+}: interfaces.ICreateLinkParams): Promise<interfaces.ICreatedPeanutLink> {
 	password = password || (await getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, [password], 1)
 	const provider = structSigner.signer.provider
@@ -1073,7 +1073,8 @@ async function createLink({
 	}
 
 	return {
-		createdLink: { link: linksFromTxResp.links, txHash: signedTxs[signedTxs.length - 1].txHash },
+		link: linksFromTxResp.links,
+		txHash: signedTxs[signedTxs.length - 1].txHash,
 	}
 }
 
@@ -1083,7 +1084,7 @@ async function createLinks({
 	numberOfLinks = 2,
 	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
 	passwords = null,
-}: interfaces.ICreateLinksParams): Promise<interfaces.ICreateLinksResponse> {
+}: interfaces.ICreateLinksParams): Promise<interfaces.ICreatedPeanutLink[]> {
 	passwords = passwords || (await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16))))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	const provider = structSigner.signer.provider
@@ -1119,7 +1120,7 @@ async function createLinks({
 	}
 
 	config.verbose && console.log('signedTxs: ', signedTxs)
-	let linksFromTxResp
+	let linksFromTxResp: interfaces.IGetLinkFromTxResponse
 	try {
 		linksFromTxResp = await getLinksFromTx({
 			linkDetails,
@@ -1134,7 +1135,7 @@ async function createLinks({
 		return { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }
 	})
 
-	return { createdLinks: createdLinks }
+	return createdLinks
 }
 
 /**
