@@ -87,6 +87,16 @@ export async function signAddress(string: string, privateKey: string) {
 }
 
 /**
+ * Signs a hash
+ */
+export async function signHash(stringHash: string, privateKey: string) {
+	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
+	const signer = new ethers.Wallet(privateKey)
+	const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
+	return signature
+}
+
+/**
  * Generates a random string of the specified length
  *  need to avoid bias: https://gist.github.com/joepie91/7105003c3b26e65efcea63f3db82dfba#so-how-do-i-obtain-random-values-securely
  * h/t to Nanak Nihal from Holonym

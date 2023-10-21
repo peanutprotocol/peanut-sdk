@@ -113,8 +113,8 @@ export interface IClaimLinkParams {
 export interface IClaimLinkXChainParams {
 	structSigner: IPeanutSigner
 	link: string
-	destinationChainId: string,
-	maxSlippage: number,
+	destinationChainId: string
+	maxSlippage: number
 	recipient?: string
 }
 

@@ -40,6 +40,7 @@ import {
 	solidityHashBytesEIP191,
 	solidityHashAddress,
 	signAddress,
+	signHash,
 	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
@@ -192,7 +193,7 @@ async function getContract(_chainId: string, signerOrProvider: any, version = DE
 			break
 		case 'vx':
 			PEANUT_ABI = PEANUT_ABI_VX
-			break;
+			break
 		default:
 			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
 	}
@@ -1653,6 +1654,7 @@ const peanut = {
 	solidityHashBytesEIP191,
 	solidityHashAddress,
 	signAddress,
+	signHash,
 	getRandomString,
 	detectContractVersionFromTxReceipt,
 	getContract,
