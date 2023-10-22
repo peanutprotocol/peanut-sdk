@@ -167,6 +167,7 @@ export enum EPrepareCreateTxsStatusCodes {
 
 export enum ESignAndSubmitTx {
 	ERROR_SENDING_TX,
+	ERROR_SETTING_FEE_OPTIONS,
 }
 
 export enum EGetLinkFromTxStatusCodes {

@@ -114,7 +114,7 @@ describe('createLinks tests', function () {
 		const NUM_LINKS = 2
 
 		// Create links for live testing
-		const { createdLinks, status } = await peanut.createLinks({
+		const createdLinks = await peanut.createLinks({
 			structSigner: {
 				signer: WALLET,
 			},
@@ -130,8 +130,6 @@ describe('createLinks tests', function () {
 
 		console.log('links: ', createdLinks)
 		expect(createdLinks).toBeDefined() // Basic checks to ensure the result has data
-		expect(status).toBeDefined()
-		expect(status.code).toBe('SUCCESS') // Expecting transaction to be successful
 
 		// Additional assertions as needed
 	}, 60000)
@@ -144,7 +142,7 @@ describe('createLinks tests', function () {
 		const NUM_LINKS = 30
 
 		// Create links for live testing
-		const { createdLinks, status } = await peanut.createLinks({
+		const createdLinks = await peanut.createLinks({
 			structSigner: {
 				signer: WALLET,
 			},
@@ -157,7 +155,6 @@ describe('createLinks tests', function () {
 			},
 			numberOfLinks: NUM_LINKS,
 		})
-		console.log(status)
 		console.log('links: ', createdLinks)
 
 		// print all createdLinks.link sequentially
@@ -179,7 +176,7 @@ describe('createLinks tests', function () {
 		const NUM_LINKS = 2
 
 		// Create links for live testing
-		const { createdLinks, status } = await peanut.createLinks({
+		const createdLinks = await peanut.createLinks({
 			structSigner: {
 				signer: WALLET,
 			},
@@ -195,7 +192,6 @@ describe('createLinks tests', function () {
 
 		console.log('links: ', createdLinks)
 		expect(createdLinks).toBeDefined() // Basic checks to ensure the result has data
-		expect(status).toBeDefined()
 
 		// Additional assertions as needed
 	}, 60000)

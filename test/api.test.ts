@@ -38,14 +38,14 @@ describe('Peanut API Integration Tests', function () {
 
 		// check status of link
 		setTimeout(() => {}, 2000)
-		const status = await peanut.getLinkDetails({ provider: optimismGoerliProvider, link: resp.createdLink.link[0] })
+		const status = await peanut.getLinkDetails({ provider: optimismGoerliProvider, link: resp.link })
 		console.log('status', status)
 
 		// claim link using api
 		const receiverAddress = optimism_goerli_wallet.address
 		setTimeout(() => {}, 9000)
 		const res = await peanut.claimLinkGasless({
-			link: resp.createdLink.link[0],
+			link: resp.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
 			baseUrl: API_URL,
@@ -53,7 +53,7 @@ describe('Peanut API Integration Tests', function () {
 		expect(res.status).toBe('success')
 		console.log('claim link response', res.data)
 
-		links.push(resp.createdLink.link[0])
+		links.push(resp.link)
 	}, 60000) // 60 seconds timeout
 
 	it('should create two links and claim them simultaneously', async function () {
@@ -90,14 +90,14 @@ describe('Peanut API Integration Tests', function () {
 		const receiverAddress = optimism_goerli_wallet.address
 
 		const res1 = await peanut.claimLinkGasless({
-			link: resp1.createdLink.link[0],
+			link: resp1.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
 			baseUrl: API_URL,
 		})
 
 		const res2 = await peanut.claimLinkGasless({
-			link: resp2.createdLink.link[0],
+			link: resp2.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
 			baseUrl: API_URL,
@@ -105,8 +105,8 @@ describe('Peanut API Integration Tests', function () {
 
 		expect(res1.status).toBe('success')
 		expect(res2.status).toBe('success')
-		links.push(resp1.createdLink.link[0])
-		links.push(resp2.createdLink.link[0])
+		links.push(resp1.link)
+		links.push(resp2.link)
 	}, 120000) // 120 seconds timeout
 
 	it('should fail to claim an already claimed link', async function () {
@@ -127,13 +127,13 @@ describe('Peanut API Integration Tests', function () {
 				tokenType: tokenType,
 			},
 		})
-		links.push(resp.createdLink.link[0])
+		links.push(resp.link)
 
 		// Claim the link
 		const receiverAddress = optimism_goerli_wallet.address
 
 		const res = await peanut.claimLinkGasless({
-			link: resp.createdLink.link[0],
+			link: resp.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
 			baseUrl: API_URL,
@@ -145,7 +145,7 @@ describe('Peanut API Integration Tests', function () {
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const res = await peanut.claimLinkGasless({
-				link: resp.createdLink.link[0],
+				link: resp.link,
 				recipientAddress: receiverAddress,
 				APIKey: apiToken,
 				baseUrl: API_URL,
@@ -179,7 +179,7 @@ describe('Peanut API Integration Tests', function () {
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const res = await peanut.claimLinkGasless({
-				link: resp.createdLink.link[0],
+				link: resp.link,
 				recipientAddress: '0xInvalidAddress',
 				APIKey: apiToken,
 				baseUrl: API_URL,
@@ -218,7 +218,7 @@ describe('Peanut API Integration Tests', function () {
 			// Claim all links simultaneously
 			// Claim all links simultaneously
 			const receiverAddress = optimism_goerli_wallet.address
-			const claimPromises = resp.createdLinks.flatMap((link) => {
+			const claimPromises = resp.flatMap((link) => {
 				// Ensure link.link is an array
 				const links = Array.isArray(link.link) ? link.link : [link.link]
 				console.log('links', links)
@@ -237,7 +237,7 @@ describe('Peanut API Integration Tests', function () {
 			claimResponses.forEach((res) => expect(res.status).toBe('success'))
 
 			// Add created links to the links array
-			resp.createdLinks.forEach((link) => links.push(link.link as string))
+			resp.forEach((link) => links.push(link.link as string))
 		},
 		numLinks * 120000
 	) // Adjust timeout based on number of links
@@ -263,22 +263,27 @@ describe('Testnet Tests', function () {
 
 			// Create a link
 			console.log('Creating a link for', net.name)
-			const resp = await peanut.createLink({
-				structSigner: {
-					signer: wallet,
-				},
-				linkDetails: {
-					chainId: chainId,
-					tokenAmount: 0.000001,
-					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-				},
-			})
+			let resp
+			try {
+				resp = await peanut.createLink({
+					structSigner: {
+						signer: wallet,
+					},
+					linkDetails: {
+						chainId: chainId,
+						tokenAmount: 0.000001,
+						tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+					},
+				})
+			} catch (error) {
+				console.log(error)
+			}
 
 			// Claim the link
 			const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 			const receiverAddress = wallet.address
 			const res = await peanut.claimLinkGasless({
-				link: resp.createdLink.link[0],
+				link: resp.link,
 				recipientAddress: receiverAddress,
 				APIKey: apiToken,
 				baseUrl: API_URL,
