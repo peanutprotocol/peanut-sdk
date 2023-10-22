@@ -837,11 +837,19 @@ async function signAndSubmitTx({
 	config.verbose && console.log('unsigned tx: ', unsignedTx)
 
 	// Set the transaction options using setFeeOptions
-	const txOptions = await setFeeOptions({
-		provider: structSigner.signer.provider,
-		eip1559: true, // or any other value you want to set
-		// set other options as needed
-	})
+	let txOptions
+	try {
+		txOptions = await setFeeOptions({
+			provider: structSigner.signer.provider,
+			eip1559: true, // or any other value you want to set
+			// set other options as needed
+		})
+	} catch (error) {
+		throw new interfaces.SDKStatus(
+			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
+			'Error setting the fee options: ' + error.message
+		)
+	}
 
 	// Merge the transaction options into the unsigned transaction
 	unsignedTx = { ...unsignedTx, ...txOptions }
