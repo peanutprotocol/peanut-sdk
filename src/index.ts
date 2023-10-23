@@ -8,7 +8,7 @@
 
 import { BigNumber, ethers } from 'ethersv5' // v5
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-//import { Squid } from "@0xsquid/sdk";
+import axios from 'axios';
 
 import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import {
@@ -1640,6 +1640,100 @@ async function claimLinkGasless({
 	}
 }
 
+async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
+	// TODO rate limits? Caching?
+	const url = isTestnet
+		? 'https://testnet.api.squidrouter.com/v1/chains'
+		: 'https://api.squidrouter.com/v1/chains';
+
+	try {
+		const response = await axios.get(url);
+		const data = response.data.chains;
+
+		if (data && Array.isArray(data)) {
+			return data;
+		} else {
+			throw new Error("Unexpected API response format");
+		}
+	} catch (error) {
+		console.error("Error:", error.message);
+	}
+	return [];
+}
+
+async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
+	// TODO rate limits? Caching?
+	const url = isTestnet
+		? 'https://testnet.api.squidrouter.com/v1/tokens'
+		: 'https://api.squidrouter.com/v1/tokens';
+
+	try {
+		const response = await axios.get(url);
+		const data = response.data.tokens;
+
+		if (data && Array.isArray(data)) {
+		return data;
+		} else {
+		throw new Error("Unexpected API response format");
+		}
+	} catch (error) {
+		console.error("Error:", error.message);
+	}
+	return [];
+}
+
+async function getCrossChainOptionsForLink(
+	isTestnet: boolean,
+	sourceChainId: number,
+	tokenType: number
+	): Promise<Array<interfaces.Chain & { tokens: interfaces.Token[] }>> {
+	if (tokenType > 1) {
+		console.log("Can't bridge link type");
+		return [];
+	}
+
+	const supportedChains = await getSquidChains(isTestnet);
+
+	const isSourceChainSupported = supportedChains.some(
+		(chain) => chain.chainId === sourceChainId
+	);
+
+	if (!isSourceChainSupported) {
+		console.log("Unsupported chain - Can't bridge from here");
+		return [];
+	}
+
+	const supportedTokens = await getSquidTokens(isTestnet);
+
+	const supportedTokensMap = new Map<number, interfaces.Token[]>();
+
+	supportedTokens.forEach(({ chainId, address, name, symbol }) => {
+		if (!supportedTokensMap.has(chainId)) {
+		supportedTokensMap.set(chainId, []);
+		}
+		supportedTokensMap.get(chainId)?.push({ chainId, address, name, symbol });
+	});
+
+	const destinationChains = supportedChains
+		.filter(
+		(chain) =>
+			chain.chainId !== sourceChainId && chain.chainType === "evm"
+		)
+		.map(({ chainId, chainName, chainType }) => ({
+		chainId,
+		chainName,
+		chainType
+		}));
+
+	const chainsWithTokens = destinationChains.map((chain) => {
+		const chainId = chain.chainId;
+		const tokens = supportedTokensMap.get(chainId) || [];
+		return { ...chain, tokens };
+	});
+
+	return chainsWithTokens;
+}
+
 function toggleVerbose() {
 	config.verbose = !config.verbose
 	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
@@ -1682,6 +1776,9 @@ const peanut = {
 	formatNumberAvoidScientific,
 	trim_decimal_overflow,
 	setFeeOptions,
+	getSquidChains,
+	getSquidTokens,
+	getCrossChainOptionsForLink,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
@@ -1711,6 +1808,9 @@ export {
 	claimLink,
 	claimLinkGasless,
 	estimateGasLimit,
+	getSquidChains,
+	getSquidTokens,
+	getCrossChainOptionsForLink,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,

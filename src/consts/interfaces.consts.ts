@@ -183,6 +183,19 @@ export interface IGetLinkDetailsResponse {
 	success: SDKStatus
 }
 
+export interface Chain {
+	chainId: number;
+	chainName: string;
+	chainType: string;
+}
+  
+export interface Token {
+	chainId: number;
+	address: string;
+	name: string;
+	symbol: string;
+}
+
 //error object and enums
 
 export enum ECreateLinkStatusCodes {
