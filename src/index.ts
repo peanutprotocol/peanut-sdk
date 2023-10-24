@@ -1326,8 +1326,14 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const tokenType = deposit.contractType
 
 	let claimed = false
-	if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
-		claimed = true
+	if (['v2','v3','v4'].includes(contractVersion)) {
+		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
+			claimed = true
+		}
+		config.verbose && console.log('Pre-v5 claim checking behaviour, claimed:', claimed)
+	} else {
+		claimed = deposit.claimed;
+		config.verbose && console.log('v5+ claim checking behaviour, claimed:', claimed)
 	}
 
 	let depositDate: Date | null = null
