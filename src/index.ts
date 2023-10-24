@@ -1448,7 +1448,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		}
 		config.verbose && console.log('Pre-v5 claim checking behaviour, claimed:', claimed)
 	} else {
-		claimed = deposit.claimed;
+		claimed = deposit.claimed
 		config.verbose && console.log('v5+ claim checking behaviour, claimed:', claimed)
 	}
 
