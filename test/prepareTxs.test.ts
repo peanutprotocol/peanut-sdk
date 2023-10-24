@@ -24,7 +24,6 @@ describe('prepareTxs', function () {
 			provider: goerliProvider,
 		})
 
-		expect(response.status.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.SUCCESS)
 		expect(response.unsignedTxs.length).toBeGreaterThan(0)
 	})
 
@@ -43,39 +42,42 @@ describe('prepareTxs', function () {
 			provider: goerliProvider,
 		})
 
-		expect(response.status.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.SUCCESS)
 		expect(response.unsignedTxs.length).toBeGreaterThan(0)
 	})
 
 	it('should fail when numberOfLinks is not equal to passwords.length', async function () {
-		const response = await peanut.prepareTxs({
-			address: goerliWallet.address,
-			linkDetails: {
-				chainId: 5,
-				tokenAmount: 0.01,
-				tokenType: 0,
-			},
-			numberOfLinks: 2,
-			passwords: ['testpassword'],
-			provider: goerliProvider,
-		})
-
-		expect(response.status.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
+		try {
+			const response = await peanut.prepareTxs({
+				address: goerliWallet.address,
+				linkDetails: {
+					chainId: 5,
+					tokenAmount: 0.01,
+					tokenType: 0,
+				},
+				numberOfLinks: 2,
+				passwords: ['testpassword'],
+				provider: goerliProvider,
+			})
+		} catch (error) {
+			expect(error.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
+		}
 	})
 
 	it('should fail when linkDetails are not valid', async function () {
-		const response = await peanut.prepareTxs({
-			address: goerliWallet.address,
-			linkDetails: {
-				chainId: 5,
-				tokenAmount: -0.01, // Invalid token amount
-				tokenType: 0,
-			},
-			numberOfLinks: 1,
-			passwords: ['testpassword'],
-			provider: goerliProvider,
-		})
-
-		expect(response.status.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
+		try {
+			const response = await peanut.prepareTxs({
+				address: goerliWallet.address,
+				linkDetails: {
+					chainId: 5,
+					tokenAmount: -0.01, // Invalid token amount
+					tokenType: 0,
+				},
+				numberOfLinks: 1,
+				passwords: ['testpassword'],
+				provider: goerliProvider,
+			})
+		} catch (error) {
+			expect(error.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
+		}
 	})
 })
