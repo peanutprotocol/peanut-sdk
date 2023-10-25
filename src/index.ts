@@ -1269,7 +1269,7 @@ async function claimLinkXChain(
 	config.verbose && console.log('Getting squid info..')
 
 	// TODO this can throw and ERROR, needs to be caught
-	const route = await peanut.getSquidRoute(
+	const route = await getSquidRoute(
 		true, // is testnet
 		String(chainId),
 		sourceToken,
