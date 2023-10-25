@@ -1730,6 +1730,70 @@ async function getCrossChainOptionsForLink(
 	return chainsWithTokens
 }
 
+async function getSquidRoute(
+	isTestnet: boolean,
+	fromChain: string,
+	fromToken: string,
+	fromAmount: number,
+	toChain: string,
+	toToken: string,
+	fromAddress: string,
+	toAddress: string,
+	slippage: number
+): Promise<object> {
+	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/route' : 'https://api.squidrouter.com/v1/route'
+
+	const params = {
+		fromChain,
+		fromToken,
+		fromAmount,
+		toChain,
+		toToken,
+		fromAddress,
+		toAddress,
+		slippage,
+		enableForecall: true, // optional, defaults to true
+		/*collectFees: {
+		integratorAddress: '0xcb5b05869c450c26a8409417365ba04cc8c88786', // TODO make Peanut address
+		fee: 50, // bips
+	  },*/
+	}
+
+	console.log('SUPPLIED:')
+	console.log(params)
+
+	try {
+		const searchParams = new URLSearchParams()
+
+		for (const key in params) {
+			if (params.hasOwnProperty(key)) {
+				searchParams.append(key, params[key].toString())
+			}
+		}
+
+		console.log(searchParams)
+
+		const fullUrl = `${url}?${searchParams}`
+
+		const response: Response = await fetch(fullUrl, {
+			method: 'GET',
+			headers: {
+				'x-integrator-id': 'peanut-api',
+			},
+		})
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! Status: ${response.status}`)
+		}
+
+		const data: object = await response.json()
+		return data
+	} catch (error) {
+		console.error('Error:', error.message)
+		return {}
+	}
+}
+
 function toggleVerbose() {
 	config.verbose = !config.verbose
 	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
@@ -1774,6 +1838,7 @@ const peanut = {
 	setFeeOptions,
 	getSquidChains,
 	getSquidTokens,
+	getSquidRoute,
 	getCrossChainOptionsForLink,
 	VERSION,
 	version: VERSION,
@@ -1806,6 +1871,7 @@ export {
 	estimateGasLimit,
 	getSquidChains,
 	getSquidTokens,
+	getSquidRoute,
 	getCrossChainOptionsForLink,
 	VERSION,
 	CHAIN_DETAILS,

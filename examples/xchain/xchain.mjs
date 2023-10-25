@@ -1,6 +1,5 @@
 import { peanut } from '@squirrel-labs/peanut-sdk'
 import { ethers } from 'ethers'
-import { Squid } from '@0xsquid/sdk'
 import assert from 'assert'
 
 async function claimLinkXChain(
@@ -58,34 +57,19 @@ async function claimLinkXChain(
 	console.log('tokenAmount (link details) : ' + linkDetails.tokenAmount)
 	console.log('tokenAmount (str) : ' + tokenAmount)
 
-	// Call squid SDK to get routing information
-	const squid = new Squid({
-		//baseUrl: "https://v2.api.squidrouter.com"	// for prod
-	})
+	// Call squid to get routing information
 
-	await squid.init()
-
-	const sqr = {
-		fromChain: chainId,
-		fromToken: sourceToken,
-		fromAmount: tokenAmount,
-		toChain: destinationChainId,
-		toToken: destinationToken,
-		fromAddress: recipient,
-		toAddress: recipient,
-		slippage: maxSlippage, // 1.00 = 1% max slippage across the entire route
-		enableForecall: true, // instant execution service, defaults to true
-		quoteOnly: false, // optional, defaults to false (taken from the example)
-		collectFees: {
-			integratorAddress: '0xcb5b05869c450c26a8409417365ba04cc8c88786', // TODO make Peanut address
-			fee: 50, // bips
-		},
-	}
-
-	console.log('Squid route input:')
-	console.log(sqr)
-
-	const { route } = await squid.getRoute(sqr)
+	const { route } = await peanut.getSquidRoute(
+		true, // is testnet
+		chainId,
+		sourceToken,
+		tokenAmount,
+		destinationChainId,
+		destinationToken,
+		recipient,
+		recipient,
+		maxSlippage
+	)
 
 	// TODO check if route is possible or failed due to slippage etc
 	if (route.transactionRequest == null) {
