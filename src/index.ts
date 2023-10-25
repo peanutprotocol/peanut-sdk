@@ -13,7 +13,7 @@ import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
-	PEANUT_ABI_VX,
+	PEANUT_ABI_V5,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
@@ -190,8 +190,8 @@ async function getContract(_chainId: string, signerOrProvider: any, version = DE
 		case 'Bv4':
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 			break
-		case 'vx':
-			PEANUT_ABI = PEANUT_ABI_VX
+		case 'v5':
+			PEANUT_ABI = PEANUT_ABI_V5
 			break
 		default:
 			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
