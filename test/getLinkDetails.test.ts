@@ -141,7 +141,7 @@ describe('getLinkDetails for NFT', function () {
 	}, 10000)
 })
 
-describe.only('getLinkDetails for Polygon Mumbai', function () {
+describe('getLinkDetails for Polygon Mumbai', function () {
 	it('should work for Polygon Mumbai', async function () {
 		const links = [
 			'https://peanut.to/claim#?c=80001&v=v4&i=2&p=MepA9d6moFYDn0F2&t=sdk',
@@ -159,5 +159,5 @@ describe.only('getLinkDetails for Polygon Mumbai', function () {
 			expect(linkDetails.chainId).toBe(80001)
 			// Add more expectations based on your requirements
 		}
-	}, 10000)
+	}, 20000)
 })

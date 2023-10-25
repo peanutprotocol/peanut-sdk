@@ -25,3 +25,9 @@ This is an early SDK, and we're very open to suggestions and improvements. Pleas
 ### Examples
 
 Check the /examples folder.
+
+### Release Notes 0.2.24
+
+-   changed verbosity level if gas estimate fails
+-   fixed incorrect contract and amount being approved for erc20 batch transactions
+-   disabled minimization for better debugging experience

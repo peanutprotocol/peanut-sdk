@@ -32,7 +32,7 @@ const common = {
 		}),
 	],
 	optimization: {
-		minimize: true,
+		minimize: false, // disabled for better debugging
 		minimizer: [
 			new TerserPlugin({
 				extractComments: {
