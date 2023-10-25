@@ -1326,7 +1326,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const tokenType = deposit.contractType
 
 	let claimed = false
-	if (['v2','v3','v4'].includes(contractVersion)) {
+	if (['v2', 'v3', 'v4'].includes(contractVersion)) {
 		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
 			claimed = true
 		}
@@ -1349,6 +1349,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let tokenAmount = '0'
+	let tokenDecimals = null
 	let symbol = null
 	let name = null
 	let tokenURI = null
@@ -1374,29 +1375,41 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		if (!tokenDetails) {
 			try {
 				const contractERC20 = new ethers.Contract(tokenAddress, ERC20_ABI, provider)
-				symbol = await contractERC20.symbol()
-				name = await contractERC20.name()
-				const decimals = await contractERC20.decimals()
-				tokenAmount = ethers.utils.formatUnits(deposit.amount, decimals)
+				const [fetchedSymbol, fetchedName, fetchedDecimals] = await Promise.all([
+					contractERC20.symbol(),
+					contractERC20.name(),
+					contractERC20.decimals(),
+				])
+				symbol = fetchedSymbol
+				name = fetchedName
+				tokenDecimals = fetchedDecimals
+				tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDecimals)
 			} catch (error) {
 				console.error('Error fetching ERC20 info:', error)
 			}
 		} else {
 			symbol = tokenDetails.symbol
 			name = tokenDetails.name
-			tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDetails.decimals)
+			tokenDecimals = tokenDetails.decimals
+			tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDecimals)
 		}
 	} else if (tokenType == interfaces.EPeanutLinkType.erc721) {
 		try {
 			const contract721 = new ethers.Contract(tokenAddress, ERC721_ABI, provider)
-			name = await contract721.name()
-			symbol = await contract721.symbol()
-			tokenURI = await contract721.tokenURI(deposit.tokenId)
+			const [fetchedName, fetchedSymbol, fetchedTokenURI] = await Promise.all([
+				contract721.name(),
+				contract721.symbol(),
+				contract721.tokenURI(deposit.tokenId),
+			])
+			name = fetchedName
+			symbol = fetchedSymbol
+			tokenURI = fetchedTokenURI
 
 			const response = await fetch(tokenURI)
 			if (response.ok) {
 				metadata = await response.json()
 			}
+			tokenDecimals = null
 		} catch (error) {
 			console.error('Error fetching ERC721 info:', error)
 		}
@@ -1404,14 +1417,16 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	} else if (tokenType == interfaces.EPeanutLinkType.erc1155) {
 		try {
 			const contract1155 = new ethers.Contract(tokenAddress, ERC1155_ABI, provider)
-			name = 'ERC1155 Token (' + deposit.tokenId + ')'
-			symbol = '1155'
-			tokenURI = await contract1155.tokenURI(deposit.tokenId)
+			const fetchedTokenURI = await contract1155.tokenURI(deposit.tokenId)
+			tokenURI = fetchedTokenURI
 
 			const response = await fetch(tokenURI)
 			if (response.ok) {
 				metadata = await response.json()
 			}
+			name = 'ERC1155 Token (' + deposit.tokenId + ')'
+			symbol = '1155'
+			tokenDecimals = null
 		} catch (error) {
 			console.error('Error fetching ERC1155 info:', error)
 		}
@@ -1426,6 +1441,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		password: password,
 		tokenType: deposit.contractType,
 		tokenAddress: deposit.tokenAddress,
+		tokenDecimals: tokenDecimals,
 		tokenSymbol: symbol,
 		tokenName: name,
 		tokenAmount: tokenAmount,

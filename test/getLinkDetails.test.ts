@@ -1,17 +1,11 @@
-import peanut from '../src/index' // import directly from source code
-import { ethers } from 'ethersv5' // v5
+import peanut from '../src/index'
+import { ethers } from 'ethersv5'
 import { expect, it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-// const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
-// const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const INFURA_API_KEY = process.env.INFURA_API_KEY
-// const goerliProvider = new ethers.JsonRpcProvider(GOERLI_RPC_URL); // v6
-// const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL) // v5
-// const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL) // v5
-// const optimismGoerliProvider = new ethers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL); // v6
 
 describe('getLinkDetails', function () {
 	describe('v3', function () {
@@ -33,6 +27,8 @@ describe('getLinkDetails', function () {
 				link, // this works
 				// link // this doesn't work
 			})
+			// expect that tokenDecimals is 6
+			expect(linkDetails.tokenDecimals).toBe(6)
 			console.log(linkDetails)
 		}, 1000000)
 
@@ -43,6 +39,7 @@ describe('getLinkDetails', function () {
 			// const polygonProvider = new ethers.providers.JsonRpcProvider(polygonProviderUrl)
 			// should have 1 usdc inside
 			const linkDetails = await peanut.getLinkDetails({ link })
+			expect(linkDetails.tokenDecimals).toBe(6)
 			console.log(linkDetails)
 		}, 1000000)
 
