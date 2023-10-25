@@ -1253,12 +1253,12 @@ async function claimLinkXChain(
 	if (sourceToken == '0x0000000000000000000000000000000000000000') {
 		assert(linkDetails.tokenType == 0, 'Native token address passed for non-native token link type')
 		// Update for Squid compatibility
-		console.log('Source token is 0x0000, converting to 0xEeee..')
+		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
 		sourceToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 	}
 
 	if (destinationToken == '0x0000000000000000000000000000000000000000' || destinationToken == null) {
-		console.log('Destination token is 0x0000, converting to 0xEeee..')
+		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
 		// Update for Squid compatibility
 		destinationToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 	}
@@ -1266,10 +1266,7 @@ async function claimLinkXChain(
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
 	// TODO DANGER : this assumes 18 dp and needs to match the input token decimals
 	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, 18)
-	console.log('tokenAmount (link details) : ' + linkDetails.tokenAmount)
-	console.log('tokenAmount (number) : ' + tokenAmount)
-
-	console.log('Getting squid info..')
+	config.verbose && console.log('Getting squid info..')
 
 	// TODO this can throw and ERROR, needs to be caught
 	const route = await peanut.getSquidRoute(
@@ -1300,7 +1297,7 @@ async function claimLinkXChain(
 		console.error('One or more of the properties are undefined.')
 	}
 
-	console.log('Squid route calculated :)')
+	config.verbose && console.log('Squid route calculated :)')
 
 	// cryptography
 
@@ -1323,7 +1320,6 @@ async function claimLinkXChain(
 	if (config.verbose) {
 		// print the params
 		console.log('params: ', params)
-		//console.log('addressHash: ', addressHash)
 		console.log('hashEIP191: ', hashEIP191)
 		console.log('signature: ', signature)
 	}
@@ -1365,8 +1361,7 @@ async function claimLinkXChain(
 	console.log('Success : ' + axelarScanLink)
 
 	return {
-		status: new interfaces.SDKStatus(interfaces.EClaimLinkStatusCodes.SUCCESS),
-		txHash: txReceipt.transactionHash,
+		txHash: txReceipt.transactionHash
 	}
 }
 
