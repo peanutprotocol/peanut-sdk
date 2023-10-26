@@ -1758,12 +1758,23 @@ async function getSquidRoute(
 	toAddress: string,
 	slippage: number
 ): Promise<any> {
-	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/route' : 'https://api.squidrouter.com/v1/route'
+	const url = 
+		isTestnet === undefined 
+		|| isTestnet == true 
+			? 'https://testnet.api.squidrouter.com/v1/route'
+			: 'https://api.squidrouter.com/v1/route'
+	config.verbose && console.log('Using for squid route call : ', url)
 
 	if (fromToken == '0x0000000000000000000000000000000000000000') {
 		// Update for Squid compatibility
 		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
 		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	if (toToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
+		toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
 	}
 
 	const params = {
@@ -1801,6 +1812,7 @@ async function getSquidRoute(
 		})
 
 		if (!response.ok) {
+			console.error("Squid api called with status: ", response.status)
 			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, response.statusText)
 		}
 
@@ -1808,14 +1820,13 @@ async function getSquidRoute(
 
 		if (data && data.route) {
 			return data.route
-		} else {
-			throw new interfaces.SDKStatus(
-				interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
-				'undefined data received from Squid API'
-			)
-		}
-
-		return data
+		} 
+		
+		// implicit else
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
+			'undefined data received from Squid API'
+		)
 	} catch (error) {
 		throw error
 	}
