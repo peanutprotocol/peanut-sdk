@@ -166,7 +166,7 @@ export interface Token {
 	symbol: string
 }
 
-//error object and enums
+// error object and enums
 
 export enum ECreateLinkStatusCodes {
 	ERROR_PREPARING_TX,
