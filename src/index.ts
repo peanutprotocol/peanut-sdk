@@ -1821,8 +1821,12 @@ async function getSquidRoute(
 	}
 }
 
-function toggleVerbose() {
-	config.verbose = !config.verbose
+function toggleVerbose(verbose?: boolean) {
+	if (verbose !== undefined) {
+		config.verbose = verbose
+	} else {
+		config.verbose = !config.verbose
+	}
 	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
 }
 
