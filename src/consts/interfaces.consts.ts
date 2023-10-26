@@ -157,6 +157,7 @@ export interface Chain {
 	chainId: number
 	chainName: string
 	chainType: string
+	chainIconURI: string
 }
 
 export interface Token {
@@ -164,6 +165,7 @@ export interface Token {
 	address: string
 	name: string
 	symbol: string
+	logoURI: string
 }
 
 // error object and enums

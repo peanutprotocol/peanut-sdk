@@ -1215,6 +1215,7 @@ async function claimLink({
 }
 
 async function claimLinkXChain(
+	isTestnet,
 	structSigner,
 	link,
 	destinationChainId,
@@ -1270,7 +1271,7 @@ async function claimLinkXChain(
 
 	// TODO this can throw and ERROR, needs to be caught
 	const route = await getSquidRoute(
-		true, // is testnet
+		isTestnet,
 		String(chainId),
 		sourceToken,
 		String(tokenAmount),
@@ -1361,7 +1362,7 @@ async function claimLinkXChain(
 	console.log('Success : ' + axelarScanLink)
 
 	return {
-		txHash: txReceipt.transactionHash
+		txHash: txReceipt.transactionHash,
 	}
 }
 
@@ -1482,7 +1483,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const tokenType = deposit.contractType
 
 	let claimed = false
-	if (['v2','v3','v4'].includes(contractVersion)) {
+	if (['v2', 'v3', 'v4'].includes(contractVersion)) {
 		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
 			claimed = true
 		}
@@ -1662,9 +1663,8 @@ async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
 			throw new Error(`Failed to fetch data: ${response.statusText}`)
 		}
 	} catch (error) {
-		console.error('Error:', error.message)
+		throw new Error('Error:' + error.message)
 	}
-	return []
 }
 
 async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
@@ -1684,7 +1684,7 @@ async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
 			throw new Error(`Failed to fetch data: ${response.statusText}`)
 		}
 	} catch (error) {
-		console.error('Error:', error.message)
+		throw new Error('Error:' + error.message)
 	}
 	return []
 }
@@ -1695,8 +1695,7 @@ async function getCrossChainOptionsForLink(
 	tokenType: number
 ): Promise<Array<interfaces.Chain & { tokens: interfaces.Token[] }>> {
 	if (tokenType > 1) {
-		console.log("Can't bridge link type")
-		return []
+		throw new Error('Can not bridge link type')
 	}
 
 	const supportedChains = await getSquidChains(isTestnet)
@@ -1704,27 +1703,27 @@ async function getCrossChainOptionsForLink(
 	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
 
 	if (!isSourceChainSupported) {
-		console.log("Unsupported chain - Can't bridge from here")
-		return []
+		throw new Error('Unsupported chain - Can not bridge from here')
 	}
 
 	const supportedTokens = await getSquidTokens(isTestnet)
 
 	const supportedTokensMap = new Map<number, interfaces.Token[]>()
 
-	supportedTokens.forEach(({ chainId, address, name, symbol }) => {
+	supportedTokens.forEach(({ chainId, address, name, symbol, logoURI }) => {
 		if (!supportedTokensMap.has(chainId)) {
 			supportedTokensMap.set(chainId, [])
 		}
-		supportedTokensMap.get(chainId)?.push({ chainId, address, name, symbol })
+		supportedTokensMap.get(chainId)?.push({ chainId, address, name, symbol, logoURI })
 	})
 
 	const destinationChains = supportedChains
 		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
-		.map(({ chainId, chainName, chainType }) => ({
+		.map(({ chainId, chainName, chainType, chainIconURI }) => ({
 			chainId,
 			chainName,
 			chainType,
+			chainIconURI,
 		}))
 
 	const chainsWithTokens = destinationChains.map((chain) => {
@@ -1748,6 +1747,12 @@ async function getSquidRoute(
 	slippage: number
 ): Promise<any> {
 	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/route' : 'https://api.squidrouter.com/v1/route'
+
+	if (fromToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
+		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
 
 	const params = {
 		fromChain,
@@ -1797,10 +1802,8 @@ async function getSquidRoute(
 
 		return data
 	} catch (error) {
-		console.error('Error:', error.message)
+		throw error
 	}
-
-	return null
 }
 
 function toggleVerbose() {
