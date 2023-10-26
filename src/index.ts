@@ -1219,11 +1219,11 @@ async function claimLinkXChain(
 	link,
 	destinationChainId,
 	destinationTokenAddress,
+	isTestnet,
 	maxSlippage = 1.0, // (e.g. 0.x - x.y, example from SDK is 1.0 which is ~ 1%)
 	recipient = null
 ) {
 	const config = { verbose: true }
-
 	const signer = structSigner.signer
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
@@ -1270,7 +1270,7 @@ async function claimLinkXChain(
 
 	// TODO this can throw and ERROR, needs to be caught
 	const route = await getSquidRoute(
-		true, // is testnet
+		isTestnet,
 		String(chainId),
 		sourceToken,
 		String(tokenAmount),
@@ -1282,19 +1282,13 @@ async function claimLinkXChain(
 	)
 
 	if (route === null) {
-		// TODO better error description and code needed
-		// e.g. was the slippage or chain or token destination the problem?
-		console.error('Failed to get x-chain route')
-		return {
-			status: new interfaces.SDKStatus(interfaces.EClaimLinkStatusCodes.ERROR),
-			txHash: null,
-		}
+		throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, 'Failed to get x-chain route')
 	}
 
 	const { params, estimate, transactionRequest } = route
 
 	if (!params || !estimate || !transactionRequest) {
-		console.error('One or more of the properties are undefined.')
+		throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, 'Failed to get x-chain route')
 	}
 
 	config.verbose && console.log('Squid route calculated :)')
@@ -1350,6 +1344,8 @@ async function claimLinkXChain(
 	]
 
 	config.verbose && console.log('claimParams: ', claimParams)
+	config.verbose && console.log('txOptions: ', txOptions)
+
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
@@ -1361,7 +1357,7 @@ async function claimLinkXChain(
 	console.log('Success : ' + axelarScanLink)
 
 	return {
-		txHash: txReceipt.transactionHash
+		txHash: txReceipt.transactionHash,
 	}
 }
 
@@ -1482,7 +1478,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const tokenType = deposit.contractType
 
 	let claimed = false
-	if (['v2','v3','v4'].includes(contractVersion)) {
+	if (['v2', 'v3', 'v4'].includes(contractVersion)) {
 		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
 			claimed = true
 		}
@@ -1656,15 +1652,20 @@ async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
 			if (data && Array.isArray(data.chains)) {
 				return data.chains
 			} else {
-				throw new Error('Unexpected API response format')
+				throw new interfaces.SDKStatus(
+					interfaces.EXChainStatusCodes.ERROR_GETTING_CHAINS,
+					'Failed to get x-chain chains'
+				)
 			}
 		} else {
-			throw new Error(`Failed to fetch data: ${response.statusText}`)
+			throw new interfaces.SDKStatus(
+				interfaces.EXChainStatusCodes.ERROR_GETTING_CHAINS,
+				'Failed to get x-chain chains'
+			)
 		}
 	} catch (error) {
-		console.error('Error:', error.message)
+		throw error
 	}
-	return []
 }
 
 async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
@@ -1678,15 +1679,20 @@ async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
 			if (data && Array.isArray(data.tokens)) {
 				return data.tokens
 			} else {
-				throw new Error('Unexpected API response format')
+				throw new interfaces.SDKStatus(
+					interfaces.EXChainStatusCodes.ERROR_GETTING_CHAINS,
+					'Failed to get x-chain tokens'
+				)
 			}
 		} else {
-			throw new Error(`Failed to fetch data: ${response.statusText}`)
+			throw new interfaces.SDKStatus(
+				interfaces.EXChainStatusCodes.ERROR_GETTING_CHAINS,
+				'Failed to get x-chain tokens'
+			)
 		}
 	} catch (error) {
-		console.error('Error:', error.message)
+		throw error
 	}
-	return []
 }
 
 async function getCrossChainOptionsForLink(
@@ -1695,8 +1701,10 @@ async function getCrossChainOptionsForLink(
 	tokenType: number
 ): Promise<Array<interfaces.Chain & { tokens: interfaces.Token[] }>> {
 	if (tokenType > 1) {
-		console.log("Can't bridge link type")
-		return []
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_WRONG_LINK_TYPE,
+			'Unsupported link type - can not bridge this link'
+		)
 	}
 
 	const supportedChains = await getSquidChains(isTestnet)
@@ -1704,27 +1712,30 @@ async function getCrossChainOptionsForLink(
 	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
 
 	if (!isSourceChainSupported) {
-		console.log("Unsupported chain - Can't bridge from here")
-		return []
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CHAIN,
+			'Unsupported chain - can not bridge from this chain'
+		)
 	}
 
 	const supportedTokens = await getSquidTokens(isTestnet)
 
 	const supportedTokensMap = new Map<number, interfaces.Token[]>()
 
-	supportedTokens.forEach(({ chainId, address, name, symbol }) => {
+	supportedTokens.forEach(({ chainId, address, name, symbol, logoURI }) => {
 		if (!supportedTokensMap.has(chainId)) {
 			supportedTokensMap.set(chainId, [])
 		}
-		supportedTokensMap.get(chainId)?.push({ chainId, address, name, symbol })
+		supportedTokensMap.get(chainId)?.push({ chainId, address, name, symbol, logoURI })
 	})
 
 	const destinationChains = supportedChains
 		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
-		.map(({ chainId, chainName, chainType }) => ({
+		.map(({ chainId, chainName, chainType, chainIconURI }) => ({
 			chainId,
 			chainName,
 			chainType,
+			chainIconURI,
 		}))
 
 	const chainsWithTokens = destinationChains.map((chain) => {
@@ -1748,6 +1759,12 @@ async function getSquidRoute(
 	slippage: number
 ): Promise<any> {
 	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/route' : 'https://api.squidrouter.com/v1/route'
+
+	if (fromToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
+		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
 
 	const params = {
 		fromChain,
@@ -1784,7 +1801,7 @@ async function getSquidRoute(
 		})
 
 		if (!response.ok) {
-			throw new Error(`HTTP error! Status: ${response.status}`)
+			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, response.statusText)
 		}
 
 		const data = await response.json()
@@ -1792,15 +1809,16 @@ async function getSquidRoute(
 		if (data && data.route) {
 			return data.route
 		} else {
-			console.error('Data is undefined or does not conform to the expected structure.')
+			throw new interfaces.SDKStatus(
+				interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
+				'undefined data received from Squid API'
+			)
 		}
 
 		return data
 	} catch (error) {
-		console.error('Error:', error.message)
+		throw error
 	}
-
-	return null
 }
 
 function toggleVerbose() {
