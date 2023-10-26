@@ -1230,6 +1230,12 @@ async function claimLinkXChain(
 		recipient = await signer.getAddress()
 		config.verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
+	if (contractVersion !== 'v5') {
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
+			`Unsupported contract version ${contractVersion}`
+		)
+	}
 	const keys = peanut.generateKeysFromString(password)
 	const contract = await peanut.getContract(String(chainId), signer, contractVersion)
 
