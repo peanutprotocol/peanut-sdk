@@ -201,12 +201,23 @@ export enum EClaimLinkStatusCodes {
 	ERROR,
 }
 
+export enum EXChainStatusCodes {
+	ERROR_GETTING_ROUTE,
+	ERROR_GETTING_CHAINS,
+	ERROR_GETTING_TOKENS,
+	ERROR_WRONG_LINK_TYPE,
+	ERROR_UNSUPPORTED_CHAIN,
+	ERROR_UNDEFINED_DATA,
+	ERROR,
+}
+
 export type allErrorEnums =
 	| ECreateLinkStatusCodes
 	| EPrepareCreateTxsStatusCodes
 	| ESignAndSubmitTx
 	| EGetLinkFromTxStatusCodes
 	| EClaimLinkStatusCodes
+	| EXChainStatusCodes
 
 export class SDKStatus extends Error {
 	code: allErrorEnums
