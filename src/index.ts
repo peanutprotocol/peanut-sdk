@@ -1315,7 +1315,8 @@ async function claimLinkXChain(
 	}
 
 	// Prepare transaction options
-	let txOptions = {}
+	let txOptions: ethers.providers.TransactionRequest = {}
+
 	txOptions = await peanut.setFeeOptions({
 		txOptions,
 		provider: signer.provider,
@@ -1325,6 +1326,25 @@ async function claimLinkXChain(
 		// gasLimit,
 		// verbose,
 	})
+
+	let valueToSend
+
+	if (linkDetails.tokenType == 0) {
+		// Native token handled differently, most of the funds are already in the
+		// contract so we only need to send the native token surplus
+		console.log('Link value : ', tokenAmount)
+		console.log('Squid fee  : ', transactionRequest.value)
+		const feeToSend = transactionRequest.value - tokenAmount
+		console.log('Additional to send : ', feeToSend)
+		valueToSend = ethers.utils.formatEther(feeToSend)
+	} else {
+		// For ERC20 tokens the value requested is the entire fee required to
+		// pay for the Axelar gas for and Squid swapping
+		console.log('Squid fee  : ', transactionRequest.value)
+		valueToSend = ethers.utils.formatEther(transactionRequest.value)
+	}
+
+	txOptions.value = ethers.utils.parseEther(valueToSend)
 
 	const claimParams = [
 		// Peanut link details
@@ -1754,9 +1774,8 @@ async function getSquidRoute(
 	toAddress: string,
 	slippage: number
 ): Promise<any> {
-	const url = 
-		isTestnet === undefined 
-		|| isTestnet == true 
+	const url =
+		isTestnet === undefined || isTestnet == true
 			? 'https://testnet.api.squidrouter.com/v1/route'
 			: 'https://api.squidrouter.com/v1/route'
 	config.verbose && console.log('Using for squid route call : ', url)
@@ -1808,7 +1827,7 @@ async function getSquidRoute(
 		})
 
 		if (!response.ok) {
-			console.error("Squid api called with status: ", response.status)
+			console.error('Squid api called with status: ', response.status)
 			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, response.statusText)
 		}
 
@@ -1816,8 +1835,8 @@ async function getSquidRoute(
 
 		if (data && data.route) {
 			return data.route
-		} 
-		
+		}
+
 		// implicit else
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
