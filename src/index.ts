@@ -847,7 +847,8 @@ async function signAndSubmitTx({
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
-			'Error setting the fee options: ' + error.message
+			error,
+			'Error setting the fee options'
 		)
 	}
 
@@ -860,7 +861,8 @@ async function signAndSubmitTx({
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
-			'Error sending the Tx: ' + error.message
+			error,
+			'Error sending the transaction'
 		)
 	}
 
@@ -1049,7 +1051,7 @@ async function createLink({
 			provider: provider,
 		})
 	} catch (error) {
-		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_PREPARING_TX, error.message)
+		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_PREPARING_TX, error)
 	}
 
 	// Sign and submit the transactions sequentially
@@ -1060,10 +1062,7 @@ async function createLink({
 			signedTxs.push(signedTx)
 			await signedTx.tx.wait()
 		} catch (error) {
-			throw new interfaces.SDKStatus(
-				interfaces.ECreateLinkStatusCodes.ERROR_SIGNING_AND_SUBMITTING_TX,
-				error.message
-			)
+			throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_SIGNING_AND_SUBMITTING_TX, error)
 		}
 	}
 
@@ -1077,7 +1076,7 @@ async function createLink({
 			provider: provider,
 		})
 	} catch (error) {
-		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_GETTING_LINKS_FROM_TX, error.message)
+		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_GETTING_LINKS_FROM_TX, error)
 	}
 
 	return {
@@ -1109,7 +1108,7 @@ async function createLinks({
 			provider: provider,
 		})
 	} catch (error) {
-		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_PREPARING_TX, error.message)
+		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_PREPARING_TX, error)
 	}
 
 	// Sign and submit the transactions
@@ -1120,10 +1119,7 @@ async function createLinks({
 			signedTxs.push(signedTx)
 			await signedTx.tx.wait()
 		} catch (error) {
-			throw new interfaces.SDKStatus(
-				interfaces.ECreateLinkStatusCodes.ERROR_SIGNING_AND_SUBMITTING_TX,
-				error.message
-			)
+			throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_SIGNING_AND_SUBMITTING_TX, error)
 		}
 	}
 
@@ -1137,7 +1133,7 @@ async function createLinks({
 			provider,
 		})
 	} catch (error) {
-		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_GETTING_LINKS_FROM_TX, error.message)
+		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_GETTING_LINKS_FROM_TX, error)
 	}
 	const createdLinks = linksFromTxResp.links.map((link) => {
 		return { link: link, txHash: signedTxs[signedTxs.length - 1].txHash }

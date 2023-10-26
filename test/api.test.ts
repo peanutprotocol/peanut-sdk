@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // we want to use diff wallet than relayer
-var TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2 as string
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2 as string
 const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
@@ -18,8 +18,9 @@ console.log(`API_URL is set to: ${API_URL}`)
 describe('Peanut API Integration Tests', function () {
 	const links: string[] = []
 
-	it('should create a link and claim it', async function () {
+	it.only('should create a link and claim it', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
+		// peanut.toggleVerbose(true)
 
 		const chainId = 420 // optimism goerli
 		const tokenAmount = 0.00001337
