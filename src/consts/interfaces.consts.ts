@@ -222,11 +222,35 @@ export type allErrorEnums =
 export class SDKStatus extends Error {
 	code: allErrorEnums
 	extraInfo?: any
+	originalError?: Error
 
-	constructor(code: allErrorEnums, message?: string, extraInfo?: string) {
-		super(message)
+	constructor(code: allErrorEnums, messageOrOriginalError?: string | Error, extraInfo?: any) {
+		let fullMessage = ''
+		let originalError: Error | undefined
+
+		if (typeof messageOrOriginalError === 'string') {
+			fullMessage = messageOrOriginalError
+		} else if (messageOrOriginalError instanceof Error) {
+			originalError = messageOrOriginalError
+			fullMessage = originalError.message
+		}
+
+		if (typeof extraInfo === 'string') {
+			fullMessage += ' ' + extraInfo
+		} else if (typeof extraInfo === 'object') {
+			fullMessage += ' ' + JSON.stringify(extraInfo)
+		}
+
+		super(fullMessage.trim())
 		this.code = code
-		this.message = extraInfo
+		this.message = fullMessage.trim()
+		this.extraInfo = extraInfo
+		this.originalError = originalError
+
+		// If an original error is provided, use its stack trace
+		if (originalError) {
+			this.stack = originalError.stack
+		}
 
 		// Ensure the instance of is correct
 		Object.setPrototypeOf(this, SDKStatus.prototype)
