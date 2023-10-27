@@ -82,6 +82,16 @@ export interface IClaimLinkGaslessParams {
 	link: string
 }
 
+//claimLinkXChainGasless
+export interface IClaimLinkXChainGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	recipientAddress: string
+	link: string
+	destinationChainId: string
+	destinationToken: string
+}
+
 export interface IClaimLinkGaslessResponse {
 	txHash: string
 }
