@@ -20,8 +20,8 @@ const TOKEN_TYPES = Object.freeze({
 	ERC1155: 3,
 })
 
-const DEFAULT_CONTRACT_VERSION = 'v5'
-const FALLBACK_CONTRACT_VERSION = 'v4'
+const DEFAULT_CONTRACT_VERSION = 'v4'
+const FALLBACK_CONTRACT_VERSION = 'v3'
 const DEFAULT_BATCHER_VERSION = 'Bv4'
 
 // export all these functions (imported in index.js)
