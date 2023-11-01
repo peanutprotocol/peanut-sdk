@@ -1,5 +1,6 @@
 import PEANUT_ABI_V3 from './data/peanutAbiV3.json'
 import PEANUT_ABI_V4 from './data/peanutAbiV4.json'
+import PEANUT_ABI_V5 from './data/peanutAbiV5.json'
 import PEANUT_BATCHER_ABI_V4 from './data/peanutBatcherV4.abi.json'
 import ERC20_ABI from './data/erc20abi.json'
 import ERC721_ABI from './data/erc721abi.json'
@@ -19,14 +20,15 @@ const TOKEN_TYPES = Object.freeze({
 	ERC1155: 3,
 })
 
-const DEFAULT_CONTRACT_VERSION = 'v4'
-const FALLBACK_CONTRACT_VERSION = 'v3'
+const DEFAULT_CONTRACT_VERSION = 'v5'
+const FALLBACK_CONTRACT_VERSION = 'v4'
 const DEFAULT_BATCHER_VERSION = 'Bv4'
 
 // export all these functions (imported in index.js)
 export {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
+	PEANUT_ABI_V5,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,

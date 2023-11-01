@@ -82,6 +82,16 @@ export interface IClaimLinkGaslessParams {
 	link: string
 }
 
+//claimLinkXChainGasless
+export interface IClaimLinkXChainGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	recipientAddress: string
+	link: string
+	destinationChainId: string
+	destinationToken: string
+}
+
 export interface IClaimLinkGaslessResponse {
 	txHash: string
 }
@@ -90,6 +100,14 @@ export interface IClaimLinkGaslessResponse {
 export interface IClaimLinkParams {
 	structSigner: IPeanutSigner
 	link: string
+	recipient?: string
+}
+
+export interface IClaimLinkXChainParams {
+	structSigner: IPeanutSigner
+	link: string
+	destinationChainId: string
+	maxSlippage: number
 	recipient?: string
 }
 
@@ -145,7 +163,22 @@ export interface IGetLinkDetailsResponse {
 	linkDetails: IPeanutLinkChainDetails
 }
 
-//error object and enums
+export interface Chain {
+	chainId: number
+	chainName: string
+	chainType: string
+	chainIconURI: string
+}
+
+export interface Token {
+	chainId: number
+	address: string
+	name: string
+	symbol: string
+	logoURI: string
+}
+
+// error object and enums
 
 export enum ECreateLinkStatusCodes {
 	ERROR_PREPARING_TX,
@@ -178,21 +211,57 @@ export enum EClaimLinkStatusCodes {
 	ERROR,
 }
 
+export enum EXChainStatusCodes {
+	ERROR_GETTING_ROUTE,
+	ERROR_GETTING_CHAINS,
+	ERROR_GETTING_TOKENS,
+	ERROR_WRONG_LINK_TYPE,
+	ERROR_UNSUPPORTED_CHAIN,
+	ERROR_UNDEFINED_DATA,
+	ERROR_UNSUPPORTED_CONTRACT_VERSION,
+	ERROR,
+}
+
 export type allErrorEnums =
 	| ECreateLinkStatusCodes
 	| EPrepareCreateTxsStatusCodes
 	| ESignAndSubmitTx
 	| EGetLinkFromTxStatusCodes
 	| EClaimLinkStatusCodes
+	| EXChainStatusCodes
 
 export class SDKStatus extends Error {
 	code: allErrorEnums
 	extraInfo?: any
+	originalError?: Error
 
-	constructor(code: allErrorEnums, message?: string, extraInfo?: string) {
-		super(message)
+	constructor(code: allErrorEnums, messageOrOriginalError?: string | Error, extraInfo?: any) {
+		let fullMessage = ''
+		let originalError: Error | undefined
+
+		if (typeof messageOrOriginalError === 'string') {
+			fullMessage = messageOrOriginalError
+		} else if (messageOrOriginalError instanceof Error) {
+			originalError = messageOrOriginalError
+			fullMessage = originalError.message
+		}
+
+		if (typeof extraInfo === 'string') {
+			fullMessage += ' ' + extraInfo
+		} else if (typeof extraInfo === 'object') {
+			fullMessage += ' ' + JSON.stringify(extraInfo)
+		}
+
+		super(fullMessage.trim())
 		this.code = code
-		this.message = extraInfo
+		this.message = fullMessage.trim()
+		this.extraInfo = extraInfo
+		this.originalError = originalError
+
+		// If an original error is provided, use its stack trace
+		if (originalError) {
+			this.stack = originalError.stack
+		}
 
 		// Ensure the instance of is correct
 		Object.setPrototypeOf(this, SDKStatus.prototype)
