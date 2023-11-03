@@ -115,6 +115,16 @@ export interface IClaimLinkResponse {
 	txHash: string
 }
 
+export interface IClaimLinkSenderParams {
+	structSigner: IPeanutSigner
+	depositIndex: number
+	contractVersion?: string
+}
+
+export interface IClaimLinkSenderResponse {
+	txHash: string
+}
+
 //prepareCreatetxs
 export interface IPrepareTxsParams {
 	address: string
