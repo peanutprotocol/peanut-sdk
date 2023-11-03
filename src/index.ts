@@ -1210,6 +1210,38 @@ async function claimLink({
 	}
 }
 
+/**
+ * Claims the contents of a link as a sender. Can only be used if a link has not been claimed in a set time period.
+ * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
+ */
+async function claimLinkSender({
+	structSigner,
+	depositIndex,
+	contractVersion = DEFAULT_CONTRACT_VERSION,
+}: interfaces.IClaimLinkSenderParams): Promise<interfaces.IClaimLinkSenderResponse> {
+	const signer = structSigner.signer
+	const chainId = await signer.getChainId()
+	const contract = await getContract(String(chainId), signer, contractVersion)
+
+	// Prepare transaction options
+	let txOptions = {}
+	txOptions = await setFeeOptions({
+		txOptions,
+		provider: signer.provider,
+	})
+
+	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+
+	// withdraw the deposit
+	const tx = await contract.withdrawDepositSender(depositIndex, txOptions)
+	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+	const txReceipt = await tx.wait()
+
+	return {
+		txHash: txReceipt.transactionHash,
+	}
+}
+
 async function claimLinkXChain(
 	structSigner,
 	link,
@@ -1250,7 +1282,13 @@ async function claimLinkXChain(
 	// query the Squid API for a route it will fail if the chain or tokens are not supported
 
 	const claimPayload = await createClaimXChainPayload(
-		isTestnet, link, recipient, destinationChainId, destinationTokenAddress, maxSlippage)
+		isTestnet,
+		link,
+		recipient,
+		destinationChainId,
+		destinationTokenAddress,
+		maxSlippage
+	)
 
 	const { params, estimate, transactionRequest } = claimPayload
 
@@ -1359,43 +1397,6 @@ async function getAllDepositsForSigner({
 	return deposits
 }
 
-/**
- * Claims the contents of a link as a sender. Can only be used if a link has not been claimed in a set time period.
- * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
- */
-// async function claimLinkSender({
-// 	structSigner,
-// 	depositIndex,
-// 	contractVersion = DEFAULT_CONTRACT_VERSION,
-// }: {
-// 	structSigner: ethers.providers.JsonRpcSigner
-// 	depositIndex: number
-// 	contractVersion?: string
-// }): Promise<interfaces.IClaimLinkSenderResponse> {
-// 	const signer = structSigner.signer
-// 	const chainId = await signer.getChainId()
-// 	const contract = await getContract(String(chainId), signer, contractVersion, verbose)
-
-// 	// Prepare transaction options
-// 	let txOptions = {}
-// 	txOptions = await setFeeOptions({
-// 		txOptions,
-// 		provider: signer.provider,
-// 	})
-
-// 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
-
-// 	// withdraw the deposit
-// 	const tx = await contract.withdrawDepositSender(depositIndex, txOptions)
-// 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
-// 	const txReceipt = await tx.wait()
-
-// 	return {
-// 		status: new interfaces.SDKStatus(interfaces.EClaimLinkSenderStatusCodes.SUCCESS),
-// 		txHash: txReceipt.transactionHash,
-// 	}
-// }
-
 async function createClaimPayload(link: string, recipientAddress: string) {
 	/* internal utility function to create the payload for claiming a link */
 	const params = getParamsFromLink(link)
@@ -1420,13 +1421,13 @@ async function createClaimPayload(link: string, recipientAddress: string) {
 }
 
 async function createClaimXChainPayload(
-	isTestnet: boolean, 
+	isTestnet: boolean,
 	link: string,
 	recipient: string,
 	destinationChainId: string,
 	destinationToken: string,
-	maxSlippage: number) {
-
+	maxSlippage: number
+) {
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
@@ -1494,7 +1495,7 @@ async function createClaimXChainPayload(
 
 	// Super secret squirrel value that's guaranteed to pass the check in the contract
 	// TODO @hugo fix this when you fix the signing check in the contract
-	const signature = await signAddress("up, up, down, down, left, right, left, right, B, A", keys.privateKey)
+	const signature = await signAddress('up, up, down, down, left, right, left, right, B, A', keys.privateKey)
 
 	return {
 		recipientAddress: recipient,
@@ -1506,7 +1507,7 @@ async function createClaimXChainPayload(
 		contractVersion: params.contractVersion,
 		params: params,
 		estimate: estimate,
-		transactionRequest: transactionRequest
+		transactionRequest: transactionRequest,
 	}
 }
 
@@ -1723,15 +1724,34 @@ async function claimLinkXChainGasless({
 	baseUrl = 'https://api.peanut.to/claim',
 }: interfaces.IClaimLinkXChainGaslessParams) {
 	config.verbose && console.log('claiming link x-chain through Peanut API...')
-	config.verbose && 
-		console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', APIKey, ' url: ', baseUrl, ' dest chain: ', destinationChainId, ' dest token: ', destinationToken)
-	
+	config.verbose &&
+		console.log(
+			'link: ',
+			link,
+			' recipientAddress: ',
+			recipientAddress,
+			' apiKey: ',
+			APIKey,
+			' url: ',
+			baseUrl,
+			' dest chain: ',
+			destinationChainId,
+			' dest token: ',
+			destinationToken
+		)
+
 	// TODO is this testnet?
 	const isTestnet = true
 
 	// TODO slippage
 	const payload = await createClaimXChainPayload(
-		isTestnet, link, recipientAddress, destinationChainId, destinationToken, 1.0)
+		isTestnet,
+		link,
+		recipientAddress,
+		destinationChainId,
+		destinationToken,
+		1.0
+	)
 
 	config.verbose && console.log('payload: ', payload)
 	if (baseUrl == 'local') {
@@ -1975,8 +1995,8 @@ function calculateCombinedPayloadHash(transactionRequest, recipient) {
 	const hash1 = ethers.utils.solidityKeccak256(['address'], [combinedPayload])
 	console.log('hash1: ', hash1)
 
-	return peanut.solidityHashBytesEIP191(ethers.utils.arrayify(hash1))  
-  }
+	return peanut.solidityHashBytesEIP191(ethers.utils.arrayify(hash1))
+}
 
 function toggleVerbose(verbose?: boolean) {
 	if (verbose !== undefined) {
@@ -2016,7 +2036,7 @@ const peanut = {
 	claimLinkXChain,
 	claimLinkXChainGasless,
 	estimateGasLimit,
-	// claimLinkSender,
+	claimLinkSender,
 	prepareTxs,
 	signAndSubmitTx,
 	getLinksFromTx,
@@ -2056,6 +2076,7 @@ export {
 	createLink,
 	createLinks,
 	claimLink,
+	claimLinkSender,
 	claimLinkXChain,
 	claimLinkGasless,
 	claimLinkXChainGasless,

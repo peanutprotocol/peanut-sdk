@@ -9,16 +9,16 @@ const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
 
-const API_URL = 'http://api.peanut.to/claim'
+// const API_URL = 'http://api.peanut.to/claim'
 // let API_URL = 'http://127.0.0.1:5000/claim'
-// let API_URL = 'http://127.0.0.1:8000/claim'
+let API_URL = 'http://127.0.0.1:8000/claim'
 
 console.log(`API_URL is set to: ${API_URL}`)
 
 describe('Peanut API Integration Tests', function () {
 	const links: string[] = []
 
-	it.only('should create a link and claim it', async function () {
+	it('should create a link and claim it', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		// peanut.toggleVerbose(true)
 
@@ -252,7 +252,7 @@ describe('Testnet Tests', function () {
 		it(`should run tests on ${net.name}`, async function () {
 			// if (!['Linea'].includes(net.name)) {
 			// 	//  'Milkomeda C1 Testnet', 'Sepolia'
-			// 	// if (!['Base Goerli'].includes(net.name)) {
+			// if (!['Base Goerli'].includes(net.name)) {
 			// 	return
 			// }
 			console.log(`Running tests on ${net.name}`)
@@ -272,7 +272,7 @@ describe('Testnet Tests', function () {
 					},
 					linkDetails: {
 						chainId: chainId,
-						tokenAmount: 0.000001,
+						tokenAmount: 0.00001,
 						tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 					},
 				})
@@ -291,6 +291,6 @@ describe('Testnet Tests', function () {
 			})
 
 			expect(res.status).toBe('success')
-		}, 120000) // 60 seconds timeout
+		}, 600000) // 600 seconds timeout (lots of testnets)
 	})
 })

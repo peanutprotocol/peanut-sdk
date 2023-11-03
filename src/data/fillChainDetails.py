@@ -25,8 +25,10 @@ DEFAULT_ICON_URL = "https://raw.githubusercontent.com/spothq/cryptocurrency-icon
 
 def check_rpc(rpc):
     print(f"Checking RPC {rpc}...")
-    if "infura" in rpc.lower() or rpc.startswith("wss://"):
+    if "infura" in rpc.lower():
         return True
+    if rpc.startswith("wss://"):
+        return False
     try:
         response = requests.post(
             rpc,
@@ -37,7 +39,8 @@ def check_rpc(rpc):
             return True
         else:
             return False
-    except:
+    except Exception as e:
+        print("Error: ", e)
         return False
 
 
@@ -162,7 +165,9 @@ def main():
         print(f"Fetching details for chain id {chain_id}...")
 
         details = get_chain_details(chain_id)
-        details["mainnet"] = contracts[str(chain_id)].get("mainnet", "false").lower() == "true"
+        details["mainnet"] = (
+            contracts[str(chain_id)].get("mainnet", "false").lower() == "true"
+        )
 
         # get icon
         if details:
