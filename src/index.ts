@@ -107,6 +107,13 @@ async function fetchGetBalance(rpcUrl: string) {
 			id: 1,
 		}),
 	})
+
+	// doesn't seem to work properly
+	// // Check if the 'Access-Control-Allow-Origin' header is present
+	// if (!res.headers.has('Access-Control-Allow-Origin')) {
+	// 	throw new Error(`CORS header is missing in the response from ${rpcUrl}`)
+	// }
+
 	const json = await res.json()
 	return json
 }
@@ -123,13 +130,29 @@ async function getDefaultProvider(chainId: string): Promise<ethers.providers.Jso
 
 	config.verbose && console.log('rpcs', rpcs)
 
-	// this code goes through all RPCs. If any one of them is alive, the promise is resolved and a valid provider is returned.
-	// If all of them fail, the promise is rejected.
+	// Check if there is an Infura RPC and check for its liveliness
+	let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
+	if (infuraRpc) {
+		// for hackathon
+		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd')
+		config.verbose && console.log('Infura RPC found:', infuraRpc)
+		const isValid = await checkRpc(infuraRpc)
+		config.verbose && console.log('Infura RPC found and is valid:', infuraRpc, isValid)
+		if (isValid) {
+			return new ethers.providers.JsonRpcProvider({
+				url: infuraRpc,
+				skipFetchSetup: true,
+			})
+		}
+	}
+
+	// If no valid Infura RPC, continue with the current behavior
 	const checkPromises = rpcs.map((rpc) => {
 		return new Promise<{ isValid: boolean; rpc: string }>(async (resolve) => {
 			try {
-				// If the RPC string contains a placeholder for the API key, replace it.
 				rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+
+				// If the RPC string contains a placeholder for the API key, replace it.
 				const isValid = await checkRpc(rpc)
 
 				config.verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
@@ -154,8 +177,6 @@ async function getDefaultProvider(chainId: string): Promise<ethers.providers.Jso
 						url: result.rpc,
 						skipFetchSetup: true,
 					})
-					// const provider = new ethers.providers.JsonRpcProvider(result.rpc)
-					// await provider.ready
 					resolve(provider)
 				}
 			})
@@ -418,6 +439,11 @@ async function prepareApproveERC1155Tx(
 	return tx
 }
 
+async function supportsEIP1559(provider) {
+	const block = await provider.getBlock('latest')
+	return block.type === 2
+}
+
 async function setFeeOptions({
 	txOptions,
 	provider,
@@ -471,10 +497,16 @@ async function setFeeOptions({
 	config.verbose && console.log('checking if eip1559 is supported...')
 	if (chainDetails && chainDetails.features) {
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
-		config.verbose && console.log('Setting eip1559 to false chainid:', chainId)
+		config.verbose && console.log('EIP1559 support determined from chain features:', eip1559)
 	} else {
-		config.verbose && console.log('Setting eip1559 to false chainid:', chainId)
-		eip1559 = false
+		config.verbose && console.log('Chain features not available, checking EIP1559 support via RPC...')
+		try {
+			eip1559 = await supportsEIP1559(provider)
+			config.verbose && console.log('EIP1559 support determined from RPC:', eip1559)
+		} catch (error) {
+			console.error('Failed to determine EIP1559 support via RPC:', error)
+			eip1559 = false
+		}
 	}
 
 	// if on milkomeda, set eip1559 to false
