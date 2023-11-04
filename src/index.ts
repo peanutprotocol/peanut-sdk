@@ -185,7 +185,7 @@ async function getDefaultProvider(chainId: string): Promise<ethers.providers.Jso
 			})
 
 		// Fallback: If none of the RPCs are valid after they've all been checked.
-		Promise.allSettled(checkPromises).then(() => {
+		await Promise.allSettled(checkPromises).then(() => {
 			reject(new Error('No alive provider found for chainId ' + chainId))
 		})
 	})
@@ -441,8 +441,6 @@ async function prepareApproveERC1155Tx(
 
 async function supportsEIP1559(provider) {
 	const block = await provider.getBlock('latest')
-	console.log(block)
-
 	// EIP-1559 compatible blocks include a baseFeePerGas field.
 	return block.baseFeePerGas !== undefined
 }
@@ -556,7 +554,7 @@ async function setFeeOptions({
 			gasPrice = BigInt(feeData.gasPrice.toString())
 		}
 		const proposedGasPrice = gasPrice && (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
-		txOptions.gasPrice = proposedGasPrice && proposedGasPrice.toString()
+		txOptions.gasPrice = proposedGasPrice && ethers.BigNumber.from(proposedGasPrice.toString())
 	}
 
 	config.verbose && console.log('FINAL txOptions:', txOptions)
@@ -862,6 +860,8 @@ async function prepareTxs({
 		unsignedTxs.forEach((tx, i) => (tx.nonce = nonce + i))
 	}
 
+	config.verbose && console.log('unsignedTxs: ', unsignedTxs)
+
 	return { unsignedTxs }
 }
 
@@ -892,7 +892,10 @@ async function signAndSubmitTx({
 
 	let tx: ethers.providers.TransactionResponse
 	try {
+		config.verbose && console.log('sending tx: ', unsignedTx)
+		config.verbose && console.log('....')
 		tx = await structSigner.signer.sendTransaction(unsignedTx)
+		config.verbose && console.log('sent tx.')
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
@@ -1095,7 +1098,9 @@ async function createLink({
 		try {
 			const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
 			signedTxs.push(signedTx)
+			config.verbose && console.log('awaiting tx to be mined...')
 			await signedTx.tx.wait()
+			config.verbose && console.log('mined tx: ', signedTx.tx)
 		} catch (error) {
 			throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_SIGNING_AND_SUBMITTING_TX, error)
 		}
@@ -1559,11 +1564,27 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const depositIdx = params.depositIdx
 	const password = params.password
 	provider = provider || (await getDefaultProvider(String(chainId)))
+	// check that chainID and provider network are the same, else console log warning
+	const network = await provider.getNetwork()
+	if (network.chainId != Number(chainId)) {
+		console.warn('WARNING: chainId and provider network are different')
+	}
 	const contract = await getContract(chainId.toString(), provider, contractVersion)
 
 	config.verbose && console.log('fetching deposit: ', depositIdx)
-	const deposit = await contract.deposits(depositIdx)
+	let deposit,
+		attempts = 0
+	while (!deposit && attempts++ < 5) {
+		try {
+			deposit = await contract.deposits(depositIdx)
+		} catch (error) {
+			console.log(`Attempt ${attempts} failed. Retrying...`)
+			await new Promise((resolve) => setTimeout(resolve, 500))
+		}
+	}
+	if (!deposit) throw new Error('Failed to fetch deposit after 5 attempts')
 	config.verbose && console.log('deposit: ', deposit)
+
 	let tokenAddress = deposit.tokenAddress
 	const tokenType = deposit.contractType
 

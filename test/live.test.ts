@@ -45,25 +45,19 @@ describe('optimism goerli', function () {
 	const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismGoerliProvider)
 
 	it('should create a native link and claim it', async function () {
-		try {
-			await createAndClaimLink(
-				{
-					structSigner: {
-						signer: optimismGoerliWallet,
-					},
-					linkDetails: {
-						chainId: 420,
-						tokenAmount: 0.00001,
-						tokenType: 0,
-					},
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: optimismGoerliWallet,
 				},
-				9000
-			)
-		} catch (error) {
-			console.log(error)
-		}
-
-		expect(true).toBeTruthy()
+				linkDetails: {
+					chainId: 420,
+					tokenAmount: 0.00001,
+					tokenType: 0,
+				},
+			},
+			9000
+		)
 		// Add assertion here
 	}, 60000)
 	// it('should create an erc20 link and claim it', async function () {
@@ -82,23 +76,19 @@ describe('polygon', function () {
 	console.log(POLYGON_RPC_URL)
 
 	it('should create a native link and claim it', async function () {
-		try {
-			await createAndClaimLink(
-				{
-					structSigner: {
-						signer: polygonWallet,
-					},
-					linkDetails: {
-						chainId: chainId,
-						tokenAmount: tokenAmount,
-						tokenType: 0,
-					},
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: polygonWallet,
 				},
-				12000
-			)
-		} catch (error) {
-			console.log(error)
-		}
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0,
+				},
+			},
+			12000
+		)
 	}, 60000)
 	it('polygon should create an erc20 link and claim it', async function () {
 		const tokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' // polygon usdc
@@ -106,25 +96,21 @@ describe('polygon', function () {
 
 		// create link
 
-		try {
-			await createAndClaimLink(
-				{
-					structSigner: {
-						signer: polygonWallet,
-					},
-					linkDetails: {
-						chainId: chainId,
-						tokenAmount: tokenAmount,
-						tokenDecimals: tokenDecimals,
-						tokenAddress: tokenAddress,
-						tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-					},
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: polygonWallet,
 				},
-				9000
-			)
-		} catch (error) {
-			console.log(error)
-		}
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenDecimals: tokenDecimals,
+					tokenAddress: tokenAddress,
+					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
 	}, 180000)
 })
 
@@ -137,50 +123,42 @@ describe('goerli', function () {
 	const tokenAmount = 0.0001
 
 	it('should create a native link and claim it', async function () {
-		try {
-			await createAndClaimLink(
-				{
-					structSigner: {
-						signer: goerliWallet,
-					},
-					linkDetails: {
-						chainId: chainId,
-						tokenAmount: tokenAmount,
-
-						tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-					},
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: goerliWallet,
 				},
-				9000
-			)
-		} catch (error) {
-			console.log(error)
-		}
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
 	}, 60000)
 	it('should create an erc20 link and claim it', async function () {
 		const tokenAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB' // goerli LINK
 		const tokenDecimals = 18
 
 		// create link
-		try {
-			await createAndClaimLink(
-				{
-					structSigner: {
-						signer: goerliWallet,
-					},
-					linkDetails: {
-						chainId: chainId,
-						tokenAmount: tokenAmount,
-
-						tokenDecimals: tokenDecimals,
-						tokenAddress: tokenAddress,
-						tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-					},
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: goerliWallet,
 				},
-				9000
-			)
-		} catch (error) {
-			console.log(error)
-		}
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+
+					tokenDecimals: tokenDecimals,
+					tokenAddress: tokenAddress,
+					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
 	}, 180000)
 	it('should fail when no tokenAddress', async function () {
 		try {
@@ -257,23 +235,19 @@ describe('bnb', function () {
 		const bnbProvider = new ethers.providers.JsonRpcProvider(BNB_RPC_URL)
 		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', bnbProvider)
 		const chainId = 56
-		try {
-			await createAndClaimLink(
-				{
-					structSigner: {
-						signer: bnbWallet,
-					},
-					linkDetails: {
-						chainId: chainId,
-						tokenAmount: tokenAmount,
-						tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-					},
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: bnbWallet,
 				},
-				9000
-			)
-		} catch (error) {
-			console.log(error)
-		}
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
 	}, 60000)
 })
 
