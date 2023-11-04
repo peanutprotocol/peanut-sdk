@@ -144,7 +144,9 @@
 			"https://polygon-mumbai.gateway.tenderly.co",
 			"https://polygon-mumbai.infura.io/v3/${INFURA_API_KEY}"
 		],
-		"faucets": ["https://faucet.polygon.technology/"],
+		"faucets": [
+			"https://faucet.polygon.technology/"
+		],
 		"nativeCurrency": {
 			"name": "MATIC",
 			"symbol": "MATIC",
@@ -333,7 +335,9 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": ["https://rpc-devnet-cardano-evm.c1.milkomeda.com"],
+		"rpc": [
+			"https://rpc-devnet-cardano-evm.c1.milkomeda.com"
+		],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkTAda",
@@ -360,7 +364,9 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": ["https://rpc-mainnet-cardano-evm.c1.milkomeda.com"],
+		"rpc": [
+			"https://rpc-mainnet-cardano-evm.c1.milkomeda.com"
+		],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkAda",
@@ -398,7 +404,9 @@
 			"https://bsc-dataseed4.ninicoin.io",
 			"https://bsc.publicnode.com"
 		],
-		"faucets": ["https://free-online-app.com/faucet-for-eth-evm-chains/"],
+		"faucets": [
+			"https://free-online-app.com/faucet-for-eth-evm-chains/"
+		],
 		"nativeCurrency": {
 			"name": "BNB Chain Native Token",
 			"symbol": "BNB",
@@ -434,7 +442,9 @@
 			"https://sepolia.infura.io/v3/${INFURA_API_KEY}",
 			"https://sepolia.gateway.tenderly.co"
 		],
-		"faucets": ["http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"],
+		"faucets": [
+			"http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"
+		],
 		"nativeCurrency": {
 			"name": "Sepolia Ether",
 			"symbol": "ETH",
@@ -465,8 +475,14 @@
 	"17000": {
 		"name": "Holesky",
 		"chain": "ETH",
-		"rpc": ["https://rpc.holesky.ethpandaops.io", "https://ethereum-holesky.publicnode.com"],
-		"faucets": ["https://faucet.holesky.ethpandaops.io", "https://holesky-faucet.pk910.de"],
+		"rpc": [
+			"https://rpc.holesky.ethpandaops.io",
+			"https://ethereum-holesky.publicnode.com"
+		],
+		"faucets": [
+			"https://faucet.holesky.ethpandaops.io",
+			"https://holesky-faucet.pk910.de"
+		],
 		"nativeCurrency": {
 			"name": "Testnet ETH",
 			"symbol": "ETH",
@@ -544,8 +560,13 @@
 	"84531": {
 		"name": "Base Goerli",
 		"chain": "ETH",
-		"rpc": ["https://goerli.base.org", "https://base-goerli.publicnode.com"],
-		"faucets": ["https://www.coinbase.com/faucets/base-ethereum-goerli-faucet"],
+		"rpc": [
+			"https://goerli.base.org",
+			"https://base-goerli.publicnode.com"
+		],
+		"faucets": [
+			"https://www.coinbase.com/faucets/base-ethereum-goerli-faucet"
+		],
 		"nativeCurrency": {
 			"name": "Goerli Ether",
 			"symbol": "ETH",
@@ -586,7 +607,9 @@
 			"https://rpc.chiado.gnosis.gateway.fm",
 			"https://gnosis-chiado.publicnode.com"
 		],
-		"faucets": ["https://gnosisfaucet.com"],
+		"faucets": [
+			"https://gnosisfaucet.com"
+		],
 		"nativeCurrency": {
 			"name": "Chiado xDAI",
 			"symbol": "XDAI",
@@ -619,7 +642,10 @@
 			"url": "https://ipfs.io/ipfs/QmRALA5qvQBRwWre8ofuhCbr3wxVmPS3kGetRR9uJqbqqe",
 			"format": "png"
 		},
-		"rpc": ["https://api.avax.network/ext/bc/C/rpc", "https://avalanche-c-chain.publicnode.com"],
+		"rpc": [
+			"https://api.avax.network/ext/bc/C/rpc",
+			"https://avalanche-c-chain.publicnode.com"
+		],
 		"features": [
 			{
 				"name": "EIP1559"
@@ -649,7 +675,10 @@
 		"name": "Linea",
 		"title": "Linea Mainnet",
 		"chain": "ETH",
-		"rpc": ["https://rpc.linea.build", "https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"],
+		"rpc": [
+			"https://rpc.linea.build",
+			"https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"
+		],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Linea Ether",
@@ -700,8 +729,13 @@
 		"name": "Linea Testnet",
 		"title": "Linea Goerli Testnet",
 		"chain": "ETH",
-		"rpc": ["https://rpc.goerli.linea.build", "https://linea-goerli.infura.io/v3/${INFURA_API_KEY}"],
-		"faucets": ["https://faucetlink.to/goerli"],
+		"rpc": [
+			"https://rpc.goerli.linea.build",
+			"https://linea-goerli.infura.io/v3/${INFURA_API_KEY}"
+		],
+		"faucets": [
+			"https://faucetlink.to/goerli"
+		],
 		"nativeCurrency": {
 			"name": "Linea Ether",
 			"symbol": "ETH",
@@ -740,5 +774,35 @@
 		],
 		"status": "active",
 		"mainnet": false
+	},
+	"1442": {
+		"name": "Polygon zkEVM Testnet",
+		"title": "Polygon zkEVM Testnet",
+		"chain": "Polygon",
+		"rpc": [
+			"https://rpc.public.zkevm-test.net"
+		],
+		"faucets": [],
+		"nativeCurrency": {
+			"name": "Ether",
+			"symbol": "ETH",
+			"decimals": 18
+		},
+		"infoURL": "https://polygon.technology/solutions/polygon-zkevm/",
+		"shortName": "testnet-zkEVM-mango",
+		"chainId": 1442,
+		"networkId": 1442,
+		"explorers": [
+			{
+				"name": "Polygon zkEVM explorer",
+				"url": "https://explorer.public.zkevm-test.net",
+				"standard": "EIP3091"
+			}
+		],
+		"mainnet": false,
+		"icon": {
+			"url": "https://ipfs.io/ipfs/QmRNqgazYuxUa5WdddFPftTWiP3KwzBMgV9Z19QWnLMETc",
+			"format": "png"
+		}
 	}
 }

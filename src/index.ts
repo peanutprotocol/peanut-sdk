@@ -441,7 +441,10 @@ async function prepareApproveERC1155Tx(
 
 async function supportsEIP1559(provider) {
 	const block = await provider.getBlock('latest')
-	return block.type === 2
+	console.log(block)
+
+	// EIP-1559 compatible blocks include a baseFeePerGas field.
+	return block.baseFeePerGas !== undefined
 }
 
 async function setFeeOptions({
@@ -451,7 +454,7 @@ async function setFeeOptions({
 	maxFeePerGas = null,
 	maxFeePerGasMultiplier = 1.1,
 	gasLimit = null,
-	gasPriceMultiplier = 1.2,
+	gasPriceMultiplier = 1.3,
 	maxPriorityFeePerGas, // don't provide a default value here
 	maxPriorityFeePerGasMultiplier = 2,
 }: {
@@ -2076,6 +2079,7 @@ const peanut = {
 	createMultiLinkFromLinks,
 	formatNumberAvoidScientific,
 	trim_decimal_overflow,
+	supportsEIP1559,
 	setFeeOptions,
 	getSquidChains,
 	getSquidTokens,

@@ -9,9 +9,9 @@ const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
 
-// const API_URL = 'http://api.peanut.to/claim'
+const API_URL = 'http://api.peanut.to/claim'
 // let API_URL = 'http://127.0.0.1:5000/claim'
-let API_URL = 'http://127.0.0.1:8000/claim'
+// let API_URL = 'http://127.0.0.1:8000/claim'
 
 console.log(`API_URL is set to: ${API_URL}`)
 

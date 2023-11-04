@@ -1,6 +1,7 @@
 import requests
 import json
 import time
+import os
 
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
@@ -54,7 +55,6 @@ def fetch_tokens_for_platform(platform_id):
     # temp fix until we properly implement this (FILTER_TOKEN_DETAILS branch)
     return data["tokens"][:200]
 
-
 def main():
     print("Fetching token details...")
 
@@ -62,17 +62,31 @@ def main():
     with open("chainDetails.json", "r") as f:
         chain_details = json.load(f)
 
+    # Load tokenDetails.json if it exists
+    if os.path.exists("tokenDetails.json"):
+        with open("tokenDetails.json", "r") as f:
+            token_details = json.load(f)
+    else:
+        token_details = []
+
     # Fetch the mapping from chainId to CoinGecko ID
     chain_id_to_coingecko_id = fetch_coingecko_id_to_chain_id_mapping()
 
     # Initialize tokenDetails list and stats
-    tokenDetails = []
     total_tokens = 0
     total_errors = 0
     chains_fetched = 0
 
     # For each platform, fetch tokens if it's in contracts.json
     for chain_id, details in chain_details.items():
+        # Only fetch tokens if chain_id is not already in tokenDetails.json
+        if any(detail['chainId'] == chain_id for detail in token_details):
+            user_input = input(
+                f"Chain id {chain_id} already exists in tokenDetails.json. Overwrite? (y/n) "
+            )
+            if user_input.lower() != "y":
+                continue
+
         print(f"Fetching tokens for chainId {chain_id}...")
         coingecko_id = chain_id_to_coingecko_id.get(int(chain_id))
         tokens = []
@@ -100,7 +114,6 @@ def main():
             )  # No tokens could be fetched, so initialize an empty list
 
         # Add native token first in the list
-        # logoURI = details.get("icon", [{}])[0].get("url", ""),
         logoURI = details.get("icon").get("url", "")
         if logoURI.startswith("ipfs://"):
             logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
@@ -118,11 +131,11 @@ def main():
             "name": details.get("name", ""),
             "tokens": complete_tokens,
         }
-        tokenDetails.append(platform_data)
+        token_details.append(platform_data)
 
     # Save to tokenDetails.json
     with open("tokenDetails.json", "w") as f:
-        json.dump(tokenDetails, f, indent='\t')
+        json.dump(token_details, f, indent='\t')
 
     # Print stats
     print(f"Total chains fetched: {chains_fetched}")
@@ -132,7 +145,7 @@ def main():
 
     # assert that chainDetails.json and tokenDetails.json have the same number of chains
     assert len(chain_details) == len(
-        tokenDetails
+        token_details
     ), "chainDetails.json and tokenDetails.json have different number of chains"
 
 

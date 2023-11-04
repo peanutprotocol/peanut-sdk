@@ -14,7 +14,7 @@
 		"v3": "0xd068b1F6F0623CbCC7ADC7545290f8991C9B8Ec9",
 		"v4": "0x891021b34fedc18e36c015bffaa64a2421738906",
 		"Bv4": "0xD605357aBbAF57d118c8DeDf6F2d71aEFa3ba9c5",
-		"v5": "0xBC207d8aa1d235C7AE44d4BB85Be3bC4220eb56D"
+		"v5": "0x545CF0B176573A9fC334ff5b358A834559a72a70"
 	},
 	"17000": {
 		"name": "ethereum holesky testnet",
@@ -135,6 +135,11 @@
 	"59140": {
 		"name": "linea-testnet",
 		"v4": "0x897F8EDdB345F0d16081615823F76055Ad60A00c",
+		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
+	},
+	"1442": {
+		"name": "polygon-zkevm-testnet",
+		"v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
 		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
 	}
 }

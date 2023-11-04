@@ -6,8 +6,11 @@ import time
 
 # Existing constants
 CONTRACTS_URL = (
-    "https://raw.githubusercontent.com/ProphetFund/peanut-contracts/main/contracts.json"
+    # "https://raw.githubusercontent.com/peanutprotocol/peanut-contracts/xchain/contracts.json"
+    "contracts.json"
 )
+
+
 CHAIN_DETAILS_PATH = "chainDetails.json"
 CHAINS_URL = (
     "https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains"
@@ -45,9 +48,16 @@ def check_rpc(rpc):
 
 
 def get_contracts():
-    response = requests.get(CONTRACTS_URL)
-    if response.status_code == 200:
-        return response.json()
+    if CONTRACTS_URL.startswith("https://"):
+        response = requests.get(CONTRACTS_URL)
+        if response.status_code == 200:
+            return response.json()
+    else:
+        try:
+            with open(CONTRACTS_URL, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading contracts from file: {e}")
     return None
 
 
