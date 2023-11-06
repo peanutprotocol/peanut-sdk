@@ -103,7 +103,7 @@ export async function signHash(stringHash: string, privateKey: string) {
  * browser: tries to use secure generateKey if available, otherwise falls back to getRandomValues
  * node: uses secure crypto.randomBytes
  */
-export async function getRandomString(n: number = 16): Promise<string> {
+export async function getRandomString(n: number = 256): Promise<string> {
 	const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 	const charsetLength = charset.length
 	const maxByteValue = 256 // Each byte has 256 possible values
@@ -114,12 +114,11 @@ export async function getRandomString(n: number = 16): Promise<string> {
 	const generateKeyRandomBytes = async (length: number): Promise<Uint8Array> => {
 		if (crypto.subtle) {
 			try {
-				console.log({ length: length * 8 })
 				// Use generateKey to generate a symmetric key of sufficient length
 				const key = await crypto.subtle.generateKey(
 					{
 						name: 'AES-GCM',
-						length: 128, // length * 8, // Convert byte length to bit length
+						length: 256, // length * 8, // Convert byte length to bit length
 						// TODO: non 16/32 length passwords?
 					},
 					true,
@@ -159,7 +158,7 @@ export async function getRandomString(n: number = 16): Promise<string> {
 		}
 	}
 
-	return randomString
+	return randomString.substring(0, n) // Return only the first 'n' characters
 }
 
 /**
