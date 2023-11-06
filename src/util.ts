@@ -112,22 +112,21 @@ export async function getRandomString(n: number = 16): Promise<string> {
 	let randomString = ''
 
 	const generateKeyRandomBytes = async (length: number): Promise<Uint8Array> => {
-		const cryptoSubtle =
-			typeof window !== 'undefined' && window.crypto && window.crypto.subtle ? window.crypto.subtle : undefined
-		if (cryptoSubtle) {
+		if (crypto.subtle) {
 			try {
+				console.log({ length: length * 8 })
 				// Use generateKey to generate a symmetric key of sufficient length
-				const key = await cryptoSubtle.generateKey(
+				const key = await crypto.subtle.generateKey(
 					{
 						name: 'AES-GCM',
-						length: length * 8, // Convert byte length to bit length
+						length: 128, // length * 8, // Convert byte length to bit length
 						// TODO: non 16/32 length passwords?
 					},
 					true,
 					['encrypt', 'decrypt']
 				)
 				// Export the key to raw bytes
-				const keyBuffer = await cryptoSubtle.exportKey('raw', key)
+				const keyBuffer = await crypto.subtle.exportKey('raw', key)
 				return new Uint8Array(keyBuffer)
 			} catch (error) {
 				console.warn('Failed to use generateKey. Falling back to getRandomValues.', error)
@@ -136,16 +135,16 @@ export async function getRandomString(n: number = 16): Promise<string> {
 		return getRandomValuesRandomBytes(length)
 	}
 
-	const getRandomValuesRandomBytes = (length: number): Uint8Array => {
-		if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+	const getRandomValuesRandomBytes = async (length: number): Promise<Uint8Array> => {
+		if (crypto.getRandomValues) {
 			// Browser
 			const array = new Uint8Array(length)
-			window.crypto.getRandomValues(array)
+			crypto.getRandomValues(array)
 			return array
 		} else {
 			// Node
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const crypto = require('crypto')
+			const crypto = await import('node:crypto')
 			return crypto.randomBytes(length)
 		}
 	}

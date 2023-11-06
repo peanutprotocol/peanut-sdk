@@ -8,8 +8,6 @@
 
 import { BigNumber, ethers } from 'ethersv5' // v5
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-
-import 'isomorphic-fetch' // isomorphic-fetch is a library that implements fetch in node.js and the browser
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
@@ -1484,8 +1482,8 @@ async function createClaimXChainPayload(
 
 	const linkDetails = await peanut.getLinkDetails({ link: link })
 
-	var sourceToken = linkDetails.tokenAddress
-	var destinationToken = destinationToken
+	let sourceToken = linkDetails.tokenAddress
+	destinationToken = destinationToken
 
 	if (sourceToken == '0x0000000000000000000000000000000000000000') {
 		assert(linkDetails.tokenType == 0, 'Native token address passed for non-native token link type')
