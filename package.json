@@ -13,7 +13,7 @@
 		"build:lib": "vite build",
 		"build:bun": "bun bun.build.js",
 		"build:dev": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
-		"build": "npm run clean && npm run pkg-move && npm run generate-types && vite builds",
+		"build": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
 		"analyze": "vite-bundle-visualizer --open",
 		"pkg-move": "cp package.json src/data/package.json",
 		"generate-types": "rm tsconfig.tsbuildinfo || true && tsc --emitDeclarationOnly",
@@ -80,6 +80,7 @@
 		"url": "^0.11.1",
 		"utf-8-validate": "^5.0.10",
 		"vite": "^4.5.0",
-		"vite-bundle-visualizer": "^0.10.1"
+		"vite-bundle-visualizer": "^0.10.1",
+		"vite-plugin-dts": "^3.6.3"
 	}
 }
