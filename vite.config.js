@@ -10,7 +10,7 @@ export default defineConfig({
 			// Could also be a dictionary or array of multiple entry points
 			entry: resolve(__dirname, 'src/index.ts'),
 			name: 'Peanut',
-			fileName: 'peanut-sdk',
+			fileName: 'index',
 			formats: ['es'],
 		},
 		rollupOptions: {

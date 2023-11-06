@@ -103,7 +103,7 @@ export async function signHash(stringHash: string, privateKey: string) {
  * browser: tries to use secure generateKey if available, otherwise falls back to getRandomValues
  * node: uses secure crypto.randomBytes
  */
-export async function getRandomString(n: number = 256): Promise<string> {
+export async function getRandomString(n: number = 16): Promise<string> {
 	const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 	const charsetLength = charset.length
 	const maxByteValue = 256 // Each byte has 256 possible values

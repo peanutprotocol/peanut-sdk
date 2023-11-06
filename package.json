@@ -1,8 +1,8 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.3.6",
+	"version": "0.3.7",
 	"description": "The Peanut Protocol SDK! Check out the documentation at https://docs.peanut.to",
-	"main": "dist/peanut-sdk.js",
+	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"scripts": {
@@ -11,7 +11,6 @@
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",
 		"build:lib": "vite build",
-		"build:bun": "bun bun.build.js",
 		"build:dev": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
 		"build": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
 		"analyze": "vite-bundle-visualizer --open",
@@ -56,7 +55,6 @@
 		"@typescript-eslint/eslint-plugin": "^6.3.0",
 		"@typescript-eslint/parser": "^6.3.0",
 		"bufferutil": "^4.0.7",
-		"bun-types": "latest",
 		"crypto-browserify": "latest",
 		"dotenv": "^16.0.3",
 		"eslint": "^8.46.0",
