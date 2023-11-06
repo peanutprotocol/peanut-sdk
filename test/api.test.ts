@@ -9,9 +9,9 @@ const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
 
-const API_URL = 'http://api.peanut.to/claim'
+// const API_URL = 'http://api.peanut.to/claim'
 // let API_URL = 'http://127.0.0.1:5000/claim'
-// let API_URL = 'http://127.0.0.1:8000/claim'
+let API_URL = 'http://127.0.0.1:8000/claim'
 
 console.log(`API_URL is set to: ${API_URL}`)
 
@@ -40,6 +40,48 @@ describe('Peanut API Integration Tests', function () {
 		// check status of link
 		setTimeout(() => {}, 2000)
 		const status = await peanut.getLinkDetails({ provider: optimismGoerliProvider, link: resp.link })
+		console.log('status', status)
+
+		// claim link using api
+		const receiverAddress = optimism_goerli_wallet.address
+		setTimeout(() => {}, 9000)
+		const res = await peanut.claimLinkGasless({
+			link: resp.link,
+			recipientAddress: receiverAddress,
+			APIKey: apiToken,
+			baseUrl: API_URL,
+		})
+		expect(res.status).toBe('success')
+		console.log('claim link response', res.data)
+
+		links.push(resp.link)
+	}, 60000) // 60 seconds timeout
+
+	it.only('should create a link on Polygon mainnet and claim it with api', async function () {
+		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
+		peanut.toggleVerbose(true)
+
+		const chainId = 137 // optimism goerli
+		const tokenAmount = 0.00001337
+		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+		const provider = await peanut.getDefaultProvider(String(chainId))
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+		setTimeout(() => {}, 9000)
+		const resp = await peanut.createLink({
+			structSigner: {
+				signer: wallet,
+			},
+			linkDetails: {
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenType: tokenType,
+			},
+		})
+
+		// check status of link
+		setTimeout(() => {}, 4000)
+		console.log('getting link details now')
+		const status = await peanut.getLinkDetails({ provider: provider, link: resp.link })
 		console.log('status', status)
 
 		// claim link using api
