@@ -5,6 +5,7 @@ const commonConfig = {
 	singleQuote: true,
 	printWidth: 120,
 	useTabs: true,
+	endOfLine: 'auto',
 }
 
 module.exports = {

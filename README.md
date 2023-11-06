@@ -12,7 +12,7 @@ NPM package [here](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk). Thi
 
 or via CDN:
 
-`<script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/peanut-sdk.js"></script> `
+`<script src="https://cdn.jsdelivr.net/npm/@squirrel-labs/peanut-sdk/dist/index.js"></script> `
 
 ### Usage
 
