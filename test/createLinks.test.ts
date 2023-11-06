@@ -42,7 +42,7 @@ describe('goerli createLinks tests', function () {
 })
 
 describe('createLinks tests', function () {
-	it.only('live test on mumbai', async function () {
+	it('live test on mumbai', async function () {
 		const provider = await peanut.getDefaultProvider('80001')
 		const WALLET = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		const CHAIN_ID = 80001 // 80001 for mumbai

@@ -1,6 +1,7 @@
 import { ethers } from 'ethersv5' // v5
 import { CHAIN_MAP, PEANUT_CONTRACTS } from './data.ts'
 import { config } from './config.ts'
+import * as interfaces from './consts/interfaces.consts.ts'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -190,7 +191,17 @@ export function getParamsFromLink(link: string): {
 	trackId: string
 } {
 	/* returns the parameters from a link */
-	const url = new URL(link)
+	let url
+	try {
+		url = new URL(link)
+	} catch (error) {
+		// throw sdk error
+		throw new interfaces.SDKStatus(
+			interfaces.EGenericErrorCodes.GENERIC_ERROR,
+			error,
+			"link: '" + link + "' is not a valid URL"
+		)
+	}
 	let search = url.search
 
 	// If there is no search params, try to get params after hash
@@ -290,8 +301,10 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
  * Returns an array of deposit indices from a batch transaction receipt
  */
 export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
+	config.verbose && console.log('getting deposit idxs from txHash: ', txReceipt.transactionHash)
 	const logs = txReceipt.logs
 	const depositIdxs = []
+	config.verbose && console.log('logs: ', logs)
 
 	// events
 	// event DepositEvent(

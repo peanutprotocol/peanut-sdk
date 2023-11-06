@@ -11,7 +11,7 @@ describe('peanut.getRandomString', function () {
 		expect(result).toHaveLength(length)
 	})
 	// Length Test
-	it.only('should produce strings of lengths from 1 to 64', async () => {
+	it('should produce strings of lengths from 1 to 64', async () => {
 		for (let length = 1; length <= 64; length++) {
 			const result = await peanut.getRandomString(length)
 			expect(result).toHaveLength(length)

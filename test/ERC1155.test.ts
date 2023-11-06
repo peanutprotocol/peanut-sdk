@@ -59,7 +59,7 @@ describe('ERC1155 on polygon-zkevm-testnet', function () {
 		)
 	}, 60000)
 
-	it.only('should create a link and claim it through the peanut API', async function () {
+	it('should create a link and claim it through the peanut API', async function () {
 		peanut.toggleVerbose()
 		const CHAIN_ID = 1442
 		const provider = await peanut.getDefaultProvider(String(CHAIN_ID))
