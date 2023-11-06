@@ -230,7 +230,8 @@ describe('goerli', function () {
 
 describe('bnb', function () {
 	it('bnb should create a native link with weird tokendecimals and claim it', async function () {
-		const tokenAmount = 0.0000455228296990941
+		peanut.toggleVerbose()
+		const tokenAmount = 0.00001
 		const BNB_RPC_URL = 'https://bsc-dataseed.binance.org/'
 		const bnbProvider = new ethers.providers.JsonRpcProvider(BNB_RPC_URL)
 		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', bnbProvider)
@@ -248,9 +249,83 @@ describe('bnb', function () {
 			},
 			9000
 		)
+		peanut.toggleVerbose()
+	}, 60000)
+
+	it('bnb mumbai should create a native link with weird tokendecimals and claim it', async function () {
+		peanut.toggleVerbose()
+		const tokenAmount = 0.00001
+		const chainId = 80001
+
+		const provider = await peanut.getDefaultProvider('80001')
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
+		peanut.toggleVerbose()
 	}, 60000)
 })
 
+describe('base', function () {
+	it.only('base should create a native link with weird tokendecimals and claim it', async function () {
+		peanut.toggleVerbose()
+		const tokenAmount = 0.00001
+		// const BASE_RPC_URL = 'https://rpc.base.network/'
+		// const baseProvider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL)
+		const chainId = 8453
+		const baseProvider = await peanut.getDefaultProvider(String(chainId))
+		const baseWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', baseProvider)
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: baseWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
+		peanut.toggleVerbose()
+	}, 60000)
+})
+
+describe('base-goerli', function () {
+	it.only('base-goerli should create a native link with weird tokendecimals and claim it', async function () {
+		peanut.toggleVerbose()
+		const tokenAmount = 0.00001
+		const BASE_GOERLI_RPC_URL = 'https://rpc.goerli.base.network/'
+		const baseGoerliProvider = new ethers.providers.JsonRpcProvider(BASE_GOERLI_RPC_URL)
+		const baseGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', baseGoerliProvider)
+		const chainId = 84531
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: baseGoerliWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
+		peanut.toggleVerbose()
+	}, 60000)
+})
 // describe('mainnet', function () {
 // 	throw new Error('Dont run mainnet tests lol')
 // 	it('mainnet should create an er20 link with weird tokendecimals and claim it', async function () {

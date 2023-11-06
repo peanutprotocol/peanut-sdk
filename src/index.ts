@@ -439,10 +439,28 @@ async function prepareApproveERC1155Tx(
 	return tx
 }
 
-async function supportsEIP1559(provider) {
+async function supportsEIP1559(provider: ethers.providers.Provider): Promise<boolean> {
 	const block = await provider.getBlock('latest')
 	// EIP-1559 compatible blocks include a baseFeePerGas field.
 	return block.baseFeePerGas !== undefined
+}
+
+async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber> {
+	// TODO: use this or multiplier? @setFeeOptions
+	// Map of chain IDs to tip sizes
+	const tipSizes: { [key: string]: string } = {
+		'137': '30', // Polygon
+		'1': '5', // Ethereum Mainnet
+	}
+
+	// Default tip size
+	const defaultTip = '10'
+
+	// Get the tip size for the chain ID, or the default tip size if the chain ID is not found
+	const tip = tipSizes[chainId] || defaultTip
+
+	// Convert the tip size to Wei and return it
+	return ethers.utils.parseUnits(tip, 'gwei')
 }
 
 async function setFeeOptions({
@@ -486,7 +504,7 @@ async function setFeeOptions({
 	}
 
 	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
-	const chainId = await provider.getNetwork().then((network: any) => network.chainId)
+	const chainId = Number(await provider.getNetwork().then((network: any) => network.chainId))
 	const chainDetails = CHAIN_DETAILS[chainId]
 
 	if (chainId == 137) {
@@ -510,8 +528,8 @@ async function setFeeOptions({
 		}
 	}
 
-	// if on milkomeda, set eip1559 to false
-	if (chainId == '2001' || chainId == '200101' || chainId == 2001 || chainId == 200101) {
+	// if on milkomeda or bnb, set eip1559 to false
+	if (chainId == 2001 || chainId == 200101 || chainId == 56) {
 		eip1559 = false
 		config.verbose && console.log('Setting eip1559 to false for milkomeda')
 	}
@@ -800,6 +818,7 @@ async function prepareTxs({
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
+				error,
 				'Error making the deposit to the contract'
 			)
 		}
