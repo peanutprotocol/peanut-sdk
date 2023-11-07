@@ -5,9 +5,9 @@ import { TransactionRequest } from '@ethersproject/abstract-provider'
 export interface IPeanutSigner {
 	signer: ethers.Signer
 	nonce?: number
-	maxFeePerGas?: number
-	maxPriorityFeePerGas?: number
-	gasLimit?: number
+	maxFeePerGas?: ethers.BigNumber
+	maxPriorityFeePerGas?: ethers.BigNumber
+	gasLimit?: ethers.BigNumber
 	eip1559?: boolean
 }
 
