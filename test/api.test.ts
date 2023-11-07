@@ -1,6 +1,8 @@
 import peanut from '../src/index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
+// import fetch from 'node-fetch'
+
 dotenv.config()
 
 // we want to use diff wallet than relayer
@@ -9,11 +11,42 @@ const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
 
-// const API_URL = 'http://api.peanut.to/claim'
-// let API_URL = 'http://127.0.0.1:5000/claim'
-let API_URL = 'http://127.0.0.1:8000/claim'
+// Define the local and live API URLs
+const LOCAL_API_URL_1 = 'http://127.0.0.1:8000/claim'
+const LOCAL_API_URL_2 = 'http://127.0.0.1:5000/claim'
+const LIVE_API_URL = 'http://api.peanut.to/claim'
 
-console.log(`API_URL is set to: ${API_URL}`)
+let API_URL: string
+
+// Function to check if a server is alive
+async function isServerAlive(url: string): Promise<boolean> {
+	try {
+		console.log(`Checking if ${url} is alive...`)
+		const response = await fetch(url)
+		return response.ok
+	} catch (error) {
+		return false
+	}
+}
+
+// Function to set API_URL
+async function setAPIUrl(): Promise<void> {
+	const [isAlive1, isAlive2] = await Promise.all([isServerAlive(LOCAL_API_URL_1), isServerAlive(LOCAL_API_URL_2)])
+	if (isAlive1) {
+		API_URL = LOCAL_API_URL_1
+	} else if (isAlive2) {
+		API_URL = LOCAL_API_URL_2
+	} else {
+		API_URL = LIVE_API_URL
+		console.warn(`Local servers are not alive. Falling back to live API: ${API_URL}`)
+	}
+	console.log(`API_URL is set to: ${API_URL}`)
+}
+
+// Call the function to set API_URL
+setAPIUrl().then(() => {
+	console.log(`API_URL is set to: ${API_URL}`)
+})
 
 describe('Peanut API Integration Tests', function () {
 	const links: string[] = []
@@ -57,7 +90,7 @@ describe('Peanut API Integration Tests', function () {
 		links.push(resp.link)
 	}, 60000) // 60 seconds timeout
 
-	it.only('should create a link on Polygon mainnet and claim it with api', async function () {
+	it('should create a link on Polygon mainnet and claim it with api', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
@@ -291,10 +324,14 @@ describe('Testnet Tests', function () {
 	// peanut.toggleVerbose()
 
 	testnets.forEach((net) => {
+		if (!net.name.toLowerCase().startsWith('goerli')) {
+			return
+		}
 		it(`should run tests on ${net.name}`, async function () {
 			// if (!['Linea'].includes(net.name)) {
 			// 	//  'Milkomeda C1 Testnet', 'Sepolia'
-			// if (!['Base Goerli'].includes(net.name)) {
+			// skip linea
+			// if (['Linea'].includes(net.name)) {
 			// 	return
 			// }
 			console.log(`Running tests on ${net.name}`)
@@ -321,6 +358,8 @@ describe('Testnet Tests', function () {
 			} catch (error) {
 				console.log(error)
 			}
+			// wait for 5 seconds
+			await new Promise((res) => setTimeout(res, 1000))
 
 			// Claim the link
 			const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''

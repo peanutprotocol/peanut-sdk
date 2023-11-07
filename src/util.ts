@@ -1,6 +1,7 @@
 import { ethers } from 'ethersv5' // v5
 import { CHAIN_MAP, PEANUT_CONTRACTS } from './data.ts'
 import { config } from './config.ts'
+import * as interfaces from './consts/interfaces.consts.ts'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -112,22 +113,20 @@ export async function getRandomString(n: number = 16): Promise<string> {
 	let randomString = ''
 
 	const generateKeyRandomBytes = async (length: number): Promise<Uint8Array> => {
-		const cryptoSubtle =
-			typeof window !== 'undefined' && window.crypto && window.crypto.subtle ? window.crypto.subtle : undefined
-		if (cryptoSubtle) {
+		if (crypto.subtle) {
 			try {
 				// Use generateKey to generate a symmetric key of sufficient length
-				const key = await cryptoSubtle.generateKey(
+				const key = await crypto.subtle.generateKey(
 					{
 						name: 'AES-GCM',
-						length: length * 8, // Convert byte length to bit length
+						length: 256, // length * 8, // Convert byte length to bit length
 						// TODO: non 16/32 length passwords?
 					},
 					true,
 					['encrypt', 'decrypt']
 				)
 				// Export the key to raw bytes
-				const keyBuffer = await cryptoSubtle.exportKey('raw', key)
+				const keyBuffer = await crypto.subtle.exportKey('raw', key)
 				return new Uint8Array(keyBuffer)
 			} catch (error) {
 				console.warn('Failed to use generateKey. Falling back to getRandomValues.', error)
@@ -136,16 +135,16 @@ export async function getRandomString(n: number = 16): Promise<string> {
 		return getRandomValuesRandomBytes(length)
 	}
 
-	const getRandomValuesRandomBytes = (length: number): Uint8Array => {
-		if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+	const getRandomValuesRandomBytes = async (length: number): Promise<Uint8Array> => {
+		if (crypto.getRandomValues) {
 			// Browser
 			const array = new Uint8Array(length)
-			window.crypto.getRandomValues(array)
+			crypto.getRandomValues(array)
 			return array
 		} else {
 			// Node
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const crypto = require('crypto')
+			const crypto = await import('node:crypto')
 			return crypto.randomBytes(length)
 		}
 	}
@@ -160,7 +159,7 @@ export async function getRandomString(n: number = 16): Promise<string> {
 		}
 	}
 
-	return randomString
+	return randomString.substring(0, n) // Return only the first 'n' characters
 }
 
 /**
@@ -190,7 +189,17 @@ export function getParamsFromLink(link: string): {
 	trackId: string
 } {
 	/* returns the parameters from a link */
-	const url = new URL(link)
+	let url
+	try {
+		url = new URL(link)
+	} catch (error) {
+		// throw sdk error
+		throw new interfaces.SDKStatus(
+			interfaces.EGenericErrorCodes.GENERIC_ERROR,
+			error,
+			"link: '" + link + "' is not a valid URL"
+		)
+	}
 	let search = url.search
 
 	// If there is no search params, try to get params after hash
@@ -290,8 +299,10 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
  * Returns an array of deposit indices from a batch transaction receipt
  */
 export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
+	config.verbose && console.log('getting deposit idxs from txHash: ', txReceipt.transactionHash)
 	const logs = txReceipt.logs
 	const depositIdxs = []
+	config.verbose && console.log('logs: ', logs)
 
 	// events
 	// event DepositEvent(

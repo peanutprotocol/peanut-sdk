@@ -268,7 +268,12 @@ export enum EXChainStatusCodes {
 	ERROR_UNSUPPORTED_CONTRACT_VERSION,
 	ERROR,
 }
+export enum EGenericErrorCodes {
+	GENERIC_ERROR,
+	// Add more generic error codes here if needed
+}
 
+// Don't forget to add the new enum to the allErrorEnums type
 export type allErrorEnums =
 	| ECreateLinkStatusCodes
 	| EPrepareCreateTxsStatusCodes
@@ -276,6 +281,7 @@ export type allErrorEnums =
 	| EGetLinkFromTxStatusCodes
 	| EClaimLinkStatusCodes
 	| EXChainStatusCodes
+	| EGenericErrorCodes // New enum added here
 
 export class SDKStatus extends Error {
 	code: allErrorEnums
