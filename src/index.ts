@@ -2080,6 +2080,58 @@ function toggleVerbose(verbose?: boolean) {
 	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
 }
 
+function getLatestContractVersion(chainId: string, type: string): string {
+	const data = PEANUT_CONTRACTS
+	const chainData = data[chainId as unknown as keyof typeof data]
+
+	// Filter keys starting with "v" and sort them
+	const versions = Object.keys(chainData)
+		.filter((key) => key.startsWith(type == 'batch' ? 'Bv' : 'v'))
+		.sort((a, b) => parseInt(b.substring(1)) - parseInt(a.substring(1))) // Sort in descending order based on version number
+
+	const highestVersion = versions.sort((a, b) => parseInt(b.slice(1)) - parseInt(a.slice(1)))[0]
+
+	return highestVersion
+}
+
+async function getAllCreatedLinksForAddress({
+	address,
+	chainId,
+	provider = null,
+	peanutContractVersion = null,
+}: {
+	address: string
+	chainId: string
+	provider?: ethers.providers.JsonRpcProvider
+	peanutContractVersion?: string
+}): Promise<[]> {
+	if (provider == null) {
+		provider = await getDefaultProvider(chainId)
+	}
+
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
+	}
+
+	config.verbose &&
+		console.log(
+			'getAllCreatedLinksForAddress called with address: ',
+			address,
+			' on chainId: ',
+			chainId,
+			' at peanutContractVersion: ',
+			peanutContractVersion
+		)
+
+	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
+
+	const deposits = await contract.getAllDepositsForAddress(address)
+
+	console.log(deposits)
+
+	return []
+}
+
 const peanut = {
 	toggleVerbose,
 	greeting,
@@ -2123,6 +2175,7 @@ const peanut = {
 	getSquidTokens,
 	getSquidRoute,
 	getCrossChainOptionsForLink,
+	getAllCreatedLinksForAddress,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
@@ -2159,6 +2212,7 @@ export {
 	getSquidTokens,
 	getSquidRoute,
 	getCrossChainOptionsForLink,
+	getAllCreatedLinksForAddress,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
