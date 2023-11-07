@@ -29,7 +29,7 @@ describe('supportsEIP1559', function () {
 
 	it('should throw an error for an invalid provider', async () => {
 		// Use an invalid provider
-		const provider = 'invalid provider'
+		const provider = {} as ethers.providers.Provider
 		await expect(peanut.supportsEIP1559(provider)).rejects.toThrow()
 	})
 })
