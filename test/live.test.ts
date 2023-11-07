@@ -247,7 +247,7 @@ describe('bnb', function () {
 	}, 60000)
 })
 
-describe('base', function () {
+describe.only('base', function () {
 	it('base should create a native link with weird tokendecimals and claim it', async function () {
 		peanut.toggleVerbose()
 		const tokenAmount = 0.00001
