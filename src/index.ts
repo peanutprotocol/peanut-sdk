@@ -74,30 +74,6 @@ function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
 	})
 }
 
-async function checkRpc(rpc: string): Promise<boolean> {
-	config.verbose && console.log('checkRpc rpc:', rpc)
-
-	try {
-		// Use the timeout function to wrap the fetchGetBalance call and give it a timeout.
-		const response = await timeout(2000, fetchGetBalance(rpc))
-
-		// If the JSON RPC response contains an error, we can consider it a failure.
-		if (response.error) {
-			config.verbose && console.log('JSON RPC Error for:', rpc, response.error.message)
-			return false
-		}
-
-		// check balance is larger than 0
-		// TODO:
-
-		// This will be a successful RPC if the result (the balance in this case) is returned.
-		return true
-	} catch (error) {
-		console.log('Error checking provider:', rpc, 'Error:', error)
-		return false
-	}
-}
-
 async function fetchGetBalance(rpcUrl: string) {
 	const res = await fetch(rpcUrl, {
 		method: 'POST',
