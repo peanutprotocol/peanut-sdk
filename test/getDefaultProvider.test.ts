@@ -1,6 +1,19 @@
 import peanut from '../src/index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
 import { expect, describe, it } from '@jest/globals'
+import chainDetails from '../src/data/chainDetails.json'
+
+describe('test getDefaultProvider on EVERY chain', function () {
+	test.each(Object.keys(chainDetails))('should return a provider for chain %s', async function (chainId) {
+		// if (chainId !== '100') return
+		// else peanut.toggleVerbose(true)
+		const provider = await peanut.getDefaultProvider(chainId)
+		expect(provider).toBeInstanceOf(ethers.providers.JsonRpcProvider)
+
+		const network = await provider.getNetwork()
+		expect(network.chainId).toBe(parseInt(chainId))
+	})
+})
 
 describe('getDefaultProvider tests', function () {
 	it('should return the default provider for a given chainId', async function () {

@@ -92,6 +92,8 @@ async function checkRpc(rpc: string): Promise<boolean> {
 	}
 }
 
+const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
+
 async function fetchGetBalance(rpcUrl: string) {
 	const res = await fetch(rpcUrl, {
 		method: 'POST',
@@ -106,87 +108,85 @@ async function fetchGetBalance(rpcUrl: string) {
 		}),
 	})
 
-	// doesn't seem to work properly
-	// // Check if the 'Access-Control-Allow-Origin' header is present
-	// if (!res.headers.has('Access-Control-Allow-Origin')) {
-	// 	throw new Error(`CORS header is missing in the response from ${rpcUrl}`)
-	// }
-
 	const json = await res.json()
 	return json
 }
 
-/**
- * Returns the default provider for a given chainId
- */
 async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
 	config.verbose && console.log('Getting default provider for chainId ', chainId)
 	if (!CHAIN_DETAILS[chainId]) {
 		throw new Error(`Chain ID ${chainId} not supported yet`)
 	}
-	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
+	if (providerCache[chainId]) {
+		config.verbose && console.log('Found cached provider for chainId ', chainId)
+		return providerCache[chainId]
+	}
+
+	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 	config.verbose && console.log('rpcs', rpcs)
 
 	// Check if there is an Infura RPC and check for its liveliness
 	let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
+	const INFURA_API_KEY = '4478656478ab4945a1b013fb1d8f20fd'
 	if (infuraRpc) {
-		// for hackathon
-		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd')
+		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', INFURA_API_KEY)
 		config.verbose && console.log('Infura RPC found:', infuraRpc)
-		const isValid = await checkRpc(infuraRpc)
-		config.verbose && console.log('Infura RPC found and is valid:', infuraRpc, isValid)
-		if (isValid) {
-			return new ethers.providers.JsonRpcProvider({
-				url: infuraRpc,
-				skipFetchSetup: true,
-			})
+		const provider = await createValidProvider(infuraRpc)
+		if (provider) {
+			providerCache[chainId] = provider
+			return provider
 		}
 	}
 
 	// If no valid Infura RPC, continue with the current behavior
-	const checkPromises = rpcs.map((rpc) => {
-		return new Promise<{ isValid: boolean; rpc: string }>(async (resolve) => {
-			try {
-				rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+	const providerPromises = rpcs.map((rpcUrl) =>
+		createValidProvider(rpcUrl.replace('${INFURA_API_KEY}', INFURA_API_KEY)).catch((error) => null)
+	)
 
-				// If the RPC string contains a placeholder for the API key, replace it.
-				const isValid = await checkRpc(rpc)
+	try {
+		const provider = await Promise.any(providerPromises)
+		if (provider === null) {
+			throw new Error('No alive provider found for chainId ' + chainId)
+		}
+		providerCache[chainId] = provider
+		return provider
+	} catch (error) {
+		throw new Error('No alive provider found for chainId ' + chainId)
+	}
+}
 
-				config.verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
-
-				// Only resolve when the RPC is valid.
-				if (isValid) {
-					resolve({ isValid, rpc })
-				}
-			} catch (err) {
-				// Do nothing here, because we only want to resolve if the RPC is valid.
-			}
+async function createValidProvider(rpcUrl: string): Promise<ethers.providers.JsonRpcProvider> {
+	try {
+		const provider = new ethers.providers.JsonRpcProvider({
+			url: rpcUrl,
 		})
-	})
 
-	return new Promise(async (resolve, reject) => {
-		// Use Promise.race to get the first valid RPC.
-		Promise.race(checkPromises)
-			.then(async (result) => {
-				if (result && result.isValid) {
-					config.verbose && console.log('Valid RPC found:', result.rpc)
-					const provider = new ethers.providers.JsonRpcProvider({
-						url: result.rpc,
-						skipFetchSetup: true,
-					})
-					resolve(provider)
-				}
-			})
-			.catch(() => {
-				// Do nothing here. This catch block will not be triggered.
-			})
+		// Check if the RPC is valid by calling fetchGetBalance
+		const response = await fetchGetBalance(rpcUrl)
+		if (response.error) {
+			config.verbose && console.log('JSON RPC Error for:', rpcUrl, response.error.message)
+			throw new Error('Invalid RPC: ' + rpcUrl)
+		}
 
-		// Fallback: If none of the RPCs are valid after they've all been checked.
-		await Promise.allSettled(checkPromises).then(() => {
-			reject(new Error('No alive provider found for chainId ' + chainId))
-		})
-	})
+		config.verbose && console.log('RPC is valid:', rpcUrl)
+		return provider
+	} catch (error) {
+		if (error.code === 'NETWORK_ERROR') {
+			config.verbose && console.log('Network error for RPC:', rpcUrl, 'Trying with skipFetchSetup...')
+			const provider = new ethers.providers.JsonRpcProvider({
+				url: rpcUrl,
+				skipFetchSetup: true,
+			})
+			return provider
+		} else {
+			config.verbose && console.log('Error checking RPC:', rpcUrl, 'Error:', error)
+			// Introduce a delay before throwing the error. This is necessary so that the Promise.any
+			// call in getDefaultProvider doesn't immediately reject the promise and instead waits for a success.
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+			throw new Error('Invalid RPC: ' + rpcUrl)
+		}
+	}
 }
 
 async function getContract(_chainId: string, signerOrProvider: any, version = DEFAULT_CONTRACT_VERSION) {
