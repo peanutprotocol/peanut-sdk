@@ -50,6 +50,12 @@ import {
 
 import * as interfaces from './consts/interfaces.consts.ts'
 
+const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
+function resetProviderCache() {
+	for (const key in providerCache) {
+		delete providerCache[key]
+	}
+}
 // async function getAbstractSigner(signer: any) {
 // 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
 // 	return signer
@@ -91,8 +97,6 @@ async function checkRpc(rpc: string): Promise<boolean> {
 		return false
 	}
 }
-
-const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
 
 async function fetchGetBalance(rpcUrl: string) {
 	const res = await fetch(rpcUrl, {
@@ -172,17 +176,31 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 		config.verbose && console.log('RPC is valid:', rpcUrl)
 		return provider
 	} catch (error) {
-		if (error.code === 'NETWORK_ERROR') {
-			config.verbose && console.log('Network error for RPC:', rpcUrl, 'Trying with skipFetchSetup...')
-			const provider = new ethers.providers.JsonRpcProvider({
-				url: rpcUrl,
-				skipFetchSetup: true,
-			})
-			return provider
-		} else {
-			config.verbose && console.log('Error checking RPC:', rpcUrl, 'Error:', error)
-			// Introduce a delay before throwing the error. This is necessary so that the Promise.any
-			// call in getDefaultProvider doesn't immediately reject the promise and instead waits for a success.
+		try {
+			if (error.code === 'NETWORK_ERROR') {
+				config.verbose && console.log('Network error for RPC:', rpcUrl, 'Trying with skipFetchSetup...')
+				const provider = new ethers.providers.JsonRpcProvider({
+					url: rpcUrl,
+					skipFetchSetup: true,
+				})
+
+				// Check if the RPC is valid by calling fetchGetBalance
+				const response = await fetchGetBalance(rpcUrl)
+				if (response.error) {
+					config.verbose && console.log('JSON RPC Error for:', rpcUrl, response.error.message)
+					throw new Error('Invalid RPC: ' + rpcUrl)
+				}
+
+				return provider
+			} else {
+				config.verbose && console.log('Error checking RPC:', rpcUrl, 'Error:', error)
+				// Introduce a delay before throwing the error. This is necessary so that the Promise.any
+				// call in getDefaultProvider doesn't immediately reject the promise and instead waits for a success.
+				await new Promise((resolve) => setTimeout(resolve, 5000))
+				throw new Error('Invalid RPC: ' + rpcUrl)
+			}
+		} catch (error) {
+			config.verbose && console.log('Error checking RPC (fallback):', rpcUrl, 'Error:', error)
 			await new Promise((resolve) => setTimeout(resolve, 5000))
 			throw new Error('Invalid RPC: ' + rpcUrl)
 		}
@@ -2083,50 +2101,51 @@ function toggleVerbose(verbose?: boolean) {
 }
 
 const peanut = {
-	toggleVerbose,
-	greeting,
-	generateKeysFromString,
-	signMessageWithPrivatekey,
-	verifySignature,
-	solidityHashBytesEIP191,
-	solidityHashAddress,
-	signAddress,
-	signHash,
-	getRandomString,
-	detectContractVersionFromTxReceipt,
-	getContract,
-	getDefaultProvider,
-	checkRpc,
-	getDepositIdx,
-	getDepositIdxs,
-	getAllDepositsForSigner,
-	getLinkDetails,
-	getParamsFromLink,
-	getParamsFromPageURL,
-	getLinkFromParams,
-	createLink,
-	createLinks,
+	assert,
+	calculateCombinedPayloadHash,
 	claimLink,
 	claimLinkGasless,
+	claimLinkSender,
 	claimLinkXChain,
 	claimLinkXChainGasless,
-	estimateGasLimit,
-	claimLinkSender,
-	prepareTxs,
-	signAndSubmitTx,
-	getLinksFromTx,
-	getLinksFromMultilink,
+	createLink,
+	createLinks,
 	createMultiLinkFromLinks,
-	formatNumberAvoidScientific,
-	trim_decimal_overflow,
-	supportsEIP1559,
-	setFeeOptions,
+	detectContractVersionFromTxReceipt,
+	estimateGasLimit,
+	generateKeysFromString,
+	getAllDepositsForSigner,
+	getContract,
+	getCrossChainOptionsForLink,
+	getDefaultProvider,
+	getDepositIdx,
+	getDepositIdxs,
+	getEIP1559Tip,
+	getLinkDetails,
+	getLinkFromParams,
+	getLinksFromMultilink,
+	getLinksFromTx,
+	getParamsFromLink,
+	getParamsFromPageURL,
+	getRandomString,
 	getSquidChains,
 	getSquidTokens,
 	getSquidRoute,
-	getCrossChainOptionsForLink,
+	greeting,
+	hash_string,
+	prepareTxs,
+	resetProviderCache,
+	setFeeOptions,
+	signAddress,
+	signAndSubmitTx,
+	signHash,
+	signMessageWithPrivatekey,
+	solidityHashAddress,
+	solidityHashBytesEIP191,
+	supportsEIP1559,
+	toggleVerbose,
+	verifySignature,
 	VERSION,
-	version: VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	TOKEN_TYPES,
@@ -2173,6 +2192,7 @@ export {
 	hash_string,
 	peanut,
 	prepareTxs,
+	resetProviderCache,
 	setFeeOptions,
 	signAddress,
 	signAndSubmitTx,
