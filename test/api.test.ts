@@ -387,15 +387,15 @@ describe('Testnet Tests', function () {
 	// peanut.toggleVerbose()
 
 	testnets.forEach((net) => {
-		// if (!net.name.toLowerCase().startsWith('goerli')) {
+		// blacklist
+		// if (net.name.toLowerCase().includes('linea')) {
 		// 	return
 		// }
-		// if (!['Linea'].includes(net.name)) {
-		// 	//  'Milkomeda C1 Testnet', 'Sepolia'
-		// skip linea
-		if (['Linea'].includes(net.name)) {
-			return
-		}
+
+		// whitelist
+		// if (!net.name.toLowerCase().includes('linea')) {
+		// 	return
+		// }
 		it(`should run tests on ${net.name}`, async function () {
 			console.log(`Running tests on ${net.name}`)
 			// Set up your test parameters based on the current testnet
