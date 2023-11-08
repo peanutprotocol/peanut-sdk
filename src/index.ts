@@ -2081,17 +2081,34 @@ function toggleVerbose(verbose?: boolean) {
 }
 
 function getLatestContractVersion(chainId: string, type: string): string {
-	const data = PEANUT_CONTRACTS
-	const chainData = data[chainId as unknown as keyof typeof data]
+	try {
+		const data = PEANUT_CONTRACTS
 
-	// Filter keys starting with "v" and sort them
-	const versions = Object.keys(chainData)
-		.filter((key) => key.startsWith(type == 'batch' ? 'Bv' : 'v'))
-		.sort((a, b) => parseInt(b.substring(1)) - parseInt(a.substring(1))) // Sort in descending order based on version number
+		const chainData = data[chainId as unknown as keyof typeof data]
 
-	const highestVersion = versions.sort((a, b) => parseInt(b.slice(1)) - parseInt(a.slice(1)))[0]
+		// Filter keys starting with "v" and sort them considering major and minor version numbers
+		const versions = Object.keys(chainData)
+			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
+			.sort((a, b) => {
+				const partsA = a.substring(1).split('.').map(Number)
+				const partsB = b.substring(1).split('.').map(Number)
 
-	return highestVersion
+				// Compare major version first
+				if (partsA[0] !== partsB[0]) {
+					return partsB[0] - partsA[0]
+				}
+
+				// If major version is the same, compare minor version (if present)
+				return (partsB[1] || 0) - (partsA[1] || 0)
+			})
+
+		const highestVersion = versions[0]
+
+		config.verbose && console.log('latest contract version: ', highestVersion)
+		return highestVersion
+	} catch (error) {
+		throw new Error('Failed to get latest contract version')
+	}
 }
 
 async function getAllCreatedLinksForAddress({
@@ -2127,9 +2144,7 @@ async function getAllCreatedLinksForAddress({
 
 	const deposits = await contract.getAllDepositsForAddress(address)
 
-	console.log(deposits)
-
-	return []
+	return deposits
 }
 
 const peanut = {
@@ -2176,6 +2191,7 @@ const peanut = {
 	getSquidRoute,
 	getCrossChainOptionsForLink,
 	getAllCreatedLinksForAddress,
+	getLatestContractVersion,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
@@ -2213,6 +2229,7 @@ export {
 	getSquidRoute,
 	getCrossChainOptionsForLink,
 	getAllCreatedLinksForAddress,
+	getLatestContractVersion,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
