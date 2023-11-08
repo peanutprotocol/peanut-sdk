@@ -31,7 +31,7 @@ import {
 	assert,
 	greeting,
 	generateKeysFromString,
-	// hash_string,
+	hash_string,
 	signMessageWithPrivatekey,
 	verifySignature,
 	solidityHashBytesEIP191,
@@ -475,11 +475,11 @@ async function setFeeOptions({
 	txOptions?: any
 	provider: any
 	eip1559?: boolean
-	maxFeePerGas?: number | null
+	maxFeePerGas?: ethers.BigNumber | null
 	maxFeePerGasMultiplier?: number
-	gasLimit?: number | null
+	gasLimit?: ethers.BigNumber | null
 	gasPriceMultiplier?: number
-	maxPriorityFeePerGas?: number | BigNumber | null // change this to number | null
+	maxPriorityFeePerGas?: ethers.BigNumber | null
 	maxPriorityFeePerGasMultiplier?: number
 }) {
 	// eip1559 = true
@@ -497,10 +497,6 @@ async function setFeeOptions({
 		// return txOptions;
 	}
 
-	if (gasLimit) {
-		txOptions.gasLimit = gasLimit
-	}
-
 	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
 	const chainId = Number(await provider.getNetwork().then((network: any) => network.chainId))
 	const chainDetails = CHAIN_DETAILS[chainId]
@@ -510,9 +506,19 @@ async function setFeeOptions({
 		config.verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
 	}
 
-	// Check if EIP-1559 is supported
+	if (gasLimit) {
+		txOptions.gasLimit = gasLimit
+	} else if (chainId == 56) {
+		txOptions.gasLimit = ethers.BigNumber.from('1000000')
+	}
 	config.verbose && console.log('checking if eip1559 is supported...')
-	if (chainDetails && chainDetails.features) {
+
+	// Check if EIP-1559 is supported
+	// if on milkomeda or bnb, set eip1559 to false
+	if (chainId === 2001 || chainId === 200101 || chainId === 56) {
+		eip1559 = false
+		config.verbose && console.log('Setting eip1559 to false as an exception')
+	} else if (chainDetails && chainDetails.features) {
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
 		config.verbose && console.log('EIP1559 support determined from chain features:', eip1559)
 	} else {
@@ -524,12 +530,6 @@ async function setFeeOptions({
 			console.error('Failed to determine EIP1559 support via RPC:', error)
 			eip1559 = false
 		}
-	}
-
-	// if on milkomeda or bnb, set eip1559 to false
-	if (chainId == 2001 || chainId == 200101 || chainId == 56) {
-		eip1559 = false
-		config.verbose && console.log('Setting eip1559 to false for milkomeda')
 	}
 
 	if (eip1559) {
@@ -893,8 +893,10 @@ async function signAndSubmitTx({
 	try {
 		txOptions = await setFeeOptions({
 			provider: structSigner.signer.provider,
-			eip1559: true, // or any other value you want to set
-			// set other options as needed
+			eip1559: structSigner.eip1559,
+			maxFeePerGas: structSigner.maxFeePerGas,
+			maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+			gasLimit: structSigner.gasLimit,
 		})
 	} catch (error) {
 		throw new interfaces.SDKStatus(
@@ -2206,28 +2208,50 @@ console.log('peanut-sdk version: ', VERSION)
 
 export default peanut
 export {
-	peanut,
-	toggleVerbose,
-	greeting,
-	getRandomString,
-	getLinkFromParams,
-	getParamsFromLink,
-	getParamsFromPageURL,
-	prepareTxs,
-	signAndSubmitTx,
-	getLinksFromTx,
-	createLink,
-	createLinks,
+	assert,
+	calculateCombinedPayloadHash,
 	claimLink,
+	claimLinkGasless,
 	claimLinkSender,
 	claimLinkXChain,
-	claimLinkGasless,
 	claimLinkXChainGasless,
+	createLink,
+	createLinks,
+	createMultiLinkFromLinks,
+	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
+	generateKeysFromString,
+	getAllDepositsForSigner,
+	getContract,
+	getCrossChainOptionsForLink,
+	getDefaultProvider,
+	getDepositIdx,
+	getDepositIdxs,
+	getEIP1559Tip,
+	getLinkDetails,
+	getLinkFromParams,
+	getLinksFromMultilink,
+	getLinksFromTx,
+	getParamsFromLink,
+	getParamsFromPageURL,
+	getRandomString,
 	getSquidChains,
 	getSquidTokens,
 	getSquidRoute,
-	getCrossChainOptionsForLink,
+	greeting,
+	hash_string,
+	peanut,
+	prepareTxs,
+	setFeeOptions,
+	signAddress,
+	signAndSubmitTx,
+	signHash,
+	signMessageWithPrivatekey,
+	solidityHashAddress,
+	solidityHashBytesEIP191,
+	supportsEIP1559,
+	toggleVerbose,
+	verifySignature,
 	getAllCreatedLinksForAddress,
 	getLatestContractVersion,
 	VERSION,

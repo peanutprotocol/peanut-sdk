@@ -317,6 +317,69 @@ describe('Peanut API Integration Tests', function () {
 		},
 		numLinks * 120000
 	) // Adjust timeout based on number of links
+
+	it('should create a link on Binance Smart Chain and claim it with api', async function () {
+		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
+		const chainId = 56 // Binance Smart Chain
+		const tokenAmount = 0.000001
+		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+		const provider = await peanut.getDefaultProvider(String(chainId))
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+		console.log('wallet.address', wallet.address)
+		const balance = await wallet.getBalance()
+		console.log('balance', balance)
+		peanut.toggleVerbose()
+		const resp = await peanut.createLink({
+			structSigner: {
+				signer: wallet,
+			},
+			linkDetails: {
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenType: tokenType,
+			},
+		})
+
+		const receiverAddress = wallet.address
+		const res = await peanut.claimLinkGasless({
+			link: resp.link,
+			recipientAddress: receiverAddress,
+			APIKey: apiToken,
+			baseUrl: API_URL,
+		})
+		expect(res.status).toBe('success')
+		links.push(resp.link)
+		peanut.toggleVerbose()
+	}, 60000) // 60 seconds timeout
+
+	it('should create a link on Polygon and claim it with api', async function () {
+		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
+		const chainId = 137 // Polygon
+		const tokenAmount = 0.00001337
+		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+		const provider = await peanut.getDefaultProvider(String(chainId))
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+		const resp = await peanut.createLink({
+			structSigner: {
+				signer: wallet,
+			},
+			linkDetails: {
+				chainId: chainId,
+				tokenAmount: tokenAmount,
+				tokenType: tokenType,
+			},
+		})
+
+		const receiverAddress = wallet.address
+		const res = await peanut.claimLinkGasless({
+			link: resp.link,
+			recipientAddress: receiverAddress,
+			APIKey: apiToken,
+			baseUrl: API_URL,
+		})
+		expect(res.status).toBe('success')
+		links.push(resp.link)
+	}, 60000) // 60 seconds timeout
 })
 
 describe('Testnet Tests', function () {
@@ -324,16 +387,16 @@ describe('Testnet Tests', function () {
 	// peanut.toggleVerbose()
 
 	testnets.forEach((net) => {
-		if (!net.name.toLowerCase().startsWith('goerli')) {
+		// if (!net.name.toLowerCase().startsWith('goerli')) {
+		// 	return
+		// }
+		// if (!['Linea'].includes(net.name)) {
+		// 	//  'Milkomeda C1 Testnet', 'Sepolia'
+		// skip linea
+		if (['Linea'].includes(net.name)) {
 			return
 		}
 		it(`should run tests on ${net.name}`, async function () {
-			// if (!['Linea'].includes(net.name)) {
-			// 	//  'Milkomeda C1 Testnet', 'Sepolia'
-			// skip linea
-			// if (['Linea'].includes(net.name)) {
-			// 	return
-			// }
 			console.log(`Running tests on ${net.name}`)
 			// Set up your test parameters based on the current testnet
 			const chainId = net.chainId
