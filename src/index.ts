@@ -2100,6 +2100,76 @@ function toggleVerbose(verbose?: boolean) {
 	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
 }
 
+/*
+please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
+*/
+function getLatestContractVersion(chainId: string, type: string): string {
+	try {
+		const data = PEANUT_CONTRACTS
+
+		const chainData = data[chainId as unknown as keyof typeof data]
+
+		// Filter keys starting with "v" and sort them considering major and minor version numbers
+		const versions = Object.keys(chainData)
+			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
+			.sort((a, b) => {
+				const partsA = a.substring(1).split('.').map(Number)
+				const partsB = b.substring(1).split('.').map(Number)
+
+				// Compare major version first
+				if (partsA[0] !== partsB[0]) {
+					return partsB[0] - partsA[0]
+				}
+
+				// If major version is the same, compare minor version (if present)
+				return (partsB[1] || 0) - (partsA[1] || 0)
+			})
+
+		const highestVersion = versions[0]
+
+		config.verbose && console.log('latest contract version: ', highestVersion)
+		return highestVersion
+	} catch (error) {
+		throw new Error('Failed to get latest contract version')
+	}
+}
+
+async function getAllCreatedLinksForAddress({
+	address,
+	chainId,
+	provider = null,
+	peanutContractVersion = null,
+}: {
+	address: string
+	chainId: string
+	provider?: ethers.providers.JsonRpcProvider
+	peanutContractVersion?: string
+}): Promise<[]> {
+	if (provider == null) {
+		provider = await getDefaultProvider(chainId)
+	}
+
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
+	}
+
+	config.verbose &&
+		console.log(
+			'getAllCreatedLinksForAddress called with address: ',
+			address,
+			' on chainId: ',
+			chainId,
+			' at peanutContractVersion: ',
+			peanutContractVersion
+		)
+
+	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
+
+	const deposits = await contract.getAllDepositsForAddress(address)
+
+	return deposits
+}
+
 const peanut = {
 	assert,
 	calculateCombinedPayloadHash,
@@ -2115,6 +2185,7 @@ const peanut = {
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
 	generateKeysFromString,
+	getAllCreatedLinksForAddress,
 	getAllDepositsForSigner,
 	getContract,
 	getCrossChainOptionsForLink,
@@ -2122,6 +2193,7 @@ const peanut = {
 	getDepositIdx,
 	getDepositIdxs,
 	getEIP1559Tip,
+	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
@@ -2159,6 +2231,7 @@ console.log('peanut-sdk version: ', VERSION)
 
 export default peanut
 export {
+	peanut,
 	assert,
 	calculateCombinedPayloadHash,
 	claimLink,
@@ -2173,6 +2246,7 @@ export {
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
 	generateKeysFromString,
+	getAllCreatedLinksForAddress,
 	getAllDepositsForSigner,
 	getContract,
 	getCrossChainOptionsForLink,
@@ -2180,6 +2254,7 @@ export {
 	getDepositIdx,
 	getDepositIdxs,
 	getEIP1559Tip,
+	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
@@ -2192,7 +2267,6 @@ export {
 	getSquidRoute,
 	greeting,
 	hash_string,
-	peanut,
 	prepareTxs,
 	resetProviderCache,
 	setFeeOptions,
