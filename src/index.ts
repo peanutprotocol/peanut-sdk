@@ -2082,6 +2082,9 @@ function toggleVerbose(verbose?: boolean) {
 	console.log('Peanut-SDK: toggled verbose mode to: ', config.verbose)
 }
 
+/*
+please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
+*/
 function getLatestContractVersion(chainId: string, type: string): string {
 	try {
 		const data = PEANUT_CONTRACTS
