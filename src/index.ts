@@ -1319,7 +1319,7 @@ async function claimLinkSender({
 	}
 }
 
-async function claimLinkXChain({
+async function claimLinkCrossChain({
 	structSigner,
 	link,
 	destinationChainId,
@@ -1552,17 +1552,17 @@ async function createClaimXChainPayload(
 	config.verbose && console.log('Getting squid info..')
 
 	// TODO this can throw and ERROR, needs to be caught
-	const route = await getSquidRoute(
+	const route = await getSquidRoute({
 		isTestnet,
-		String(chainId),
-		sourceToken,
-		String(tokenAmount),
-		destinationChainId,
-		destinationToken,
-		recipient,
-		recipient,
-		maxSlippage
-	)
+		fromChain: String(chainId),
+		fromToken: sourceToken,
+		fromAmount: String(tokenAmount),
+		toChain: destinationChainId,
+		toToken: destinationToken,
+		fromAddress: recipient,
+		toAddress: recipient,
+		slippage: maxSlippage,
+	})
 
 	if (route === null) {
 		throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, 'Failed to get x-chain route')
@@ -1904,7 +1904,7 @@ async function claimLinkGasless({
 /**
  * Claims a link x-chain through the Peanut API
  */
-async function claimLinkXChainGasless({
+async function claimLinkCrossChainGasless({
 	link,
 	recipientAddress,
 	APIKey,
@@ -1912,7 +1912,7 @@ async function claimLinkXChainGasless({
 	destinationToken,
 	baseUrl = 'https://api.peanut.to/claim',
 	isTestnet = true,
-}: interfaces.IClaimLinkXChainGaslessParams) {
+}: interfaces.IClaimLinkCrossChainGaslessParams): Promise<interfaces.IClaimLinkCrossChainGaslessResponse> {
 	config.verbose && console.log('claiming link x-chain through Peanut API...')
 	config.verbose &&
 		console.log(
@@ -1929,8 +1929,6 @@ async function claimLinkXChainGasless({
 			' dest token: ',
 			destinationToken
 		)
-
-	// TODO is this testnet?
 
 	// TODO slippage
 	const payload = await createClaimXChainPayload(
@@ -1982,7 +1980,7 @@ async function claimLinkXChainGasless({
 	}
 }
 
-async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
+async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
 	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/chains' : 'https://api.squidrouter.com/v1/chains'
 
@@ -2009,7 +2007,7 @@ async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
 	}
 }
 
-async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
+async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidToken[]> {
 	// TODO rate limits? Caching?
 	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
 
@@ -2036,11 +2034,13 @@ async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
 	}
 }
 
-async function getCrossChainOptionsForLink(
-	isTestnet: boolean,
-	sourceChainId: number,
-	tokenType: number
-): Promise<Array<interfaces.Chain & { tokens: interfaces.Token[] }>> {
+async function getCrossChainOptionsForLink({
+	isTestnet,
+	sourceChainId,
+	tokenType,
+}: interfaces.IGetCrossChainOptionsForLinkParams): Promise<
+	Array<interfaces.ISquidChain & { tokens: interfaces.ISquidToken[] }>
+> {
 	if (tokenType > 1) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_WRONG_LINK_TYPE,
@@ -2048,7 +2048,7 @@ async function getCrossChainOptionsForLink(
 		)
 	}
 
-	const supportedChains = await getSquidChains(isTestnet)
+	const supportedChains = await getSquidChains({ isTestnet })
 
 	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
 
@@ -2059,9 +2059,9 @@ async function getCrossChainOptionsForLink(
 		)
 	}
 
-	const supportedTokens = await getSquidTokens(isTestnet)
+	const supportedTokens = await getSquidTokens({ isTestnet })
 
-	const supportedTokensMap = new Map<number, interfaces.Token[]>()
+	const supportedTokensMap = new Map<number, interfaces.ISquidToken[]>()
 
 	supportedTokens.forEach(({ chainId, address, name, symbol, logoURI }) => {
 		if (!supportedTokensMap.has(chainId)) {
@@ -2088,17 +2088,17 @@ async function getCrossChainOptionsForLink(
 	return chainsWithTokens
 }
 
-async function getSquidRoute(
-	isTestnet: boolean,
-	fromChain: string,
-	fromToken: string,
-	fromAmount: string,
-	toChain: string,
-	toToken: string,
-	fromAddress: string,
-	toAddress: string,
-	slippage: number
-): Promise<any> {
+async function getSquidRoute({
+	isTestnet,
+	fromChain,
+	fromToken,
+	fromAmount,
+	toChain,
+	toToken,
+	fromAddress,
+	toAddress,
+	slippage,
+}: interfaces.IGetSquidRouteParams): Promise<any> {
 	const url =
 		isTestnet === undefined || isTestnet == true
 			? 'https://testnet.api.squidrouter.com/v1/route'
@@ -2273,8 +2273,6 @@ const peanut = {
 	claimLink,
 	claimLinkGasless,
 	claimLinkSender,
-	claimLinkXChain,
-	claimLinkXChainGasless,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
@@ -2293,6 +2291,8 @@ const peanut = {
 	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
+	claimLinkCrossChain,
+	claimLinkCrossChainGasless,
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
@@ -2334,8 +2334,8 @@ export {
 	claimLink,
 	claimLinkGasless,
 	claimLinkSender,
-	claimLinkXChain,
-	claimLinkXChainGasless,
+	claimLinkCrossChain,
+	claimLinkCrossChainGasless,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
