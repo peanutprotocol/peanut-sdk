@@ -1911,6 +1911,7 @@ async function claimLinkXChainGasless({
 	destinationChainId,
 	destinationToken,
 	baseUrl = 'https://api.peanut.to/claim',
+	isTestnet = true,
 }: interfaces.IClaimLinkXChainGaslessParams) {
 	config.verbose && console.log('claiming link x-chain through Peanut API...')
 	config.verbose &&
@@ -1930,7 +1931,6 @@ async function claimLinkXChainGasless({
 		)
 
 	// TODO is this testnet?
-	const isTestnet = true
 
 	// TODO slippage
 	const payload = await createClaimXChainPayload(

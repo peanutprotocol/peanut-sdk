@@ -29,8 +29,8 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=27&p=N5zPNFggvTqVeKt5&t=sdk'
 		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=35&p=gmIAFfwUFVOxk9IO&t=sdk'
 		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=38&p=5sMdW7PU1jQkxeRz&t=sdk'
-		let link = 'https://peanut.to/claim#?c=5&v=v5&i=40&p=2Aojyh8prHKYXBBv&t=sdk'
-		// let link = ''
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=40&p=2Aojyh8prHKYXBBv&t=sdk'
+		let link = ''
 
 		if (link.length == 0) {
 			// create link
@@ -89,7 +89,7 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 		const claimTx = await peanut.claimLinkXChain({
 			structSigner: {
 				signer: wallet,
-				gasLimit: ethers.BigNumber.from(1000000), // hardcode gas to guarantee broadcasts
+				// gasLimit: ethers.BigNumber.from(1000000), // hardcode gas to guarantee broadcasts
 			},
 			link: link,
 			// destinationChainId: '3', // arbitrum

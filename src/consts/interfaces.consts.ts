@@ -90,6 +90,7 @@ export interface IClaimLinkXChainGaslessParams {
 	link: string
 	destinationChainId: string
 	destinationToken: string
+	isTestnet?: boolean
 }
 
 export interface IClaimLinkGaslessResponse {
