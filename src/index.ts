@@ -1382,18 +1382,6 @@ async function claimLinkXChain({
 		console.log('signature: ', claimPayload.signature)
 	}
 
-	// Prepare transaction options
-	// let txOptions: ethers.providers.TransactionRequest = {}
-	// txOptions = await peanut.setFeeOptions({
-	// 	txOptions,
-	// 	provider: signer.provider,
-	// 	// eip1559,
-	// 	// maxFeePerGas,
-	// 	// maxPriorityFeePerGas,
-	// 	// gasLimit,
-	// 	// verbose,
-	// })
-
 	const txOptions = await setFeeOptions({
 		provider: signer.provider,
 		eip1559: structSigner.eip1559 ?? true,
@@ -1404,14 +1392,18 @@ async function claimLinkXChain({
 	console.log('txOptions: ', txOptions)
 
 	let valueToSend
-
 	if (linkDetails.tokenType == 0) {
 		// Native token handled differently, most of the funds are already in the
-		// contract so we only need to send the native token surplus
-		console.log('Link value : ', claimPayload.tokenAmount)
-		console.log('Squid fee  : ', transactionRequest.value)
-		const feeToSend = transactionRequest.value - claimPayload.tokenAmount
+		// contract so we only need to send the native token surplus              100000000000000000
+		console.log('Link value : ', claimPayload.tokenAmount, typeof claimPayload.tokenAmount)
+		console.log('Squid fee  : ', transactionRequest.value, typeof transactionRequest.value)
+		// const feeToSend = transactionRequest.value - claimPayload.tokenAmount
+		// this code sucks
+		const feeToSend = ethers.BigNumber.from(String(transactionRequest.value)).sub(
+			ethers.BigNumber.from(String(claimPayload.tokenAmount))
+		)
 		console.log('Additional to send : ', feeToSend)
+		// valueToSend = ethers.utils.formatEther(feeToSend)
 		valueToSend = ethers.utils.formatEther(feeToSend)
 	} else {
 		// For ERC20 tokens the value requested is the entire fee required to
@@ -1446,7 +1438,9 @@ async function claimLinkXChain({
 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
 	const txReceipt = await tx.wait()
 
-	const axelarScanLink = 'https://testnet.axelarscan.io/gmp/' + txReceipt.transactionHash
+	const axelarScanLink = isTestnet
+		? 'https://testnet.axelarscan.io/gmp/' + txReceipt.transactionHash
+		: 'https://axelarscan.io/gmp/' + txReceipt.transactionHash // replace with mainnet URL if exists
 	console.log('Success : ' + axelarScanLink)
 
 	return {
@@ -1584,17 +1578,18 @@ async function createClaimXChainPayload(
 	// config.verbose && console.log('Full route : ', route)
 
 	// cryptography
-	let paramsHash = ethers.utils.solidityKeccak256(
+	const paramsHash = ethers.utils.solidityKeccak256(
 		['address', 'address', 'bytes', 'uint256'],
 		[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
 	)
-	console.log(
-		recipient,
-		transactionRequest.targetAddress,
-		transactionRequest.data.slice(0, 10),
-		transactionRequest.value
-	)
-	console.log('paramsHash: ', paramsHash)
+	false &&
+		console.log(
+			recipient,
+			transactionRequest.targetAddress,
+			transactionRequest.data.slice(0, 10),
+			transactionRequest.value
+		)
+	false && console.log('paramsHash: ', paramsHash)
 	//=============
 	const messagePrefix = '\x19Ethereum Signed Message:\n'
 
@@ -1646,28 +1641,28 @@ async function createClaimXChainPayload(
 		const prefixedMessage = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(prefix + ethers.utils.hexlify(message))) // Use the hexlified message here
 		const signature = await wallet.signMessage(ethers.utils.arrayify(prefixedMessage))
 
-		console.log('hardcoded signature: ', signature)
+		false && console.log('hardcoded signature: ', signature)
 
 		// try using hashMessage
 		const message2 = hashMessage(paramsHash)
 		const signature2 = await signMessage(message2, keys.privateKey)
-		console.log('hashMessage signature: ', signature2)
+		false && console.log('hashMessage signature: ', signature2)
 
 		// try without arrayify
 		const signature3 = await signMessageNoHash(message2, keys.privateKey)
-		console.log('hashMessage signature without arrayify: ', signature3)
+		false && console.log('hashMessage signature without arrayify: ', signature3)
 
 		// try with arrayify
 		const message3 = ethers.utils.arrayify(paramsHash)
 		const signature4 = await signMessage(message3, keys.privateKey)
-		console.log('Signature with arrayify: ', signature4)
+		false && console.log('Signature with arrayify: ', signature4)
 
 		// try without arrayify
 		const signature5 = await signMessageNoHash(message3, keys.privateKey)
-		console.log('Signature without arrayify: ', signature5)
+		false && console.log('Signature without arrayify: ', signature5)
 
 		// print wallet address
-		console.log('wallet address: ', wallet.address)
+		false && console.log('wallet address: ', wallet.address)
 	}
 
 	// Call the main function

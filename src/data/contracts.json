@@ -35,14 +35,16 @@
 		"v2": "0x45fd48f58c47d929E9D181837fBB7Cda1974a773",
 		"v3": "0xCEd763C2Ff8d5B726b8a5D480c17C24B6686837F",
 		"v4": "0x86e2ab83ac9d91c618a3258653063beba0ff9461",
-		"Bv4": "0x3f3166f35dCb5F397bd16d7e40918c1c4A52BDb5"
+		"Bv4": "0x3f3166f35dCb5F397bd16d7e40918c1c4A52BDb5",
+		"v5": "0xAEaDd64f809C63A8079DEBa107DB3b09eAf3336a"
 	},
 	"80001": {
 		"name": "polygon-mumbai",
 		"mainnet": "false",
 		"v3": "0x1da738d367dd369cf95f53a51b213a9cc9146afb",
 		"v4": "0xec8f9a7f47dd6031e27ff9cef9d0f33e81fcece9",
-		"Bv4": "0x1CcD80448cD0Eb21b2912c54B4E61dafD01Ab3C5"
+		"Bv4": "0x1CcD80448cD0Eb21b2912c54B4E61dafD01Ab3C5",
+		"v5": "0x955e60e59d6648F9c815EA8D19efE280E73Cd605"
 	},
 	"8453": {
 		"name": "base",
