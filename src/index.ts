@@ -1439,6 +1439,7 @@ async function claimLinkXChain({
 	config.verbose && console.log('txOptions: ', txOptions)
 
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+	config.verbose && console.log('estimate: ', estimate)
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDepositXChain(...claimParams, txOptions)
