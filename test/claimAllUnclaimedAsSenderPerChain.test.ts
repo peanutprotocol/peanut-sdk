@@ -12,8 +12,13 @@ describe('claimAllUnclaimedAsSenderPerChain', () => {
 
 	// Should retrieve the chainId from the signer and convert it to a string
 	it('should retrieve the chainId from the signer and convert it to a string', async () => {
-		const result = await peanut.claimAllUnclaimedAsSenderPerChain({ structSigner: { signer: WALLET_GOERLI } })
+		peanut.toggleVerbose(true)
+
+		const result = await peanut.claimAllUnclaimedAsSenderPerChain({
+			structSigner: { signer: WALLET_GOERLI },
+			peanutContractVersion: 'v4',
+		})
 
 		expect(result).toBeDefined
-	})
+	}, 15000000)
 })

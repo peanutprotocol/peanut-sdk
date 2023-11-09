@@ -46,6 +46,7 @@ import {
 	getDepositIdxs,
 	getLinksFromMultilink,
 	createMultiLinkFromLinks,
+	compareDeposits,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -1292,12 +1293,19 @@ async function claimLinkSender({
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
-	const tx = await contract.withdrawDepositSender(depositIndex, txOptions)
-	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
-	const txReceipt = await tx.wait()
+	let tx
+	try {
+		tx = await contract.withdrawDepositSender(depositIndex, txOptions)
+		console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+		const txReceipt = await tx.wait()
 
-	return {
-		txHash: txReceipt.transactionHash,
+		return {
+			txHash: txReceipt.transactionHash,
+		}
+	} catch (error) {
+		if (error.error.reason.includes('NOT 24 HOURS YET')) {
+			throw new Error('Link cannot be claimed yet, please wait 24 hours from creation time')
+		}
 	}
 }
 
@@ -2116,28 +2124,19 @@ function getLatestContractVersion(chainId: string, type: string): string {
 	}
 }
 
-async function getAllCreatedLinksForAddress({
+async function getAllUnclaimedDepositsWithIdxForAddress({
 	address,
 	chainId,
+	peanutContractVersion,
 	provider = null,
-	peanutContractVersion = null,
-}: {
-	address: string
-	chainId: string
-	provider?: ethers.providers.JsonRpcProvider
-	peanutContractVersion?: string
-}): Promise<any[]> {
+}: interfaces.IGetAllUnclaimedDepositsWithIdxForAddressParams): Promise<any[]> {
 	if (provider == null) {
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (peanutContractVersion == null) {
-		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
-	}
-
 	config.verbose &&
 		console.log(
-			'getAllCreatedLinksForAddress called with address: ',
+			'getAllUnclaimedDepositsWithIdxForAddress called with address: ',
 			address,
 			' on chainId: ',
 			chainId,
@@ -2147,58 +2146,7 @@ async function getAllCreatedLinksForAddress({
 
 	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
 
-	const deposits = await contract.getAllDepositsForAddress(address)
-
-	return deposits
-}
-
-function compareDeposits(deposit1: any, deposit2: any) {
-	if (
-		deposit1.pubKey20 == deposit2.pubKey20 &&
-		BigInt(deposit1.amount._hex) == BigInt(deposit2.amount._hex) &&
-		deposit1.tokenAddress == deposit2.tokenAddress &&
-		deposit1.contractType == deposit2.contractType &&
-		deposit1.claimed == deposit2.claimed &&
-		BigInt(deposit1.timestamp._hex) == BigInt(deposit2.timestamp._hex) &&
-		deposit1.senderAddress == deposit2.senderAddress
-	) {
-		return true
-	} else return false
-}
-
-async function getAllDepositsWithIdxForAddress({
-	address,
-	chainId,
-	provider = null,
-	peanutContractVersion = null,
-}: {
-	address: string
-	chainId: string
-	provider?: ethers.providers.JsonRpcProvider
-	peanutContractVersion?: string
-}): Promise<any[]> {
-	if (provider == null) {
-		provider = await getDefaultProvider(chainId)
-	}
-
-	if (peanutContractVersion == null) {
-		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
-	}
-
-	config.verbose &&
-		console.log(
-			'getAllDepositsWithIdxForAddress called with address: ',
-			address,
-			' on chainId: ',
-			chainId,
-			' at peanutContractVersion: ',
-			peanutContractVersion
-		)
-
-	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
-
-	const addressDeposits = await contract.getAllDepositsForAddress(address)
-	const mappedAddressDeposits = addressDeposits
+	const mappedAddressDeposits = (await contract.getAllDepositsForAddress(address))
 		.map((deposit: any, idx: number) => {
 			return {
 				pubKey20: deposit.pubKey20,
@@ -2213,10 +2161,9 @@ async function getAllDepositsWithIdxForAddress({
 		.filter((transaction) => {
 			const amount = BigInt(transaction.amount._hex)
 			return !transaction.claimed && amount > BigInt(0)
-		})
+		}) // get the deposits for the address
 
-	const deposits = await contract.getAllDeposits()
-	const mappedDeposits = deposits.map((deposit: any, idx: number) => {
+	const mappedDeposits = (await contract.getAllDeposits()).map((deposit: any, idx: number) => {
 		return {
 			pubKey20: deposit.pubKey20,
 			amount: deposit.amount,
@@ -2226,10 +2173,7 @@ async function getAllDepositsWithIdxForAddress({
 			timestamp: deposit.timestamp,
 			senderAddress: deposit.senderAddress,
 		}
-	})
-
-	console.log('addressDeposits: ', mappedAddressDeposits)
-	console.log('deposits: ', mappedDeposits)
+	}) // get all the deposits
 
 	mappedDeposits.map((deposit: any, idx) => {
 		mappedAddressDeposits.map((addressDeposit: any, addressIdx) => {
@@ -2237,42 +2181,49 @@ async function getAllDepositsWithIdxForAddress({
 				addressDeposit.idx = idx
 			}
 		})
-	})
+	}) // map the idxs from all deposits to the address deposits
 
-	console.log('addressDeposits: ', mappedAddressDeposits)
-
-	return []
+	return mappedAddressDeposits
 }
 
 async function claimAllUnclaimedAsSenderPerChain({
 	structSigner,
-}: {
-	structSigner: interfaces.IPeanutSigner
-}): Promise<any> {
+	peanutContractVersion = null,
+}: interfaces.IClaimAllUnclaimedAsSenderPerChainParams): Promise<string[]> {
 	const chainId = (await structSigner.signer.getChainId()).toString()
 	const address = await structSigner.signer.getAddress()
 	const provider = structSigner.signer.provider as ethers.providers.JsonRpcProvider
 
-	console.log(address)
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
+	}
 
-	const addressDepositsWithIdx = await getAllDepositsWithIdxForAddress({
+	const addressDepositsWithIdx = await getAllUnclaimedDepositsWithIdxForAddress({
 		address: address,
 		chainId: chainId,
 		provider: provider,
+		peanutContractVersion,
 	})
+	const txHashes: string[] = []
 
-	const createdDeposits = await getAllCreatedLinksForAddress({
-		address: address,
-		chainId: chainId,
-		provider: provider,
-	})
+	config.verbose && console.log(addressDepositsWithIdx)
 
-	// claimLinkSender({
-	// 	structSigner,
-	// 	depositIndex: createdDeposits[0].idx,
-	// })
+	for (const deposit of addressDepositsWithIdx) {
+		try {
+			const tx = await claimLinkSender({
+				structSigner,
+				depositIndex: deposit.idx,
+				contractVersion: peanutContractVersion,
+			})
+			txHashes.push(tx.txHash)
+		} catch (error) {
+			console.log('error claiming link with deposit idx: ', deposit.idx, ' error: ', error)
+		}
+	}
 
-	return createdDeposits
+	config.verbose && console.log(txHashes)
+
+	return txHashes
 }
 
 const peanut = {
@@ -2318,7 +2269,7 @@ const peanut = {
 	getSquidTokens,
 	getSquidRoute,
 	getCrossChainOptionsForLink,
-	getAllCreatedLinksForAddress,
+	getAllUnclaimedDepositsWithIdxForAddress,
 	getLatestContractVersion,
 	claimAllUnclaimedAsSenderPerChain,
 	VERSION,
@@ -2379,7 +2330,7 @@ export {
 	supportsEIP1559,
 	toggleVerbose,
 	verifySignature,
-	getAllCreatedLinksForAddress,
+	getAllUnclaimedDepositsWithIdxForAddress,
 	getLatestContractVersion,
 	claimAllUnclaimedAsSenderPerChain,
 	VERSION,
