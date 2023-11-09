@@ -2126,7 +2126,7 @@ async function getAllCreatedLinksForAddress({
 	chainId: string
 	provider?: ethers.providers.JsonRpcProvider
 	peanutContractVersion?: string
-}): Promise<[]> {
+}): Promise<any[]> {
 	if (provider == null) {
 		provider = await getDefaultProvider(chainId)
 	}
@@ -2150,6 +2150,129 @@ async function getAllCreatedLinksForAddress({
 	const deposits = await contract.getAllDepositsForAddress(address)
 
 	return deposits
+}
+
+function compareDeposits(deposit1: any, deposit2: any) {
+	if (
+		deposit1.pubKey20 == deposit2.pubKey20 &&
+		BigInt(deposit1.amount._hex) == BigInt(deposit2.amount._hex) &&
+		deposit1.tokenAddress == deposit2.tokenAddress &&
+		deposit1.contractType == deposit2.contractType &&
+		deposit1.claimed == deposit2.claimed &&
+		BigInt(deposit1.timestamp._hex) == BigInt(deposit2.timestamp._hex) &&
+		deposit1.senderAddress == deposit2.senderAddress
+	) {
+		return true
+	} else return false
+}
+
+async function getAllDepositsWithIdxForAddress({
+	address,
+	chainId,
+	provider = null,
+	peanutContractVersion = null,
+}: {
+	address: string
+	chainId: string
+	provider?: ethers.providers.JsonRpcProvider
+	peanutContractVersion?: string
+}): Promise<any[]> {
+	if (provider == null) {
+		provider = await getDefaultProvider(chainId)
+	}
+
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
+	}
+
+	config.verbose &&
+		console.log(
+			'getAllDepositsWithIdxForAddress called with address: ',
+			address,
+			' on chainId: ',
+			chainId,
+			' at peanutContractVersion: ',
+			peanutContractVersion
+		)
+
+	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
+
+	const addressDeposits = await contract.getAllDepositsForAddress(address)
+	const mappedAddressDeposits = addressDeposits
+		.map((deposit: any, idx: number) => {
+			return {
+				pubKey20: deposit.pubKey20,
+				amount: deposit.amount,
+				tokenAddress: deposit.tokenAddress,
+				contractType: deposit.contractType,
+				claimed: deposit.claimed,
+				timestamp: deposit.timestamp,
+				senderAddress: deposit.senderAddress,
+			}
+		})
+		.filter((transaction) => {
+			const amount = BigInt(transaction.amount._hex)
+			return !transaction.claimed && amount > BigInt(0)
+		})
+
+	const deposits = await contract.getAllDeposits()
+	const mappedDeposits = deposits.map((deposit: any, idx: number) => {
+		return {
+			pubKey20: deposit.pubKey20,
+			amount: deposit.amount,
+			tokenAddress: deposit.tokenAddress,
+			contractType: deposit.contractType,
+			claimed: deposit.claimed,
+			timestamp: deposit.timestamp,
+			senderAddress: deposit.senderAddress,
+		}
+	})
+
+	console.log('addressDeposits: ', mappedAddressDeposits)
+	console.log('deposits: ', mappedDeposits)
+
+	mappedDeposits.map((deposit: any, idx) => {
+		mappedAddressDeposits.map((addressDeposit: any, addressIdx) => {
+			if (compareDeposits(deposit, addressDeposit)) {
+				addressDeposit.idx = idx
+			}
+		})
+	})
+
+	console.log('addressDeposits: ', mappedAddressDeposits)
+
+	return []
+}
+
+async function claimAllUnclaimedAsSenderPerChain({
+	structSigner,
+}: {
+	structSigner: interfaces.IPeanutSigner
+}): Promise<any> {
+	const chainId = (await structSigner.signer.getChainId()).toString()
+	const address = await structSigner.signer.getAddress()
+	const provider = structSigner.signer.provider as ethers.providers.JsonRpcProvider
+
+	console.log(address)
+
+	const addressDepositsWithIdx = await getAllDepositsWithIdxForAddress({
+		address: address,
+		chainId: chainId,
+		provider: provider,
+	})
+
+	const createdDeposits = await getAllCreatedLinksForAddress({
+		address: address,
+		chainId: chainId,
+		provider: provider,
+	})
+
+	// claimLinkSender({
+	// 	structSigner,
+	// 	depositIndex: createdDeposits[0].idx,
+	// })
+
+	return createdDeposits
 }
 
 const peanut = {
@@ -2197,6 +2320,7 @@ const peanut = {
 	getCrossChainOptionsForLink,
 	getAllCreatedLinksForAddress,
 	getLatestContractVersion,
+	claimAllUnclaimedAsSenderPerChain,
 	VERSION,
 	version: VERSION,
 	CHAIN_DETAILS,
@@ -2257,6 +2381,7 @@ export {
 	verifySignature,
 	getAllCreatedLinksForAddress,
 	getLatestContractVersion,
+	claimAllUnclaimedAsSenderPerChain,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
