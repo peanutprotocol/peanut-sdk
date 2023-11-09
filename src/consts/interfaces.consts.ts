@@ -107,10 +107,15 @@ export interface IClaimLinkXChainParams {
 	structSigner: IPeanutSigner
 	link: string
 	destinationChainId: string
+	isTestnet?: boolean
 	maxSlippage: number
 	recipient?: string
+	destinationTokenAddress?: string
 }
 
+export interface IClaimLinkXChainResponse {
+	txHash: string
+}
 export interface IClaimLinkResponse {
 	txHash: string
 }

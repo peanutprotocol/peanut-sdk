@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, ethers } from 'ethersv5' // v5
+import { BigNumber, Bytes, ethers } from 'ethersv5' // v5
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V3,
@@ -1319,22 +1319,23 @@ async function claimLinkSender({
 	}
 }
 
-async function claimLinkXChain(
+async function claimLinkXChain({
 	structSigner,
 	link,
 	destinationChainId,
-	destinationTokenAddress,
-	isTestnet,
+	isTestnet = true,
 	maxSlippage = 1.0, // (e.g. 0.x - x.y, example from SDK is 1.0 which is ~ 1%)
-	recipient = null
-) {
+	recipient = null,
+	destinationTokenAddress = null,
+}: interfaces.IClaimLinkXChainParams): Promise<interfaces.IClaimLinkXChainResponse> {
+	// Need to check information about the link
 	const config = { verbose: true }
 	const signer = structSigner.signer
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
 	const depositIdx = linkParams.depositIdx
-	const password = linkParams.password
+
 	if (recipient == null) {
 		recipient = await signer.getAddress()
 		config.verbose && console.log('recipient not provided, using signer address: ', recipient)
@@ -1350,6 +1351,11 @@ async function claimLinkXChain(
 
 	// Need to check information about the link
 	const linkDetails = await peanut.getLinkDetails({ link: link })
+
+	// If destinationTokenAddress is not provided, use the tokenAddress from linkDetails
+	if (destinationTokenAddress == null) {
+		destinationTokenAddress = linkDetails.tokenAddress
+	}
 
 	assert(linkDetails.tokenType < 2, 'Only type 0/1 supported for x-chain')
 
@@ -1377,17 +1383,19 @@ async function claimLinkXChain(
 	}
 
 	// Prepare transaction options
-	let txOptions: ethers.providers.TransactionRequest = {}
-
-	txOptions = await peanut.setFeeOptions({
-		txOptions,
-		provider: signer.provider,
-		// eip1559,
-		// maxFeePerGas,
-		// maxPriorityFeePerGas,
-		// gasLimit,
-		// verbose,
-	})
+	// let txOptions: ethers.providers.TransactionRequest = {}
+	// txOptions = await peanut.setFeeOptions({
+	// 	txOptions,
+	// 	provider: signer.provider,
+	// 	// eip1559,
+	// 	// maxFeePerGas,
+	// 	// maxPriorityFeePerGas,
+	// 	// gasLimit,
+	// 	// verbose,
+	// })
+	const txOptions = await peanut.setFeeOptions(structSigner)
+	console.log('txOptions: ', txOptions)
+	// throw new Error('test')
 
 	let valueToSend
 
@@ -1566,18 +1574,104 @@ async function createClaimXChainPayload(
 	}
 
 	config.verbose && console.log('Squid route calculated :)')
+	// config.verbose && console.log('Full route : ', route)
 
 	// cryptography
-	const hashEIP191 = calculateCombinedPayloadHash(recipient, transactionRequest)
+	let paramsHash = ethers.utils.solidityKeccak256(
+		['address', 'address', 'bytes', 'uint256'],
+		[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
+	)
+	console.log(
+		recipient,
+		transactionRequest.targetAddress,
+		transactionRequest.data.slice(0, 10),
+		transactionRequest.value
+	)
+	console.log('paramsHash: ', paramsHash)
+	//=============
+	const messagePrefix = '\x19Ethereum Signed Message:\n'
 
-	// Super secret squirrel value that's guaranteed to pass the check in the contract
-	// TODO @hugo fix this when you fix the signing check in the contract
-	const signature = await signAddress('up, up, down, down, left, right, left, right, B, A', keys.privateKey)
+	function hashMessage(message: Bytes | string): string {
+		if (typeof message === 'string') {
+			message = ethers.utils.toUtf8Bytes(message)
+		}
+		return ethers.utils.keccak256(
+			ethers.utils.concat([
+				ethers.utils.toUtf8Bytes(messagePrefix),
+				ethers.utils.toUtf8Bytes(String(message.length)),
+				message,
+			])
+		)
+	}
 
+	async function signMessage(message, privateKey) {
+		const wallet = new ethers.Wallet(privateKey)
+		const messageHash = ethers.utils.hashMessage(message)
+		const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash))
+		return signature
+	}
+
+	async function signMessageNoHash(message, privateKey) {
+		const wallet = new ethers.Wallet(privateKey)
+		const signature = await wallet.signMessage(message)
+		return signature
+	}
+
+	// Main function
+	async function testSignatures() {
+		// ... (omitted code)
+
+		// cryptography
+		let paramsHash = ethers.utils.solidityKeccak256(
+			['address', 'address', 'bytes', 'uint256'],
+			[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
+		)
+
+		// hardcoded vals
+		paramsHash = '0x2a51702b46ff556323ac4a9ac36adb1f5203299e38aa51b7d05011fcb3071401'
+
+		// create hash for the signing (with eip 191 prefix)
+		const wallet = new ethers.Wallet(keys.privateKey)
+		const message = ethers.utils.arrayify(paramsHash) // Convert the hash string to a byte array
+		const messageBytes = ethers.utils.toUtf8Bytes(ethers.utils.hexlify(message)) // Convert the byte array to a utf8 string
+		const messageLength = messageBytes.length.toString()
+		const prefix = '\x19Ethereum Signed Message:\n' + messageLength
+		const prefixedMessage = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(prefix + ethers.utils.hexlify(message))) // Use the hexlified message here
+		const signature = await wallet.signMessage(ethers.utils.arrayify(prefixedMessage))
+
+		console.log('hardcoded signature: ', signature)
+
+		// try using hashMessage
+		const message2 = hashMessage(paramsHash)
+		const signature2 = await signMessage(message2, keys.privateKey)
+		console.log('hashMessage signature: ', signature2)
+
+		// try without arrayify
+		const signature3 = await signMessageNoHash(message2, keys.privateKey)
+		console.log('hashMessage signature without arrayify: ', signature3)
+
+		// try with arrayify
+		const message3 = ethers.utils.arrayify(paramsHash)
+		const signature4 = await signMessage(message3, keys.privateKey)
+		console.log('Signature with arrayify: ', signature4)
+
+		// try without arrayify
+		const signature5 = await signMessageNoHash(message3, keys.privateKey)
+		console.log('Signature without arrayify: ', signature5)
+
+		// print wallet address
+		console.log('wallet address: ', wallet.address)
+	}
+
+	// Call the main function
+	testSignatures()
+	const signature = await signMessageNoHash(paramsHash, keys.privateKey)
+
+	// throw new Error('stop here')
 	return {
 		recipientAddress: recipient,
 		tokenAmount: tokenAmount,
-		hash: hashEIP191,
+		hash: paramsHash,
 		signature: signature,
 		idx: depositIdx,
 		chainId: params.chainId,
@@ -2057,6 +2151,7 @@ async function getSquidRoute(
 
 		if (!response.ok) {
 			console.error('Squid api called with status: ', response.status)
+			console.error('Full response text: ', await response.text())
 			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, response.statusText)
 		}
 
