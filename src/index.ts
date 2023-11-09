@@ -1393,9 +1393,15 @@ async function claimLinkXChain({
 	// 	// gasLimit,
 	// 	// verbose,
 	// })
-	const txOptions = await peanut.setFeeOptions(structSigner)
+
+	const txOptions = await setFeeOptions({
+		provider: signer.provider,
+		eip1559: structSigner.eip1559 ?? true,
+		maxFeePerGas: structSigner.maxFeePerGas ?? null,
+		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas ?? null,
+		gasLimit: structSigner.gasLimit ?? null,
+	})
 	console.log('txOptions: ', txOptions)
-	// throw new Error('test')
 
 	let valueToSend
 

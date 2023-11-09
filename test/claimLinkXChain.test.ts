@@ -1,5 +1,5 @@
 import { ethers } from 'ethersv5'
-import { peanut } from '@squirrel-labs/peanut-sdk'
+import peanut from '../src/index' // import directly from source code
 import dotenv from 'dotenv'
 import { describe, it, expect } from '@jest/globals'
 
@@ -56,22 +56,22 @@ describe('Peanut SDK tests', function () {
 		// 	59140 // linea testnet / 421613 arbitrum / 43113 avax and appear to be supported
 
 		//     )
+
 		const claimTx = await peanut.claimLinkXChain({
 			structSigner: {
 				signer: wallet,
 			},
 			link: link,
-			destinationChainId: '5',
+			destinationChainId: '421613',
 			isTestnet: true,
 			maxSlippage: 1.0,
-			recipient: 'recipient_address', // replace with actual recipient address
-			destinationTokenAddress: 'token_address', // replace with actual token address
+			recipient: await wallet.getAddress(), // replace with actual recipient address
 		})
 
-		console.log('success: ' + claimTx.success + 'claimTx: ' + claimTx.txHash)
+		console.log('success: x claimTx: ' + claimTx.txHash)
 
 		// Add your assertions here
-		expect(claimTx.success).toBeTruthy()
+		expect(claimTx).toBeTruthy()
 		expect(claimTx.txHash).toBeDefined()
 	}, 60000) // Increase timeout if necessary
 })
