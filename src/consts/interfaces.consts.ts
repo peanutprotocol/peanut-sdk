@@ -82,6 +82,51 @@ export interface IClaimLinkGaslessParams {
 	link: string
 }
 
+//ClaimLinkCrossChain
+export interface IClaimLinkCrossChainParams {
+	structSigner: IPeanutSigner
+	link: string
+	destinationChainId: string
+	maxSlippage: number
+	recipient?: string
+	destinationTokenAddress: string
+	isTestnet: boolean
+}
+
+export interface IClaimLinkCrossChainResponse {
+	txHash: string
+}
+
+//ClaimLinkCrossChainGasless
+export interface IClaimLinkCrossChainGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	recipientAddress: string
+	link: string
+	destinationChainId: string
+	destinationToken: string
+	isTestnet: boolean
+}
+
+export interface IClaimLinkCrossChainGaslessResponse {
+	txHash: string
+}
+
+//claimLinkXChainGasless
+export interface IClaimLinkXChainGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	recipientAddress: string
+	link: string
+	destinationChainId: string
+	destinationTokenAddress: string
+	isTestnet?: boolean
+}
+
+export interface IClaimLinkGaslessResponse {
+	txHash: string
+}
+
 //ClaimLink
 export interface IClaimLinkParams {
 	structSigner: IPeanutSigner
@@ -182,36 +227,6 @@ export interface IGetSquidRouteParams {
 	fromAddress: string
 	toAddress: string
 	slippage: number
-}
-
-//ClaimLinkCrossChain
-export interface IClaimLinkCrossChainParams {
-	structSigner: IPeanutSigner
-	link: string
-	destinationChainId: string
-	maxSlippage: number
-	recipient?: string
-	destinationTokenAddress: string
-	isTestnet: boolean
-}
-
-export interface IClaimLinkCrossChainResponse {
-	txHash: string
-}
-
-//ClaimLinkCrossChainGasless
-export interface IClaimLinkCrossChainGaslessParams {
-	APIKey: string
-	baseUrl?: string
-	recipientAddress: string
-	link: string
-	destinationChainId: string
-	destinationToken: string
-	isTestnet: boolean
-}
-
-export interface IClaimLinkCrossChainGaslessResponse {
-	txHash: string
 }
 
 //squid chain and token interfaces

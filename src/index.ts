@@ -1897,6 +1897,7 @@ async function claimLinkGasless({
 		throw new Error(error)
 	} else {
 		const data = await response.json()
+		data.txHash = data.tx_hash
 		return data
 	}
 }
@@ -1904,46 +1905,77 @@ async function claimLinkGasless({
 /**
  * Claims a link x-chain through the Peanut API
  */
-async function claimLinkCrossChainGasless({
+async function claimLinkXChainGasless({
 	link,
 	recipientAddress,
 	APIKey,
 	destinationChainId,
-	destinationToken,
-	baseUrl = 'https://api.peanut.to/claim',
+	destinationTokenAddress,
+	baseUrl = 'https://api.peanut.to/claimxchain',
 	isTestnet = true,
-}: interfaces.IClaimLinkCrossChainGaslessParams): Promise<interfaces.IClaimLinkCrossChainGaslessResponse> {
+}: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkCrossChainGaslessResponse> {
 	config.verbose && console.log('claiming link x-chain through Peanut API...')
-	config.verbose &&
-		console.log(
-			'link: ',
-			link,
-			' recipientAddress: ',
-			recipientAddress,
-			' apiKey: ',
-			APIKey,
-			' url: ',
-			baseUrl,
-			' dest chain: ',
-			destinationChainId,
-			' dest token: ',
-			destinationToken
+
+	// TODO: DRY merge this code with claimLinkXChain
+	// Need to check information about the link
+	const linkParams = peanut.getParamsFromLink(link)
+	const chainId = linkParams.chainId
+	const contractVersion = linkParams.contractVersion
+	const depositIdx = linkParams.depositIdx
+
+	if (contractVersion !== 'v5') {
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
+			`Unsupported contract version ${contractVersion}`
 		)
+	}
+
+	// Need to check information about the link
+	const linkDetails = await peanut.getLinkDetails({ link: link })
+	assert(linkDetails.tokenType < 2, 'Only type 0/1 supported for x-chain')
+
+	// If destinationTokenAddress is not provided, use the tokenAddress from linkDetails
+	if (destinationTokenAddress == null) {
+		destinationTokenAddress = linkDetails.tokenAddress
+	}
 
 	// TODO slippage
-	const payload = await createClaimXChainPayload(
+	const claimPayload = await createClaimXChainPayload(
 		isTestnet,
 		link,
 		recipientAddress,
 		destinationChainId,
-		destinationToken,
-		1.0
+		destinationTokenAddress,
+		3.0
 	)
+	const { params, estimate, transactionRequest } = claimPayload
 
-	config.verbose && console.log('payload: ', payload)
+	// TODO: consolidate with claimLinkXChain
+	let valueToSend
+	if (linkDetails.tokenType == 0) {
+		// Native token handled differently, most of the funds are already in the
+		// contract so we only need to send the native token surplus              100000000000000000
+		console.log('Link value : ', claimPayload.tokenAmount, typeof claimPayload.tokenAmount)
+		console.log('Squid fee  : ', transactionRequest.value, typeof transactionRequest.value)
+		// const feeToSend = transactionRequest.value - claimPayload.tokenAmount
+		// this code sucks
+		const feeToSend = ethers.BigNumber.from(String(transactionRequest.value)).sub(
+			ethers.BigNumber.from(String(claimPayload.tokenAmount))
+		)
+		console.log('Additional to send : ', feeToSend)
+		// valueToSend = ethers.utils.formatEther(feeToSend)
+		valueToSend = ethers.utils.formatEther(feeToSend)
+	} else {
+		// For ERC20 tokens the value requested is the entire fee required to
+		// pay for the Axelar gas for and Squid swapping
+		console.log('Squid fee  : ', transactionRequest.value)
+		valueToSend = ethers.utils.formatEther(transactionRequest.value)
+	}
+
+	config.verbose && console.log('payload: ', claimPayload)
 	if (baseUrl == 'local') {
 		config.verbose && console.log('using local api')
-		baseUrl = 'http://127.0.0.1:5001/claim'
+		baseUrl = 'http://127.0.0.1:8000/claimxchain'
 	}
 
 	const headers = {
@@ -1951,15 +1983,20 @@ async function claimLinkCrossChainGasless({
 	}
 
 	const body = {
-		address: payload.recipientAddress,
-		address_hash: payload.hash,
-		signature: payload.signature,
-		idx: payload.idx,
-		chain: payload.chainId,
+		address: claimPayload.recipientAddress,
+		address_hash: claimPayload.hash,
+		signature: claimPayload.signature,
+
+		squid_data: claimPayload.transactionRequest.data,
+		squid_value: claimPayload.transactionRequest.value,
+		squid_address: claimPayload.transactionRequest.targetAddress,
+
+		idx: depositIdx,
+		chain: chainId,
 		destination_chain: destinationChainId,
-		destination_token: destinationToken,
+		destination_token: destinationTokenAddress,
 		max_slippage: 1.0,
-		version: payload.contractVersion,
+		version: contractVersion,
 		api_key: APIKey,
 	}
 
@@ -1976,6 +2013,7 @@ async function claimLinkCrossChainGasless({
 		throw new Error(error)
 	} else {
 		const data = await response.json()
+		data.txHash = data.tx_hash
 		return data
 	}
 }
@@ -2292,7 +2330,7 @@ const peanut = {
 	getLinkDetails,
 	getLinkFromParams,
 	claimLinkCrossChain,
-	claimLinkCrossChainGasless,
+	claimLinkXChainGasless,
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
@@ -2335,7 +2373,7 @@ export {
 	claimLinkGasless,
 	claimLinkSender,
 	claimLinkCrossChain,
-	claimLinkCrossChainGasless,
+	claimLinkXChainGasless,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
