@@ -1561,99 +1561,20 @@ async function createClaimXChainPayload(
 		[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
 	) // this works
 
-	const paramsHashBinary = ethers.utils.arrayify(paramsHash)
-	const wallet = new ethers.Wallet(keys.privateKey)
-	const signature = await wallet.signMessage(paramsHashBinary) // this calls ethers.hashMessage and prefixes the hash
-	console.log('paramsHash: ', paramsHash)
-	console.log('signature: ', signature)
-	console.log('deposit wallet address: ', wallet.address)
-	console.log('deposit wallet privkey: ', wallet.privateKey)
-
-	false &&
-		console.log(
-			recipient,
-			transactionRequest.targetAddress,
-			transactionRequest.data.slice(0, 10),
-			transactionRequest.value
-		)
-	false && console.log('paramsHash: ', paramsHash)
-	//=============
-	const messagePrefix = '\x19Ethereum Signed Message:\n'
-
-	function hashMessage(message: Bytes | string): string {
-		if (typeof message === 'string') {
-			message = ethers.utils.toUtf8Bytes(message)
-		}
-		return ethers.utils.keccak256(
-			ethers.utils.concat([
-				ethers.utils.toUtf8Bytes(messagePrefix),
-				ethers.utils.toUtf8Bytes(String(message.length)),
-				message,
-			])
-		)
-	}
-
-	async function signMessage(message, privateKey) {
-		const wallet = new ethers.Wallet(privateKey)
-		const messageHash = ethers.utils.hashMessage(message)
-		const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash))
-		return signature
-	}
-
-	async function signMessageNoHash(message, privateKey) {
+	async function _signMessage(message: ethers.utils.Bytes, privateKey: string) {
 		const wallet = new ethers.Wallet(privateKey)
 		const signature = await wallet.signMessage(message)
+		console.log(`${signature} (Created by _signMessage without hash)`)
 		return signature
 	}
 
-	// Main function
-	async function testSignatures() {
-		// ... (omitted code)
+	const signature = await _signMessage(ethers.utils.arrayify(paramsHash), keys.privateKey)
 
-		// cryptography
-		let paramsHash = ethers.utils.solidityKeccak256(
-			['address', 'address', 'bytes', 'uint256'],
-			[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
-		)
-
-		// hardcoded vals
-		paramsHash = '0x2a51702b46ff556323ac4a9ac36adb1f5203299e38aa51b7d05011fcb3071401'
-
-		// create hash for the signing (with eip 191 prefix)
-		const wallet = new ethers.Wallet(keys.privateKey)
-		const message = ethers.utils.arrayify(paramsHash) // Convert the hash string to a byte array
-		const messageBytes = ethers.utils.toUtf8Bytes(ethers.utils.hexlify(message)) // Convert the byte array to a utf8 string
-		const messageLength = messageBytes.length.toString()
-		const prefix = '\x19Ethereum Signed Message:\n' + messageLength
-		const prefixedMessage = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(prefix + ethers.utils.hexlify(message))) // Use the hexlified message here
-		const signature = await wallet.signMessage(ethers.utils.arrayify(prefixedMessage))
-
-		false && console.log('hardcoded signature: ', signature)
-
-		// try using hashMessage
-		const message2 = hashMessage(paramsHash)
-		const signature2 = await signMessage(message2, keys.privateKey)
-		false && console.log('hashMessage signature: ', signature2)
-
-		// try without arrayify
-		const signature3 = await signMessageNoHash(message2, keys.privateKey)
-		false && console.log('hashMessage signature without arrayify: ', signature3)
-
-		// try with arrayify
-		const message3 = ethers.utils.arrayify(paramsHash)
-		const signature4 = await signMessage(message3, keys.privateKey)
-		false && console.log('Signature with arrayify: ', signature4)
-
-		// try without arrayify
-		const signature5 = await signMessageNoHash(message3, keys.privateKey)
-		false && console.log('Signature without arrayify: ', signature5)
-
-		// print wallet address
-		false && console.log('wallet address: ', wallet.address)
-	}
-
-	// Call the main function
-	testSignatures()
+	// const signature = await wallet.signMessage(paramsHashBinary) // this calls ethers.hashMessage and prefixes the hash
+	console.log('paramsHash: ', paramsHash)
+	console.log('signature: ', signature)
+	const wallet = new ethers.Wallet(keys.privateKey)
+	console.log('deposit wallet address: ', wallet.address)
 
 	// throw new Error('stop here')
 	return {
