@@ -1,8 +1,8 @@
-import peanut from '../src/index' // import directly from source code
+import peanut from '../../src/index' // import directly from source code
 import { ethers } from 'ethersv5'
 import { expect, describe, it } from '@jest/globals'
-import { ERC20_ABI } from '../src/data'
-import * as interfaces from '../src/consts/interfaces.consts'
+import { ERC20_ABI } from '../../src/data'
+import * as interfaces from '../../src/consts/interfaces.consts'
 import dotenv from 'dotenv'
 dotenv.config()
 

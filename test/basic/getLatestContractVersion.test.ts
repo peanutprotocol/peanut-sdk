@@ -1,4 +1,4 @@
-import peanut from '../src/index' // import directly from source code
+import peanut from '../../src/index' // import directly from source code
 describe('getLatestContractVersion', () => {
 	it('should return the latest contract version when chainId and type are valid', () => {
 		const chainId = '5'
@@ -15,7 +15,7 @@ describe('getLatestContractVersion', () => {
 
 		const latestContractVersion = peanut.getLatestContractVersion(chainId, type)
 
-		expect(latestContractVersion).toBe('v4')
+		expect(latestContractVersion).toBe('v5')
 	})
 
 	it('should throw an error if the given chainId is not defined', () => {

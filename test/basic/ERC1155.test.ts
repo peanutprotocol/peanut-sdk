@@ -1,7 +1,7 @@
-import peanut from '../src/index'
+import peanut from '../../src/index'
 import { ethers } from 'ethersv5'
 import { expect, describe, it } from '@jest/globals'
-import * as interfaces from '../src/consts/interfaces.consts'
+import * as interfaces from '../../src/consts/interfaces.consts'
 import dotenv from 'dotenv'
 dotenv.config()
 

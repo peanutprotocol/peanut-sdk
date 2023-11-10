@@ -6,7 +6,9 @@
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"scripts": {
-		"test": "npm run pkg-move && jest --coverage --silent",
+		"test": "npm run pkg-move && jest test/basic --silent",
+		"test:basic": "npm run pkg-move && jest test/basic --silent",
+		"test:full": "npm run pkg-move && jest --coverage --silent",
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",
