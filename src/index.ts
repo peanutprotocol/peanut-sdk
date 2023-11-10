@@ -50,6 +50,12 @@ import {
 
 import * as interfaces from './consts/interfaces.consts.ts'
 
+const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
+function resetProviderCache() {
+	for (const key in providerCache) {
+		delete providerCache[key]
+	}
+}
 // async function getAbstractSigner(signer: any) {
 // 	// TODO: create abstract signer class that is compatible with ethers v5, v6, viem, web3js
 // 	return signer
@@ -68,30 +74,6 @@ function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
 	})
 }
 
-async function checkRpc(rpc: string): Promise<boolean> {
-	config.verbose && console.log('checkRpc rpc:', rpc)
-
-	try {
-		// Use the timeout function to wrap the fetchGetBalance call and give it a timeout.
-		const response = await timeout(2000, fetchGetBalance(rpc))
-
-		// If the JSON RPC response contains an error, we can consider it a failure.
-		if (response.error) {
-			config.verbose && console.log('JSON RPC Error for:', rpc, response.error.message)
-			return false
-		}
-
-		// check balance is larger than 0
-		// TODO:
-
-		// This will be a successful RPC if the result (the balance in this case) is returned.
-		return true
-	} catch (error) {
-		console.log('Error checking provider:', rpc, 'Error:', error)
-		return false
-	}
-}
-
 async function fetchGetBalance(rpcUrl: string) {
 	const res = await fetch(rpcUrl, {
 		method: 'POST',
@@ -106,87 +88,99 @@ async function fetchGetBalance(rpcUrl: string) {
 		}),
 	})
 
-	// doesn't seem to work properly
-	// // Check if the 'Access-Control-Allow-Origin' header is present
-	// if (!res.headers.has('Access-Control-Allow-Origin')) {
-	// 	throw new Error(`CORS header is missing in the response from ${rpcUrl}`)
-	// }
-
 	const json = await res.json()
 	return json
 }
 
-/**
- * Returns the default provider for a given chainId
- */
 async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
 	config.verbose && console.log('Getting default provider for chainId ', chainId)
 	if (!CHAIN_DETAILS[chainId]) {
 		throw new Error(`Chain ID ${chainId} not supported yet`)
 	}
-	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 
+	if (providerCache[chainId]) {
+		config.verbose && console.log('Found cached provider for chainId ', chainId)
+		return providerCache[chainId]
+	}
+
+	const rpcs = CHAIN_DETAILS[chainId as keyof typeof CHAIN_DETAILS].rpc
 	config.verbose && console.log('rpcs', rpcs)
 
 	// Check if there is an Infura RPC and check for its liveliness
 	let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
+	const INFURA_API_KEY = '4478656478ab4945a1b013fb1d8f20fd'
 	if (infuraRpc) {
-		// for hackathon
-		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd')
+		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', INFURA_API_KEY)
 		config.verbose && console.log('Infura RPC found:', infuraRpc)
-		const isValid = await checkRpc(infuraRpc)
-		config.verbose && console.log('Infura RPC found and is valid:', infuraRpc, isValid)
-		if (isValid) {
-			return new ethers.providers.JsonRpcProvider({
-				url: infuraRpc,
-				skipFetchSetup: true,
-			})
+		const provider = await createValidProvider(infuraRpc)
+		if (provider) {
+			providerCache[chainId] = provider
+			return provider
 		}
 	}
 
 	// If no valid Infura RPC, continue with the current behavior
-	const checkPromises = rpcs.map((rpc) => {
-		return new Promise<{ isValid: boolean; rpc: string }>(async (resolve) => {
-			try {
-				rpc = rpc.replace('${INFURA_API_KEY}', '4478656478ab4945a1b013fb1d8f20fd') // for workshop
+	const providerPromises = rpcs.map((rpcUrl) =>
+		createValidProvider(rpcUrl.replace('${INFURA_API_KEY}', INFURA_API_KEY)).catch((error) => null)
+	)
 
-				// If the RPC string contains a placeholder for the API key, replace it.
-				const isValid = await checkRpc(rpc)
+	try {
+		const provider = await Promise.any(providerPromises)
+		if (provider === null) {
+			throw new Error('No alive provider found for chainId ' + chainId)
+		}
+		providerCache[chainId] = provider
+		return provider
+	} catch (error) {
+		throw new Error('No alive provider found for chainId ' + chainId)
+	}
+}
 
-				config.verbose && console.log('RPC checked:', rpc, isValid ? 'Valid' : 'Invalid')
+async function createValidProvider(rpcUrl: string): Promise<ethers.providers.JsonRpcProvider> {
+	try {
+		const provider = new ethers.providers.JsonRpcProvider({
+			url: rpcUrl,
+		})
 
-				// Only resolve when the RPC is valid.
-				if (isValid) {
-					resolve({ isValid, rpc })
+		// Check if the RPC is valid by calling fetchGetBalance
+		const response = await fetchGetBalance(rpcUrl)
+		if (response.error) {
+			config.verbose && console.log('JSON RPC Error for:', rpcUrl, response.error.message)
+			throw new Error('Invalid RPC: ' + rpcUrl)
+		}
+
+		config.verbose && console.log('RPC is valid:', rpcUrl)
+		return provider
+	} catch (error) {
+		try {
+			if (error.code === 'NETWORK_ERROR') {
+				config.verbose && console.log('Network error for RPC:', rpcUrl, 'Trying with skipFetchSetup...')
+				const provider = new ethers.providers.JsonRpcProvider({
+					url: rpcUrl,
+					skipFetchSetup: true,
+				})
+
+				// Check if the RPC is valid by calling fetchGetBalance
+				const response = await fetchGetBalance(rpcUrl)
+				if (response.error) {
+					config.verbose && console.log('JSON RPC Error for:', rpcUrl, response.error.message)
+					throw new Error('Invalid RPC: ' + rpcUrl)
 				}
-			} catch (err) {
-				// Do nothing here, because we only want to resolve if the RPC is valid.
+
+				return provider
+			} else {
+				config.verbose && console.log('Error checking RPC:', rpcUrl, 'Error:', error)
+				// Introduce a delay before throwing the error. This is necessary so that the Promise.any
+				// call in getDefaultProvider doesn't immediately reject the promise and instead waits for a success.
+				await new Promise((resolve) => setTimeout(resolve, 5000))
+				throw new Error('Invalid RPC: ' + rpcUrl)
 			}
-		})
-	})
-
-	return new Promise(async (resolve, reject) => {
-		// Use Promise.race to get the first valid RPC.
-		Promise.race(checkPromises)
-			.then(async (result) => {
-				if (result && result.isValid) {
-					config.verbose && console.log('Valid RPC found:', result.rpc)
-					const provider = new ethers.providers.JsonRpcProvider({
-						url: result.rpc,
-						skipFetchSetup: true,
-					})
-					resolve(provider)
-				}
-			})
-			.catch(() => {
-				// Do nothing here. This catch block will not be triggered.
-			})
-
-		// Fallback: If none of the RPCs are valid after they've all been checked.
-		await Promise.allSettled(checkPromises).then(() => {
-			reject(new Error('No alive provider found for chainId ' + chainId))
-		})
-	})
+		} catch (error) {
+			config.verbose && console.log('Error checking RPC (fallback):', rpcUrl, 'Error:', error)
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+			throw new Error('Invalid RPC: ' + rpcUrl)
+		}
+	}
 }
 
 async function getContract(_chainId: string, signerOrProvider: any, version = DEFAULT_CONTRACT_VERSION) {
@@ -2153,52 +2147,53 @@ async function getAllCreatedLinksForAddress({
 }
 
 const peanut = {
-	toggleVerbose,
-	greeting,
-	generateKeysFromString,
-	signMessageWithPrivatekey,
-	verifySignature,
-	solidityHashBytesEIP191,
-	solidityHashAddress,
-	signAddress,
-	signHash,
-	getRandomString,
-	detectContractVersionFromTxReceipt,
-	getContract,
-	getDefaultProvider,
-	checkRpc,
-	getDepositIdx,
-	getDepositIdxs,
-	getAllDepositsForSigner,
-	getLinkDetails,
-	getParamsFromLink,
-	getParamsFromPageURL,
-	getLinkFromParams,
-	createLink,
-	createLinks,
+	assert,
+	calculateCombinedPayloadHash,
 	claimLink,
 	claimLinkGasless,
+	claimLinkSender,
 	claimLinkXChain,
 	claimLinkXChainGasless,
-	estimateGasLimit,
-	claimLinkSender,
-	prepareTxs,
-	signAndSubmitTx,
-	getLinksFromTx,
-	getLinksFromMultilink,
+	createLink,
+	createLinks,
 	createMultiLinkFromLinks,
-	formatNumberAvoidScientific,
-	trim_decimal_overflow,
-	supportsEIP1559,
-	setFeeOptions,
+	detectContractVersionFromTxReceipt,
+	estimateGasLimit,
+	generateKeysFromString,
+	getAllDepositsForSigner,
+	getContract,
+	getCrossChainOptionsForLink,
+	getDefaultProvider,
+	getDepositIdx,
+	getDepositIdxs,
+	getEIP1559Tip,
+	getLinkDetails,
+	getLinkFromParams,
+	getLinksFromMultilink,
+	getLinksFromTx,
+	getParamsFromLink,
+	getParamsFromPageURL,
+	getRandomString,
 	getSquidChains,
 	getSquidTokens,
 	getSquidRoute,
-	getCrossChainOptionsForLink,
+	greeting,
+	hash_string,
+	prepareTxs,
+	resetProviderCache,
+	setFeeOptions,
+	signAddress,
+	signAndSubmitTx,
+	signHash,
+	signMessageWithPrivatekey,
+	solidityHashAddress,
+	solidityHashBytesEIP191,
+	supportsEIP1559,
+	toggleVerbose,
+	verifySignature,
 	getAllCreatedLinksForAddress,
 	getLatestContractVersion,
 	VERSION,
-	version: VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	TOKEN_TYPES,
@@ -2245,6 +2240,7 @@ export {
 	hash_string,
 	peanut,
 	prepareTxs,
+	resetProviderCache,
 	setFeeOptions,
 	signAddress,
 	signAndSubmitTx,
