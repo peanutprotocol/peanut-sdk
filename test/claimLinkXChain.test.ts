@@ -86,7 +86,7 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 		// }
 
 		// try on a single chain Id
-		const claimTx = await peanut.claimLinkCrossChain({
+		const claimTx = await peanut.claimLinkXChain({
 			structSigner: {
 				signer: wallet,
 				// gasLimit: ethers.BigNumber.from(1000000), // hardcode gas to guarantee broadcasts
@@ -139,7 +139,7 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 			console.log('Link supplied : ' + link)
 		}
 
-		const claimTx = await peanut.claimLinkCrossChain({
+		const claimTx = await peanut.claimLinkXChain({
 			structSigner: {
 				signer: wallet,
 				// gasLimit: ethers.BigNumber.from(1000000), // hardcode gas

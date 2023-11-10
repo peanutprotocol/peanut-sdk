@@ -1295,7 +1295,7 @@ async function claimLinkSender({
 	}
 }
 
-async function claimLinkCrossChain({
+async function claimLinkXChain({
 	structSigner,
 	link,
 	destinationChainId,
@@ -1886,10 +1886,10 @@ async function claimLinkXChainGasless({
 	recipientAddress,
 	APIKey,
 	destinationChainId,
-	destinationTokenAddress,
+	destinationTokenAddress = null,
 	baseUrl = 'https://api.peanut.to/claimxchain',
 	isTestnet = true,
-}: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkCrossChainGaslessResponse> {
+}: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkXChainGaslessResponse> {
 	config.verbose && console.log('claiming link x-chain through Peanut API...')
 
 	// TODO: DRY merge this code with claimLinkXChain
@@ -2048,7 +2048,7 @@ async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<in
 	}
 }
 
-async function getCrossChainOptionsForLink({
+async function getXChainOptionsForLink({
 	isTestnet,
 	sourceChainId,
 	tokenType,
@@ -2297,7 +2297,7 @@ const peanut = {
 	getAllCreatedLinksForAddress,
 	getAllDepositsForSigner,
 	getContract,
-	getCrossChainOptionsForLink,
+	getXChainOptionsForLink,
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
@@ -2305,7 +2305,7 @@ const peanut = {
 	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
-	claimLinkCrossChain,
+	claimLinkXChain,
 	claimLinkXChainGasless,
 	getLinksFromMultilink,
 	getLinksFromTx,
@@ -2348,7 +2348,7 @@ export {
 	claimLink,
 	claimLinkGasless,
 	claimLinkSender,
-	claimLinkCrossChain,
+	claimLinkXChain,
 	claimLinkXChainGasless,
 	createLink,
 	createLinks,
@@ -2360,7 +2360,7 @@ export {
 	getAllCreatedLinksForAddress,
 	getAllDepositsForSigner,
 	getContract,
-	getCrossChainOptionsForLink,
+	getXChainOptionsForLink,
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,

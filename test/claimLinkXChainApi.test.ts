@@ -71,7 +71,6 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 			APIKey: process.env.PEANUT_DEV_API_KEY ?? '',
 			destinationChainId: '80001', // avalanche mumbai
 			isTestnet: true,
-			destinationTokenAddress: null,
 			// baseUrl: 'local',
 		})
 
