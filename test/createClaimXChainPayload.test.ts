@@ -8,7 +8,7 @@ describe('createClaimXChainPayload tests', function () {
 	})
 	it('should create a cross-chain payload', async function () {
 		const isTestnet = true
-		const link = 'https://peanut.to/claim#?c=5&v=v5&i=10&p=msCPhhYRImNbTZC7&t=ui'
+		const link = 'https://peanut.to/claim#?c=5&v=v5&i=10&p=jC2xwZMTFPuhFaTh&t=sdk'
 		const recipient = '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02'
 		const destinationChainId = '59140' // linea testnet (should have liquidity)
 		const destinationToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
@@ -76,7 +76,7 @@ describe('createClaimXChainPayload tests', function () {
 
 		expect(payload).toBeDefined()
 		expect(payload.recipientAddress).toBe(recipient)
-		expect(String(payload.tokenAmount)).toBe(ethers.utils.parseEther('0.001').toString())
+		expect(String(payload.tokenAmount)).toBe(ethers.utils.parseEther('0.1').toString())
 		// expect(payload.chainId).toBe(destinationChainId)
 		// expect(payload.contractVersion).toBe('v5')
 

@@ -1467,6 +1467,8 @@ async function createClaimPayload(link: string, recipientAddress: string) {
 
 	// cryptography
 	const addressHash = solidityHashAddress(recipientAddress)
+	// ethers.utils.solidityKeccak256(['address'], [address])
+
 	// var addressHashBinary = ethers.getBytes(addressHash); // v6
 	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
@@ -1557,7 +1559,16 @@ async function createClaimXChainPayload(
 	const paramsHash = ethers.utils.solidityKeccak256(
 		['address', 'address', 'bytes', 'uint256'],
 		[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
-	)
+	) // this works
+
+	const paramsHashBinary = ethers.utils.arrayify(paramsHash)
+	const wallet = new ethers.Wallet(keys.privateKey)
+	const signature = await wallet.signMessage(paramsHashBinary) // this calls ethers.hashMessage and prefixes the hash
+	console.log('paramsHash: ', paramsHash)
+	console.log('signature: ', signature)
+	console.log('deposit wallet address: ', wallet.address)
+	console.log('deposit wallet privkey: ', wallet.privateKey)
+
 	false &&
 		console.log(
 			recipient,
@@ -1643,7 +1654,6 @@ async function createClaimXChainPayload(
 
 	// Call the main function
 	testSignatures()
-	const signature = await signMessageNoHash(paramsHash, keys.privateKey)
 
 	// throw new Error('stop here')
 	return {
@@ -2141,6 +2151,7 @@ async function getSquidRoute({
 		toAddress,
 		slippage,
 		enableForecall: true, // optional, defaults to true
+		enableBoost: true,
 		/*collectFees: {
 		integratorAddress: '0xcb5b05869c450c26a8409417365ba04cc8c88786', // TODO make Peanut address
 		fee: 50, // bips
