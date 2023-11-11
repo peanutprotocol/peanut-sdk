@@ -99,7 +99,7 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 		const provider = await peanut.getDefaultProvider(String(CHAINID))
 		const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		console.log('Using ' + wallet.address)
-		let link = 'https://peanut.to/claim#?c=137&v=v5&i=0&p=mfQRsGvHZ709nMt3&t=sdk'
+		let link = ''
 
 		if (link.length == 0) {
 			// create link
