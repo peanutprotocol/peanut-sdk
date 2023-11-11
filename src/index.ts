@@ -2098,9 +2098,10 @@ async function getSquidRoute({
 		})
 
 		if (!response.ok) {
+			const text = await response.text()
 			console.error('Squid api called with status: ', response.status)
-			console.error('Full response text: ', await response.text())
-			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, response.statusText)
+			console.error('Full response text: ', text)
+			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, text)
 		}
 
 		const data = await response.json()
