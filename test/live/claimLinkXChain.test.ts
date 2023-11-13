@@ -125,7 +125,7 @@ describe('MAINNET Peanut XChain claiming tests', function () {
 		const claimTx = await peanut.claimLinkXChain({
 			structSigner: {
 				signer: wallet,
-				gasLimit: ethers.BigNumber.from(1000000), // hardcode gas
+				// gasLimit: ethers.BigNumber.from(5000000), // hardcode gas
 			},
 			link: link,
 			destinationChainId: '137',

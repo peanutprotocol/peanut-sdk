@@ -523,6 +523,7 @@ async function setFeeOptions({
 	if (eip1559) {
 		try {
 			config.verbose && console.log('Setting eip1559 tx options...', txOptions)
+			config.verbose && console.log('feeData:', feeData)
 
 			// base fee
 			txOptions.maxFeePerGas =
