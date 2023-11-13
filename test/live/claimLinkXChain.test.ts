@@ -2,7 +2,6 @@ import { ethers } from 'ethersv5'
 import peanut from '../../src/index' // import directly from source code
 import dotenv from 'dotenv'
 import { describe, it, expect } from '@jest/globals'
-
 dotenv.config()
 
 describe('TESTNET Peanut XChain claiming tests', function () {
@@ -94,13 +93,15 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 
 describe.skip('MAINNET Peanut XChain claiming tests', function () {
 	it('should create and claim link', async function () {
-		// 137
-		const CHAINID = 137
+		const CHAINID = 42161
 		const provider = await peanut.getDefaultProvider(String(CHAINID))
 		const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		console.log('Using ' + wallet.address)
+		// let link = 'https://peanut.to/claim#?c=42161&v=v5&i=4&p=Tph58UFOJAthTP23&t=sdk'
 		let link = ''
+		// let link = 'https://peanut.to/claim#?c=42161&v=v5&i=2&p=st74CozhPmBpZW1H&t=sdk'
 
+		peanut.toggleVerbose()
 		if (link.length == 0) {
 			// create link
 			console.log('No link supplied, creating..')
@@ -110,7 +111,7 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 				},
 				linkDetails: {
 					chainId: CHAINID,
-					tokenAmount: 0.1,
+					tokenAmount: 4,
 					tokenType: 0, // 0 is for native tokens
 				},
 				peanutContractVersion: 'v5',
@@ -128,9 +129,7 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 				// gasLimit: ethers.BigNumber.from(1000000), // hardcode gas
 			},
 			link: link,
-			// destinationChainId: '100', // gnosis
-			// destinationChainId: '420', // optimism
-			destinationChainId: '42161', // arb
+			destinationChainId: '137',
 			isTestnet: false,
 			maxSlippage: 3.0,
 			recipient: await wallet.getAddress(), // replace with actual recipient address
@@ -141,5 +140,5 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 		// Add your assertions here
 		expect(claimTx).toBeTruthy()
 		expect(claimTx.txHash).toBeDefined()
-	}, 120000) // Increase timeout if necessary
+	}, 240000) // Increase timeout if necessary
 })

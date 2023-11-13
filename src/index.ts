@@ -437,19 +437,20 @@ async function supportsEIP1559(provider: ethers.providers.Provider): Promise<boo
 	return block.baseFeePerGas !== undefined
 }
 
-async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber> {
-	// TODO: use this or multiplier? @setFeeOptions
+async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> {
 	// Map of chain IDs to tip sizes
 	const tipSizes: { [key: string]: string } = {
-		'137': '30', // Polygon
+		'137': '40', // Polygon
 		'1': '5', // Ethereum Mainnet
 	}
 
-	// Default tip size
-	const defaultTip = '10'
+	// Check if the chain ID is in tipSizes
+	if (!tipSizes.hasOwnProperty(chainId)) {
+		return null
+	}
 
-	// Get the tip size for the chain ID, or the default tip size if the chain ID is not found
-	const tip = tipSizes[chainId] || defaultTip
+	// Get the tip size for the chain ID
+	const tip = tipSizes[chainId]
 
 	// Convert the tip size to Wei and return it
 	return ethers.utils.parseUnits(tip, 'gwei')
@@ -488,17 +489,10 @@ async function setFeeOptions({
 	} catch (error) {
 		console.error('Failed to fetch gas price from provider:', error)
 		throw error
-		// return txOptions;
 	}
 
-	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
 	const chainId = Number(await provider.getNetwork().then((network: any) => network.chainId))
 	const chainDetails = CHAIN_DETAILS[chainId]
-
-	if (chainId == 137) {
-		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
-		config.verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
-	}
 
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
@@ -529,12 +523,24 @@ async function setFeeOptions({
 	if (eip1559) {
 		try {
 			config.verbose && console.log('Setting eip1559 tx options...', txOptions)
+
+			// base fee
 			txOptions.maxFeePerGas =
 				maxFeePerGas ||
 				(
 					(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) /
 					BigInt(10)
 				).toString()
+
+			// tip
+
+			// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei + bonus
+			// if (chainId == 137) {
+			// 	const tip = await getEIP1559Tip(String(chainId))
+			// 	maxPriorityFeePerGas = tip && tip.gte(feeData.maxPriorityFeePerGas) ? tip : feeData.maxPriorityFeePerGas
+			// 	config.verbose &&
+			// 		console.log('Setting maxPriorityFeePerGas to max of tip or feeData.maxPriorityFeePerGas')
+			// }
 			txOptions.maxPriorityFeePerGas =
 				maxPriorityFeePerGas ||
 				(
@@ -546,6 +552,11 @@ async function setFeeOptions({
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
 			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
 				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+			}
+
+			// for polygon (137), set priority fee to 40 gwei
+			if (chainId == 137) {
+				txOptions.maxPriorityFeePerGas = ethers.BigNumber.from('40000000000')
 			}
 		} catch (error) {
 			console.error('Failed to set eip1559 tx options:', error)
@@ -1397,7 +1408,7 @@ async function claimLinkXChain({
 		// Squid params to mediate execution
 		transactionRequest.data,
 		transactionRequest.value,
-		transactionRequest.targetAddress,
+		transactionRequest.target,
 		// Auth details
 		claimPayload.hash,
 		claimPayload.signature,
@@ -1407,7 +1418,7 @@ async function claimLinkXChain({
 	config.verbose && console.log('txOptions: ', txOptions)
 
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
-	config.verbose && console.log('estimate: ', estimate)
+	// config.verbose && console.log('estimate: ', estimate)
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDepositXChain(...claimParams, txOptions)
@@ -1537,6 +1548,7 @@ async function createClaimXChainPayload(
 		fromAmount: String(tokenAmount),
 		toChain: destinationChainId,
 		toToken: destinationToken,
+		// TODO: is `fromAddress` correct?
 		fromAddress: recipient,
 		toAddress: recipient,
 		slippage: maxSlippage,
@@ -1556,9 +1568,10 @@ async function createClaimXChainPayload(
 	// config.verbose && console.log('Full route : ', route)
 
 	// cryptography
+
 	const paramsHash = ethers.utils.solidityKeccak256(
 		['address', 'address', 'bytes', 'uint256'],
-		[recipient, transactionRequest.targetAddress, transactionRequest.data, transactionRequest.value]
+		[recipient, transactionRequest.target, transactionRequest.data, transactionRequest.value]
 	) // this works
 
 	async function _signMessage(message: ethers.utils.Bytes, privateKey: string) {
@@ -1570,14 +1583,8 @@ async function createClaimXChainPayload(
 
 	const signature = await _signMessage(ethers.utils.arrayify(paramsHash), keys.privateKey)
 
-	// const signature = await wallet.signMessage(paramsHashBinary) // this calls ethers.hashMessage and prefixes the hash
-	console.log('paramsHash: ', paramsHash)
-	console.log('signature: ', signature)
-	const wallet = new ethers.Wallet(keys.privateKey)
-	console.log('deposit wallet address: ', wallet.address)
-
-	// throw new Error('stop here')
-	return {
+	// log all returns
+	const result = {
 		recipientAddress: recipient,
 		tokenAmount: tokenAmount,
 		hash: paramsHash,
@@ -1589,6 +1596,8 @@ async function createClaimXChainPayload(
 		estimate: estimate,
 		transactionRequest: transactionRequest,
 	}
+	config.verbose && console.log('XChain Payload finalized. Values: ', result)
+	return result
 }
 
 /**
@@ -1857,27 +1866,7 @@ async function claimLinkXChainGasless({
 	)
 	const { params, estimate, transactionRequest } = claimPayload
 
-	// TODO: consolidate with claimLinkXChain
-	let valueToSend
-	if (linkDetails.tokenType == 0) {
-		// Native token handled differently, most of the funds are already in the
-		// contract so we only need to send the native token surplus              100000000000000000
-		console.log('Link value : ', claimPayload.tokenAmount, typeof claimPayload.tokenAmount)
-		console.log('Squid fee  : ', transactionRequest.value, typeof transactionRequest.value)
-		// const feeToSend = transactionRequest.value - claimPayload.tokenAmount
-		// this code sucks
-		const feeToSend = ethers.BigNumber.from(String(transactionRequest.value)).sub(
-			ethers.BigNumber.from(String(claimPayload.tokenAmount))
-		)
-		console.log('Additional to send : ', feeToSend)
-		// valueToSend = ethers.utils.formatEther(feeToSend)
-		valueToSend = ethers.utils.formatEther(feeToSend)
-	} else {
-		// For ERC20 tokens the value requested is the entire fee required to
-		// pay for the Axelar gas for and Squid swapping
-		console.log('Squid fee  : ', transactionRequest.value)
-		valueToSend = ethers.utils.formatEther(transactionRequest.value)
-	}
+	// valueToSend is handled in API
 
 	config.verbose && console.log('payload: ', claimPayload)
 	if (baseUrl == 'local') {
@@ -1895,8 +1884,9 @@ async function claimLinkXChainGasless({
 		signature: claimPayload.signature,
 
 		squid_data: claimPayload.transactionRequest.data,
+		// squid_value: claimPayload.transactionRequest.value,
 		squid_value: claimPayload.transactionRequest.value,
-		squid_address: claimPayload.transactionRequest.targetAddress,
+		squid_address: claimPayload.transactionRequest.target, // squid router address
 
 		idx: depositIdx,
 		chain: chainId,
@@ -2033,7 +2023,7 @@ async function getXChainOptionsForLink({
 	return chainsWithTokens
 }
 
-async function getSquidRoute({
+async function getSquidRouteV1({
 	isTestnet,
 	fromChain,
 	fromToken,
@@ -2044,6 +2034,7 @@ async function getSquidRoute({
 	toAddress,
 	slippage,
 }: interfaces.IGetSquidRouteParams): Promise<any> {
+	console.warn('WARNING: Using deprecated Squid API v1')
 	const url =
 		isTestnet === undefined || isTestnet == true
 			? 'https://testnet.api.squidrouter.com/v1/route'
@@ -2073,10 +2064,11 @@ async function getSquidRoute({
 		slippage,
 		enableForecall: true, // optional, defaults to true
 		enableBoost: true,
-		/*collectFees: {
-		integratorAddress: '0xcb5b05869c450c26a8409417365ba04cc8c88786', // TODO make Peanut address
-		fee: 50, // bips
-	  },*/
+		// collect fees
+		// collectFees: {
+		// 	integratorAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', // TODO make Peanut address
+		// 	fee: 100, // bips
+		// },
 	}
 
 	try {
@@ -2107,6 +2099,88 @@ async function getSquidRoute({
 		const data = await response.json()
 
 		if (data && data.route) {
+			return data.route
+		}
+
+		// implicit else
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
+			'undefined data received from Squid API'
+		)
+	} catch (error) {
+		throw error
+	}
+}
+
+async function getSquidRoute({
+	isTestnet,
+	fromChain,
+	fromToken,
+	fromAmount,
+	toChain,
+	toToken,
+	fromAddress,
+	toAddress,
+	slippage,
+}: interfaces.IGetSquidRouteParams): Promise<any> {
+	const url =
+		isTestnet === undefined || isTestnet == true
+			? 'https://testnet.v2.api.squidrouter.com/v2/route'
+			: 'https://v2.api.squidrouter.com/v2/route'
+	config.verbose && console.log('Using for squid route call : ', url)
+
+	if (fromToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
+		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	if (toToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
+		toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	// https://docs.squidrouter.com/squid-v1-docs-cosmos/api/get-a-route
+	const params = {
+		fromChain,
+		fromToken,
+		fromAmount,
+		toChain,
+		toToken,
+		fromAddress,
+		toAddress,
+		// optionally set slippage manually, this will override slippageConfig
+		slippageConfig: {
+			// slippage: 1, // 1% slippage
+			autoMode: 1, // ignored if manual slippage is set,
+		},
+		enableForecall: true, // optional, defaults to true
+		enableBoost: true,
+	}
+
+	try {
+		const response: Response = await fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-integrator-id': 'peanut-api',
+				// 'x-integrator-id': 'squid-test',
+			},
+			body: JSON.stringify(params),
+		})
+
+		if (!response.ok) {
+			console.error('Squid api called with status: ', response.status)
+			const responseBody = await response.text()
+			console.error('Full response body: ', responseBody)
+			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, responseBody)
+		}
+
+		const data = await response.json()
+
+		if (data && data.route) {
+			config.verbose && console.log('Squid route: ', data.route)
 			return data.route
 		}
 

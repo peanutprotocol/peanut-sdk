@@ -5,7 +5,7 @@ import { describe, it, expect } from '@jest/globals'
 
 dotenv.config()
 
-describe('TESTNET Peanut XChain claiming tests', function () {
+describe.skip('TESTNET Peanut XChain claiming tests', function () {
 	it('should create and claim link', async function () {
 		// goerli
 		const CHAINID = 5
@@ -18,6 +18,7 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=40&p=2Aojyh8prHKYXBBv&t=sdk'
 		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=2&p=vbEnBssRdxtnyBsQ&t=sdk'
 		let link = ''
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=13&p=a83M0djzT4QwKvqe&t=sdk'
 
 		if (link.length == 0) {
 			// create link
@@ -28,7 +29,7 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 				},
 				linkDetails: {
 					chainId: CHAINID,
-					tokenAmount: 0.1,
+					tokenAmount: 0.01,
 					tokenType: 0, // 0 is for native tokens
 				},
 				peanutContractVersion: 'v5',
@@ -71,6 +72,67 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 			APIKey: process.env.PEANUT_DEV_API_KEY ?? '',
 			destinationChainId: '80001', // avalanche mumbai
 			isTestnet: true,
+			// baseUrl: 'local',
+		})
+
+		console.log('success: x claimTx: ' + claimTx.txHash)
+
+		// Add your assertions here
+		expect(claimTx).toBeTruthy()
+		expect(claimTx.txHash).toBeDefined()
+	}, 120000) // Increase timeout if necessary
+})
+
+describe('MAINNET Peanut XChain claiming tests', function () {
+	it('should create and claim link', async function () {
+		// goerli
+		const CHAINID = 42161
+		const provider = await peanut.getDefaultProvider(String(CHAINID))
+		const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
+		console.log('Using ' + wallet.address)
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=27&p=N5zPNFggvTqVeKt5&t=sdk'
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=35&p=gmIAFfwUFVOxk9IO&t=sdk'
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=38&p=5sMdW7PU1jQkxeRz&t=sdk'
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=40&p=2Aojyh8prHKYXBBv&t=sdk'
+		// let link = 'https://peanut.to/claim#?c=5&v=v5&i=2&p=vbEnBssRdxtnyBsQ&t=sdk'
+		let link = ''
+
+		if (link.length == 0) {
+			// create link
+			console.log('No link supplied, creating..')
+			const createLinkResponse = await peanut.createLink({
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: CHAINID,
+					tokenAmount: 0.001,
+					tokenType: 0, // 0 is for native tokens
+				},
+				peanutContractVersion: 'v5',
+			})
+
+			link = createLinkResponse.link
+			console.log('New link: ' + link)
+		} else {
+			console.log('Link supplied : ' + link)
+		}
+
+		// get status of link
+		const getLinkDetailsResponse = await peanut.getLinkDetails({
+			link,
+			provider: wallet.provider,
+		})
+		console.log('The link is claimed: ' + getLinkDetailsResponse.claimed)
+
+		peanut.toggleVerbose(true)
+
+		const claimTx = await peanut.claimLinkXChainGasless({
+			link: link,
+			recipientAddress: await wallet.getAddress(),
+			APIKey: process.env.PEANUT_DEV_API_KEY ?? '',
+			destinationChainId: '137', // arb
+			isTestnet: false,
 			// baseUrl: 'local',
 		})
 
