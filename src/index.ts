@@ -465,7 +465,7 @@ async function setFeeOptions({
 	gasLimit = null,
 	gasPriceMultiplier = 1.3,
 	maxPriorityFeePerGas, // don't provide a default value here
-	maxPriorityFeePerGasMultiplier = 2,
+	maxPriorityFeePerGasMultiplier = 1.5,
 }: {
 	txOptions?: any
 	provider: any
@@ -532,15 +532,6 @@ async function setFeeOptions({
 					BigInt(10)
 				).toString()
 
-			// tip
-
-			// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei + bonus
-			// if (chainId == 137) {
-			// 	const tip = await getEIP1559Tip(String(chainId))
-			// 	maxPriorityFeePerGas = tip && tip.gte(feeData.maxPriorityFeePerGas) ? tip : feeData.maxPriorityFeePerGas
-			// 	config.verbose &&
-			// 		console.log('Setting maxPriorityFeePerGas to max of tip or feeData.maxPriorityFeePerGas')
-			// }
 			txOptions.maxPriorityFeePerGas =
 				maxPriorityFeePerGas ||
 				(
@@ -548,7 +539,6 @@ async function setFeeOptions({
 						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
 					BigInt(10)
 				).toString()
-
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
 			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
 				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
@@ -1917,10 +1907,15 @@ async function claimLinkXChainGasless({
 
 async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
-	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/chains' : 'https://api.squidrouter.com/v1/chains'
-
+	const url = isTestnet
+		? 'https://testnet.v2.api.squidrouter.com/v2/chains'
+		: 'https://v2.api.squidrouter.com/v2/chains'
 	try {
-		const response = await fetch(url)
+		const response = await fetch(url, {
+			headers: {
+				'x-integrator-id': 'peanut-api',
+			},
+		})
 		if (response.ok) {
 			const data = await response.json()
 			if (data && Array.isArray(data.chains)) {
@@ -1944,10 +1939,17 @@ async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<in
 
 async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidToken[]> {
 	// TODO rate limits? Caching?
-	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
+	// const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
+	const url = isTestnet
+		? 'https://testnet.v2.api.squidrouter.com/v2/tokens'
+		: 'https://v2.api.squidrouter.com/v2/tokens'
 
 	try {
-		const response = await fetch(url)
+		const response = await fetch(url, {
+			headers: {
+				'x-integrator-id': 'peanut-api',
+			},
+		})
 		if (response.ok) {
 			const data = await response.json()
 			if (data && Array.isArray(data.tokens)) {
@@ -2157,6 +2159,12 @@ async function getSquidRoute({
 		},
 		enableForecall: true, // optional, defaults to true
 		enableBoost: true,
+
+		// TODO: needs to be verified in API
+		collectFees: {
+			integratorAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02',
+			fee: 100, // bips
+		},
 	}
 
 	try {

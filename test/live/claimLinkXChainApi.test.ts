@@ -83,7 +83,7 @@ describe.skip('TESTNET Peanut XChain claiming tests', function () {
 	}, 120000) // Increase timeout if necessary
 })
 
-describe('MAINNET Peanut XChain claiming tests', function () {
+describe.skip('MAINNET Peanut XChain claiming tests', function () {
 	it('should create and claim link', async function () {
 		// goerli
 		const CHAINID = 42161
@@ -142,4 +142,67 @@ describe('MAINNET Peanut XChain claiming tests', function () {
 		expect(claimTx).toBeTruthy()
 		expect(claimTx.txHash).toBeDefined()
 	}, 120000) // Increase timeout if necessary
+})
+
+describe('Peanut XChain claiming tests for multiple chains', function () {
+	const chains = ['10', '8453', '137', '42161'] // polygon, arbitrum, optimism, base
+	for (let i = 0; i < chains.length; i++) {
+		it(`should create and claim link on chain ${chains[i]} and claim on diff chain`, async function () {
+			const CHAINID = chains[i]
+			// console.log('Testing chain ' + CHAINID)
+			// console.log('typeof CHAINID: ' + typeof CHAINID)
+			// throw new Error('stop')
+			const provider = await peanut.getDefaultProvider(String(CHAINID))
+			const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
+			console.log('Using ' + wallet.address)
+			let link = ''
+
+			if (link.length == 0) {
+				// create link
+				console.log('No link supplied, creating..')
+				const createLinkResponse = await peanut.createLink({
+					structSigner: {
+						signer: wallet,
+					},
+					linkDetails: {
+						chainId: Number(CHAINID),
+						tokenAmount: 0.001,
+						tokenType: 0, // 0 is for native tokens
+					},
+					peanutContractVersion: 'v5',
+				})
+
+				link = createLinkResponse.link
+				console.log('New link: ' + link)
+			} else {
+				console.log('Link supplied : ' + link)
+			}
+
+			// get status of link
+			const getLinkDetailsResponse = await peanut.getLinkDetails({
+				link,
+				provider: wallet.provider,
+			})
+			console.log('The link is claimed: ' + getLinkDetailsResponse.claimed)
+
+			peanut.toggleVerbose(true)
+
+			// claim on a different chain
+			const claimChainId = chains[(i + 1) % chains.length]
+
+			const claimTx = await peanut.claimLinkXChainGasless({
+				link: link,
+				recipientAddress: await wallet.getAddress(),
+				APIKey: process.env.PEANUT_DEV_API_KEY ?? '',
+				destinationChainId: claimChainId,
+				isTestnet: false,
+			})
+
+			console.log('success: x claimTx: ' + claimTx.txHash)
+
+			// Add your assertions here
+			expect(claimTx).toBeTruthy()
+			expect(claimTx.txHash).toBeDefined()
+		}, 120000) // Increase timeout if necessary
+	}
 })

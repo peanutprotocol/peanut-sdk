@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import { describe, it, expect } from '@jest/globals'
 dotenv.config()
 
-describe('TESTNET Peanut XChain claiming tests', function () {
+describe.skip('TESTNET Peanut XChain claiming tests', function () {
 	it('should create and claim link', async function () {
 		// goerli
 		const CHAINID = 5
@@ -91,15 +91,14 @@ describe('TESTNET Peanut XChain claiming tests', function () {
 	}, 120000) // Increase timeout if necessary
 })
 
-describe.skip('MAINNET Peanut XChain claiming tests', function () {
+describe('MAINNET Peanut XChain claiming tests', function () {
 	it('should create and claim link', async function () {
 		const CHAINID = 42161
 		const provider = await peanut.getDefaultProvider(String(CHAINID))
 		const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		console.log('Using ' + wallet.address)
-		// let link = 'https://peanut.to/claim#?c=42161&v=v5&i=4&p=Tph58UFOJAthTP23&t=sdk'
-		let link = ''
-		// let link = 'https://peanut.to/claim#?c=42161&v=v5&i=2&p=st74CozhPmBpZW1H&t=sdk'
+		// let link = 'https://experimental.peanut.to/claim#?c=42161&v=v5&i=1&p=QRZCdg9valYKtD5N&t=ui'
+		let link = 'https://experimental.peanut.to/claim#?c=42161&v=v5&i=14&p=YMHlfCDxZvZTTajB&t=ui'
 
 		peanut.toggleVerbose()
 		if (link.length == 0) {
@@ -111,7 +110,7 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 				},
 				linkDetails: {
 					chainId: CHAINID,
-					tokenAmount: 4,
+					tokenAmount: 0.001,
 					tokenType: 0, // 0 is for native tokens
 				},
 				peanutContractVersion: 'v5',
@@ -126,10 +125,11 @@ describe.skip('MAINNET Peanut XChain claiming tests', function () {
 		const claimTx = await peanut.claimLinkXChain({
 			structSigner: {
 				signer: wallet,
-				// gasLimit: ethers.BigNumber.from(1000000), // hardcode gas
+				gasLimit: ethers.BigNumber.from(1000000), // hardcode gas
 			},
 			link: link,
 			destinationChainId: '137',
+			destinationTokenAddress: '0x0000000000000000000000000000000000000000',
 			isTestnet: false,
 			maxSlippage: 3.0,
 			recipient: await wallet.getAddress(), // replace with actual recipient address
