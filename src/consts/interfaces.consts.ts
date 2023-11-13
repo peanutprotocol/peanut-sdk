@@ -186,7 +186,7 @@ export interface IGetLinkDetailsResponse {
 //getCrossChainoptionsForLink
 export interface IGetCrossChainOptionsForLinkParams {
 	isTestnet: boolean
-	sourceChainId: number
+	sourceChainId: string
 	tokenType: number
 }
 
@@ -206,7 +206,7 @@ export interface IGetSquidRouteParams {
 //squid chain and token interfaces
 export interface ISquidChain {
 	chainId: number
-	chainName: string
+	axelarChainName: string
 	chainType: string
 	chainIconURI: string
 }
