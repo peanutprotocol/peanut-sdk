@@ -1535,8 +1535,7 @@ async function createClaimXChainPayload(
 	}
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	// TODO DANGER : this assumes 18 dp and needs to match the input token decimals
-	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, 18)
+	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, linkDetails.tokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 
 	// TODO this can throw and ERROR, needs to be caught

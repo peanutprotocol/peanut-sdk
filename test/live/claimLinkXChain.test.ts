@@ -95,10 +95,11 @@ describe('MAINNET Peanut XChain claiming tests', function () {
 	it('should create and claim link', async function () {
 		const CHAINID = 42161
 		const provider = await peanut.getDefaultProvider(String(CHAINID))
-		const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
+		const wallet = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY2 ?? '', provider)
 		console.log('Using ' + wallet.address)
 		// let link = 'https://experimental.peanut.to/claim#?c=42161&v=v5&i=1&p=QRZCdg9valYKtD5N&t=ui'
-		let link = 'https://experimental.peanut.to/claim#?c=42161&v=v5&i=14&p=YMHlfCDxZvZTTajB&t=ui'
+		// let link = 'https://experimental.peanut.to/claim#?c=42161&v=v5&i=14&p=YMHlfCDxZvZTTajB&t=ui'
+		let link = ''
 
 		peanut.toggleVerbose()
 		if (link.length == 0) {
@@ -107,11 +108,19 @@ describe('MAINNET Peanut XChain claiming tests', function () {
 			const createLinkResponse = await peanut.createLink({
 				structSigner: {
 					signer: wallet,
+					// gasLimit: ethers.BigNumber.from(5100000), // hardcode gas
 				},
+				// linkDetails: {
+				// 	chainId: CHAINID,
+				// 	tokenAmount: 0.001,
+				// 	tokenType: 0, // 0 is for native tokens
+				// },
 				linkDetails: {
 					chainId: CHAINID,
 					tokenAmount: 0.001,
-					tokenType: 0, // 0 is for native tokens
+					tokenType: 1, // 0 is for native tokens
+					tokenAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+					tokenDecimals: 6,
 				},
 				peanutContractVersion: 'v5',
 			})
@@ -131,7 +140,7 @@ describe('MAINNET Peanut XChain claiming tests', function () {
 			destinationChainId: '137',
 			destinationTokenAddress: '0x0000000000000000000000000000000000000000',
 			isTestnet: false,
-			maxSlippage: 3.0,
+			maxSlippage: 1.0,
 			recipient: await wallet.getAddress(), // replace with actual recipient address
 		})
 
