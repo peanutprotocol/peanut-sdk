@@ -1,4 +1,4 @@
-import peanut from '../src/index'
+import peanut from '../../src/index'
 import { ethers } from 'ethersv5'
 import dotenv from 'dotenv'
 
