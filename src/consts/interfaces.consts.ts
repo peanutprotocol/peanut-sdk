@@ -60,6 +60,18 @@ export interface IReturnSuccessObject {
 	errorMessage?: string
 }
 
+export interface IGetAllUnclaimedDepositsWithIdxForAddressParams {
+	address: string
+	chainId: string
+	peanutContractVersion: string
+	provider?: ethers.providers.JsonRpcProvider
+}
+
+export interface IClaimAllUnclaimedAsSenderPerChainParams {
+	structSigner: IPeanutSigner
+	peanutContractVersion?: string
+}
+
 //createLink
 export interface ICreateLinkParams {
 	structSigner: IPeanutSigner
