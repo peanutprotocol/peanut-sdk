@@ -60,6 +60,18 @@ export interface IReturnSuccessObject {
 	errorMessage?: string
 }
 
+export interface IGetAllUnclaimedDepositsWithIdxForAddressParams {
+	address: string
+	chainId: string
+	peanutContractVersion: string
+	provider?: ethers.providers.JsonRpcProvider
+}
+
+export interface IClaimAllUnclaimedAsSenderPerChainParams {
+	structSigner: IPeanutSigner
+	peanutContractVersion?: string
+}
+
 //createLink
 export interface ICreateLinkParams {
 	structSigner: IPeanutSigner
@@ -89,7 +101,12 @@ export interface IClaimLinkXChainGaslessParams {
 	recipientAddress: string
 	link: string
 	destinationChainId: string
-	destinationToken: string
+	destinationTokenAddress?: string
+	isTestnet?: boolean
+}
+
+export interface IClaimLinkXChainGaslessResponse {
+	txHash: string
 }
 
 export interface IClaimLinkGaslessResponse {
@@ -107,10 +124,15 @@ export interface IClaimLinkXChainParams {
 	structSigner: IPeanutSigner
 	link: string
 	destinationChainId: string
+	isTestnet?: boolean
 	maxSlippage: number
 	recipient?: string
+	destinationTokenAddress?: string
 }
 
+export interface IClaimLinkXChainResponse {
+	txHash: string
+}
 export interface IClaimLinkResponse {
 	txHash: string
 }
@@ -173,14 +195,35 @@ export interface IGetLinkDetailsResponse {
 	linkDetails: IPeanutLinkChainDetails
 }
 
-export interface Chain {
+//getCrossChainoptionsForLink
+export interface IGetCrossChainOptionsForLinkParams {
+	isTestnet: boolean
+	sourceChainId: string
+	tokenType: number
+}
+
+//getSquidRoute
+export interface IGetSquidRouteParams {
+	isTestnet: boolean
+	fromChain: string
+	fromToken: string
+	fromAmount: string
+	toChain: string
+	toToken: string
+	fromAddress: string
+	toAddress: string
+	slippage: number
+}
+
+//squid chain and token interfaces
+export interface ISquidChain {
 	chainId: number
-	chainName: string
+	axelarChainName: string
 	chainType: string
 	chainIconURI: string
 }
 
-export interface Token {
+export interface ISquidToken {
 	chainId: number
 	address: string
 	name: string

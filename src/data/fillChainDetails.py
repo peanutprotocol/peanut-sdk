@@ -63,14 +63,11 @@ def get_contracts():
 
 def get_chain_ids(contracts):
     chain_ids = list(contracts.keys())
-    # filter out all the chain ids that don't have a v3 chain id
+    # filter out all the chain ids that don't have a contract version of 3 or higher
     return [
         chain_id
         for chain_id in chain_ids
-        if (
-            contracts[chain_id].get("v3")
-            or (contracts[chain_id].get("v4") and contracts[chain_id].get("Bv4"))
-        )
+        if any(contracts[chain_id].get(f"v{i}") for i in range(3, 10))
     ]
 
 

@@ -1,7 +1,7 @@
 import { ethers } from 'ethersv5'
 import { expect, describe, it, beforeEach } from '@jest/globals'
-import chainDetails from '../src/data/chainDetails.json'
-import peanut, { resetProviderCache } from '../src/index'
+import chainDetails from '../../src/data/chainDetails.json'
+import peanut, { resetProviderCache } from '../../src/index'
 
 beforeEach(() => {
 	resetProviderCache()

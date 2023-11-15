@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, ethers } from 'ethersv5' // v5
+import { BigNumber, Bytes, ethers } from 'ethersv5' // v5
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V3,
@@ -46,6 +46,7 @@ import {
 	getDepositIdxs,
 	getLinksFromMultilink,
 	createMultiLinkFromLinks,
+	compareDeposits,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -437,19 +438,20 @@ async function supportsEIP1559(provider: ethers.providers.Provider): Promise<boo
 	return block.baseFeePerGas !== undefined
 }
 
-async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber> {
-	// TODO: use this or multiplier? @setFeeOptions
+async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> {
 	// Map of chain IDs to tip sizes
 	const tipSizes: { [key: string]: string } = {
-		'137': '30', // Polygon
+		'137': '40', // Polygon
 		'1': '5', // Ethereum Mainnet
 	}
 
-	// Default tip size
-	const defaultTip = '10'
+	// Check if the chain ID is in tipSizes
+	if (!tipSizes.hasOwnProperty(chainId)) {
+		return null
+	}
 
-	// Get the tip size for the chain ID, or the default tip size if the chain ID is not found
-	const tip = tipSizes[chainId] || defaultTip
+	// Get the tip size for the chain ID
+	const tip = tipSizes[chainId]
 
 	// Convert the tip size to Wei and return it
 	return ethers.utils.parseUnits(tip, 'gwei')
@@ -464,7 +466,7 @@ async function setFeeOptions({
 	gasLimit = null,
 	gasPriceMultiplier = 1.3,
 	maxPriorityFeePerGas, // don't provide a default value here
-	maxPriorityFeePerGasMultiplier = 2,
+	maxPriorityFeePerGasMultiplier = 1.5,
 }: {
 	txOptions?: any
 	provider: any
@@ -488,17 +490,10 @@ async function setFeeOptions({
 	} catch (error) {
 		console.error('Failed to fetch gas price from provider:', error)
 		throw error
-		// return txOptions;
 	}
 
-	// if on chain 137 (polygon mainnet), set maxPriorityFeePerGas to 30 gwei
 	const chainId = Number(await provider.getNetwork().then((network: any) => network.chainId))
 	const chainDetails = CHAIN_DETAILS[chainId]
-
-	if (chainId == 137) {
-		maxPriorityFeePerGas = ethers.utils.parseUnits('30', 'gwei')
-		config.verbose && console.log('Setting maxPriorityFeePerGas to 30 gwei')
-	}
 
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
@@ -529,12 +524,16 @@ async function setFeeOptions({
 	if (eip1559) {
 		try {
 			config.verbose && console.log('Setting eip1559 tx options...', txOptions)
+			config.verbose && console.log('feeData:', feeData)
+
+			// base fee
 			txOptions.maxFeePerGas =
 				maxFeePerGas ||
 				(
 					(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) /
 					BigInt(10)
 				).toString()
+
 			txOptions.maxPriorityFeePerGas =
 				maxPriorityFeePerGas ||
 				(
@@ -542,10 +541,14 @@ async function setFeeOptions({
 						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
 					BigInt(10)
 				).toString()
-
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
 			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
 				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
+			}
+
+			// for polygon (137), set priority fee to 40 gwei
+			if (chainId == 137) {
+				txOptions.maxPriorityFeePerGas = ethers.BigNumber.from('40000000000')
 			}
 		} catch (error) {
 			console.error('Failed to set eip1559 tx options:', error)
@@ -1286,31 +1289,39 @@ async function claimLinkSender({
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
-	const tx = await contract.withdrawDepositSender(depositIndex, txOptions)
-	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
-	const txReceipt = await tx.wait()
+	let tx
+	try {
+		tx = await contract.withdrawDepositSender(depositIndex, txOptions)
+		console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
+		const txReceipt = await tx.wait()
 
-	return {
-		txHash: txReceipt.transactionHash,
+		return {
+			txHash: txReceipt.transactionHash,
+		}
+	} catch (error) {
+		if (error.error.reason.includes('NOT 24 HOURS YET')) {
+			throw new Error('Link cannot be claimed yet, please wait 24 hours from creation time')
+		}
 	}
 }
 
-async function claimLinkXChain(
+async function claimLinkXChain({
 	structSigner,
 	link,
 	destinationChainId,
-	destinationTokenAddress,
-	isTestnet,
+	isTestnet = true,
 	maxSlippage = 1.0, // (e.g. 0.x - x.y, example from SDK is 1.0 which is ~ 1%)
-	recipient = null
-) {
+	recipient = null,
+	destinationTokenAddress = null,
+}: interfaces.IClaimLinkXChainParams): Promise<interfaces.IClaimLinkXChainResponse> {
+	// Need to check information about the link
 	const config = { verbose: true }
 	const signer = structSigner.signer
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
 	const depositIdx = linkParams.depositIdx
-	const password = linkParams.password
+
 	if (recipient == null) {
 		recipient = await signer.getAddress()
 		config.verbose && console.log('recipient not provided, using signer address: ', recipient)
@@ -1326,6 +1337,11 @@ async function claimLinkXChain(
 
 	// Need to check information about the link
 	const linkDetails = await peanut.getLinkDetails({ link: link })
+
+	// If destinationTokenAddress is not provided, use the tokenAddress from linkDetails
+	if (destinationTokenAddress == null) {
+		destinationTokenAddress = linkDetails.tokenAddress
+	}
 
 	assert(linkDetails.tokenType < 2, 'Only type 0/1 supported for x-chain')
 
@@ -1352,28 +1368,28 @@ async function claimLinkXChain(
 		console.log('signature: ', claimPayload.signature)
 	}
 
-	// Prepare transaction options
-	let txOptions: ethers.providers.TransactionRequest = {}
-
-	txOptions = await peanut.setFeeOptions({
-		txOptions,
+	const txOptions = await setFeeOptions({
 		provider: signer.provider,
-		// eip1559,
-		// maxFeePerGas,
-		// maxPriorityFeePerGas,
-		// gasLimit,
-		// verbose,
+		eip1559: structSigner.eip1559 ?? true,
+		maxFeePerGas: structSigner.maxFeePerGas ?? null,
+		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas ?? null,
+		gasLimit: structSigner.gasLimit ?? null,
 	})
+	console.log('txOptions: ', txOptions)
 
 	let valueToSend
-
 	if (linkDetails.tokenType == 0) {
 		// Native token handled differently, most of the funds are already in the
-		// contract so we only need to send the native token surplus
-		console.log('Link value : ', claimPayload.tokenAmount)
-		console.log('Squid fee  : ', transactionRequest.value)
-		const feeToSend = transactionRequest.value - claimPayload.tokenAmount
+		// contract so we only need to send the native token surplus              100000000000000000
+		console.log('Link value : ', claimPayload.tokenAmount, typeof claimPayload.tokenAmount)
+		console.log('Squid fee  : ', transactionRequest.value, typeof transactionRequest.value)
+		// const feeToSend = transactionRequest.value - claimPayload.tokenAmount
+		// this code sucks
+		const feeToSend = ethers.BigNumber.from(String(transactionRequest.value)).sub(
+			ethers.BigNumber.from(String(claimPayload.tokenAmount))
+		)
 		console.log('Additional to send : ', feeToSend)
+		// valueToSend = ethers.utils.formatEther(feeToSend)
 		valueToSend = ethers.utils.formatEther(feeToSend)
 	} else {
 		// For ERC20 tokens the value requested is the entire fee required to
@@ -1391,7 +1407,7 @@ async function claimLinkXChain(
 		// Squid params to mediate execution
 		transactionRequest.data,
 		transactionRequest.value,
-		transactionRequest.targetAddress,
+		transactionRequest.target,
 		// Auth details
 		claimPayload.hash,
 		claimPayload.signature,
@@ -1401,13 +1417,16 @@ async function claimLinkXChain(
 	config.verbose && console.log('txOptions: ', txOptions)
 
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+	// config.verbose && console.log('estimate: ', estimate)
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDepositXChain(...claimParams, txOptions)
 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
 	const txReceipt = await tx.wait()
 
-	const axelarScanLink = 'https://testnet.axelarscan.io/gmp/' + txReceipt.transactionHash
+	const axelarScanLink = isTestnet
+		? 'https://testnet.axelarscan.io/gmp/' + txReceipt.transactionHash
+		: 'https://axelarscan.io/gmp/' + txReceipt.transactionHash // replace with mainnet URL if exists
 	console.log('Success : ' + axelarScanLink)
 
 	return {
@@ -1458,6 +1477,8 @@ async function createClaimPayload(link: string, recipientAddress: string) {
 
 	// cryptography
 	const addressHash = solidityHashAddress(recipientAddress)
+	// ethers.utils.solidityKeccak256(['address'], [address])
+
 	// var addressHashBinary = ethers.getBytes(addressHash); // v6
 	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
@@ -1519,17 +1540,18 @@ async function createClaimXChainPayload(
 	config.verbose && console.log('Getting squid info..')
 
 	// TODO this can throw and ERROR, needs to be caught
-	const route = await getSquidRoute(
+	const route = await getSquidRoute({
 		isTestnet,
-		String(chainId),
-		sourceToken,
-		String(tokenAmount),
-		destinationChainId,
-		destinationToken,
-		recipient,
-		recipient,
-		maxSlippage
-	)
+		fromChain: String(chainId),
+		fromToken: sourceToken,
+		fromAmount: String(tokenAmount),
+		toChain: destinationChainId,
+		toToken: destinationToken,
+		// TODO: is `fromAddress` correct?
+		fromAddress: recipient,
+		toAddress: recipient,
+		slippage: maxSlippage,
+	})
 
 	if (route === null) {
 		throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, 'Failed to get x-chain route')
@@ -1542,18 +1564,29 @@ async function createClaimXChainPayload(
 	}
 
 	config.verbose && console.log('Squid route calculated :)')
+	// config.verbose && console.log('Full route : ', route)
 
 	// cryptography
-	const hashEIP191 = calculateCombinedPayloadHash(recipient, transactionRequest)
 
-	// Super secret squirrel value that's guaranteed to pass the check in the contract
-	// TODO @hugo fix this when you fix the signing check in the contract
-	const signature = await signAddress('up, up, down, down, left, right, left, right, B, A', keys.privateKey)
+	const paramsHash = ethers.utils.solidityKeccak256(
+		['address', 'address', 'bytes', 'uint256'],
+		[recipient, transactionRequest.target, transactionRequest.data, transactionRequest.value]
+	) // this works
 
-	return {
+	async function _signMessage(message: ethers.utils.Bytes, privateKey: string) {
+		const wallet = new ethers.Wallet(privateKey)
+		const signature = await wallet.signMessage(message)
+		console.log(`${signature} (Created by _signMessage without hash)`)
+		return signature
+	}
+
+	const signature = await _signMessage(ethers.utils.arrayify(paramsHash), keys.privateKey)
+
+	// log all returns
+	const result = {
 		recipientAddress: recipient,
 		tokenAmount: tokenAmount,
-		hash: hashEIP191,
+		hash: paramsHash,
 		signature: signature,
 		idx: depositIdx,
 		chainId: params.chainId,
@@ -1562,6 +1595,8 @@ async function createClaimXChainPayload(
 		estimate: estimate,
 		transactionRequest: transactionRequest,
 	}
+	config.verbose && console.log('XChain Payload finalized. Values: ', result)
+	return result
 }
 
 /**
@@ -1777,6 +1812,7 @@ async function claimLinkGasless({
 		throw new Error(error)
 	} else {
 		const data = await response.json()
+		data.txHash = data.tx_hash
 		return data
 	}
 }
@@ -1789,43 +1825,52 @@ async function claimLinkXChainGasless({
 	recipientAddress,
 	APIKey,
 	destinationChainId,
-	destinationToken,
-	baseUrl = 'https://api.peanut.to/claim',
-}: interfaces.IClaimLinkXChainGaslessParams) {
+	destinationTokenAddress = null,
+	baseUrl = 'https://api.peanut.to/claimxchain',
+	isTestnet = true,
+}: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkXChainGaslessResponse> {
 	config.verbose && console.log('claiming link x-chain through Peanut API...')
-	config.verbose &&
-		console.log(
-			'link: ',
-			link,
-			' recipientAddress: ',
-			recipientAddress,
-			' apiKey: ',
-			APIKey,
-			' url: ',
-			baseUrl,
-			' dest chain: ',
-			destinationChainId,
-			' dest token: ',
-			destinationToken
-		)
 
-	// TODO is this testnet?
-	const isTestnet = true
+	// TODO: DRY merge this code with claimLinkXChain
+	// Need to check information about the link
+	const linkParams = peanut.getParamsFromLink(link)
+	const chainId = linkParams.chainId
+	const contractVersion = linkParams.contractVersion
+	const depositIdx = linkParams.depositIdx
+
+	if (contractVersion !== 'v5') {
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
+			`Unsupported contract version ${contractVersion}`
+		)
+	}
+
+	// Need to check information about the link
+	const linkDetails = await peanut.getLinkDetails({ link: link })
+	assert(linkDetails.tokenType < 2, 'Only type 0/1 supported for x-chain')
+
+	// If destinationTokenAddress is not provided, use the tokenAddress from linkDetails
+	if (destinationTokenAddress == null) {
+		destinationTokenAddress = linkDetails.tokenAddress
+	}
 
 	// TODO slippage
-	const payload = await createClaimXChainPayload(
+	const claimPayload = await createClaimXChainPayload(
 		isTestnet,
 		link,
 		recipientAddress,
 		destinationChainId,
-		destinationToken,
-		1.0
+		destinationTokenAddress,
+		3.0
 	)
+	const { params, estimate, transactionRequest } = claimPayload
 
-	config.verbose && console.log('payload: ', payload)
+	// valueToSend is handled in API
+
+	config.verbose && console.log('payload: ', claimPayload)
 	if (baseUrl == 'local') {
 		config.verbose && console.log('using local api')
-		baseUrl = 'http://127.0.0.1:5001/claim'
+		baseUrl = 'http://127.0.0.1:8000/claimxchain'
 	}
 
 	const headers = {
@@ -1833,15 +1878,21 @@ async function claimLinkXChainGasless({
 	}
 
 	const body = {
-		address: payload.recipientAddress,
-		address_hash: payload.hash,
-		signature: payload.signature,
-		idx: payload.idx,
-		chain: payload.chainId,
+		address: claimPayload.recipientAddress,
+		address_hash: claimPayload.hash,
+		signature: claimPayload.signature,
+
+		squid_data: claimPayload.transactionRequest.data,
+		// squid_value: claimPayload.transactionRequest.value,
+		squid_value: claimPayload.transactionRequest.value,
+		squid_address: claimPayload.transactionRequest.target, // squid router address
+
+		idx: depositIdx,
+		chain: chainId,
 		destination_chain: destinationChainId,
-		destination_token: destinationToken,
+		destination_token: destinationTokenAddress,
 		max_slippage: 1.0,
-		version: payload.contractVersion,
+		version: contractVersion,
 		api_key: APIKey,
 	}
 
@@ -1858,16 +1909,22 @@ async function claimLinkXChainGasless({
 		throw new Error(error)
 	} else {
 		const data = await response.json()
+		data.txHash = data.tx_hash
 		return data
 	}
 }
 
-async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
+async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
-	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/chains' : 'https://api.squidrouter.com/v1/chains'
-
+	const url = isTestnet
+		? 'https://testnet.v2.api.squidrouter.com/v2/chains'
+		: 'https://v2.api.squidrouter.com/v2/chains'
 	try {
-		const response = await fetch(url)
+		const response = await fetch(url, {
+			headers: {
+				'x-integrator-id': 'peanut-api',
+			},
+		})
 		if (response.ok) {
 			const data = await response.json()
 			if (data && Array.isArray(data.chains)) {
@@ -1889,12 +1946,19 @@ async function getSquidChains(isTestnet: boolean): Promise<interfaces.Chain[]> {
 	}
 }
 
-async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
+async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidToken[]> {
 	// TODO rate limits? Caching?
-	const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
+	// const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
+	const url = isTestnet
+		? 'https://testnet.v2.api.squidrouter.com/v2/tokens'
+		: 'https://v2.api.squidrouter.com/v2/tokens'
 
 	try {
-		const response = await fetch(url)
+		const response = await fetch(url, {
+			headers: {
+				'x-integrator-id': 'peanut-api',
+			},
+		})
 		if (response.ok) {
 			const data = await response.json()
 			if (data && Array.isArray(data.tokens)) {
@@ -1916,11 +1980,13 @@ async function getSquidTokens(isTestnet: boolean): Promise<interfaces.Token[]> {
 	}
 }
 
-async function getCrossChainOptionsForLink(
-	isTestnet: boolean,
-	sourceChainId: number,
-	tokenType: number
-): Promise<Array<interfaces.Chain & { tokens: interfaces.Token[] }>> {
+async function getXChainOptionsForLink({
+	isTestnet,
+	sourceChainId,
+	tokenType,
+}: interfaces.IGetCrossChainOptionsForLinkParams): Promise<
+	Array<interfaces.ISquidChain & { tokens: interfaces.ISquidToken[] }>
+> {
 	if (tokenType > 1) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_WRONG_LINK_TYPE,
@@ -1928,9 +1994,9 @@ async function getCrossChainOptionsForLink(
 		)
 	}
 
-	const supportedChains = await getSquidChains(isTestnet)
+	const supportedChains = await getSquidChains({ isTestnet })
 
-	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
+	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId.toString() === sourceChainId)
 
 	if (!isSourceChainSupported) {
 		throw new interfaces.SDKStatus(
@@ -1939,9 +2005,9 @@ async function getCrossChainOptionsForLink(
 		)
 	}
 
-	const supportedTokens = await getSquidTokens(isTestnet)
+	const supportedTokens = await getSquidTokens({ isTestnet })
 
-	const supportedTokensMap = new Map<number, interfaces.Token[]>()
+	const supportedTokensMap = new Map<number, interfaces.ISquidToken[]>()
 
 	supportedTokens.forEach(({ chainId, address, name, symbol, logoURI }) => {
 		if (!supportedTokensMap.has(chainId)) {
@@ -1951,10 +2017,10 @@ async function getCrossChainOptionsForLink(
 	})
 
 	const destinationChains = supportedChains
-		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
-		.map(({ chainId, chainName, chainType, chainIconURI }) => ({
+		.filter((chain) => chain.chainId.toString() !== sourceChainId && chain.chainType === 'evm')
+		.map(({ chainId, axelarChainName, chainType, chainIconURI }) => ({
 			chainId,
-			chainName,
+			axelarChainName,
 			chainType,
 			chainIconURI,
 		}))
@@ -1968,17 +2034,18 @@ async function getCrossChainOptionsForLink(
 	return chainsWithTokens
 }
 
-async function getSquidRoute(
-	isTestnet: boolean,
-	fromChain: string,
-	fromToken: string,
-	fromAmount: string,
-	toChain: string,
-	toToken: string,
-	fromAddress: string,
-	toAddress: string,
-	slippage: number
-): Promise<any> {
+async function getSquidRouteV1({
+	isTestnet,
+	fromChain,
+	fromToken,
+	fromAmount,
+	toChain,
+	toToken,
+	fromAddress,
+	toAddress,
+	slippage,
+}: interfaces.IGetSquidRouteParams): Promise<any> {
+	console.warn('WARNING: Using deprecated Squid API v1')
 	const url =
 		isTestnet === undefined || isTestnet == true
 			? 'https://testnet.api.squidrouter.com/v1/route'
@@ -2007,10 +2074,12 @@ async function getSquidRoute(
 		toAddress,
 		slippage,
 		enableForecall: true, // optional, defaults to true
-		/*collectFees: {
-		integratorAddress: '0xcb5b05869c450c26a8409417365ba04cc8c88786', // TODO make Peanut address
-		fee: 50, // bips
-	  },*/
+		enableBoost: true,
+		// collect fees
+		// collectFees: {
+		// 	integratorAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', // TODO make Peanut address
+		// 	fee: 100, // bips
+		// },
 	}
 
 	try {
@@ -2032,13 +2101,103 @@ async function getSquidRoute(
 		})
 
 		if (!response.ok) {
+			const text = await response.text()
 			console.error('Squid api called with status: ', response.status)
-			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, response.statusText)
+			console.error('Full response text: ', text)
+			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, text)
 		}
 
 		const data = await response.json()
 
 		if (data && data.route) {
+			return data.route
+		}
+
+		// implicit else
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
+			'undefined data received from Squid API'
+		)
+	} catch (error) {
+		throw error
+	}
+}
+
+async function getSquidRoute({
+	isTestnet,
+	fromChain,
+	fromToken,
+	fromAmount,
+	toChain,
+	toToken,
+	fromAddress,
+	toAddress,
+	slippage,
+}: interfaces.IGetSquidRouteParams): Promise<any> {
+	const url =
+		isTestnet === undefined || isTestnet == true
+			? 'https://testnet.v2.api.squidrouter.com/v2/route'
+			: 'https://v2.api.squidrouter.com/v2/route'
+	config.verbose && console.log('Using for squid route call : ', url)
+
+	if (fromToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
+		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	if (toToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
+		toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	// https://docs.squidrouter.com/squid-v1-docs-cosmos/api/get-a-route
+	const params = {
+		fromChain,
+		fromToken,
+		fromAmount,
+		toChain,
+		toToken,
+		fromAddress,
+		toAddress,
+		// optionally set slippage manually, this will override slippageConfig
+		slippageConfig: {
+			// slippage: 1, // 1% slippage
+			autoMode: 1, // ignored if manual slippage is set,
+		},
+		enableForecall: true, // optional, defaults to true
+		enableBoost: true,
+
+		// TODO: needs to be verified in API
+		collectFees: {
+			integratorAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02',
+			fee: 100, // bips
+		},
+	}
+
+	try {
+		const response: Response = await fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-integrator-id': 'peanut-api',
+				// 'x-integrator-id': 'squid-test',
+			},
+			body: JSON.stringify(params),
+		})
+
+		if (!response.ok) {
+			console.error('Squid api called with status: ', response.status)
+			const responseBody = await response.text()
+			console.error('Full response body: ', responseBody)
+			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, responseBody)
+		}
+
+		const data = await response.json()
+
+		if (data && data.route) {
+			config.verbose && console.log('Squid route: ', data.route)
 			return data.route
 		}
 
@@ -2110,28 +2269,19 @@ function getLatestContractVersion(chainId: string, type: string): string {
 	}
 }
 
-async function getAllCreatedLinksForAddress({
+async function getAllUnclaimedDepositsWithIdxForAddress({
 	address,
 	chainId,
+	peanutContractVersion,
 	provider = null,
-	peanutContractVersion = null,
-}: {
-	address: string
-	chainId: string
-	provider?: ethers.providers.JsonRpcProvider
-	peanutContractVersion?: string
-}): Promise<[]> {
+}: interfaces.IGetAllUnclaimedDepositsWithIdxForAddressParams): Promise<any[]> {
 	if (provider == null) {
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (peanutContractVersion == null) {
-		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
-	}
-
 	config.verbose &&
 		console.log(
-			'getAllCreatedLinksForAddress called with address: ',
+			'getAllUnclaimedDepositsWithIdxForAddress called with address: ',
 			address,
 			' on chainId: ',
 			chainId,
@@ -2141,9 +2291,84 @@ async function getAllCreatedLinksForAddress({
 
 	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
 
-	const deposits = await contract.getAllDepositsForAddress(address)
+	const mappedAddressDeposits = (await contract.getAllDepositsForAddress(address))
+		.map((deposit: any, idx: number) => {
+			return {
+				pubKey20: deposit.pubKey20,
+				amount: deposit.amount,
+				tokenAddress: deposit.tokenAddress,
+				contractType: deposit.contractType,
+				claimed: deposit.claimed,
+				timestamp: deposit.timestamp,
+				senderAddress: deposit.senderAddress,
+			}
+		})
+		.filter((transaction) => {
+			const amount = BigInt(transaction.amount._hex)
+			return !transaction.claimed && amount > BigInt(0)
+		}) // get the deposits for the address
 
-	return deposits
+	const mappedDeposits = (await contract.getAllDeposits()).map((deposit: any, idx: number) => {
+		return {
+			pubKey20: deposit.pubKey20,
+			amount: deposit.amount,
+			tokenAddress: deposit.tokenAddress,
+			contractType: deposit.contractType,
+			claimed: deposit.claimed,
+			timestamp: deposit.timestamp,
+			senderAddress: deposit.senderAddress,
+		}
+	}) // get all the deposits
+
+	mappedDeposits.map((deposit: any, idx) => {
+		mappedAddressDeposits.map((addressDeposit: any, addressIdx) => {
+			if (compareDeposits(deposit, addressDeposit)) {
+				addressDeposit.idx = idx
+			}
+		})
+	}) // map the idxs from all deposits to the address deposits
+
+	return mappedAddressDeposits
+}
+
+async function claimAllUnclaimedAsSenderPerChain({
+	structSigner,
+	peanutContractVersion = null,
+}: interfaces.IClaimAllUnclaimedAsSenderPerChainParams): Promise<string[]> {
+	const chainId = (await structSigner.signer.getChainId()).toString()
+	const address = await structSigner.signer.getAddress()
+	const provider = structSigner.signer.provider as ethers.providers.JsonRpcProvider
+
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
+	}
+
+	const addressDepositsWithIdx = await getAllUnclaimedDepositsWithIdxForAddress({
+		address: address,
+		chainId: chainId,
+		provider: provider,
+		peanutContractVersion,
+	})
+	const txHashes: string[] = []
+
+	config.verbose && console.log(addressDepositsWithIdx)
+
+	for (const deposit of addressDepositsWithIdx) {
+		try {
+			const tx = await claimLinkSender({
+				structSigner,
+				depositIndex: deposit.idx,
+				contractVersion: peanutContractVersion,
+			})
+			txHashes.push(tx.txHash)
+		} catch (error) {
+			console.log('error claiming link with deposit idx: ', deposit.idx, ' error: ', error)
+		}
+	}
+
+	config.verbose && console.log(txHashes)
+
+	return txHashes
 }
 
 const peanut = {
@@ -2152,23 +2377,28 @@ const peanut = {
 	claimLink,
 	claimLinkGasless,
 	claimLinkSender,
-	claimLinkXChain,
-	claimLinkXChainGasless,
+  claimAllUnclaimedAsSenderPerChain,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
+	createClaimXChainPayload,
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
+	formatNumberAvoidScientific,
 	generateKeysFromString,
+	getAllCreatedLinksForAddress,
 	getAllDepositsForSigner,
 	getContract,
-	getCrossChainOptionsForLink,
+	getXChainOptionsForLink,
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
 	getEIP1559Tip,
+	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
+	claimLinkXChain,
+	claimLinkXChainGasless,
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
@@ -2177,6 +2407,9 @@ const peanut = {
 	getSquidChains,
 	getSquidTokens,
 	getSquidRoute,
+	getCrossChainOptionsForLink,
+	getAllUnclaimedDepositsWithIdxForAddress,
+	getLatestContractVersion,
 	greeting,
 	hash_string,
 	prepareTxs,
@@ -2190,9 +2423,8 @@ const peanut = {
 	solidityHashBytesEIP191,
 	supportsEIP1559,
 	toggleVerbose,
+	trim_decimal_overflow,
 	verifySignature,
-	getAllCreatedLinksForAddress,
-	getLatestContractVersion,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
@@ -2206,6 +2438,7 @@ console.log('peanut-sdk version: ', VERSION)
 
 export default peanut
 export {
+	peanut,
 	assert,
 	calculateCombinedPayloadHash,
 	claimLink,
@@ -2213,19 +2446,26 @@ export {
 	claimLinkSender,
 	claimLinkXChain,
 	claimLinkXChainGasless,
+  claimAllUnclaimedAsSenderPerChain,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
+	createClaimXChainPayload,
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
+	formatNumberAvoidScientific,
 	generateKeysFromString,
+	getAllCreatedLinksForAddress,
 	getAllDepositsForSigner,
+	getAllUnclaimedDepositsWithIdxForAddress,
+	getLatestContractVersion,
 	getContract,
-	getCrossChainOptionsForLink,
+	getXChainOptionsForLink,
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
 	getEIP1559Tip,
+	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
@@ -2238,7 +2478,6 @@ export {
 	getSquidRoute,
 	greeting,
 	hash_string,
-	peanut,
 	prepareTxs,
 	resetProviderCache,
 	setFeeOptions,
@@ -2250,9 +2489,8 @@ export {
 	solidityHashBytesEIP191,
 	supportsEIP1559,
 	toggleVerbose,
+	trim_decimal_overflow,
 	verifySignature,
-	getAllCreatedLinksForAddress,
-	getLatestContractVersion,
 	VERSION,
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,

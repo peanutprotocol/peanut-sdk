@@ -1,6 +1,6 @@
 import { ethers } from 'ethersv5' // v5
 
-import { peanut } from '../src/index'
+import { peanut } from '../../src/index'
 import { expect, it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()

@@ -768,5 +768,36 @@
 			"url": "https://ipfs.io/ipfs/QmRNqgazYuxUa5WdddFPftTWiP3KwzBMgV9Z19QWnLMETc",
 			"format": "png"
 		}
+	},
+	"5001": {
+		"name": "Mantle Testnet",
+		"chain": "ETH",
+		"rpc": [
+			"https://rpc.testnet.mantle.xyz"
+		],
+		"faucets": [
+			"https://faucet.testnet.mantle.xyz"
+		],
+		"nativeCurrency": {
+			"name": "Testnet Mantle",
+			"symbol": "MNT",
+			"decimals": 18
+		},
+		"infoURL": "https://mantle.xyz",
+		"shortName": "mantle-testnet",
+		"chainId": 5001,
+		"networkId": 5001,
+		"explorers": [
+			{
+				"name": "Mantle Testnet Explorer",
+				"url": "https://explorer.testnet.mantle.xyz",
+				"standard": "EIP3091"
+			}
+		],
+		"mainnet": false,
+		"icon": {
+			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
+			"format": "svg"
+		}
 	}
 }

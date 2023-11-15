@@ -14,7 +14,7 @@ describe('getAllCreatedLinksForAddress', () => {
 		const provider = new ethers.providers.JsonRpcProvider(RPC_URL_GOERLI)
 		const peanutContractVersion = 'v5'
 
-		const allCreatedLinks = await peanut.getAllCreatedLinksForAddress({
+		const allCreatedLinks = await peanut.getAllUnclaimedDepositsWithIdxForAddress({
 			address,
 			chainId,
 			provider,
@@ -22,7 +22,7 @@ describe('getAllCreatedLinksForAddress', () => {
 		})
 
 		expect(allCreatedLinks.length).toBeGreaterThan(0)
-	}, 100000)
+	}, 150000)
 
 	it('should return all deposits for the given address if the provider is undefined', async () => {
 		const chainId = '137'
@@ -31,42 +31,12 @@ describe('getAllCreatedLinksForAddress', () => {
 
 		peanut.toggleVerbose(true)
 
-		const allCreatedLinks = await peanut.getAllCreatedLinksForAddress({
+		const allCreatedLinks = await peanut.getAllUnclaimedDepositsWithIdxForAddress({
 			address,
 			chainId,
 			peanutContractVersion,
 		})
 
 		expect(allCreatedLinks.length).toBeGreaterThan(0)
-	}, 10000)
-
-	it('should return all deposits for the given address if the peanutContractVersion is undefined', async () => {
-		const chainId = '5'
-		const address = PUB_KEY
-		const provider = new ethers.providers.JsonRpcProvider(RPC_URL_GOERLI)
-
-		peanut.toggleVerbose(true)
-
-		const allCreatedLinks = await peanut.getAllCreatedLinksForAddress({
-			address,
-			chainId,
-			provider,
-		})
-
-		expect(allCreatedLinks.length).toBeGreaterThan(0)
-	})
-
-	it('should return all deposits for the given address if the peanutContractVersion and provider are undefined', async () => {
-		const chainId = '1'
-		const address = PUB_KEY
-
-		peanut.toggleVerbose(true)
-
-		const allCreatedLinks = await peanut.getAllCreatedLinksForAddress({
-			address,
-			chainId,
-		})
-
-		expect(allCreatedLinks.length).toBeGreaterThan(0)
-	})
+	}, 150000)
 })

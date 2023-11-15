@@ -1,5 +1,5 @@
 import { ethers } from 'ethersv5'
-import { setFeeOptions, getDefaultProvider, peanut } from '../src/index'
+import { setFeeOptions, getDefaultProvider, peanut } from '../../src/index'
 import { expect, it, describe } from '@jest/globals'
 
 peanut.toggleVerbose(false)
