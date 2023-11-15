@@ -1,4 +1,4 @@
-import { peanut } from '../src/index' // Update this import path to match your setup
+import { peanut } from '../../src/index' // Update this import path to match your setup
 import { expect, it, describe } from '@jest/globals'
 
 peanut.toggleVerbose()

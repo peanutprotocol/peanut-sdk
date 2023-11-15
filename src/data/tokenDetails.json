@@ -9617,5 +9617,18 @@
 				"logoURI": "https://ipfs.io/ipfs/QmRNqgazYuxUa5WdddFPftTWiP3KwzBMgV9Z19QWnLMETc"
 			}
 		]
+	},
+	{
+		"chainId": "5001",
+		"name": "Mantle Testnet",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Testnet Mantle",
+				"symbol": "MNT",
+				"decimals": 18,
+				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg"
+			}
+		]
 	}
 ]

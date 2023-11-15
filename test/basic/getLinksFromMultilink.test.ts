@@ -1,4 +1,4 @@
-import peanut from '../src/index'
+import peanut from '../../src/index'
 import { expect, it, describe } from '@jest/globals'
 
 describe('getLinksFromMultilink function', () => {
