@@ -541,14 +541,15 @@ async function setFeeOptions({
 						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
 					BigInt(10)
 				).toString()
-			// ensure maxPriorityFeePerGas is less than maxFeePerGas
-			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
-				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
-			}
 
 			// for polygon (137), set priority fee to 40 gwei
 			if (chainId == 137) {
 				txOptions.maxPriorityFeePerGas = ethers.BigNumber.from('40000000000')
+			}
+
+			// ensure maxPriorityFeePerGas is less than maxFeePerGas
+			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
+				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
 			}
 		} catch (error) {
 			console.error('Failed to set eip1559 tx options:', error)
