@@ -1658,6 +1658,16 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 			config.verbose && console.log('No timestamp found in deposit for version', contractVersion)
 		}
 	}
+	//  else if (['v5'].includes(contractVersion)) {
+	// 	if (deposit.timestamp) {
+	// 		depositDate = new Date(deposit.timestamp * 1000)
+	// 		if (deposit.timestamp == 0) {
+	// 			depositDate = null
+	// 		}
+	// 	} else {
+	// 		config.verbose && console.log('No timestamp found in deposit for version', contractVersion)
+	// 	}
+	// }
 
 	let tokenAmount = '0'
 	let tokenDecimals = null

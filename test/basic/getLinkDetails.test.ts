@@ -74,7 +74,7 @@ describe('getLinkDetails', function () {
 
 	describe('v4', function () {
 		it('v4 should include timestamp', async function () {
-			const link = 'https://peanut.to/claim#?c=5&v=v4&i=7&p=j6mafJ95hFuzAAX5&t=sdk'
+			const link = 'https://peanut.to/claim#?c=137&v=v4&i=297&p=zoOnfUtvnMX1xt8A&t=ui'
 			// const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 			const linkDetails = await peanut.getLinkDetails({ link })
 			console.log(linkDetails)
@@ -101,6 +101,36 @@ describe('getLinkDetails', function () {
 			expect(linkDetails).not.toBe(undefined)
 			// should have null depositDate
 			expect(linkDetails.depositDate).toBe(null)
+		}, 1000000)
+	})
+
+	describe('v5', function () {
+		it('v5 should include timestamp', async function () {
+			const link = 'https://experimental.peanut.to/claim#?c=42161&v=v5&i=0&p=05tREXnil9vLNFts&t=ui'
+			// const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
+			const linkDetails = await peanut.getLinkDetails({ link })
+			console.log(linkDetails)
+			// should not be empty
+			expect(linkDetails).not.toBe(undefined)
+			expect(linkDetails.depositDate).not.toBe(undefined)
+			console.log(linkDetails.depositDate)
+		}, 1000000)
+
+		it('timestamp should not be null if link already claimed', async function () {
+			const link = 'https://experimental.peanut.to/claim#?c=8453&v=v5&i=1&p=2GNyhpaYDHCOiNwL&t=ui'
+			// const CHAIN_ID = 42161
+			// const RPC_URL = peanut.CHAIN_DETAILS[String(CHAIN_ID)].rpc[0].replace(
+			// 	'${INFURA_API_KEY}',
+			// 	process.env.INFURA_API_KEY
+			// )
+			// const CHAIN_NAME = peanut.CHAIN_DETAILS[String(CHAIN_ID)].name
+			// const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
+			// const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+			const linkDetails = await peanut.getLinkDetails({ link })
+			console.log(linkDetails)
+
+			// should not be empty
+			expect(linkDetails).not.toBe(undefined)
 		}, 1000000)
 	})
 
