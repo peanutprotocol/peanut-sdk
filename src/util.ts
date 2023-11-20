@@ -419,15 +419,19 @@ export function createMultiLinkFromLinks(links: string[]): string {
 }
 
 export function compareDeposits(deposit1: any, deposit2: any) {
-	if (
-		deposit1.pubKey20 == deposit2.pubKey20 &&
-		BigInt(deposit1.amount._hex) == BigInt(deposit2.amount._hex) &&
-		deposit1.tokenAddress == deposit2.tokenAddress &&
-		deposit1.contractType == deposit2.contractType &&
-		deposit1.claimed == deposit2.claimed &&
-		BigInt(deposit1.timestamp._hex) == BigInt(deposit2.timestamp._hex) &&
-		deposit1.senderAddress == deposit2.senderAddress
-	) {
-		return true
-	} else return false
+	try {
+		if (
+			deposit1.pubKey20 == deposit2.pubKey20 &&
+			BigInt(deposit1.amount._hex) == BigInt(deposit2.amount._hex) &&
+			deposit1.tokenAddress == deposit2.tokenAddress &&
+			deposit1.contractType == deposit2.contractType &&
+			deposit1.claimed == deposit2.claimed &&
+			BigInt(deposit1.timestamp._hex) == BigInt(deposit2.timestamp._hex) &&
+			deposit1.senderAddress == deposit2.senderAddress
+		) {
+			return true
+		} else return false
+	} catch (error) {
+		return false
+	}
 }
