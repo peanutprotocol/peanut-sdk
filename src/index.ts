@@ -2249,34 +2249,39 @@ function toggleVerbose(verbose?: boolean) {
 please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
 */
 function getLatestContractVersion(chainId: string, type: string): string {
-	try {
-		const data = PEANUT_CONTRACTS
-
-		const chainData = data[chainId as unknown as keyof typeof data]
-
-		// Filter keys starting with "v" and sort them considering major and minor version numbers
-		const versions = Object.keys(chainData)
-			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
-			.sort((a, b) => {
-				const partsA = a.substring(1).split('.').map(Number)
-				const partsB = b.substring(1).split('.').map(Number)
-
-				// Compare major version first
-				if (partsA[0] !== partsB[0]) {
-					return partsB[0] - partsA[0]
-				}
-
-				// If major version is the same, compare minor version (if present)
-				return (partsB[1] || 0) - (partsA[1] || 0)
-			})
-
-		const highestVersion = versions[0]
-
-		config.verbose && console.log('latest contract version: ', highestVersion)
-		return highestVersion
-	} catch (error) {
-		throw new Error('Failed to get latest contract version')
+	if (type == 'batch') {
+		return 'Bv4'
+	} else {
+		return 'v4'
 	}
+	// try {
+	// 	const data = PEANUT_CONTRACTS
+
+	// 	const chainData = data[chainId as unknown as keyof typeof data]
+
+	// 	// Filter keys starting with "v" and sort them considering major and minor version numbers
+	// 	const versions = Object.keys(chainData)
+	// 		.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
+	// 		.sort((a, b) => {
+	// 			const partsA = a.substring(1).split('.').map(Number)
+	// 			const partsB = b.substring(1).split('.').map(Number)
+
+	// 			// Compare major version first
+	// 			if (partsA[0] !== partsB[0]) {
+	// 				return partsB[0] - partsA[0]
+	// 			}
+
+	// 			// If major version is the same, compare minor version (if present)
+	// 			return (partsB[1] || 0) - (partsA[1] || 0)
+	// 		})
+
+	// 	const highestVersion = versions[0]
+
+	// 	config.verbose && console.log('latest contract version: ', highestVersion)
+	// 	return highestVersion
+	// } catch (error) {
+	// 	throw new Error('Failed to get latest contract version')
+	// }
 }
 
 async function getAllUnclaimedDepositsWithIdxForAddress({
