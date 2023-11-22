@@ -2284,9 +2284,14 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 	chainId,
 	peanutContractVersion,
 	provider = null,
+	claimedOnly = true,
 }: interfaces.IGetAllUnclaimedDepositsWithIdxForAddressParams): Promise<any[]> {
 	if (provider == null) {
 		provider = await getDefaultProvider(chainId)
+	}
+
+	if (peanutContractVersion == 'v4') {
+		console.warn('WARNING: only returning unclaimed deposits for v4 contracts')
 	}
 
 	config.verbose &&
@@ -2301,24 +2306,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 
 	const contract = await getContract(chainId, provider, peanutContractVersion) // get the contract instance
 
-	const mappedAddressDeposits = (await contract.getAllDepositsForAddress(address))
-		.map((deposit: any, idx: number) => {
-			return {
-				pubKey20: deposit.pubKey20,
-				amount: deposit.amount,
-				tokenAddress: deposit.tokenAddress,
-				contractType: deposit.contractType,
-				claimed: deposit.claimed,
-				timestamp: deposit.timestamp,
-				senderAddress: deposit.senderAddress,
-			}
-		})
-		.filter((transaction) => {
-			const amount = BigInt(transaction.amount._hex)
-			return !transaction.claimed && amount > BigInt(0)
-		}) // get the deposits for the address
-
-	const mappedDeposits = (await contract.getAllDeposits()).map((deposit: any, idx: number) => {
+	let addressDeposits = (await contract.getAllDepositsForAddress(address)).map((deposit: any) => {
 		return {
 			pubKey20: deposit.pubKey20,
 			amount: deposit.amount,
@@ -2328,17 +2316,47 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 			timestamp: deposit.timestamp,
 			senderAddress: deposit.senderAddress,
 		}
-	}) // get all the deposits
+	}) // get all address deposits
+
+	if (peanutContractVersion == 'v5' || peanutContractVersion == 'v4') {
+		addressDeposits = addressDeposits.filter((deposit: any) => {
+			return deposit.senderAddress.toString() == address.toString()
+		})
+	} // in v4 and v5 contractversion, filter out deposits not made by the address
+
+	config.verbose && console.log('all deposits made by address: ', addressDeposits)
+
+	if (claimedOnly) {
+		addressDeposits = addressDeposits.filter((transaction) => {
+			const amount = BigInt(transaction.amount._hex)
+			return !transaction.claimed && amount > BigInt(0)
+		})
+		config.verbose && console.log('all unclaimed deposits made by address: ', addressDeposits)
+	} // filter out claimed deposits
+
+	const mappedDeposits = (await contract.getAllDeposits()).map((deposit: any) => {
+		return {
+			pubKey20: deposit.pubKey20,
+			amount: deposit.amount,
+			tokenAddress: deposit.tokenAddress,
+			contractType: deposit.contractType,
+			claimed: deposit.claimed,
+			timestamp: deposit.timestamp,
+			senderAddress: deposit.senderAddress,
+		}
+	}) // get all deposits to map idxs
 
 	mappedDeposits.map((deposit: any, idx) => {
-		mappedAddressDeposits.map((addressDeposit: any, addressIdx) => {
+		addressDeposits.map((addressDeposit: any) => {
 			if (compareDeposits(deposit, addressDeposit)) {
 				addressDeposit.idx = idx
 			}
 		})
 	}) // map the idxs from all deposits to the address deposits
 
-	return mappedAddressDeposits
+	config.verbose && console.log('all deposits by address with idx', addressDeposits)
+
+	return addressDeposits
 }
 
 async function claimAllUnclaimedAsSenderPerChain({
