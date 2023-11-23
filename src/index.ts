@@ -541,11 +541,9 @@ async function setFeeOptions({
 					BigInt(100)
 				).toString()
 
-			// for some chains, like arbitrum, provider maxPriorityFeePerGas is returned wrongly. Sanity check so that it's never more than double the base fee
-			if (chainId == 42161) {
-				if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
-					txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
-				}
+			// for some chains, like arbitrum or base, provider maxPriorityFeePerGas is returned wrongly. Sanity check so that it's never more than double the base fee
+			if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
+				txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 			}
 
 			// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
