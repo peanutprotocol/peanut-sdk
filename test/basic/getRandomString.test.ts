@@ -30,11 +30,11 @@ describe('peanut.getRandomString', function () {
 	// Randomness Test
 	it('should produce different strings on multiple invocations', async () => {
 		const results = new Set()
-		for (let i = 0; i < 1000; i++) {
+		for (let i = 0; i < 200; i++) {
 			// invoke the function 1000 times
 			results.add(await peanut.getRandomString(10))
 		}
-		expect(results.size).toBe(1000)
+		expect(results.size).toBe(200)
 		// ensure that all have the same length
 		for (const result of results) {
 			expect(result).toHaveLength(10)

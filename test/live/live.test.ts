@@ -297,6 +297,30 @@ describe('base-goerli', function () {
 	}, 60000)
 })
 
+describe('arb', function () {
+	it('arb create a native link with weird tokendecimals and claim it', async function () {
+		peanut.toggleVerbose()
+		const tokenAmount = 0.00001
+		const chainId = 42161
+		const provider = await peanut.getDefaultProvider(String(chainId))
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+				},
+			},
+			9000
+		)
+		peanut.toggleVerbose()
+	}, 60000)
+})
+
 // describe('mainnet', function () {
 // 	throw new Error('Dont run mainnet tests lol')
 // 	it('mainnet should create an er20 link with weird tokendecimals and claim it', async function () {

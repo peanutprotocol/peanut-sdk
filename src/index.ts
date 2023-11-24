@@ -51,6 +51,8 @@ import {
 
 import * as interfaces from './consts/interfaces.consts.ts'
 
+greeting()
+
 const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
 function resetProviderCache() {
 	for (const key in providerCache) {
@@ -485,6 +487,7 @@ async function setFeeOptions({
 	txOptions = txOptions || {}
 	try {
 		config.verbose && console.log('getting Fee data')
+		// TODO: skip fetching fee data if provided
 		feeData = await provider.getFeeData()
 		config.verbose && console.log('Fetched gas price from provider:', feeData)
 	} catch (error) {
@@ -511,12 +514,12 @@ async function setFeeOptions({
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
 		config.verbose && console.log('EIP1559 support determined from chain features:', eip1559)
 	} else {
-		config.verbose && console.log('Chain features not available, checking EIP1559 support via RPC...')
+		config.verbose && console.log('Chain features not available, checking EIP1559 support via feeData...')
 		try {
-			eip1559 = await supportsEIP1559(provider)
-			config.verbose && console.log('EIP1559 support determined from RPC:', eip1559)
+			eip1559 = 'maxFeePerGas' in feeData
+			config.verbose && console.log('EIP1559 support determined from feeData:', eip1559)
 		} catch (error) {
-			console.error('Failed to determine EIP1559 support via RPC:', error)
+			console.error('Failed to determine EIP1559 support from feeData:', error)
 			eip1559 = false
 		}
 	}
@@ -526,29 +529,42 @@ async function setFeeOptions({
 			config.verbose && console.log('Setting eip1559 tx options...', txOptions)
 			config.verbose && console.log('feeData:', feeData)
 
-			// base fee
-			txOptions.maxFeePerGas =
-				maxFeePerGas ||
-				(
-					(BigInt(feeData.maxFeePerGas.toString()) * BigInt(Math.round(maxFeePerGasMultiplier * 10))) /
-					BigInt(10)
-				).toString()
+			// maxFeePerGas (base fee + miner tip + margin of error)
+			const lastBaseFeePerGas = BigInt(feeData.lastBaseFeePerGas || feeData.baseFeePerGas)
 
+			// priority fee (miner tip)
 			txOptions.maxPriorityFeePerGas =
 				maxPriorityFeePerGas ||
 				(
 					(BigInt(feeData.maxPriorityFeePerGas.toString()) *
-						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 10))) /
-					BigInt(10)
+						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 100))) /
+					BigInt(100)
 				).toString()
 
-			// for polygon (137), set priority fee to 40 gwei
-			if (chainId == 137) {
-				txOptions.maxPriorityFeePerGas = ethers.BigNumber.from('40000000000')
+			// for some chains, like arbitrum or base, provider maxPriorityFeePerGas is returned wrongly. Sanity check so that it's never more than double the base fee
+			if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
+				txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 			}
 
+			// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
+			if (chainId == 137) {
+				const minPriorityFee = ethers.utils.parseUnits('40', 'gwei')
+				if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
+					txOptions.maxPriorityFeePerGas = minPriorityFee.toString()
+				}
+			}
+
+			// if lastBaseFeePerGas is null, just set maxFeePerGas to feeData.maxFeePerGas * maxFeePerGasMultiplier
+			txOptions.maxFeePerGas =
+				maxFeePerGas ||
+				(
+					((lastBaseFeePerGas + BigInt(txOptions.maxPriorityFeePerGas.toString())) * // base fee + miner tip
+						BigInt(Math.round(maxFeePerGasMultiplier * 100))) /
+					BigInt(100)
+				).toString()
+
 			// ensure maxPriorityFeePerGas is less than maxFeePerGas
-			if (txOptions.maxPriorityFeePerGas > txOptions.maxFeePerGas) {
+			if (BigInt(txOptions.maxPriorityFeePerGas) > BigInt(txOptions.maxFeePerGas)) {
 				txOptions.maxPriorityFeePerGas = txOptions.maxFeePerGas
 			}
 		} catch (error) {
@@ -1932,7 +1948,8 @@ async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<in
 	try {
 		const response = await fetch(url, {
 			headers: {
-				'x-integrator-id': 'peanut-api',
+				// 'x-integrator-id': 'peanut-api',
+				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
 			},
 		})
 		if (response.ok) {
@@ -1966,7 +1983,8 @@ async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<in
 	try {
 		const response = await fetch(url, {
 			headers: {
-				'x-integrator-id': 'peanut-api',
+				// 'x-integrator-id': 'peanut-api',
+				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
 			},
 		})
 		if (response.ok) {
@@ -2106,7 +2124,8 @@ async function getSquidRouteV1({
 		const response: Response = await fetch(fullUrl, {
 			method: 'GET',
 			headers: {
-				'x-integrator-id': 'peanut-api',
+				// 'x-integrator-id': 'peanut-api',
+				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
 			},
 		})
 
@@ -2191,8 +2210,8 @@ async function getSquidRoute({
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'x-integrator-id': 'peanut-api',
-				// 'x-integrator-id': 'squid-test',
+				// 'x-integrator-id': 'peanut-api',
+				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
 			},
 			body: JSON.stringify(params),
 		})
@@ -2249,34 +2268,39 @@ function toggleVerbose(verbose?: boolean) {
 please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
 */
 function getLatestContractVersion(chainId: string, type: string): string {
-	try {
-		const data = PEANUT_CONTRACTS
-
-		const chainData = data[chainId as unknown as keyof typeof data]
-
-		// Filter keys starting with "v" and sort them considering major and minor version numbers
-		const versions = Object.keys(chainData)
-			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
-			.sort((a, b) => {
-				const partsA = a.substring(1).split('.').map(Number)
-				const partsB = b.substring(1).split('.').map(Number)
-
-				// Compare major version first
-				if (partsA[0] !== partsB[0]) {
-					return partsB[0] - partsA[0]
-				}
-
-				// If major version is the same, compare minor version (if present)
-				return (partsB[1] || 0) - (partsA[1] || 0)
-			})
-
-		const highestVersion = versions[0]
-
-		config.verbose && console.log('latest contract version: ', highestVersion)
-		return highestVersion
-	} catch (error) {
-		throw new Error('Failed to get latest contract version')
+	if (type == 'batch') {
+		return 'Bv4'
+	} else {
+		return 'v4'
 	}
+	// try {
+	// 	const data = PEANUT_CONTRACTS
+
+	// 	const chainData = data[chainId as unknown as keyof typeof data]
+
+	// 	// Filter keys starting with "v" and sort them considering major and minor version numbers
+	// 	const versions = Object.keys(chainData)
+	// 		.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
+	// 		.sort((a, b) => {
+	// 			const partsA = a.substring(1).split('.').map(Number)
+	// 			const partsB = b.substring(1).split('.').map(Number)
+
+	// 			// Compare major version first
+	// 			if (partsA[0] !== partsB[0]) {
+	// 				return partsB[0] - partsA[0]
+	// 			}
+
+	// 			// If major version is the same, compare minor version (if present)
+	// 			return (partsB[1] || 0) - (partsA[1] || 0)
+	// 		})
+
+	// 	const highestVersion = versions[0]
+
+	// 	config.verbose && console.log('latest contract version: ', highestVersion)
+	// 	return highestVersion
+	// } catch (error) {
+	// 	throw new Error('Failed to get latest contract version')
+	// }
 }
 
 async function getAllUnclaimedDepositsWithIdxForAddress({
@@ -2422,6 +2446,7 @@ const peanut = {
 	claimLinkSender,
 	claimLinkXChain,
 	claimLinkXChainGasless,
+	createClaimPayload,
 	createClaimXChainPayload,
 	createLink,
 	createLinks,
@@ -2492,6 +2517,7 @@ export {
 	claimLinkSender,
 	claimLinkXChain,
 	claimLinkXChainGasless,
+	createClaimPayload,
 	createClaimXChainPayload,
 	createLink,
 	createLinks,
@@ -2536,5 +2562,3 @@ export {
 	trim_decimal_overflow,
 	verifySignature,
 }
-
-console.log('peanut-sdk version: ', VERSION)

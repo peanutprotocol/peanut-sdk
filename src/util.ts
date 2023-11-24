@@ -1,5 +1,5 @@
-import { BigNumber, ethers } from 'ethersv5' // v5
-import { CHAIN_MAP, PEANUT_CONTRACTS } from './data.ts'
+import { BigNumber, ethers } from 'ethersv5'
+import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 
@@ -14,7 +14,9 @@ export function assert(condition: any, message: string) {
  */
 export function greeting() {
 	console.log(
-		'🥜 Hello & thanks for using the Peanut SDK! If you run into any issues, dm @hugomont on telegram or hop on the Peanut Protocol discord'
+		'🥜 Hello & thanks for using the Peanut SDK! Currently running version ' +
+			VERSION +
+			'. Support available at https://discord.com/invite/BX9Ak7AW28'
 	)
 }
 

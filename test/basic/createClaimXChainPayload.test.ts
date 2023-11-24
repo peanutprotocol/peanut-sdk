@@ -19,7 +19,8 @@ describe('createClaimXChainPayload tests', function () {
 		// this doesn't work
 		const mockSquidRouteResponse = {
 			params: {
-				integratorId: 'peanut-api',
+				// integratorId: 'peanut-api',
+				integratorId: '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
 				collectFees: { feeLocation: 'NONE' },
 				slippage: 10,
 				toAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02',
