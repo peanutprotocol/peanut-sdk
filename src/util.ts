@@ -1,4 +1,4 @@
-import { ethers } from 'ethersv5' // v5
+import { BigNumber, ethers } from 'ethersv5'
 import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -421,19 +421,16 @@ export function createMultiLinkFromLinks(links: string[]): string {
 }
 
 export function compareDeposits(deposit1: any, deposit2: any) {
-	try {
-		if (
-			deposit1.pubKey20 == deposit2.pubKey20 &&
-			BigInt(deposit1.amount._hex) == BigInt(deposit2.amount._hex) &&
-			deposit1.tokenAddress == deposit2.tokenAddress &&
-			deposit1.contractType == deposit2.contractType &&
-			deposit1.claimed == deposit2.claimed &&
-			BigInt(deposit1.timestamp._hex) == BigInt(deposit2.timestamp._hex) &&
-			deposit1.senderAddress == deposit2.senderAddress
-		) {
-			return true
-		} else return false
-	} catch (error) {
-		return false
-	}
+	if (
+		deposit1.pubKey20 == deposit2.pubKey20 &&
+		BigInt(deposit1.amount._hex) == BigInt(deposit2.amount._hex) &&
+		deposit1.tokenAddress == deposit2.tokenAddress &&
+		deposit1.contractType == deposit2.contractType &&
+		deposit1.claimed == deposit2.claimed &&
+		(BigNumber.isBigNumber(deposit1.timestamp) ? BigInt(deposit1.timestamp._hex) : deposit1.timestamp) ==
+			(BigNumber.isBigNumber(deposit2.timestamp) ? BigInt(deposit2.timestamp._hex) : deposit2.timestamp) &&
+		deposit1.senderAddress == deposit2.senderAddress
+	) {
+		return true
+	} else return false
 }

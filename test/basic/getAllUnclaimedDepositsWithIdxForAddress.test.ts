@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 describe('getAllCreatedLinksForAddress', () => {
 	const RPC_URL_GOERLI = process.env.INFURA_GOERLI_RPC
-	const PUB_KEY = '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02'
+	const PUB_KEY = '0x2d826aD1EAD5c8a2bC46ab93d9D0c6BEe0d39918'
 
 	it('should return all deposits for the given address', async () => {
 		const chainId = '5'

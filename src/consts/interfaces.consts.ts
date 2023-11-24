@@ -65,6 +65,7 @@ export interface IGetAllUnclaimedDepositsWithIdxForAddressParams {
 	chainId: string
 	peanutContractVersion: string
 	provider?: ethers.providers.JsonRpcProvider
+	claimedOnly?: boolean
 }
 
 export interface IClaimAllUnclaimedAsSenderPerChainParams {
