@@ -915,8 +915,8 @@ async function signAndSubmitTx({
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
-			error,
-			'Error setting the fee options'
+			'Error setting the fee options',
+			error
 		)
 	}
 
@@ -1309,8 +1309,8 @@ async function claimLinkSender({
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
-			error,
-			'Error setting the fee options'
+			'Error setting the fee options',
+			error
 		)
 	}
 
