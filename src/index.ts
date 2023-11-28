@@ -915,8 +915,8 @@ async function signAndSubmitTx({
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
-			error,
-			'Error setting the fee options'
+			'Error setting the fee options',
+			error
 		)
 	}
 
@@ -1298,10 +1298,21 @@ async function claimLinkSender({
 
 	// Prepare transaction options
 	let txOptions = {}
-	txOptions = await setFeeOptions({
-		txOptions,
-		provider: signer.provider,
-	})
+	try {
+		txOptions = await setFeeOptions({
+			provider: structSigner.signer.provider,
+			eip1559: structSigner.eip1559,
+			maxFeePerGas: structSigner.maxFeePerGas,
+			maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
+			gasLimit: structSigner.gasLimit,
+		})
+	} catch (error) {
+		throw new interfaces.SDKStatus(
+			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
+			'Error setting the fee options',
+			error
+		)
+	}
 
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
