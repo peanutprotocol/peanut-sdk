@@ -44,12 +44,6 @@ export interface ICreatedPeanutLink {
 	txHash: string
 }
 
-export interface IPeanutLinkChainDetails {
-	linkDetails: IPeanutLinkDetails
-	depositTimestamp: number
-	claimed: boolean
-}
-
 export interface IPeanutUnsignedTransactions {
 	unsignedTxs: TransactionRequest // change this any type to correct type
 }
@@ -190,10 +184,6 @@ export interface IGetLinkFromTxResponse {
 export interface IGetLinkDetailsParams {
 	link: string
 	provider?: ethers.providers.Provider
-}
-
-export interface IGetLinkDetailsResponse {
-	linkDetails: IPeanutLinkChainDetails
 }
 
 //getCrossChainoptionsForLink

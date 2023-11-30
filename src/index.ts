@@ -550,7 +550,8 @@ async function setFeeOptions({
 					BigInt(100)
 				).toString()
 
-			// for some chains, like arbitrum or base, provider maxPriorityFeePerGas is returned wrongly. Sanity check so that it's never more than double the base fee
+			// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
+			// Sanity check so that it's never more than the base fee.
 			if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
 				txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 			}
