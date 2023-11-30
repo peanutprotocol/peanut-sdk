@@ -20,7 +20,7 @@ import {
 	CHAIN_DETAILS,
 	TOKEN_DETAILS,
 	VERSION,
-	DEFAULT_CONTRACT_VERSION,
+	LATEST_STABLE_CONTRACT_VERSION,
 	DEFAULT_BATCHER_VERSION,
 	TOKEN_TYPES,
 } from './data.ts'
@@ -186,10 +186,13 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 	}
 }
 
-async function getContract(_chainId: string, signerOrProvider: any, version = DEFAULT_CONTRACT_VERSION) {
+async function getContract(_chainId: string, signerOrProvider: any, version = null) {
 	if (signerOrProvider == null) {
 		config.verbose && console.log('signerOrProvider is null, getting default provider...')
 		signerOrProvider = await getDefaultProvider(_chainId)
+	}
+	if (version == null) {
+		version = getLatestContractVersion({ chainId: _chainId, type: 'normal' })
 	}
 
 	const chainId = parseInt(_chainId)
@@ -339,7 +342,7 @@ async function prepareApproveERC20Tx(
 	_amount: number | BigNumber,
 	tokenDecimals = 18,
 	isRawAmount = false,
-	contractVersion = DEFAULT_CONTRACT_VERSION,
+	contractVersion = null,
 	provider?: any, // why does TS complain about string here?
 	spenderAddress?: string | undefined
 ): Promise<ethers.providers.TransactionRequest | null> {
@@ -380,8 +383,11 @@ async function prepareApproveERC721Tx(
 	tokenId: number,
 	provider?: any,
 	spenderAddress?: string | undefined,
-	contractVersion = DEFAULT_CONTRACT_VERSION
+	contractVersion = null
 ): Promise<ethers.providers.TransactionRequest | null> {
+	if (contractVersion == null) {
+		contractVersion = getLatestContractVersion({ chainId: chainId, type: 'normal' })
+	}
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider)
 
@@ -410,8 +416,11 @@ async function prepareApproveERC1155Tx(
 	tokenAddress: string,
 	provider?: any,
 	spenderAddress?: string | undefined,
-	contractVersion = DEFAULT_CONTRACT_VERSION
+	contractVersion = null
 ): Promise<ethers.providers.TransactionRequest | null> {
+	if (contractVersion == null) {
+		contractVersion = getLatestContractVersion({ chainId: chainId, type: 'normal' })
+	}
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC1155_ABI, defaultProvider)
 
@@ -661,12 +670,15 @@ function trim_decimal_overflow(_n: number, decimals: number) {
 async function prepareTxs({
 	address,
 	linkDetails,
-	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+	peanutContractVersion = null,
 	batcherContractVersion = DEFAULT_BATCHER_VERSION,
 	numberOfLinks = 1,
 	passwords = [],
 	provider,
 }: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+	}
 	try {
 		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	} catch (error) {
@@ -1103,9 +1115,12 @@ function validateLinkDetails(
 async function createLink({
 	structSigner,
 	linkDetails,
-	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+	peanutContractVersion = null,
 	password = null,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreatedPeanutLink> {
+	if (peanutContractVersion == null) {
+		getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+	}
 	password = password || (await getRandomString(16))
 	linkDetails = validateLinkDetails(linkDetails, [password], 1)
 	const provider = structSigner.signer.provider
@@ -1162,9 +1177,12 @@ async function createLinks({
 	structSigner,
 	linkDetails,
 	numberOfLinks = 2,
-	peanutContractVersion = DEFAULT_CONTRACT_VERSION,
+	peanutContractVersion = null,
 	passwords = null,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreatedPeanutLink[]> {
+	if (peanutContractVersion == null) {
+		getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+	}
 	passwords = passwords || (await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16))))
 	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
 	const provider = structSigner.signer.provider
@@ -1290,12 +1308,14 @@ async function claimLink({
 async function claimLinkSender({
 	structSigner,
 	depositIndex,
-	contractVersion = DEFAULT_CONTRACT_VERSION,
+	contractVersion = null,
 }: interfaces.IClaimLinkSenderParams): Promise<interfaces.IClaimLinkSenderResponse> {
 	const signer = structSigner.signer
 	const chainId = await signer.getChainId()
 	const contract = await getContract(String(chainId), signer, contractVersion)
-
+	if (contractVersion == null) {
+		getLatestContractVersion({ chainId: chainId.toString(), type: 'normal' })
+	}
 	// Prepare transaction options
 	let txOptions = {}
 	try {
@@ -1469,13 +1489,16 @@ async function claimLinkXChain({
 async function getAllDepositsForSigner({
 	signer,
 	chainId,
-	contractVersion = DEFAULT_CONTRACT_VERSION,
+	contractVersion = null,
 }: {
 	signer: ethers.providers.JsonRpcSigner
 	chainId: string
 	contractVersion?: string
 	verbose?: boolean
 }) {
+	if (contractVersion == null) {
+		getLatestContractVersion({ chainId: chainId, type: 'normal' })
+	}
 	const contract = await getContract(chainId, signer, contractVersion)
 	let deposits
 	if (contractVersion == 'v3') {
@@ -2278,7 +2301,15 @@ function toggleVerbose(verbose?: boolean) {
 /*
 please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
 */
-function getLatestContractVersion(chainId: string, type: string, experimental: boolean = false): string {
+function getLatestContractVersion({
+	chainId,
+	type,
+	experimental = false,
+}: {
+	chainId: string
+	type: string
+	experimental?: boolean
+}): string {
 	try {
 		const data = PEANUT_CONTRACTS
 
@@ -2302,7 +2333,7 @@ function getLatestContractVersion(chainId: string, type: string, experimental: b
 
 		// If experimental is false, filter out versions that are not 'v4'
 		if (!experimental && type === 'normal') {
-			versions = versions.filter((version) => version.startsWith('v4'))
+			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
 		}
 
 		const highestVersion = versions[0]
@@ -2403,7 +2434,7 @@ async function claimAllUnclaimedAsSenderPerChain({
 	const provider = structSigner.signer.provider as ethers.providers.JsonRpcProvider
 
 	if (peanutContractVersion == null) {
-		peanutContractVersion = getLatestContractVersion(chainId, 'normal')
+		peanutContractVersion = getLatestContractVersion({ chainId: chainId, type: 'normal' })
 	}
 
 	const addressDepositsWithIdx = await getAllUnclaimedDepositsWithIdxForAddress({
@@ -2437,7 +2468,7 @@ async function claimAllUnclaimedAsSenderPerChain({
 const peanut = {
 	CHAIN_DETAILS,
 	DEFAULT_BATCHER_VERSION,
-	DEFAULT_CONTRACT_VERSION,
+	LATEST_STABLE_CONTRACT_VERSION,
 	ERC1155_ABI,
 	ERC20_ABI,
 	ERC721_ABI,
@@ -2508,7 +2539,7 @@ export {
 	peanut,
 	CHAIN_DETAILS,
 	DEFAULT_BATCHER_VERSION,
-	DEFAULT_CONTRACT_VERSION,
+	LATEST_STABLE_CONTRACT_VERSION,
 	ERC1155_ABI,
 	ERC20_ABI,
 	ERC721_ABI,

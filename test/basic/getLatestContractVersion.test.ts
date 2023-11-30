@@ -4,7 +4,7 @@ describe('getLatestContractVersion', () => {
 		const chainId = '5'
 		const type = 'normal'
 
-		const latestContractVersion = peanut.getLatestContractVersion(chainId, type)
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
 		expect(latestContractVersion).toBe('v4')
 	})
@@ -12,7 +12,7 @@ describe('getLatestContractVersion', () => {
 		const chainId = '5'
 		const type = 'normal'
 
-		const latestContractVersion = peanut.getLatestContractVersion(chainId, type, true)
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
 
 		expect(latestContractVersion).toBe('v5')
 	})
@@ -20,7 +20,7 @@ describe('getLatestContractVersion', () => {
 		const chainId = '137'
 		const type = 'normal'
 
-		const latestContractVersion = peanut.getLatestContractVersion(chainId, type)
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
 		expect(latestContractVersion).toBe('v4')
 	})
@@ -29,7 +29,7 @@ describe('getLatestContractVersion', () => {
 		const chainId = '999'
 		const type = 'normal'
 
-		expect(() => peanut.getLatestContractVersion(chainId, type)).toThrowError(
+		expect(() => peanut.getLatestContractVersion({ chainId, type })).toThrowError(
 			'Failed to get latest contract version'
 		)
 	})
@@ -38,7 +38,7 @@ describe('getLatestContractVersion', () => {
 		const chainId = '137'
 		const type = 'batch'
 
-		const latestContractVersion = peanut.getLatestContractVersion(chainId, type)
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
 		expect(latestContractVersion).toBe('Bv4')
 	})
