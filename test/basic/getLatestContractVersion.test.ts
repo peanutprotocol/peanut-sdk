@@ -6,16 +6,23 @@ describe('getLatestContractVersion', () => {
 
 		const latestContractVersion = peanut.getLatestContractVersion(chainId, type)
 
+		expect(latestContractVersion).toBe('v4')
+	})
+	it('should return the experimental contract version', () => {
+		const chainId = '5'
+		const type = 'normal'
+
+		const latestContractVersion = peanut.getLatestContractVersion(chainId, type, true)
+
 		expect(latestContractVersion).toBe('v5')
 	})
-
 	it('should return the latest contract version even if versions are not in order', () => {
 		const chainId = '137'
 		const type = 'normal'
 
 		const latestContractVersion = peanut.getLatestContractVersion(chainId, type)
 
-		expect(latestContractVersion).toBe('v5')
+		expect(latestContractVersion).toBe('v4')
 	})
 
 	it('should throw an error if the given chainId is not defined', () => {
