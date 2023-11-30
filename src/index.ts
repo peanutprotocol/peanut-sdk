@@ -21,7 +21,7 @@ import {
 	TOKEN_DETAILS,
 	VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
-	DEFAULT_BATCHER_VERSION,
+	LATEST_STABLE_BATCHER_VERSION,
 	TOKEN_TYPES,
 } from './data.ts'
 
@@ -671,7 +671,7 @@ async function prepareTxs({
 	address,
 	linkDetails,
 	peanutContractVersion = null,
-	batcherContractVersion = DEFAULT_BATCHER_VERSION,
+	batcherContractVersion = LATEST_STABLE_BATCHER_VERSION,
 	numberOfLinks = 1,
 	passwords = [],
 	provider,
@@ -2467,7 +2467,7 @@ async function claimAllUnclaimedAsSenderPerChain({
 
 const peanut = {
 	CHAIN_DETAILS,
-	DEFAULT_BATCHER_VERSION,
+	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	ERC1155_ABI,
 	ERC20_ABI,
@@ -2538,7 +2538,7 @@ export default peanut
 export {
 	peanut,
 	CHAIN_DETAILS,
-	DEFAULT_BATCHER_VERSION,
+	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	ERC1155_ABI,
 	ERC20_ABI,

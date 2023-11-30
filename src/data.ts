@@ -21,7 +21,7 @@ const TOKEN_TYPES = Object.freeze({
 })
 
 const LATEST_STABLE_CONTRACT_VERSION = 'v4'
-const DEFAULT_BATCHER_VERSION = 'Bv4'
+const LATEST_STABLE_BATCHER_VERSION = 'Bv4'
 
 // export all these functions (imported in index.js)
 export {
@@ -39,5 +39,5 @@ export {
 	VERSION,
 	TOKEN_TYPES,
 	LATEST_STABLE_CONTRACT_VERSION,
-	DEFAULT_BATCHER_VERSION,
+	LATEST_STABLE_BATCHER_VERSION,
 }
