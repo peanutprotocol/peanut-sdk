@@ -44,8 +44,11 @@ export interface ICreatedPeanutLink {
 	txHash: string
 }
 
-export interface IPeanutUnsignedTransactions {
-	unsignedTxs: TransactionRequest // change this any type to correct type
+export interface IPeanutUnsignedTransaction {
+	to: string
+	nonce: number
+	data: string
+	value: BigInt
 }
 
 export interface IReturnSuccessObject {
@@ -154,13 +157,13 @@ export interface IPrepareTxsParams {
 }
 
 export interface IPrepareTxsResponse {
-	unsignedTxs: TransactionRequest[]
+	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
-	unsignedTx: TransactionRequest
+	unsignedTx: IPeanutUnsignedTransaction
 }
 
 export interface ISignAndSubmitTxResponse {

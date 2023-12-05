@@ -912,7 +912,17 @@ async function prepareTxs({
 
 	config.verbose && console.log('unsignedTxs: ', unsignedTxs)
 
-	return { unsignedTxs }
+	return {
+		unsignedTxs: unsignedTxs.map((unsignedTx) => {
+			const x: interfaces.IPeanutUnsignedTransaction = {
+				to: unsignedTx.to,
+				nonce: unsignedTx.nonce ? Number(unsignedTx.nonce) : undefined,
+				data: unsignedTx.data.toString(),
+				value: unsignedTx.value ? BigInt(unsignedTx.value.toString()) : undefined,
+			}
+			return x
+		}),
+	}
 }
 
 async function signAndSubmitTx({
@@ -920,7 +930,7 @@ async function signAndSubmitTx({
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
 	config.verbose && console.log('unsigned tx: ', unsignedTx)
-
+	const _unsignedTx = { ...unsignedTx, value: unsignedTx.value ? BigNumber.from(unsignedTx.value) : undefined }
 	// Set the transaction options using setFeeOptions
 	let txOptions
 	try {
@@ -940,13 +950,13 @@ async function signAndSubmitTx({
 	}
 
 	// Merge the transaction options into the unsigned transaction
-	unsignedTx = { ...unsignedTx, ...txOptions }
+	unsignedTx = { ..._unsignedTx, ...txOptions }
 
 	let tx: ethers.providers.TransactionResponse
 	try {
-		config.verbose && console.log('sending tx: ', unsignedTx)
+		config.verbose && console.log('sending tx: ', _unsignedTx)
 		config.verbose && console.log('....')
-		tx = await structSigner.signer.sendTransaction(unsignedTx)
+		tx = await structSigner.signer.sendTransaction(_unsignedTx)
 		config.verbose && console.log('sent tx.')
 	} catch (error) {
 		throw new interfaces.SDKStatus(
