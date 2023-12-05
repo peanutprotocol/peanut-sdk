@@ -139,6 +139,12 @@ async function getDefaultProvider(chainId: string): Promise<ethers.providers.Jso
 	}
 }
 
+async function getDefaultRpcUrl(chainId: string): Promise<string> {
+	const defaultProvider = await getDefaultProvider(chainId)
+	const rpcUrl = defaultProvider.connection.url
+	return rpcUrl
+}
+
 async function createValidProvider(rpcUrl: string): Promise<ethers.providers.JsonRpcProvider> {
 	try {
 		const provider = new ethers.providers.JsonRpcProvider({
@@ -2502,6 +2508,7 @@ const peanut = {
 	getAllUnclaimedDepositsWithIdxForAddress,
 	getContract,
 	getDefaultProvider,
+	getDefaultRpcUrl,
 	getDepositIdx,
 	getDepositIdxs,
 	getEIP1559Tip,
@@ -2573,6 +2580,7 @@ export {
 	getAllUnclaimedDepositsWithIdxForAddress,
 	getContract,
 	getDefaultProvider,
+	getDefaultRpcUrl,
 	getDepositIdx,
 	getDepositIdxs,
 	getEIP1559Tip,
