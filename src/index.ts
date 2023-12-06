@@ -1842,6 +1842,93 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 }
 
 /**
+ * gets the contract type
+ */
+async function getContractType({
+	provider,
+	address,
+}: {
+	provider: ethers.providers.Provider
+	address: string
+}): Promise<'ERC20' | 'ERC721' | 'ERC1155'> {
+	const minimalABI = [
+		'function supportsInterface(bytes4) view returns (bool)',
+		'function totalSupply() view returns (uint256)',
+		'function balanceOf(address) view returns (uint256)',
+	]
+
+	// Interface Ids for ERC721 and ERC1155
+	const ERC721_INTERFACE_ID = '0x80ac58cd' // ERC721
+	const ERC1155_INTERFACE_ID = '0xd9b67a26' // ERC1155
+
+	const contract = new ethers.Contract(address, minimalABI, provider)
+
+	const isERC721 = await supportsInterface(contract, ERC721_INTERFACE_ID)
+	const isERC1155 = await supportsInterface(contract, ERC1155_INTERFACE_ID)
+	let isERC20 = false
+
+	// Check for ERC20 if it's not ERC721 or ERC1155
+	if (!isERC721 && !isERC1155) {
+		isERC20 = await contract
+			.totalSupply()
+			.then(() => true)
+			.catch(() => false)
+	}
+
+	if (isERC1155) return 'ERC1155'
+	if (isERC721) return 'ERC721'
+	if (isERC20) return 'ERC20'
+}
+
+async function supportsInterface(contract, interfaceId) {
+	try {
+		return await contract.supportsInterface(interfaceId)
+	} catch (error) {
+		return false
+	}
+}
+
+async function getContractDetails({
+	address,
+	provider,
+}: {
+	address: string
+	provider: ethers.providers.Provider | null
+}) {
+	//get the contract type
+	const contractType = await getContractType({ address: address, provider: provider })
+	//@ts-ignore
+	const batchprov = new ethers.providers.JsonRpcBatchProvider(provider.connection.url)
+
+	if (contractType == 'ERC20') {
+		const contract = new ethers.Contract(address, ERC20_ABI, batchprov)
+		const [name, symbol, decimals] = await Promise.all([contract.name(), contract.symbol(), contract.decimals()])
+		return {
+			name: name,
+			symbol: symbol,
+			decimals: decimals,
+		}
+	} else if (contractType == 'ERC721') {
+		const contract = new ethers.Contract(address, ERC721_ABI, batchprov)
+		const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
+		return {
+			name: fetchedName,
+			symbol: fetchedSymbol,
+		}
+	} else if (contractType == 'ERC1155') {
+		const contract = new ethers.Contract(address, ERC1155_ABI, batchprov)
+		const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
+		return {
+			name: fetchedName,
+			symbol: fetchedSymbol,
+			decimals: null,
+		}
+	} else {
+		throw new Error('Contract type not supported')
+	}
+}
+
+/**
  * Claims a link through the Peanut API
  */
 async function claimLinkGasless({
@@ -2550,6 +2637,8 @@ const peanut = {
 	toggleVerbose,
 	trim_decimal_overflow,
 	verifySignature,
+	getContractType,
+	getContractDetails,
 }
 
 export default peanut
@@ -2622,4 +2711,6 @@ export {
 	toggleVerbose,
 	trim_decimal_overflow,
 	verifySignature,
+	getContractType,
+	getContractDetails,
 }
