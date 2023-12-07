@@ -31,7 +31,7 @@ export enum EPeanutLinkType {
 export interface IPeanutLinkDetails {
 	chainId: number
 	tokenAmount: number
-	tokenType: EPeanutLinkType
+	tokenType?: EPeanutLinkType
 	tokenAddress?: string
 	tokenId?: number
 	tokenDecimals?: number

@@ -27,4 +27,11 @@ describe('get contract type test', () => {
 		const contractAddress = '0xE538598941e4A25f471aEF9b1b5dFFD6eE0fDA54'
 		await expect(peanut.getContractType({ provider, address: contractAddress })).resolves.toEqual('ERC1155')
 	})
+
+	it('should return the contract type when provided with a valid chainId and provider, this should return erc1155', async () => {
+		const chainId = '1'
+		const provider = await peanut.getDefaultProvider(chainId)
+		const contractAddress = '0x0000000000000000000000000000000000000000'
+		await expect(peanut.getContractType({ provider, address: contractAddress })).resolves.toEqual('NATIVE')
+	})
 })

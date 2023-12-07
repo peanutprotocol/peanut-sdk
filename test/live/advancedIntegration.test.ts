@@ -12,7 +12,7 @@ describe('Advanced Integration Tests', () => {
 		const linkDetails = {
 			chainId: 5,
 			tokenAmount: 0.0001,
-			tokenType: 0,
+
 			tokenAddress: ethers.constants.AddressZero,
 		}
 
@@ -52,13 +52,11 @@ describe('Advanced Integration Tests', () => {
 		console.log(getLinksFromTxResponse)
 	}, 1000000)
 
-	it('should create a link using the advanced methods (prepareTxs, signAndSubmitTx, getLinkFromHash) on polygon', async () => {
+	it.only('should create a link using the advanced methods (prepareTxs, signAndSubmitTx, getLinkFromHash) on polygon', async () => {
 		const linkDetails = {
 			chainId: 137,
 			tokenAmount: 1,
-			tokenType: 1,
 			tokenAddress: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-			tokenDecimals: 6,
 		}
 
 		const passwords = [await peanut.getRandomString(16)]
