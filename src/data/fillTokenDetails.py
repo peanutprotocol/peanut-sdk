@@ -6,6 +6,7 @@ import os
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
 TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
+UNISWAP_URL = "https://gateway.ipfs.io/ipns/tokens.uniswap.org"
 
 
 def fetch_coingecko_id_to_chain_id_mapping():
@@ -55,6 +56,7 @@ def fetch_tokens_for_platform(platform_id):
     # temp fix until we properly implement this (FILTER_TOKEN_DETAILS branch)
     return data["tokens"][:200]
 
+
 def main():
     print("Fetching token details...")
 
@@ -80,7 +82,7 @@ def main():
     # For each platform, fetch tokens if it's in contracts.json
     for chain_id, details in chain_details.items():
         # Only fetch tokens if chain_id is not already in tokenDetails.json
-        if any(detail['chainId'] == chain_id for detail in token_details):
+        if any(detail["chainId"] == chain_id for detail in token_details):
             user_input = input(
                 f"Chain id {chain_id} already exists in tokenDetails.json. Overwrite? (y/n) "
             )
@@ -135,7 +137,7 @@ def main():
 
     # Save to tokenDetails.json
     with open("tokenDetails.json", "w") as f:
-        json.dump(token_details, f, indent='\t')
+        json.dump(token_details, f, indent="\t")
 
     # Print stats
     print(f"Total chains fetched: {chains_fetched}")

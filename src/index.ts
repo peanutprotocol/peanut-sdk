@@ -667,6 +667,8 @@ function trim_decimal_overflow(_n: number, decimals: number) {
 /**
  * Returns an array of transactions necessary to create a link (e.g. 1. approve, 2. makeDeposit)
  * all values obligatory
+ *
+ * @param address - The senders wallet address. This is NOT the token contract address.
  */
 async function prepareTxs({
 	address,

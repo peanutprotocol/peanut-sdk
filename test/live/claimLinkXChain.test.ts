@@ -146,6 +146,10 @@ describe('MAINNET Peanut XChain claiming tests', function () {
 
 		console.log('success: x claimTx: ' + claimTx.txHash)
 
+		peanut.prepareTxs({
+			
+		}
+
 		// Add your assertions here
 		expect(claimTx).toBeTruthy()
 		expect(claimTx.txHash).toBeDefined()
