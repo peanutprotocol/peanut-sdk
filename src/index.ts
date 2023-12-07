@@ -915,13 +915,13 @@ async function prepareTxs({
 
 	return {
 		unsignedTxs: unsignedTxs.map((unsignedTx) => {
-			const x: interfaces.IPeanutUnsignedTransaction = {
+			const tx: interfaces.IPeanutUnsignedTransaction = {
 				to: unsignedTx.to,
-				nonce: unsignedTx.nonce ? Number(unsignedTx.nonce) : undefined,
+				nonce: unsignedTx.nonce ? Number(unsignedTx.nonce) : null,
 				data: unsignedTx.data.toString(),
-				value: unsignedTx.value ? BigInt(unsignedTx.value.toString()) : undefined,
+				value: unsignedTx.value ? BigInt(unsignedTx.value.toString()) : null,
 			}
-			return x
+			return tx
 		}),
 	}
 }
@@ -931,7 +931,7 @@ async function signAndSubmitTx({
 	unsignedTx,
 }: interfaces.ISignAndSubmitTxParams): Promise<interfaces.ISignAndSubmitTxResponse> {
 	config.verbose && console.log('unsigned tx: ', unsignedTx)
-	const _unsignedTx = { ...unsignedTx, value: unsignedTx.value ? BigNumber.from(unsignedTx.value) : undefined }
+	const _unsignedTx = { ...unsignedTx, value: unsignedTx.value ? BigNumber.from(unsignedTx.value) : null }
 	// Set the transaction options using setFeeOptions
 	let txOptions
 	try {
