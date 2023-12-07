@@ -1866,7 +1866,7 @@ async function getContractType({
 }: {
 	provider: ethers.providers.Provider
 	address: string
-}): Promise<'NATIVE' | 'ERC20' | 'ERC721' | 'ERC1155'> {
+}): Promise<interfaces.EPeanutLinkType> {
 	const minimalABI = [
 		'function supportsInterface(bytes4) view returns (bool)',
 		'function totalSupply() view returns (uint256)',
@@ -1891,10 +1891,10 @@ async function getContractType({
 			.catch(() => false)
 	}
 
-	if (address.toLowerCase() === ethers.constants.AddressZero.toLowerCase()) return 'NATIVE'
-	if (isERC1155) return 'ERC1155'
-	if (isERC721) return 'ERC721'
-	if (isERC20) return 'ERC20'
+	if (address.toLowerCase() === ethers.constants.AddressZero.toLowerCase()) return 0
+	if (isERC20) return 1
+	if (isERC721) return 2
+	if (isERC1155) return 3
 }
 
 async function supportsInterface(contract, interfaceId) {
@@ -1911,7 +1911,7 @@ async function getContractDetails({
 }: {
 	address: string
 	provider: ethers.providers.Provider
-}): Promise<{ type: number; decimals?: number; name?: string; symbol?: string }> {
+}): Promise<{ type: interfaces.EPeanutLinkType; decimals?: number; name?: string; symbol?: string }> {
 	//get the contract type
 	const contractType = await getContractType({ address: address, provider: provider })
 	//@ts-ignore
@@ -1919,13 +1919,13 @@ async function getContractDetails({
 
 	config.verbose && console.log('contractType: ', contractType)
 	switch (contractType) {
-		case 'NATIVE': {
+		case 0: {
 			return {
 				type: 0,
 				decimals: 18,
 			}
 		}
-		case 'ERC20': {
+		case 1: {
 			const contract = new ethers.Contract(address, ERC20_ABI, batchprov)
 			const [name, symbol, decimals] = await Promise.all([
 				contract.name(),
@@ -1940,7 +1940,7 @@ async function getContractDetails({
 				decimals: decimals,
 			}
 		}
-		case 'ERC721': {
+		case 2: {
 			const contract = new ethers.Contract(address, ERC721_ABI, batchprov)
 			const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
 			config.verbose && console.log('details: ', [fetchedName, fetchedSymbol])
@@ -1950,7 +1950,7 @@ async function getContractDetails({
 				symbol: fetchedSymbol,
 			}
 		}
-		case 'ERC1155': {
+		case 3: {
 			const contract = new ethers.Contract(address, ERC1155_ABI, batchprov)
 			const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
 			config.verbose && console.log('details: ', [fetchedName, fetchedSymbol])
