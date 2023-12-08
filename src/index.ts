@@ -554,7 +554,7 @@ async function setFeeOptions({
 				// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
 				// Sanity check so that it's never more than the base fee.
 				// exception: linea, where baseFee is hardcoded to 7 gwei (minimum allowed)
-				if (chainId !== 59144) {
+				if (![59144, 59140].includes(chainId)) {
 					if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
 						txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 					}
