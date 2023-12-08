@@ -471,13 +471,13 @@ async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> 
 async function setFeeOptions({
 	txOptions,
 	provider,
-	eip1559 = true, // provide a default value
+	eip1559 = true,
 	maxFeePerGas = null,
-	maxFeePerGasMultiplier = 1.1,
+	maxFeePerGasMultiplier = 1.2,
 	gasLimit = null,
 	gasPriceMultiplier = 1.3,
-	maxPriorityFeePerGas, // don't provide a default value here
-	maxPriorityFeePerGasMultiplier = 1.5,
+	maxPriorityFeePerGas,
+	maxPriorityFeePerGasMultiplier = 1.2,
 }: {
 	txOptions?: any
 	provider: any
@@ -542,25 +542,30 @@ async function setFeeOptions({
 			const lastBaseFeePerGas = BigInt(feeData.lastBaseFeePerGas || feeData.baseFeePerGas)
 
 			// priority fee (miner tip)
-			txOptions.maxPriorityFeePerGas =
-				maxPriorityFeePerGas ||
-				(
+			if (maxPriorityFeePerGas) {
+				txOptions.maxPriorityFeePerGas = maxPriorityFeePerGas
+			} else {
+				txOptions.maxPriorityFeePerGas = (
 					(BigInt(feeData.maxPriorityFeePerGas.toString()) *
 						BigInt(Math.round(maxPriorityFeePerGasMultiplier * 100))) /
 					BigInt(100)
 				).toString()
 
-			// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
-			// Sanity check so that it's never more than the base fee.
-			if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
-				txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
-			}
+				// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
+				// Sanity check so that it's never more than the base fee.
+				// exception: linea, where baseFee is hardcoded to 7 gwei (minimum allowed)
+				if (chainId !== 59144) {
+					if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
+						txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
+					}
+				}
 
-			// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
-			if (chainId == 137) {
-				const minPriorityFee = ethers.utils.parseUnits('40', 'gwei')
-				if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
-					txOptions.maxPriorityFeePerGas = minPriorityFee.toString()
+				// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
+				if (chainId == 137) {
+					const minPriorityFee = ethers.utils.parseUnits('40', 'gwei')
+					if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
+						txOptions.maxPriorityFeePerGas = minPriorityFee.toString()
+					}
 				}
 			}
 
@@ -984,6 +989,7 @@ async function getLinksFromTx({
 }: interfaces.IGetLinkFromTxParams): Promise<interfaces.IGetLinkFromTxResponse> {
 	let txReceipt
 	try {
+		config.verbose && console.log(txHash, linkDetails.chainId, provider)
 		txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId, provider)
 	} catch (error) {
 		throw new interfaces.SDKStatus(
@@ -1041,6 +1047,10 @@ async function getTxReceiptFromHash(
 ): Promise<TransactionReceipt> {
 	provider = provider ?? (await getDefaultProvider(String(chainId)))
 	const txReceipt = await provider.getTransactionReceipt(txHash)
+	// throw error if txReceipt is null
+	if (txReceipt == null) {
+		throw new Error('Could not fetch transaction receipt')
+	}
 	return txReceipt
 }
 

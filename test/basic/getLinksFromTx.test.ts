@@ -6,7 +6,7 @@ dotenv.config()
 
 describe('getLinksFromTx eth mainnet', function () {
 	it('mainnet', async function () {
-		const tx_hash = '0x405057aac8124ce8c44c84af52b8c4cdbb7d0b8603ec41c2ff55f55a66d9731c'
+		const tx_hash = '0xa082092246c81a7e10c15704f438d95e463ea64dc6444241651fcff309c180c7'
 		const linkDetails = {
 			chainId: 1,
 			tokenAmount: 0.01,

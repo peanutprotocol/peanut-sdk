@@ -111,6 +111,56 @@ describe('polygon', function () {
 	}, 180000)
 })
 
+describe('linea', function () {
+	const chainId = 59144
+	const tokenAmount = 0.000001
+
+	console.log('getting fee data in test file')
+
+	it.only('should create a native link and claim it', async function () {
+		const provider = await peanut.getDefaultProvider(String(chainId))
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+		peanut.toggleVerbose()
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0,
+				},
+			},
+			12000
+		)
+	}, 60000)
+	// it('polygon should create an erc20 link and claim it', async function () {
+	// 	const provider = await peanut.getDefaultProvider(String(chainId))
+	// 	const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+	// 	const tokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' // polygon usdc
+	// 	const tokenDecimals = 6
+
+	// 	// create link
+
+	// 	await createAndClaimLink(
+	// 		{
+	// 			structSigner: {
+	// 				signer: wallet,
+	// 			},
+	// 			linkDetails: {
+	// 				chainId: chainId,
+	// 				tokenAmount: tokenAmount,
+	// 				tokenDecimals: tokenDecimals,
+	// 				tokenAddress: tokenAddress,
+	// 				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
+	// 			},
+	// 		},
+	// 		9000
+	// 	)
+	// }, 180000)
+})
+
 describe('goerli', function () {
 	const chainId = 5
 	const tokenAmount = 0.0001
