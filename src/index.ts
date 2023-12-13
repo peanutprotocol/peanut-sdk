@@ -1698,6 +1698,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 
 	let tokenAddress = deposit.tokenAddress
 	const tokenType = deposit.contractType
+	const senderAddress = deposit.senderAddress
 
 	let claimed = false
 	if (['v2', 'v3', 'v4'].includes(contractVersion)) {
@@ -1835,6 +1836,20 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		tokenURI: tokenURI,
 		metadata: metadata,
 	}
+}
+
+async function resolveToENSName({
+	address,
+	provider = null,
+}: {
+	address: string
+	provider?: ethers.providers.Provider
+}) {
+	if (provider == null) {
+		provider = await getDefaultProvider('1')
+	}
+	const ensName = await provider.lookupAddress(address)
+	return ensName
 }
 
 /**
@@ -2545,6 +2560,7 @@ const peanut = {
 	toggleVerbose,
 	trim_decimal_overflow,
 	verifySignature,
+	resolveToENSName,
 }
 
 export default peanut
@@ -2616,4 +2632,5 @@ export {
 	toggleVerbose,
 	trim_decimal_overflow,
 	verifySignature,
+	resolveToENSName,
 }
