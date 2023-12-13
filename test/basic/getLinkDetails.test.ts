@@ -84,6 +84,17 @@ describe('getLinkDetails', function () {
 			console.log(linkDetails.depositDate)
 		}, 1000000)
 
+		it.only('should include senderAddress', async function () {
+			const link = 'https://peanut.to/claim#?c=137&v=v4&i=297&p=zoOnfUtvnMX1xt8A&t=ui'
+			// const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
+			const linkDetails = await peanut.getLinkDetails({ link })
+			console.log(linkDetails)
+			// should not be empty
+			expect(linkDetails).not.toBe(undefined)
+			expect(linkDetails.senderAddress).toBe('0x9647BB6a598c2675310c512e0566B60a5aEE6261')
+			console.log(linkDetails.senderAddress)
+		}, 1000000)
+
 		it('timestamp should be null if link already claimed', async function () {
 			const link = 'https://peanut.to/claim#?c=42161&v=v4&i=21&p=BJkAqGmZNYCZFBEH&t=sdk'
 			// const CHAIN_ID = 42161

@@ -1824,6 +1824,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		depositIndex: depositIdx,
 		contractVersion: contractVersion,
 		password: password,
+		senderAddress: senderAddress,
 		tokenType: deposit.contractType,
 		tokenAddress: deposit.tokenAddress,
 		tokenDecimals: tokenDecimals,
