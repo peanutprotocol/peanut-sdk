@@ -8,4 +8,12 @@ describe('resolveToENSName', () => {
 		console.log(result)
 		expect(result).toBe(ensName)
 	}, 60000)
+
+	it('should resolve ENS name when using default provider', async () => {
+		const address = '0x2d826aD1EAD5c8a2bC46ab93d9D0c6BEe0d39918'
+		const ensName = null
+		const result = await peanut.resolveToENSName({ address })
+		console.log(result)
+		expect(result).toBe(ensName)
+	}, 60000)
 })
