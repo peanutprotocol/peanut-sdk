@@ -246,11 +246,18 @@ export function getLinkFromParams(
 ) {
 	/* returns a link from the given parameters */
 
-	const link = baseUrl + '#?c=' + chainId + '&v=' + contractVersion + '&i=' + depositIdx + '&p=' + password
+	const link =
+		baseUrl +
+		'?c=' +
+		chainId +
+		'&v=' +
+		contractVersion +
+		'&i=' +
+		depositIdx +
+		(trackId ? '&t=' + trackId : '') +
+		'#p=' +
+		password
 
-	if (trackId != '') {
-		return link + '&t=' + trackId
-	}
 	return link
 }
 
