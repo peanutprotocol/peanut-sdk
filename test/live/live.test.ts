@@ -117,7 +117,7 @@ describe('linea', function () {
 
 	console.log('getting fee data in test file')
 
-	it.only('should create a native link and claim it', async function () {
+	it('should create a native link and claim it', async function () {
 		const provider = await peanut.getDefaultProvider(String(chainId))
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		peanut.toggleVerbose()

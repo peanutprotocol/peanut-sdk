@@ -84,7 +84,7 @@ describe('getLinkDetails', function () {
 			console.log(linkDetails.depositDate)
 		}, 1000000)
 
-		it.only('should include senderAddress', async function () {
+		it('should include senderAddress', async function () {
 			const link = 'https://peanut.to/claim#?c=137&v=v4&i=297&p=zoOnfUtvnMX1xt8A&t=ui'
 			// const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 			const linkDetails = await peanut.getLinkDetails({ link })
