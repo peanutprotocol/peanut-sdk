@@ -95,6 +95,9 @@ async function fetchGetBalance(rpcUrl: string) {
 	return json
 }
 
+/**
+ * This function is used to get the default provider for a given chainId.
+ */
 async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
 	config.verbose && console.log('Getting default provider for chainId ', chainId)
 	if (!CHAIN_DETAILS[chainId]) {
@@ -139,6 +142,9 @@ async function getDefaultProvider(chainId: string): Promise<ethers.providers.Jso
 	}
 }
 
+/**
+ * Like getDefaultProvider, but only returns a string with the RPC URL.
+ */
 async function getDefaultRpcUrl(chainId: string): Promise<string> {
 	const defaultProvider = await getDefaultProvider(chainId)
 	const rpcUrl = defaultProvider.connection.url
