@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, Bytes, ethers } from 'ethersv5' // v5
+import { BigNumber, ethers } from 'ethersv5' // v5
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V3,
@@ -23,6 +23,7 @@ import {
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_STABLE_BATCHER_VERSION,
 	TOKEN_TYPES,
+	PEANUT_ABI_V42,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -50,6 +51,14 @@ import {
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
+import {
+	EIP3009Tokens,
+	GaslessReclaimTypes,
+	PeanutsWithEIP3009,
+	PeanutsWithGaslessRevoke,
+	ReceiveWithAuthorizationTypes,
+} from './consts/eip712domains.ts'
+import { hexToNumber, sliceHex } from 'viem'
 
 greeting()
 
@@ -205,6 +214,9 @@ async function getContract(_chainId: string, signerOrProvider: any, version = nu
 			break
 		case 'v4':
 			PEANUT_ABI = PEANUT_ABI_V4
+			break
+		case 'v4.2':
+			PEANUT_ABI = PEANUT_ABI_V42
 			break
 		case 'Bv4':
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
@@ -941,7 +953,7 @@ async function signAndSubmitTx({
 	}
 
 	// Merge the transaction options into the unsigned transaction
-	unsignedTx = { ...unsignedTx, ...txOptions }
+	unsignedTx = { ...unsignedTx, ...txOptions, ...{ nonce: structSigner.nonce } }
 
 	let tx: ethers.providers.TransactionResponse
 	try {
@@ -2494,6 +2506,200 @@ async function claimAllUnclaimedAsSenderPerChain({
 	return txHashes
 }
 
+// Returns args to be passed to makeDepositWithAuthorization function
+// and a EIP-712 message to be signed
+async function prepareGaslessDeposit({
+	address,
+	contractVersion,
+	linkDetails,
+	password,
+}: interfaces.IPrepareGaslessDepositParams): Promise<interfaces.IPrepareGaslessDepositResponse> {
+	if (!PeanutsWithEIP3009.includes(contractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Error validating link details: this Peanut version does not support gasless deposits'
+		)
+	}
+
+	if (linkDetails.tokenType !== interfaces.EPeanutLinkType.erc20) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Error validating link details: only erc20 tokens are currently supported for gasless deposits'
+		)
+	}
+
+	if (!linkDetails.tokenAddress || !linkDetails.tokenDecimals) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Error validating link details: token address and decimals must be provided'
+		)
+	}
+
+	const chain3009Info = EIP3009Tokens[linkDetails.chainId]
+	if (!chain3009Info) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Error validating link details: there are no known EIP-3009 compliant tokens on this chain'
+		)
+	}
+
+	const tokenDomain = chain3009Info[linkDetails.tokenAddress]
+	if (!tokenDomain) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Error validating link details: token with the given address does not support EIP-3009'
+		)
+	}
+
+	const peanutContract = await getContract(linkDetails.chainId.toString(), null, contractVersion)
+	const uintAmount = ethers.utils.parseUnits(linkDetails.tokenAmount.toString(), linkDetails.tokenDecimals)
+	const randomNonceInt = Math.floor(Math.random() * 1e12)
+	const randomNonceHex = '0x' + randomNonceInt.toString(16).padStart(64, '0')
+
+	const { address: pubKey20 } = generateKeysFromString(password)
+	const nonceWithPubKeyHex = ethers.utils.solidityKeccak256(['address', 'bytes32'], [pubKey20, randomNonceHex])
+
+	const nowSeconds = Math.floor(Date.now() / 1000)
+	const validAfter = BigNumber.from(nowSeconds)
+	const validBefore = validAfter.add(3600) // valid for 1 hour
+
+	const args: interfaces.IPreparedGaslessDepositArgs = {
+		chainId: linkDetails.chainId,
+		contractVersion: contractVersion,
+		tokenAddress: linkDetails.tokenAddress,
+		from: address,
+		uintAmount,
+		pubKey20,
+		nonce: randomNonceHex, // nonce without pubkey. Pubkey will be added inside the peanut contract
+		validAfter,
+		validBefore,
+	}
+
+	const message: interfaces.IPreparedEIP712Message = {
+		types: ReceiveWithAuthorizationTypes,
+		primaryType: 'ReceiveWithAuthorization',
+		domain: tokenDomain,
+		values: {
+			from: address,
+			to: peanutContract.address,
+			value: uintAmount,
+			validAfter,
+			validBefore,
+			nonce: nonceWithPubKeyHex, // nonce WITH the pubkey. This is what the user will sign
+		},
+	}
+
+	return { args, message }
+}
+
+async function executeGaslessDeposit({
+	structSigner,
+	args,
+	signature,
+}: interfaces.IExecuteGaslessDepositParams): Promise<interfaces.IExecuteGaslessDepositResponse> {
+	const contract = await getContract(String(args.chainId), structSigner.signer.provider, args.contractVersion) // get the contract instance
+	const preparedArgs: any[] = [
+		args.tokenAddress,
+		args.from,
+		args.uintAmount,
+		args.pubKey20,
+		args.nonce,
+		args.validAfter,
+		args.validBefore,
+		BigNumber.from(hexToNumber(sliceHex(signature, 64))), // v
+		sliceHex(signature, 0, 32), // r
+		sliceHex(signature, 32, 64), // s
+	]
+	let unsignedTx: ethers.providers.TransactionRequest
+	try {
+		unsignedTx = await contract.populateTransaction.makeDepositWithAuthorization(...preparedArgs)
+	} catch (error) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
+			error,
+			'Error making the deposit to the contract'
+		)
+	}
+	const { txHash, tx } = await signAndSubmitTx({
+		structSigner,
+		unsignedTx,
+	})
+
+	const receipt = await tx.wait()
+	const depositIdx = getDepositIdxs(receipt, String(args.chainId), args.contractVersion)[0]
+
+	return { txHash, depositIdx }
+}
+
+// Returns args to be passed to withdrawDepositSenderGasless function
+// and a EIP-712 message to be signed
+async function prepareGaslessReclaim({
+	address,
+	contractVersion,
+	depositIndex,
+	chainId,
+}: interfaces.IPrepareGaslessReclaimParams): Promise<interfaces.IPrepareGaslessReclaimResponse> {
+	if (!PeanutsWithGaslessRevoke.includes(contractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Error validating link details: this Peanut version does not support gasless revocations'
+		)
+	}
+	const peanutVault = await getContract(chainId.toString(), null, contractVersion)
+
+	const args: interfaces.IPreparedGaslessReclaimArgs = {
+		chainId: chainId,
+		contractVersion: contractVersion,
+		depositIndex,
+		signer: address,
+	}
+
+	const peanutDomain: interfaces.EIP712Domain = {
+		chainId,
+		name: 'Peanut',
+		version: contractVersion.slice(1), // contract version without 'v'
+		verifyingContract: peanutVault.address,
+	}
+
+	const message: interfaces.IPreparedEIP712Message = {
+		types: GaslessReclaimTypes,
+		primaryType: 'GaslessReclaim',
+		domain: peanutDomain,
+		values: {
+			depositIndex,
+		},
+	}
+
+	return { args, message }
+}
+
+async function executeGaslessReclaim({
+	structSigner,
+	args,
+	signature,
+}: interfaces.IExecuteGaslessReclaimParams): Promise<interfaces.IExecuteGaslessReclaimResponse> {
+	const contract = await getContract(String(args.chainId), structSigner.signer.provider, args.contractVersion) // get the contract instance
+	const preparedArgs: any[] = [[args.depositIndex], args.signer, signature]
+	console.log('Prepared args', { preparedArgs })
+	let unsignedTx: ethers.providers.TransactionRequest
+	try {
+		unsignedTx = await contract.populateTransaction.withdrawDepositSenderGasless(...preparedArgs)
+	} catch (error) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
+			error,
+			'Error making a gasless reclaim'
+		)
+	}
+	const { txHash, tx } = await signAndSubmitTx({
+		structSigner,
+		unsignedTx,
+	})
+
+	await tx.wait()
+	return { txHash }
+}
+
 const peanut = {
 	CHAIN_DETAILS,
 	LATEST_STABLE_BATCHER_VERSION,
@@ -2562,6 +2768,10 @@ const peanut = {
 	trim_decimal_overflow,
 	verifySignature,
 	resolveToENSName,
+	prepareGaslessDeposit,
+	executeGaslessDeposit,
+	prepareGaslessReclaim,
+	executeGaslessReclaim,
 }
 
 export default peanut
@@ -2634,4 +2844,8 @@ export {
 	trim_decimal_overflow,
 	verifySignature,
 	resolveToENSName,
+	prepareGaslessDeposit,
+	executeGaslessDeposit,
+	prepareGaslessReclaim,
+	executeGaslessReclaim,
 }

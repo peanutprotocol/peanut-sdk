@@ -1,5 +1,6 @@
 import { ethers } from 'ethersv5'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { Hex } from 'viem'
 
 //General export interface s and enums
 export interface IPeanutSigner {
@@ -220,6 +221,99 @@ export interface ISquidToken {
 	name: string
 	symbol: string
 	logoURI: string
+}
+
+// Gasless deposits with EIP-3009 via EIP-712
+
+export interface EIP712Domain {
+	name: string
+	version: string
+	chainId: number
+	verifyingContract: string // address
+}
+
+export interface EIP3009TokensInterface {
+	[chainId: number]: {
+		[address: string]: EIP712Domain // Important! Address must be checksummed
+	}
+}
+
+export interface IPrepareGaslessDepositParams {
+	address: string
+	contractVersion: string
+	linkDetails: IPeanutLinkDetails
+	signer?: ethers.Signer
+	password: string
+}
+
+export interface IPreparedEIP712Message {
+	types: any
+	primaryType: string
+	domain: EIP712Domain
+	values: any
+}
+
+export interface IPreparedGaslessDepositArgs {
+	chainId: number
+	contractVersion: string
+
+	// args to the function itself
+	tokenAddress: string
+	from: string
+	uintAmount: ethers.BigNumber
+	pubKey20: string
+	nonce: string // Hex
+	validAfter: ethers.BigNumber
+	validBefore: ethers.BigNumber
+}
+
+export interface IPrepareGaslessDepositResponse {
+	args: IPreparedGaslessDepositArgs
+	message: IPreparedEIP712Message
+}
+
+export interface IExecuteGaslessDepositParams {
+	structSigner: IPeanutSigner
+	args: IPreparedGaslessDepositArgs
+	signature: Hex
+}
+
+export interface IExecuteGaslessDepositResponse {
+	txHash: string
+	depositIdx: number
+}
+
+// Gasless reclaims via a EIP-712 signature
+
+export interface IPrepareGaslessReclaimParams {
+	address: string
+	chainId: number
+	depositIndex: number
+	contractVersion?: string
+}
+
+export interface IPreparedGaslessReclaimArgs {
+	chainId: number
+	contractVersion: string
+
+	// args to the function itself
+	depositIndex: number
+	signer: string
+}
+
+export interface IPrepareGaslessReclaimResponse {
+	args: IPreparedGaslessReclaimArgs
+	message: IPreparedEIP712Message
+}
+
+export interface IExecuteGaslessReclaimParams {
+	structSigner: IPeanutSigner
+	args: IPreparedGaslessReclaimArgs
+	signature: Hex
+}
+
+export interface IExecuteGaslessReclaimResponse {
+	txHash: string
 }
 
 // error object and enums

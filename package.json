@@ -44,7 +44,8 @@
 	},
 	"homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
 	"dependencies": {
-		"ethersv5": "npm:ethers@^5"
+		"ethersv5": "npm:ethers@^5",
+		"viem": "^1.19.15"
 	},
 	"publishConfig": {
 		"access": "public"
