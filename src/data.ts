@@ -9,8 +9,7 @@ import PEANUT_CONTRACTS from './data/contracts.json'
 import CHAIN_MAP from './data/chainMap.json'
 import CHAIN_DETAILS from './data/chainDetails.json'
 import TOKEN_DETAILS from './data/tokenDetails.json'
-import PACKAGE_JSON from './data/package.json'
-const VERSION = PACKAGE_JSON.version
+const VERSION = 'v5'
 
 // CONSTANTS
 const TOKEN_TYPES = Object.freeze({
