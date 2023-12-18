@@ -2346,7 +2346,7 @@ function getLatestContractVersion({
 	experimental = false,
 }: {
 	chainId: string
-	type: string
+	type: 'normal' | 'batch'
 	experimental?: boolean
 }): string {
 	try {
