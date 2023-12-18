@@ -203,10 +203,13 @@ export function getParamsFromLink(link: string): {
 		)
 	}
 	let search = url.search
-
 	// If there is no search params, try to get params after hash
 	if (search === '') {
 		search = url.hash.startsWith('#?') ? url.hash.substring(1) : ''
+	}
+
+	if (!search.includes('p')) {
+		search = search + '&' + url.hash.substring(1)
 	}
 
 	const params = new URLSearchParams(search)
