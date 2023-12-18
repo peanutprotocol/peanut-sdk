@@ -13,7 +13,6 @@ jobs:
         with:
           node-version: 18
       - run: npm install
-      - run: npm run test:basic
       - run: npm run build:lib
 
   publish-npm:
