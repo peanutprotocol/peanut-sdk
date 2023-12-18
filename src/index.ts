@@ -671,7 +671,7 @@ function trim_decimal_overflow(_n: number, decimals: number) {
  *
  * @param address - The senders wallet address. This is NOT the token contract address.
  */
-async function prepareTxs({
+async function prepareDepositTxs({
 	address,
 	linkDetails,
 	peanutContractVersion = null,
@@ -679,7 +679,7 @@ async function prepareTxs({
 	numberOfLinks = 1,
 	passwords = [],
 	provider,
-}: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
+}: interfaces.IPrepareDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
 	if (!provider) {
 		provider = await getDefaultProvider(String(linkDetails.chainId))
 	}
@@ -1113,9 +1113,9 @@ async function createLink({
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
-	let prepareTxsResponse
+	let prepareDepositTxsResponse
 	try {
-		prepareTxsResponse = await prepareTxs({
+		prepareDepositTxsResponse = await prepareDepositTxs({
 			address: await structSigner.signer.getAddress(),
 			linkDetails,
 			peanutContractVersion,
@@ -1129,7 +1129,7 @@ async function createLink({
 
 	// Sign and submit the transactions sequentially
 	const signedTxs = []
-	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
+	for (const unsignedTx of prepareDepositTxsResponse.unsignedTxs) {
 		try {
 			const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
 			signedTxs.push(signedTx)
@@ -1175,9 +1175,9 @@ async function createLinks({
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
-	let prepareTxsResponse
+	let prepareDepositTxsResponse
 	try {
-		prepareTxsResponse = await prepareTxs({
+		prepareDepositTxsResponse = await prepareDepositTxs({
 			address: await structSigner.signer.getAddress(),
 			linkDetails,
 			peanutContractVersion,
@@ -1191,7 +1191,7 @@ async function createLinks({
 
 	// Sign and submit the transactions
 	const signedTxs = []
-	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
+	for (const unsignedTx of prepareDepositTxsResponse.unsignedTxs) {
 		try {
 			const signedTx = await signAndSubmitTx({ structSigner, unsignedTx })
 			signedTxs.push(signedTx)
@@ -2610,6 +2610,11 @@ async function getTokenContractDetails({
 	}
 }
 
+/**
+ * @deprecated Use prepareDepositTxs instead. prepareTxs will be removed in February 2024.
+ */
+const prepareTxs = prepareDepositTxs
+
 const peanut = {
 	CHAIN_DETAILS,
 	LATEST_STABLE_BATCHER_VERSION,
@@ -2669,6 +2674,7 @@ const peanut = {
 	makeDepositGasless,
 	makeReclaimGasless,
 	prepareTxs,
+	prepareDepositTxs,
 	resetProviderCache,
 	setFeeOptions,
 	signWithdrawalMessage,
@@ -2753,6 +2759,7 @@ export {
 	makeDepositGasless,
 	makeReclaimGasless,
 	prepareTxs,
+	prepareDepositTxs,
 	resetProviderCache,
 	setFeeOptions,
 	signWithdrawalMessage,

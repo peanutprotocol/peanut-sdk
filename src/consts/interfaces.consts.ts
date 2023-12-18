@@ -148,7 +148,7 @@ export interface IClaimLinkSenderResponse {
 }
 
 //prepareCreatetxs
-export interface IPrepareTxsParams {
+export interface IPrepareDepositTxsParams {
 	address: string
 	linkDetails: IPeanutLinkDetails
 	peanutContractVersion?: string
@@ -158,7 +158,7 @@ export interface IPrepareTxsParams {
 	provider?: ethers.providers.Provider
 }
 
-export interface IPrepareTxsResponse {
+export interface IPrepareDepositTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
