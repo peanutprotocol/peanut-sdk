@@ -2,6 +2,8 @@
 prompt.md
 playground/
 !playground/preprompt.py
+playground.ts
+playground.js
 dist/
 archive/
 src/data/package.json

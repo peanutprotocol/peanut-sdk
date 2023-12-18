@@ -1817,6 +1817,15 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		tokenAmount = '1'
 	}
 
+	// format deposit to string values
+	const depositCopy = {}
+	for (const key in deposit) {
+		if (isNaN(Number(key))) {
+			// Only copy named properties
+			depositCopy[key] = deposit[key].toString()
+		}
+	}
+
 	return {
 		link: link,
 		chainId: chainId,
@@ -1834,6 +1843,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		depositDate: depositDate,
 		tokenURI: tokenURI,
 		metadata: metadata,
+		rawOnchainDepositInfo: depositCopy,
 	}
 }
 
