@@ -1,6 +1,6 @@
 {
 	"name": "borcherd_vb_test_peanutsdk_fork",
-	"version": "0.1.3",
+	"version": "0.3.33",
 	"description": "The Peanut Protocol SDK! Check out the documentation at https://docs.peanut.to",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
