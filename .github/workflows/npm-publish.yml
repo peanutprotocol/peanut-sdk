@@ -1,11 +1,35 @@
-name: Node.js Package
+name: Node.js Package Automation
 
 on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
   release:
-    types: [created]
+    types: [created]  # Also trigger on release creation
 
 jobs:
+  version-bump:
+    if: github.event_name == 'release' && github.event.action == 'created'  # Execute only on release creation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetches all history for all branches and tags
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm install
+      - name: Bump package version and create tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          npm version patch
+          git push --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
   publish-npm:
+    needs: version-bump
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -13,15 +37,14 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-      - run: pnmp version patch
-      - run: pnmp install
+      - run: npm install
       - name: Run tests
-        run: pnmp run test:basic
+        run: npm run test:basic
         env:
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
           TEST_WALLET_PRIVATE_KEY:  ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
-      - run: pnmp run build:lib      
-      - run: pnmp publish
+      - run: npm run build:lib      
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
