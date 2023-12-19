@@ -14,7 +14,13 @@ jobs:
           node-version: 18
           registry-url: https://registry.npmjs.org/
       - run: npm install
+      - name: Run tests
+        run: npm run test:basic
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
+          TEST_WALLET_PRIVATE_KEY:  ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
       - run: npm run build:lib      
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
