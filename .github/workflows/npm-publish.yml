@@ -1,0 +1,52 @@
+name: Node.js Package Release Workflow
+
+on:
+    release:
+        types: [created]
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+                  ref: refs/heads/main
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '20'
+                  registry-url: https://registry.npmjs.org/
+
+            # Setup Git
+            - name: Setup Git
+              run: |
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
+
+            # Version bump
+            - name: Bump package version
+              run: |
+                  git checkout main 
+                  npm version patch
+                  git push origin main --follow-tags
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            # Install dependencies
+            - run: npm install
+
+            # Run tests
+            - name: Run tests
+              run: npm run test:basic
+              env:
+                  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+                  INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
+                  TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
+
+            # Build the package
+            - run: npm run build:lib
+
+            # Publish to npm
+            - run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
