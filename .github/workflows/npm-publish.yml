@@ -13,14 +13,15 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-      - run: npm install
+      - run: pnmp version patch
+      - run: pnmp install
       - name: Run tests
-        run: npm run test:basic
+        run: pnmp run test:basic
         env:
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
           TEST_WALLET_PRIVATE_KEY:  ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
-      - run: npm run build:lib      
-      - run: npm publish
+      - run: pnmp run build:lib      
+      - run: pnmp publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
