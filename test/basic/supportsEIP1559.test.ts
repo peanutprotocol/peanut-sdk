@@ -2,8 +2,6 @@ import { ethers } from 'ethersv5' // v5
 
 import { peanut } from '../../src/index'
 import { expect, it, describe } from '@jest/globals'
-import dotenv from 'dotenv'
-dotenv.config()
 
 describe('supportsEIP1559', function () {
 	it('should return true for a provider that supports EIP-1559', async () => {

@@ -4,14 +4,7 @@ import { expect, it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
-const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
-const INFURA_API_KEY = process.env.INFURA_API_KEY
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY // Make sure to add this to your .env
-
-const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL)
-const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 
 describe('getDepositIdxs', function () {
 	let txReceipt1, txReceipt2
