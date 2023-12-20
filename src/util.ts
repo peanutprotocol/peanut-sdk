@@ -18,6 +18,7 @@ export function greeting() {
 			VERSION +
 			'. Support available at https://discord.com/invite/BX9Ak7AW28'
 	)
+	console.log('🥜 For more info, check out https://docs.peanut.to')
 }
 
 /**
