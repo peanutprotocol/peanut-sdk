@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // we want to use diff wallet than relayer
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2 as string
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY as string
 const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
 const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)

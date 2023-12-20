@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 describe('claimAllUnclaimedAsSenderPerChain', () => {
-	const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2 as string
+	const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY as string
 	const RPC_URL_GOERLI = process.env.INFURA_GOERLI_RPC as string
 	const GOERLI_PROVIDER = new ethers.providers.JsonRpcProvider(RPC_URL_GOERLI)
 	const WALLET_GOERLI = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, GOERLI_PROVIDER)

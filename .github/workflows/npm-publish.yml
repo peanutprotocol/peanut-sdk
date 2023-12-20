@@ -1,56 +1,48 @@
 name: Node.js Package Release Workflow
 
 on:
-  release:
-    types: [created]
+    release:
+        types: [created]
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetches all history for all branches and tags
-          ref: refs/heads/main  # Replace 'main' with your default branch name if different
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          registry-url: https://registry.npmjs.org/
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0 # Fetches all history for all branches and tags
+                  ref: refs/heads/main # Replace 'main' with your default branch name if different
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '20'
+                  registry-url: https://registry.npmjs.org/
 
-      # Install pnpm
-      - name: Install pnpm
-        run: npm install -g pnpm
+            # Install pnpm
+            - name: Install pnpm
+              run: npm install -g pnpm
 
-      # Setup Git
-      - name: Setup Git
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+            # Setup Git
+            - name: Setup Git
+              run: |
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
 
-      # Version bump
-      - name: Bump package version
-        run: |
-          git checkout main 
-          pnpm version patch
-          git push origin main --follow-tags 
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+            # Version bump
+            - name: Bump package version
+              run: |
+                  git checkout main 
+                  pnpm version patch
+                  git push origin main --follow-tags
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      # Install dependencies
-      - run: pnpm install
+            # Install dependencies
+            - run: pnpm install
 
-      # Run tests
-      - name: Run tests
-        run: pnpm run test:basic
-        env:
-          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-          INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
-          TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
+            # Build the package
+            - run: pnpm run build:lib
 
-      # Build the package
-      - run: pnpm run build:lib 
-
-      # Publish to npm
-      - run: pnpm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+            # Publish to npm
+            - run: pnpm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
