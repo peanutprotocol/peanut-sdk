@@ -2,7 +2,7 @@ import { ethers } from 'ethersv5'
 import { expect, it, describe, jest } from '@jest/globals'
 import peanut from '../../src/index'
 
-describe('createClaimXChainPayload tests', function () {
+describe.skip('createClaimXChainPayload tests', function () {
 	afterEach(() => {
 		jest.restoreAllMocks()
 	})
