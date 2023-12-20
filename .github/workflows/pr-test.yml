@@ -16,6 +16,10 @@ jobs:
             - run: npm install
             - name: Run basic tests
               run: npm run test:basic
+              env:
+                  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+                  INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
+                  TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
 
     test-live:
         runs-on: ubuntu-latest
@@ -28,7 +32,24 @@ jobs:
             - name: Run live tests
               run: npm run test:live
               continue-on-error: true # Allows the workflow to continue even if this step fails
+              env:
+                  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+                  INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
+                  TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
 
-            - name: Report live test failures
-              if: failure() # Runs only if the previous step failed
-              run: echo "Live tests failed. Please check the test results for details."
+            - name: Post comment if live tests fail
+              if: failure() # Runs only if the live tests failed
+              uses: actions/github-script@v6
+              with:
+                  github-token: ${{secrets.GITHUB_TOKEN}}
+                  script: |
+                      const issue_number = context.issue.number;
+                      const comment = {
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: issue_number,
+                        body: 'Live tests failed. Please check the logs to see which checks failed.'
+                      };
+                      github.rest.issues.createComment(comment);
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
