@@ -51,3 +51,5 @@ jobs:
                         body: 'Live tests failed. Please check the logs to see which checks failed.'
                       };
                       github.rest.issues.createComment(comment);
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
