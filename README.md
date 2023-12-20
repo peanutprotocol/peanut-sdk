@@ -2,7 +2,7 @@
 
 **Send tokens via cryptographically secure links**.
 
-NPM package [here](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk). This package makes use of ethers v5. If you're using ethers v6 or a different web3 library, please contact @hugomont on telegram or @uwgo on discord.
+NPM package [here](https://www.npmjs.com/package/@squirrel-labs/peanut-sdk). This package makes use of ethers v5. If you're using ethers v6 or a different web3 library, please reach out on discord.
 
 -   [Documentation available here](https://docs.peanut.to/sdk-documentation/building-with-the-sdk/getting-started-with-the-sdk/)
 
