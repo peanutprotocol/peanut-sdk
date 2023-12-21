@@ -6,8 +6,8 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, Bytes, ethers } from 'ethersv5' // v5
-import { TransactionReceipt } from '@ethersproject/abstract-provider'
+import { BigNumber, ethers } from 'ethersv5' // v5
+import { TransactionReceipt, TransactionRequest } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
@@ -23,6 +23,8 @@ import {
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_STABLE_BATCHER_VERSION,
 	TOKEN_TYPES,
+	PEANUT_ROUTER_ABI_V4_2,
+	PEANUT_ABI_V4_2,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -36,7 +38,7 @@ import {
 	verifySignature,
 	solidityHashBytesEIP191,
 	solidityHashAddress,
-	signAddress,
+	signWithdrawalMessage,
 	signHash,
 	getRandomString,
 	getLinkFromParams,
@@ -47,9 +49,12 @@ import {
 	getLinksFromMultilink,
 	createMultiLinkFromLinks,
 	compareDeposits,
+	signAddress,
+	getSquidRouterUrl,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
+import { SQUID_ADDRESS } from './consts/misc.ts'
 
 greeting()
 
@@ -186,6 +191,13 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 	}
 }
 
+function getContractAddress(chainId: number, version: string) {
+	// Find the contract address based on the chainId and version provided
+	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
+	const contractAddress = _PEANUT_CONTRACTS[chainId.toString()] && _PEANUT_CONTRACTS[chainId.toString()][version]
+	return contractAddress
+}
+
 async function getContract(_chainId: string, signerOrProvider: any, version = null) {
 	if (signerOrProvider == null) {
 		config.verbose && console.log('signerOrProvider is null, getting default provider...')
@@ -206,19 +218,23 @@ async function getContract(_chainId: string, signerOrProvider: any, version = nu
 		case 'v4':
 			PEANUT_ABI = PEANUT_ABI_V4
 			break
+		case 'v4.2':
+			PEANUT_ABI = PEANUT_ABI_V4_2
+			break
 		case 'Bv4':
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 			break
 		case 'v5':
 			PEANUT_ABI = PEANUT_ABI_V5
 			break
+		case 'Rv4.2':
+			PEANUT_ABI = PEANUT_ROUTER_ABI_V4_2
+			break
 		default:
 			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
 	}
 
-	// Find the contract address based on the chainId and version provided
-	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
-	const contractAddress = _PEANUT_CONTRACTS[chainId.toString()] && _PEANUT_CONTRACTS[chainId.toString()][version]
+	const contractAddress = getContractAddress(chainId, version)
 
 	// If the contract address is not found, throw an error
 	if (!contractAddress) {
@@ -1274,34 +1290,22 @@ async function claimLink({
 	const contract = await getContract(String(chainId), signer, contractVersion)
 
 	// cryptography
-	const addressHash = solidityHashAddress(recipient)
-	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
-	config.verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
-	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	const signature = signAddress(recipient, keys.privateKey) // sign with link keys
-
-	if (config.verbose) {
-		// print the params
-		console.log('params: ', params)
-		console.log('addressHash: ', addressHash)
-		console.log('addressHashEIP191: ', addressHashEIP191)
-		console.log('signature: ', signature)
-	}
+	const claimParams = await signWithdrawalMessage(
+		contractVersion,
+		chainId,
+		contract.address,
+		depositIdx,
+		recipient,
+		keys.privateKey
+	)
 
 	// Prepare transaction options
 	let txOptions = {}
 	txOptions = await setFeeOptions({
 		txOptions,
 		provider: signer.provider,
-		// eip1559,
-		// maxFeePerGas,
-		// maxPriorityFeePerGas,
-		// gasLimit,
-		// verbose,
 	})
 
-	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
-	config.verbose && console.log('claimParams: ', claimParams)
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
 
 	// withdraw the deposit
@@ -1366,135 +1370,6 @@ async function claimLinkSender({
 	}
 }
 
-async function claimLinkXChain({
-	structSigner,
-	link,
-	destinationChainId,
-	isTestnet = true,
-	maxSlippage = 1.0, // (e.g. 0.x - x.y, example from SDK is 1.0 which is ~ 1%)
-	recipient = null,
-	destinationTokenAddress = null,
-}: interfaces.IClaimLinkXChainParams): Promise<interfaces.IClaimLinkXChainResponse> {
-	// Need to check information about the link
-	const config = { verbose: true }
-	const signer = structSigner.signer
-	const linkParams = peanut.getParamsFromLink(link)
-	const chainId = linkParams.chainId
-	const contractVersion = linkParams.contractVersion
-	const depositIdx = linkParams.depositIdx
-
-	if (recipient == null) {
-		recipient = await signer.getAddress()
-		config.verbose && console.log('recipient not provided, using signer address: ', recipient)
-	}
-	if (contractVersion !== 'v5') {
-		throw new interfaces.SDKStatus(
-			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
-			`Unsupported contract version ${contractVersion}`
-		)
-	}
-
-	const contract = await peanut.getContract(String(chainId), signer, contractVersion)
-
-	// Need to check information about the link
-	const linkDetails = await peanut.getLinkDetails({ link: link })
-
-	// If destinationTokenAddress is not provided, use the tokenAddress from linkDetails
-	if (destinationTokenAddress == null) {
-		destinationTokenAddress = linkDetails.tokenAddress
-	}
-
-	assert(linkDetails.tokenType < 2, 'Only type 0/1 supported for x-chain')
-
-	// TODO: check if the requested tokens are within the routing information available
-	// this can be done by checking access using squid.chains and squid.tokens and bailing
-	// if they do not appear on the list. Note, we don't have to do this here as when we
-	// query the Squid API for a route it will fail if the chain or tokens are not supported
-
-	const claimPayload = await createClaimXChainPayload(
-		isTestnet,
-		link,
-		recipient,
-		destinationChainId,
-		destinationTokenAddress,
-		maxSlippage
-	)
-
-	const { params, estimate, transactionRequest } = claimPayload
-
-	if (config.verbose) {
-		// print the params
-		console.log('params: ', params)
-		console.log('hashEIP191: ', claimPayload.hash)
-		console.log('signature: ', claimPayload.signature)
-	}
-
-	const txOptions = await setFeeOptions({
-		provider: signer.provider,
-		eip1559: structSigner.eip1559 ?? true,
-		maxFeePerGas: structSigner.maxFeePerGas ?? null,
-		maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas ?? null,
-		gasLimit: structSigner.gasLimit ?? null,
-	})
-	console.log('txOptions: ', txOptions)
-
-	let valueToSend
-	if (linkDetails.tokenType == 0) {
-		// Native token handled differently, most of the funds are already in the
-		// contract so we only need to send the native token surplus              100000000000000000
-		console.log('Link value : ', claimPayload.tokenAmount, typeof claimPayload.tokenAmount)
-		console.log('Squid fee  : ', transactionRequest.value, typeof transactionRequest.value)
-		// const feeToSend = transactionRequest.value - claimPayload.tokenAmount
-		// this code sucks
-		const feeToSend = ethers.BigNumber.from(String(transactionRequest.value)).sub(
-			ethers.BigNumber.from(String(claimPayload.tokenAmount))
-		)
-		console.log('Additional to send : ', feeToSend)
-		// valueToSend = ethers.utils.formatEther(feeToSend)
-		valueToSend = ethers.utils.formatEther(feeToSend)
-	} else {
-		// For ERC20 tokens the value requested is the entire fee required to
-		// pay for the Axelar gas for and Squid swapping
-		console.log('Squid fee  : ', transactionRequest.value)
-		valueToSend = ethers.utils.formatEther(transactionRequest.value)
-	}
-
-	txOptions.value = ethers.utils.parseEther(valueToSend)
-
-	const claimParams = [
-		// Peanut link details
-		depositIdx,
-		recipient,
-		// Squid params to mediate execution
-		transactionRequest.data,
-		transactionRequest.value,
-		transactionRequest.target,
-		// Auth details
-		claimPayload.hash,
-		claimPayload.signature,
-	]
-
-	config.verbose && console.log('claimParams: ', claimParams)
-	config.verbose && console.log('txOptions: ', txOptions)
-
-	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
-	// config.verbose && console.log('estimate: ', estimate)
-
-	// withdraw the deposit
-	const tx = await contract.withdrawDepositXChain(...claimParams, txOptions)
-	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
-	const txReceipt = await tx.wait()
-
-	const axelarScanLink = isTestnet
-		? 'https://testnet.axelarscan.io/gmp/' + txReceipt.transactionHash
-		: 'https://axelarscan.io/gmp/' + txReceipt.transactionHash // replace with mainnet URL if exists
-	console.log('Success : ' + axelarScanLink)
-
-	return {
-		txHash: txReceipt.transactionHash,
-	}
-}
-
 /**
  * Gets all deposits for a given signer and chainId.
  *
@@ -1533,46 +1408,60 @@ async function getAllDepositsForSigner({
 	return deposits
 }
 
-async function createClaimPayload(link: string, recipientAddress: string) {
+/**
+ * Generates payload to claim the link from peanut vault on the chain where the link was created
+ * @param link pure url that was sent to the recipient
+ * @param recipientAddress where to send the link's contents
+ * @param onlyRecipientMode for v4.2+ peanut only. If true, only the recipient address will be able to perform the withdrawal
+ * @returns prepared payload
+ */
+async function createClaimPayload(link: string, recipientAddress: string, onlyRecipientMode?: boolean) {
 	/* internal utility function to create the payload for claiming a link */
 	const params = getParamsFromLink(link)
 	const password = params.password
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
 
 	// cryptography
-	const addressHash = solidityHashAddress(recipientAddress)
-	// ethers.utils.solidityKeccak256(['address'], [address])
-
-	// var addressHashBinary = ethers.getBytes(addressHash); // v6
-	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
-	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	const signature = await signAddress(recipientAddress, keys.privateKey) // sign with link keys
+	const claimParams = await signWithdrawalMessage(
+		params.contractVersion,
+		params.chainId,
+		getContractAddress(params.chainId, params.contractVersion),
+		params.depositIdx,
+		recipientAddress,
+		keys.privateKey,
+		onlyRecipientMode
+	)
 
 	return {
-		recipientAddress: recipientAddress,
-		addressHash: addressHashEIP191,
-		signature: signature,
-		idx: params.depositIdx,
+		claimParams,
 		chainId: params.chainId,
 		contractVersion: params.contractVersion,
 	}
 }
 
-async function createClaimXChainPayload(
-	isTestnet: boolean,
-	link: string,
-	recipient: string,
-	destinationChainId: string,
-	destinationToken: string,
-	maxSlippage: number
-) {
+/**
+ * Genereates payload to claim the link to a chain different to the chain on which it was created
+ * @param param0 all the arguments
+ * @returns payload that can be then passed to populateXChainClaimTx to generate a transaction
+ */
+async function createClaimXChainPayload({
+	isMainnet,
+	squidRouterUrl, // accepts an entire url to allow integrators to use their own api
+	link,
+	recipient,
+	destinationChainId,
+	destinationToken,
+	slippage,
+}: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {
+	// have a default for squidRouterUrl
+	if (squidRouterUrl === undefined) squidRouterUrl = getSquidRouterUrl(true, true)
+
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
-	const depositIdx = linkParams.depositIdx
 	const password = linkParams.password
 
-	if (contractVersion !== 'v5') {
+	if (contractVersion !== 'v4.2') {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1582,84 +1471,117 @@ async function createClaimXChainPayload(
 
 	const linkDetails = await peanut.getLinkDetails({ link: link })
 
-	let sourceToken = linkDetails.tokenAddress
-	destinationToken = destinationToken
-
-	if (sourceToken == '0x0000000000000000000000000000000000000000') {
-		assert(linkDetails.tokenType == 0, 'Native token address passed for non-native token link type')
-		// Update for Squid compatibility
-		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
-		sourceToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-	}
-
-	if (destinationToken == '0x0000000000000000000000000000000000000000' || destinationToken == null) {
-		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
-		// Update for Squid compatibility
-		destinationToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-	}
-
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
 	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, linkDetails.tokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 
-	// TODO this can throw and ERROR, needs to be caught
 	const route = await getSquidRoute({
-		isTestnet,
-		fromChain: String(chainId),
-		fromToken: sourceToken,
+		squidRouterUrl,
+		fromChain: chainId,
+		fromToken: linkDetails.tokenAddress,
 		fromAmount: String(tokenAmount),
 		toChain: destinationChainId,
 		toToken: destinationToken,
-		// TODO: is `fromAddress` correct?
 		fromAddress: recipient,
 		toAddress: recipient,
-		slippage: maxSlippage,
+		slippage,
 	})
 
-	if (route === null) {
-		throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, 'Failed to get x-chain route')
-	}
-
-	const { params, estimate, transactionRequest } = route
-
-	if (!params || !estimate || !transactionRequest) {
-		throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, 'Failed to get x-chain route')
-	}
-
-	config.verbose && console.log('Squid route calculated :)')
-	// config.verbose && console.log('Full route : ', route)
+	config.verbose && console.log('Squid route calculated :)', { route })
 
 	// cryptography
+	const routerContractVersion = 'R' + linkDetails.contractVersion
+	const squidAddress = isMainnet ? SQUID_ADDRESS['mainnet'] : SQUID_ADDRESS['testnet']
+	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
+	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
+	const normalWithdrawalPayload = await createClaimPayload(link, routerAddress, true)
 
-	const paramsHash = ethers.utils.solidityKeccak256(
-		['address', 'address', 'bytes', 'uint256'],
-		[recipient, transactionRequest.target, transactionRequest.data, transactionRequest.value]
-	) // this works
+	const routingArgs = [
+		'0x1900',
+		routerAddress,
+		linkDetails.chainId,
+		vaultAddress,
+		linkDetails.depositIndex,
+		squidAddress,
+		route.value,
+		0, // currently we are not charging any fees
+		route.calldata,
+	]
+	config.verbose && console.log('Routing args', routingArgs)
 
-	async function _signMessage(message: ethers.utils.Bytes, privateKey: string) {
-		const wallet = new ethers.Wallet(privateKey)
-		const signature = await wallet.signMessage(message)
-		console.log(`${signature} (Created by _signMessage without hash)`)
-		return signature
-	}
+	const packedRoutingData = ethers.utils.solidityPack(
+		[
+			'bytes2', // 0x1900 as per EIP-191
+			'address', // peanut router address
+			'uint256', // chain id
+			'address', // peanut vault address
+			'uint256', // deposit index
+			'address', // squid address
+			'uint256', // squid fee
+			'uint256', // peanut fee
+			'bytes', // squid calldata
+		],
+		routingArgs
+	)
+	config.verbose && console.log('Packed routing data %s', packedRoutingData)
 
-	const signature = await _signMessage(ethers.utils.arrayify(paramsHash), keys.privateKey)
+	const xchainDigest = ethers.utils.solidityKeccak256(['bytes'], [packedRoutingData])
+	config.verbose && console.log('X chain digest', xchainDigest)
 
-	// log all returns
-	const result = {
-		recipientAddress: recipient,
-		tokenAmount: tokenAmount,
-		hash: paramsHash,
-		signature: signature,
-		idx: depositIdx,
-		chainId: params.chainId,
-		contractVersion: params.contractVersion,
-		params: params,
-		estimate: estimate,
-		transactionRequest: transactionRequest,
+	// const signingKey = new SigningKey(keys.privateKey)
+	const wallet = new ethers.Wallet(keys.privateKey)
+	const routingSignatureRaw = wallet._signingKey().signDigest(ethers.utils.arrayify(xchainDigest))
+	const routingSignature = routingSignatureRaw.r + routingSignatureRaw.s.slice(2) + routingSignatureRaw.v.toString(16)
+	config.verbose && console.log(`Peanut routing signature:`, { routingSignature: routingSignatureRaw })
+
+	// Withdrawal signature is the last element
+	const withdrawalSignature = normalWithdrawalPayload.claimParams[normalWithdrawalPayload.claimParams.length - 1]
+	const result: interfaces.IXchainClaimPayload = {
+		chainId,
+		contractVersion: routerContractVersion,
+		peanutAddress: vaultAddress,
+		depositIndex: linkDetails.depositIndex,
+		withdrawalSignature,
+		squidFee: route.value,
+		peanutFee: BigNumber.from(0),
+		squidData: route.calldata,
+		routingSignature,
 	}
 	config.verbose && console.log('XChain Payload finalized. Values: ', result)
 	return result
+}
+
+/**
+ * Populates a transaction (value, to, calldata) to claim a link cross-chain
+ * @param param0 payload and provider
+ * @returns transaction request
+ */
+async function populateXChainClaimTx({
+	payload,
+	provider,
+}: interfaces.IPopulateXChainClaimTxParams): Promise<TransactionRequest> {
+	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	const preparedArgs: any[] = [
+		payload.peanutAddress,
+		payload.depositIndex,
+		payload.withdrawalSignature,
+		payload.squidFee,
+		payload.peanutFee,
+		payload.squidData,
+		payload.routingSignature,
+	]
+	let unsignedTx: ethers.providers.TransactionRequest
+	try {
+		unsignedTx = await contract.populateTransaction.withdrawAndBridge(...preparedArgs)
+	} catch (error) {
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR,
+			error,
+			'Error making a withdrawAndBridge transaction'
+		)
+	}
+	unsignedTx.value = payload.squidFee
+	return unsignedTx
 }
 
 /**
@@ -1708,11 +1630,11 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		config.verbose && console.log('Pre-v5 claim checking behaviour, claimed:', claimed)
 	} else {
 		claimed = deposit.claimed
-		config.verbose && console.log('v5+ claim checking behaviour, claimed:', claimed)
+		config.verbose && console.log('v4.2+ claim checking behaviour, claimed:', claimed)
 	}
 
 	let depositDate: Date | null = null
-	if (['v4', 'v5'].includes(contractVersion)) {
+	if (['v4', 'v4.2'].includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -1886,11 +1808,10 @@ async function claimLinkGasless({
 		'Content-Type': 'application/json',
 	}
 
+	// TODO: change the API to accept just pure claimParams
+	// This is needed to work with both v4.2 and older versions
 	const body = {
-		address: payload.recipientAddress,
-		address_hash: payload.addressHash,
-		signature: payload.signature,
-		idx: payload.idx,
+		claimParams: payload.claimParams,
 		chain: payload.chainId,
 		version: payload.contractVersion,
 		api_key: APIKey,
@@ -1918,6 +1839,7 @@ async function claimLinkGasless({
 
 /**
  * Claims a link x-chain through the Peanut API
+ * @deprecated need to be changed to work with the new x-chain logic
  */
 async function claimLinkXChainGasless({
 	link,
@@ -1928,89 +1850,7 @@ async function claimLinkXChainGasless({
 	baseUrl = 'https://api.peanut.to/claimxchain',
 	isTestnet = true,
 }: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkXChainGaslessResponse> {
-	config.verbose && console.log('claiming link x-chain through Peanut API...')
-
-	// TODO: DRY merge this code with claimLinkXChain
-	// Need to check information about the link
-	const linkParams = peanut.getParamsFromLink(link)
-	const chainId = linkParams.chainId
-	const contractVersion = linkParams.contractVersion
-	const depositIdx = linkParams.depositIdx
-
-	if (contractVersion !== 'v5') {
-		throw new interfaces.SDKStatus(
-			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
-			`Unsupported contract version ${contractVersion}`
-		)
-	}
-
-	// Need to check information about the link
-	const linkDetails = await peanut.getLinkDetails({ link: link })
-	assert(linkDetails.tokenType < 2, 'Only type 0/1 supported for x-chain')
-
-	// If destinationTokenAddress is not provided, use the tokenAddress from linkDetails
-	if (destinationTokenAddress == null) {
-		destinationTokenAddress = linkDetails.tokenAddress
-	}
-
-	// TODO slippage
-	const claimPayload = await createClaimXChainPayload(
-		isTestnet,
-		link,
-		recipientAddress,
-		destinationChainId,
-		destinationTokenAddress,
-		3.0
-	)
-	const { params, estimate, transactionRequest } = claimPayload
-
-	// valueToSend is handled in API
-
-	config.verbose && console.log('payload: ', claimPayload)
-	if (baseUrl == 'local') {
-		config.verbose && console.log('using local api')
-		baseUrl = 'http://127.0.0.1:8000/claimxchain'
-	}
-
-	const headers = {
-		'Content-Type': 'application/json',
-	}
-
-	const body = {
-		address: claimPayload.recipientAddress,
-		address_hash: claimPayload.hash,
-		signature: claimPayload.signature,
-
-		squid_data: claimPayload.transactionRequest.data,
-		// squid_value: claimPayload.transactionRequest.value,
-		squid_value: claimPayload.transactionRequest.value,
-		squid_address: claimPayload.transactionRequest.target, // squid router address
-
-		idx: depositIdx,
-		chain: chainId,
-		destination_chain: destinationChainId,
-		destination_token: destinationTokenAddress,
-		max_slippage: 1.0,
-		version: contractVersion,
-		api_key: APIKey,
-	}
-
-	const response = await fetch(baseUrl, {
-		method: 'POST',
-		headers: headers,
-		body: JSON.stringify(body),
-	})
-
-	config.verbose && console.log('response status: ', response.status)
-
-	if (!response.ok) {
-		const error = await response.text()
-		throw new Error(error)
-	} else {
-		const data = await response.json()
-		data.txHash = data.tx_hash
-		return data
-	}
+	return { txHash: '0x' + '0'.repeat(64) }
 }
 
 async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
@@ -2135,98 +1975,11 @@ async function getXChainOptionsForLink({
 	return chainsWithTokens
 }
 
-async function getSquidRouteV1({
-	isTestnet,
-	fromChain,
-	fromToken,
-	fromAmount,
-	toChain,
-	toToken,
-	fromAddress,
-	toAddress,
-	slippage,
-}: interfaces.IGetSquidRouteParams): Promise<any> {
-	console.warn('WARNING: Using deprecated Squid API v1')
-	const url =
-		isTestnet === undefined || isTestnet == true
-			? 'https://testnet.api.squidrouter.com/v1/route'
-			: 'https://api.squidrouter.com/v1/route'
-	config.verbose && console.log('Using for squid route call : ', url)
-
-	if (fromToken == '0x0000000000000000000000000000000000000000') {
-		// Update for Squid compatibility
-		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
-		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-	}
-
-	if (toToken == '0x0000000000000000000000000000000000000000') {
-		// Update for Squid compatibility
-		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
-		toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-	}
-
-	const params = {
-		fromChain,
-		fromToken,
-		fromAmount,
-		toChain,
-		toToken,
-		fromAddress,
-		toAddress,
-		slippage,
-		enableForecall: true, // optional, defaults to true
-		enableBoost: true,
-		// collect fees
-		// collectFees: {
-		// 	integratorAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02', // TODO make Peanut address
-		// 	fee: 100, // bips
-		// },
-	}
-
-	try {
-		const searchParams = new URLSearchParams()
-
-		for (const key in params) {
-			if (params.hasOwnProperty(key)) {
-				searchParams.append(key, params[key].toString())
-			}
-		}
-
-		const fullUrl = `${url}?${searchParams}`
-
-		const response: Response = await fetch(fullUrl, {
-			method: 'GET',
-			headers: {
-				// 'x-integrator-id': 'peanut-api',
-				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
-			},
-		})
-
-		if (!response.ok) {
-			const text = await response.text()
-			console.error('Squid api called with status: ', response.status)
-			console.error('Full response text: ', text)
-			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, text)
-		}
-
-		const data = await response.json()
-
-		if (data && data.route) {
-			return data.route
-		}
-
-		// implicit else
-		throw new interfaces.SDKStatus(
-			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
-			'undefined data received from Squid API'
-		)
-	} catch (error) {
-		throw error
-	}
-}
-
+/**
+ * Gets a squid route
+ */
 async function getSquidRoute({
-	isTestnet,
+	squidRouterUrl,
 	fromChain,
 	fromToken,
 	fromAmount,
@@ -2235,12 +1988,8 @@ async function getSquidRoute({
 	fromAddress,
 	toAddress,
 	slippage,
-}: interfaces.IGetSquidRouteParams): Promise<any> {
-	const url =
-		isTestnet === undefined || isTestnet == true
-			? 'https://testnet.v2.api.squidrouter.com/v2/route'
-			: 'https://v2.api.squidrouter.com/v2/route'
-	config.verbose && console.log('Using for squid route call : ', url)
+}: interfaces.IGetSquidRouteParams): Promise<interfaces.ISquidRoute> {
+	config.verbose && console.log('Using for squid route call : ', squidRouterUrl)
 
 	if (fromToken == '0x0000000000000000000000000000000000000000') {
 		// Update for Squid compatibility
@@ -2265,48 +2014,44 @@ async function getSquidRoute({
 		toAddress,
 		// optionally set slippage manually, this will override slippageConfig
 		slippageConfig: {
-			// slippage: 1, // 1% slippage
+			slippage: slippage, // slippage in %
 			autoMode: 1, // ignored if manual slippage is set,
 		},
 		enableForecall: true, // optional, defaults to true
 		enableBoost: true,
-
-		// TODO: needs to be verified in API
-		collectFees: {
-			integratorAddress: '0x6B3751c5b04Aa818EA90115AA06a4D9A36A16f02',
-			fee: 100, // bips
-		},
 	}
 
 	try {
-		const response: Response = await fetch(url, {
+		const response: Response = await fetch(squidRouterUrl, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				// 'x-integrator-id': 'peanut-api',
 				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
 			},
 			body: JSON.stringify(params),
 		})
 
 		if (!response.ok) {
-			console.error('Squid api called with status: ', response.status)
+			console.error(`Squid route endpoint ${squidRouterUrl} returned status: `, response.status)
 			const responseBody = await response.text()
 			console.error('Full response body: ', responseBody)
-			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR, responseBody)
+			throw new interfaces.SDKStatus(interfaces.EXChainStatusCodes.ERROR_GETTING_ROUTE, responseBody)
 		}
 
 		const data = await response.json()
 
 		if (data && data.route) {
 			config.verbose && console.log('Squid route: ', data.route)
-			return data.route
+			return {
+				value: BigNumber.from(data.route.transactionRequest.value),
+				calldata: data.route.transactionRequest.data,
+			}
 		}
 
 		// implicit else
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
-			'undefined data received from Squid API'
+			'Undefined data received from Squid API'
 		)
 	} catch (error) {
 		throw error
@@ -2525,10 +2270,10 @@ const peanut = {
 	claimLink,
 	claimLinkGasless,
 	claimLinkSender,
-	claimLinkXChain,
 	claimLinkXChainGasless,
 	createClaimPayload,
 	createClaimXChainPayload,
+	populateXChainClaimTx,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
@@ -2553,6 +2298,7 @@ const peanut = {
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
+	getSquidRouterUrl,
 	getSquidTokens,
 	getXChainOptionsForLink,
 	greeting,
@@ -2561,6 +2307,7 @@ const peanut = {
 	prepareTxs,
 	resetProviderCache,
 	setFeeOptions,
+	signWithdrawalMessage,
 	signAddress,
 	signAndSubmitTx,
 	signHash,
@@ -2597,10 +2344,10 @@ export {
 	claimLink,
 	claimLinkGasless,
 	claimLinkSender,
-	claimLinkXChain,
 	claimLinkXChainGasless,
 	createClaimPayload,
 	createClaimXChainPayload,
+	populateXChainClaimTx,
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
@@ -2625,6 +2372,7 @@ export {
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
+	getSquidRouterUrl,
 	getSquidTokens,
 	getXChainOptionsForLink,
 	greeting,
@@ -2633,6 +2381,7 @@ export {
 	prepareTxs,
 	resetProviderCache,
 	setFeeOptions,
+	signWithdrawalMessage,
 	signAddress,
 	signAndSubmitTx,
 	signHash,
