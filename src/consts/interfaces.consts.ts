@@ -1,5 +1,5 @@
-import { ethers } from 'ethersv5'
-import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { BigNumber, ethers } from 'ethersv5'
+import { Provider, TransactionRequest } from '@ethersproject/abstract-provider'
 
 //General export interface s and enums
 export interface IPeanutSigner {
@@ -186,6 +186,13 @@ export interface IGetLinkDetailsParams {
 	provider?: ethers.providers.Provider
 }
 
+// X-Chain
+
+export interface ISquidRoute {
+	value: BigNumber
+	calldata: string
+}
+
 //getCrossChainoptionsForLink
 export interface IGetCrossChainOptionsForLinkParams {
 	isTestnet: boolean
@@ -195,15 +202,15 @@ export interface IGetCrossChainOptionsForLinkParams {
 
 //getSquidRoute
 export interface IGetSquidRouteParams {
-	isTestnet: boolean
-	fromChain: string
+	squidRouterUrl: string
+	fromChain: number
 	fromToken: string
 	fromAmount: string
-	toChain: string
+	toChain: number
 	toToken: string
 	fromAddress: string
 	toAddress: string
-	slippage: number
+	slippage?: number
 }
 
 //squid chain and token interfaces
@@ -220,6 +227,35 @@ export interface ISquidToken {
 	name: string
 	symbol: string
 	logoURI: string
+}
+
+export interface ICreateClaimXChainPayload {
+	isMainnet: boolean
+	squidRouterUrl: string
+	link: string
+	recipient: string
+	destinationChainId: number
+	destinationToken: string
+	slippage?: number
+}
+
+export interface IXchainClaimPayload {
+	chainId: number
+	contractVersion: string
+
+	// Args to the withdrawAndBridge function
+	peanutAddress: string
+	depositIndex: number
+	withdrawalSignature: string
+	squidFee: BigNumber
+	peanutFee: BigNumber
+	squidData: string
+	routingSignature: string
+}
+
+export interface IPopulateXChainClaimTxParams {
+	payload: IXchainClaimPayload
+	provider: Provider
 }
 
 // error object and enums
