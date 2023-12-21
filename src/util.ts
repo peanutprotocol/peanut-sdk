@@ -2,7 +2,6 @@ import { BigNumber, ethers } from 'ethersv5'
 import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
-import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -83,47 +82,11 @@ export function solidityHashAddress(address: string) {
  * Hashes a plain address, adds an Ethereum message prefix, hashes it again and then signs it
  */
 export async function signAddress(string: string, privateKey: string) {
-	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]) // v4
-	const stringHashbinary = ethers.utils.arrayify(stringHash) // v4
+	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]) // v5
+	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
 	const signer = new ethers.Wallet(privateKey)
 	const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
 	return signature
-}
-
-/**
- * Hashes & signs a withdrawal message for peanut vault
- * @returns a fully ready list of claim params to be passed to the withdrawal function
- */
-export async function signWithdrawalMessage(
-	vaultVersion: string,
-	chainId: number,
-	vaultAddress: string,
-	depositIdx: number,
-	recipient: string,
-	privateKey: string,
-	onlyRecipientMode?: boolean // only for v4.2
-) {
-	let claimParams: any[]
-	if (vaultVersion == 'v4.2') {
-		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
-		const stringHash = ethers.utils.solidityKeccak256(
-			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],
-			[PEANUT_SALT, chainId, vaultAddress, depositIdx, recipient, extraData]
-		)
-		const stringHashbinary = ethers.utils.arrayify(stringHash)
-		const signer = new ethers.Wallet(privateKey)
-		const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
-		claimParams = [depositIdx, recipient, signature]
-	} else {
-		const addressHash = solidityHashAddress(recipient)
-		const addressHashBinary = ethers.utils.arrayify(addressHash)
-		config.verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
-		const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-		const signature = signAddress(recipient, privateKey) // sign with link keys
-		claimParams = [depositIdx, recipient, addressHashEIP191, signature]
-	}
-
-	return claimParams
 }
 
 /**
@@ -480,23 +443,4 @@ export function compareDeposits(deposit1: any, deposit2: any) {
 	) {
 		return true
 	} else return false
-}
-
-export function getSquidRouterUrl(isMainnet: boolean, usePeanutApi: boolean): string {
-	let squidRouteUrl: string
-	if (usePeanutApi) {
-		if (isMainnet) {
-			squidRouteUrl = 'https://api.peanut.to/get-squid-route'
-		} else {
-			squidRouteUrl = 'https://api.peanut.to/get-squid-route/testnet'
-		}
-	} else {
-		// using squid api
-		if (isMainnet) {
-			squidRouteUrl = 'https://v2.api.squidrouter.com/v2/route'
-		} else {
-			squidRouteUrl = 'https://testnet.v2.api.squidrouter.com/v2/route'
-		}
-	}
-	return squidRouteUrl
 }
