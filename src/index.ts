@@ -1460,9 +1460,6 @@ async function createClaimXChainPayload({
 	destinationToken,
 	slippage,
 }: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {
-	// have a default for squidRouterUrl
-	if (squidRouterUrl === undefined) squidRouterUrl = getSquidRouterUrl(true, true)
-
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
@@ -1836,18 +1833,54 @@ async function claimLinkGasless({
 
 /**
  * Claims a link x-chain through the Peanut API
- * @deprecated need to be changed to work with the new x-chain logic
  */
 async function claimLinkXChainGasless({
 	link,
 	recipientAddress,
 	APIKey,
+	baseUrl = 'https://api.peanut.to/claim-xchain',
 	destinationChainId,
 	destinationTokenAddress = null,
-	baseUrl = 'https://api.peanut.to/claimxchain',
-	isTestnet = true,
+	squidRouterUrl,
+	isMainnet,
+	slippage,
 }: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkXChainGaslessResponse> {
-	return { txHash: '0x' + '0'.repeat(64) }
+	const linkDetails = await getLinkDetails({ link })
+	if (destinationTokenAddress === null) destinationTokenAddress = linkDetails.tokenAddress
+
+	const payload = await createClaimXChainPayload({
+		isMainnet,
+		destinationChainId,
+		destinationToken: destinationTokenAddress,
+		link: link,
+		recipient: recipientAddress,
+		squidRouterUrl,
+		slippage,
+	})
+
+	const claimParams = {
+		apiKey: APIKey,
+		chainId: payload.chainId,
+		contractVersion: payload.contractVersion,
+		peanutAddress: payload.peanutAddress,
+		depositIndex: payload.depositIndex,
+		withdrawalSignature: payload.withdrawalSignature,
+		squidFee: payload.squidFee.toString(),
+		peanutFee: payload.peanutFee.toString(),
+		squidData: payload.squidData,
+		routingSignature: payload.routingSignature,
+	}
+
+	const claimResponse = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(claimParams),
+	})
+	const data = await claimResponse.json()
+	console.log('Claim x-chain response', { data })
+	return { txHash: data.txHash }
 }
 
 async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
@@ -1985,8 +2018,13 @@ async function getSquidRoute({
 	fromAddress,
 	toAddress,
 	slippage,
+	enableForecall = true,
+	enableBoost = true,
 }: interfaces.IGetSquidRouteParams): Promise<interfaces.ISquidRoute> {
-	config.verbose && console.log('Using for squid route call : ', squidRouterUrl)
+	// have a default for squidRouterUrl
+	if (squidRouterUrl === undefined) squidRouterUrl = getSquidRouterUrl(true, true)
+
+	config.verbose && console.log('Using url for squid route call : ', squidRouterUrl)
 
 	if (fromToken == '0x0000000000000000000000000000000000000000') {
 		// Update for Squid compatibility
@@ -2014,8 +2052,8 @@ async function getSquidRoute({
 			slippage: slippage, // slippage in %
 			autoMode: 1, // ignored if manual slippage is set,
 		},
-		enableForecall: true, // optional, defaults to true
-		enableBoost: true,
+		enableForecall,
+		enableBoost,
 	}
 
 	try {
