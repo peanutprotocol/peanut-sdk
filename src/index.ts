@@ -1800,29 +1800,20 @@ async function claimLinkGasless({
 	link,
 	recipientAddress,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/claim',
+	baseUrl = 'https://api.peanut.to/claim-v2',
 }: interfaces.IClaimLinkGaslessParams) {
 	config.verbose && console.log('claiming link through Peanut API...')
-	config.verbose &&
-		console.log('link: ', link, ' recipientAddress: ', recipientAddress, ' apiKey: ', APIKey, ' url: ', baseUrl)
 	const payload = await createClaimPayload(link, recipientAddress)
 	config.verbose && console.log('payload: ', payload)
-	if (baseUrl == 'local') {
-		config.verbose && console.log('using local api')
-		baseUrl = 'http://127.0.0.1:5001/claim'
-	}
 
 	const headers = {
 		'Content-Type': 'application/json',
 	}
-
-	// TODO: change the API to accept just pure claimParams
-	// This is needed to work with both v4.2 and older versions
 	const body = {
 		claimParams: payload.claimParams,
 		chain: payload.chainId,
 		version: payload.contractVersion,
-		api_key: APIKey,
+		apiKey: APIKey,
 	}
 
 	// if axios error, return the error message
@@ -1839,9 +1830,7 @@ async function claimLinkGasless({
 		const error = await response.text()
 		throw new Error(error)
 	} else {
-		const data = await response.json()
-		data.txHash = data.tx_hash
-		return data
+		return await response.json()
 	}
 }
 
