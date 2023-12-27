@@ -231,7 +231,7 @@ export interface ISquidToken {
 
 export interface ICreateClaimXChainPayload {
 	isMainnet: boolean
-	squidRouterUrl: string
+	squidRouterUrl?: string
 	link: string
 	recipient: string
 	destinationChainId: number
@@ -255,7 +255,7 @@ export interface IXchainClaimPayload {
 
 export interface IPopulateXChainClaimTxParams {
 	payload: IXchainClaimPayload
-	provider: Provider
+	provider?: Provider
 }
 
 // Gasless deposits with EIP-3009 via EIP-712

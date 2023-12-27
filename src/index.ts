@@ -1567,6 +1567,7 @@ async function populateXChainClaimTx({
 	payload,
 	provider,
 }: interfaces.IPopulateXChainClaimTxParams): Promise<TransactionRequest> {
+	if (!provider) provider = await getDefaultProvider(String(payload.chainId))
 	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
 	const preparedArgs: any[] = [
 		payload.peanutAddress,
