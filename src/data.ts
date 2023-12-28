@@ -22,7 +22,7 @@ const TOKEN_TYPES = Object.freeze({
 	ERC1155: 3,
 })
 
-const LATEST_STABLE_CONTRACT_VERSION = 'v4'
+const LATEST_STABLE_CONTRACT_VERSION = 'v4.2'
 const LATEST_STABLE_BATCHER_VERSION = 'Bv4'
 
 // export all these functions (imported in index.js)
