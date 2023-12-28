@@ -93,11 +93,13 @@ export interface IClaimLinkGaslessParams {
 export interface IClaimLinkXChainGaslessParams {
 	APIKey: string
 	baseUrl?: string
+	squidRouterUrl?: string
 	recipientAddress: string
 	link: string
-	destinationChainId: string
+	destinationChainId: number
 	destinationTokenAddress?: string
-	isTestnet?: boolean
+	isMainnet: boolean
+	slippage?: number
 }
 
 export interface IClaimLinkXChainGaslessResponse {
@@ -202,7 +204,7 @@ export interface IGetCrossChainOptionsForLinkParams {
 
 //getSquidRoute
 export interface IGetSquidRouteParams {
-	squidRouterUrl: string
+	squidRouterUrl?: string
 	fromChain: number
 	fromToken: string
 	fromAmount: string
@@ -211,6 +213,8 @@ export interface IGetSquidRouteParams {
 	fromAddress: string
 	toAddress: string
 	slippage?: number
+	enableForecall?: boolean
+	enableBoost?: boolean
 }
 
 //squid chain and token interfaces
@@ -231,7 +235,7 @@ export interface ISquidToken {
 
 export interface ICreateClaimXChainPayload {
 	isMainnet: boolean
-	squidRouterUrl: string
+	squidRouterUrl?: string
 	link: string
 	recipient: string
 	destinationChainId: number
@@ -255,7 +259,7 @@ export interface IXchainClaimPayload {
 
 export interface IPopulateXChainClaimTxParams {
 	payload: IXchainClaimPayload
-	provider: Provider
+	provider?: Provider
 }
 
 // Gasless deposits with EIP-3009 via EIP-712

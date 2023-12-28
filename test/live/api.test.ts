@@ -12,9 +12,9 @@ const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOE
 const optimism_goerli_wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, optimismGoerliProvider)
 
 // Define the local and live API URLs
-const LOCAL_API_URL_1 = 'http://127.0.0.1:8000/claim'
-const LOCAL_API_URL_2 = 'http://127.0.0.1:5000/claim'
-const LIVE_API_URL = 'http://api.peanut.to/claim'
+const LOCAL_API_URL_1 = 'http://127.0.0.1:8000'
+const LOCAL_API_URL_2 = 'http://127.0.0.1:5000'
+const LIVE_API_URL = 'http://api.peanut.to'
 
 let API_URL: string
 
@@ -40,6 +40,7 @@ async function setAPIUrl(): Promise<void> {
 		API_URL = LIVE_API_URL
 		console.warn(`Local servers are not alive. Falling back to live API: ${API_URL}`)
 	}
+	API_URL += '/claim'
 	console.log(`API_URL is set to: ${API_URL}`)
 }
 
@@ -94,7 +95,7 @@ describe('Peanut API Integration Tests', function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
-		const chainId = 137 // optimism goerli
+		const chainId = 137 // polygon mainnet
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))
@@ -120,15 +121,15 @@ describe('Peanut API Integration Tests', function () {
 		// claim link using api
 		const receiverAddress = optimism_goerli_wallet.address
 		setTimeout(() => {}, 9000)
-		const res = await peanut.claimLinkGasless({
+		const { txHash } = await peanut.claimLinkGasless({
 			link: resp.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
-			baseUrl: API_URL,
+			baseUrl: `${API_URL}-v2`,
 		})
-		expect(res.status).toBe('success')
-		console.log('claim link response', res.data)
-
+		console.log('Claim link tx hash', txHash)
+		expect(txHash.startsWith('0x')).toBe(true)
+		console.log('Successssssssssssss :)')
 		links.push(resp.link)
 	}, 60000) // 60 seconds timeout
 
