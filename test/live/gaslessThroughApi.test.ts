@@ -1,34 +1,31 @@
 import {
 	TOKEN_TYPES,
-	prepareGaslessDepositTx,
-	prepareGaslessReclaimTx,
 	getDefaultProvider,
 	getLinkDetails,
 	getLinkFromParams,
 	makeGaslessDepositPayload,
 	makeGaslessReclaimPayload,
-	signAndSubmitTx,
+	makeDepositGasless,
+	makeReclaimGasless,
 	getLinksFromTx,
 	interfaces,
 } from '../../src/index' // import directly from source code
-import { BigNumber, ethers } from 'ethersv5' // v5
+import { ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
 dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-const TEST_WALLET_PRIVATE_KEY2 = process.env.TEST_WALLET_PRIVATE_KEY2
 
-describe('gasless functionality', () => {
+describe('gasless functionality through peanut api', () => {
+	const apiKey = process.env.PEANUT_DEV_API_KEY!
 	// Tests the entire flow from the client to the server for gasless deposits
 	// Requirements for the test:
 	// 1. TEST_WALLET_PRIVATE_KEY owns at least 0.01 of mumbai USDC
-	// 2. TEST_WALLET_PRIVATE_KEY2 owns some MATIC to execute transactions
 	test('make a gasless deposit', async () => {
 		const testingChainId = 80001
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
-		const relayerWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY2 ?? '', provider)
-		console.log('Wallet addresses', { user: userWallet.address, relayer: relayerWallet.address })
+		console.log('Wallet addresses', { user: userWallet.address })
 
 		const linkDetails: interfaces.IPeanutLinkDetails = {
 			chainId: testingChainId,
@@ -51,28 +48,21 @@ describe('gasless functionality', () => {
 		const userDepositSignature = await userWallet._signTypedData(message.domain, message.types, message.values)
 		console.log('Signature', userDepositSignature)
 
-		const unsignedTx = await prepareGaslessDepositTx({
-			provider,
+		const result = await makeDepositGasless({
+			APIKey: apiKey,
 			payload,
 			signature: userDepositSignature,
+			baseUrl: 'http://localhost:8000/deposit-3009',
 		})
-		const { tx, txHash } = await signAndSubmitTx({
-			structSigner: {
-				signer: relayerWallet,
-				eip1559: true,
-				maxPriorityFeePerGas: BigNumber.from(2 * 1e9),
-				gasLimit: BigNumber.from(300000),
-			},
-			unsignedTx,
-		})
-		console.log('Submitted transaction! Tx hash:', txHash)
+		console.log('Result from the API', result)
+		expect(result.txHash).toBeDefined()
 
-		await tx.wait()
+		await provider.waitForTransaction(result.txHash)
 		console.log('The transaction has been executed!')
 
 		const { links } = await getLinksFromTx({
 			linkDetails,
-			txHash: txHash,
+			txHash: result.txHash,
 			passwords: [password],
 		})
 		expect(links.length).toBe(1)
@@ -83,8 +73,8 @@ describe('gasless functionality', () => {
 		expect(linkInfo.claimed).toBe(false)
 		expect(linkInfo.tokenAmount).toBe(String(linkDetails.tokenAmount))
 
-		console.log('Congrats! Test successful!')
-	}, 60000)
+		console.log('Congrats!! Test successful!')
+	}, 30000) // 30 seconds timeout
 
 	// Tests the entire flow from the client to the server for gasless reclaims
 	// Requirements for the test:
@@ -93,17 +83,16 @@ describe('gasless functionality', () => {
 	// 2. TEST_WALLET_PRIVATE_KEY2 owns some MATIC to execute transactions
 	test('make a gasless reclaim', async () => {
 		const testingChainId = 80001
-		const depositIndex = 9 // must be a withdrawable deposit
+		const depositIndex = 11 // must be a withdrawable deposit
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
-		const relayerWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY2 ?? '', provider)
-		console.log('Wallet addresses', { user: userWallet.address, relayer: relayerWallet.address })
+		console.log('Wallet addresses', { user: userWallet.address })
 
 		const link = getLinkFromParams(
 			testingChainId,
 			'v4.2',
 			depositIndex,
-			'12345678' // password - doesn't matter, we only check "claimed" status
+			'12345678' // password - doesn't matter, since the link is being reclaimed by the sender
 		)
 		// Make sure that the link exists and is not claimed
 		let linkDetails = await getLinkDetails({ link, provider })
@@ -120,26 +109,21 @@ describe('gasless functionality', () => {
 		const userDepositSignature = await userWallet._signTypedData(message.domain, message.types, message.values)
 		console.log('Signature', userDepositSignature)
 
-		const unsignedTx = await prepareGaslessReclaimTx({
-			provider,
+		const result = await makeReclaimGasless({
+			APIKey: apiKey,
 			payload,
 			signature: userDepositSignature,
+			baseUrl: 'http://localhost:8000/reclaim',
 		})
-		const { tx } = await signAndSubmitTx({
-			structSigner: {
-				signer: relayerWallet,
-				eip1559: true,
-				maxPriorityFeePerGas: BigNumber.from(2 * 1e9),
-				gasLimit: BigNumber.from(300000),
-			},
-			unsignedTx,
-		})
-		await tx.wait()
+		console.log('Result from the API', result)
+
+		await provider.waitForTransaction(result.txHash)
+		console.log('The transaction has been executed!')
 
 		// Check that the link is now claimed
 		linkDetails = await getLinkDetails({ link, provider })
 		expect(linkDetails.claimed).toBe(true)
 
-		console.log('Congrats! Test successful!')
-	}, 60000)
+		console.log('Congrats!! Test successful!')
+	}, 30000) // 30 seconds timeout
 })

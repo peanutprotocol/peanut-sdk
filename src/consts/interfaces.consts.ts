@@ -281,7 +281,6 @@ export interface IPrepareGaslessDepositParams {
 	address: string
 	contractVersion: string
 	linkDetails: IPeanutLinkDetails
-	signer?: ethers.Signer
 	password: string
 }
 
@@ -312,7 +311,7 @@ export interface IMakeGaslessDepositPayloadResponse {
 }
 
 export interface IPrepareGaslessDepositTxParams {
-	provider: Provider
+	provider?: Provider
 	payload: IGaslessDepositPayload
 	signature: string
 }
@@ -326,7 +325,7 @@ export interface IMakeGaslessReclaimPayloadParams {
 	contractVersion?: string
 }
 
-export interface IPreparedGaslessReclaimPayload {
+export interface IGaslessReclaimPayload {
 	chainId: number
 	contractVersion: string
 
@@ -336,18 +335,32 @@ export interface IPreparedGaslessReclaimPayload {
 }
 
 export interface IMakeGaslessReclaimPayloadResponse {
-	payload: IPreparedGaslessReclaimPayload
+	payload: IGaslessReclaimPayload
 	message: IPreparedEIP712Message
 }
 
 export interface IPrepareGaslessReclaimTxParams {
-	provider: Provider
-	payload: IPreparedGaslessReclaimPayload
+	provider?: Provider
+	payload: IGaslessReclaimPayload
 	signature: string
 }
 
 export interface IExecuteGaslessReclaimResponse {
 	txHash: string
+}
+
+export interface IMakeDepositGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	payload: IGaslessDepositPayload
+	signature: string
+}
+
+export interface IMakeReclaimGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	payload: IGaslessReclaimPayload
+	signature: string
 }
 
 // error object and enums

@@ -2383,6 +2383,8 @@ async function prepareGaslessDepositTx({
 	payload,
 	signature,
 }: interfaces.IPrepareGaslessDepositTxParams): Promise<TransactionRequest> {
+	if (!provider) provider = await getDefaultProvider(String(payload.chainId))
+
 	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
 	const puresig = signature.slice(2) // remove 0x prefix
 	const preparedPayload: any[] = [
@@ -2410,6 +2412,53 @@ async function prepareGaslessDepositTx({
 	return unsignedTx
 }
 
+/**
+ * Makes a gasless eip-3009 deposit through Peanut API
+ */
+async function makeDepositGasless({
+	APIKey,
+	baseUrl = 'https://api.peanut.to/deposit-3009',
+	payload,
+	signature,
+}: interfaces.IMakeDepositGaslessParams) {
+	config.verbose && console.log('depositing gaslessly through Peanut API...')
+	config.verbose && console.log('payload: ', payload)
+
+	const headers = {
+		'Content-Type': 'application/json',
+	}
+	const body = {
+		apiKey: APIKey,
+		chainId: payload.chainId,
+		contractVersion: payload.contractVersion,
+		tokenAddress: payload.tokenAddress,
+		from: payload.from,
+		uintAmount: payload.uintAmount.toString(),
+		pubKey20: payload.pubKey20,
+		nonce: payload.nonce,
+		validAfter: payload.validAfter.toString(),
+		validBefore: payload.validBefore.toString(),
+		signature,
+	}
+
+	// if axios error, return the error message
+
+	const response = await fetch(baseUrl, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
+
+	config.verbose && console.log('response status: ', response.status)
+
+	if (!response.ok) {
+		const error = await response.text()
+		throw new Error(error)
+	} else {
+		return await response.json()
+	}
+}
+
 // Returns args to be passed to withdrawDepositSenderGasless function
 // and a EIP-712 message to be signed
 async function makeGaslessReclaimPayload({
@@ -2426,7 +2475,7 @@ async function makeGaslessReclaimPayload({
 	}
 	const peanutVault = await getContract(chainId.toString(), null, contractVersion)
 
-	const payload: interfaces.IPreparedGaslessReclaimPayload = {
+	const payload: interfaces.IGaslessReclaimPayload = {
 		chainId: chainId,
 		contractVersion: contractVersion,
 		depositIndex,
@@ -2457,6 +2506,8 @@ async function prepareGaslessReclaimTx({
 	payload,
 	signature,
 }: interfaces.IPrepareGaslessReclaimTxParams): Promise<TransactionRequest> {
+	if (!provider) provider = await getDefaultProvider(String(payload.chainId))
+
 	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
 	const preparedPayload: any[] = [[payload.depositIndex], payload.signer, signature]
 	console.log('Prepared payload', { preparedPayload })
@@ -2471,6 +2522,48 @@ async function prepareGaslessReclaimTx({
 		)
 	}
 	return unsignedTx
+}
+
+/**
+ * Makes a gasless eip-3009 deposit through Peanut API
+ */
+async function makeReclaimGasless({
+	APIKey,
+	baseUrl = 'https://api.peanut.to/reclaim',
+	payload,
+	signature,
+}: interfaces.IMakeReclaimGaslessParams) {
+	config.verbose && console.log('depositing gaslessly through Peanut API...')
+	config.verbose && console.log('payload: ', payload)
+
+	const headers = {
+		'Content-Type': 'application/json',
+	}
+	const body = {
+		apiKey: APIKey,
+		chainId: payload.chainId,
+		contractVersion: payload.contractVersion,
+		depositIndex: payload.depositIndex,
+		signer: payload.signer,
+		signature,
+	}
+
+	// if axios error, return the error message
+
+	const response = await fetch(baseUrl, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
+
+	config.verbose && console.log('response status: ', response.status)
+
+	if (!response.ok) {
+		const error = await response.text()
+		throw new Error(error)
+	} else {
+		return await response.json()
+	}
 }
 
 const peanut = {
@@ -2529,6 +2622,8 @@ const peanut = {
 	greeting,
 	hash_string,
 	interfaces,
+	makeDepositGasless,
+	makeReclaimGasless,
 	prepareTxs,
 	resetProviderCache,
 	setFeeOptions,
@@ -2608,6 +2703,8 @@ export {
 	greeting,
 	hash_string,
 	interfaces,
+	makeDepositGasless,
+	makeReclaimGasless,
 	prepareTxs,
 	resetProviderCache,
 	setFeeOptions,
