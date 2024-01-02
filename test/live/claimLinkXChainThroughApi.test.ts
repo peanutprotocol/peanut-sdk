@@ -52,7 +52,7 @@ describe('Peanut XChain claiming tests', function () {
 			destinationChainId,
 			APIKey: apiKey,
 			isMainnet: true,
-			baseUrl: 'http://localhost:8000/claim-xchain',
+			baseUrl: 'http://localhost:8000/claim-x-chain',
 			squidRouterUrl: 'http://localhost:8000/get-squid-route',
 		})
 		console.log('X-chain result!', { result })

@@ -1452,14 +1452,14 @@ async function createClaimPayload(link: string, recipientAddress: string, onlyRe
  * @returns payload that can be then passed to populateXChainClaimTx to generate a transaction
  */
 async function createClaimXChainPayload({
-	isMainnet,
+	isMainnet = true,
 	squidRouterUrl, // accepts an entire url to allow integrators to use their own api
 	link,
 	recipient,
 	destinationChainId,
 	destinationToken,
 	slippage,
-}: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {
+}: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {	
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
@@ -1474,6 +1474,8 @@ async function createClaimXChainPayload({
 	const keys = peanut.generateKeysFromString(password)
 
 	const linkDetails = await peanut.getLinkDetails({ link: link })
+	if (destinationToken === null) destinationToken = linkDetails.tokenAddress
+	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
 	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, linkDetails.tokenDecimals)
@@ -1838,20 +1840,17 @@ async function claimLinkXChainGasless({
 	link,
 	recipientAddress,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/claim-xchain',
+	baseUrl = 'https://api.peanut.to/claim-x-chain',
 	destinationChainId,
-	destinationTokenAddress = null,
+	destinationToken = null,
 	squidRouterUrl,
-	isMainnet,
+	isMainnet = true,
 	slippage,
 }: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkXChainGaslessResponse> {
-	const linkDetails = await getLinkDetails({ link })
-	if (destinationTokenAddress === null) destinationTokenAddress = linkDetails.tokenAddress
-
 	const payload = await createClaimXChainPayload({
 		isMainnet,
 		destinationChainId,
-		destinationToken: destinationTokenAddress,
+		destinationToken: destinationToken,
 		link: link,
 		recipient: recipientAddress,
 		squidRouterUrl,
