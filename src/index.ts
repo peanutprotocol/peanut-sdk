@@ -2006,9 +2006,9 @@ async function getXChainOptionsForLink({
 }
 
 /**
- * Gets a squid route
+ * Gets raw json data about a squid route
  */
-async function getSquidRoute({
+async function getSquidRouteRaw({
 	squidRouterUrl,
 	fromChain,
 	fromToken,
@@ -2020,7 +2020,7 @@ async function getSquidRoute({
 	slippage,
 	enableForecall = true,
 	enableBoost = true,
-}: interfaces.IGetSquidRouteParams): Promise<interfaces.ISquidRoute> {
+}: interfaces.IGetSquidRouteParams): Promise<any> {
 	// have a default for squidRouterUrl
 	if (squidRouterUrl === undefined) squidRouterUrl = getSquidRouterUrl(true, true)
 
@@ -2074,23 +2074,31 @@ async function getSquidRoute({
 		}
 
 		const data = await response.json()
-
-		if (data && data.route) {
-			config.verbose && console.log('Squid route: ', data.route)
-			return {
-				value: BigNumber.from(data.route.transactionRequest.value),
-				calldata: data.route.transactionRequest.data,
-			}
-		}
-
-		// implicit else
-		throw new interfaces.SDKStatus(
-			interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
-			'Undefined data received from Squid API'
-		)
+		console.log('All squid data', data)
+		return data
 	} catch (error) {
 		throw error
 	}
+}
+
+/**
+ * Gets a squid route
+ */
+async function getSquidRoute(args: interfaces.IGetSquidRouteParams): Promise<interfaces.ISquidRoute> {
+	const data = await getSquidRouteRaw(args)
+	if (data && data.route) {
+		config.verbose && console.log('Squid route: ', data.route)
+		return {
+			value: BigNumber.from(data.route.transactionRequest.value),
+			calldata: data.route.transactionRequest.data,
+		}
+	}
+
+	// implicit else
+	throw new interfaces.SDKStatus(
+		interfaces.EXChainStatusCodes.ERROR_UNDEFINED_DATA,
+		'Undefined data received from Squid API'
+	)
 }
 
 function calculateCombinedPayloadHash(transactionRequest, recipient) {
@@ -2514,6 +2522,7 @@ const peanut = {
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
+	getSquidRouteRaw,
 	getSquidRouterUrl,
 	getSquidTokens,
 	getXChainOptionsForLink,
@@ -2592,6 +2601,7 @@ export {
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
+	getSquidRouteRaw,
 	getSquidRouterUrl,
 	getSquidTokens,
 	getXChainOptionsForLink,
