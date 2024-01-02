@@ -92,13 +92,13 @@ export interface IClaimLinkGaslessParams {
 //claimLinkXChainGasless
 export interface IClaimLinkXChainGaslessParams {
 	APIKey: string
-	baseUrl?: string
-	squidRouterUrl?: string
 	recipientAddress: string
 	link: string
 	destinationChainId: number
-	destinationTokenAddress?: string
-	isMainnet: boolean
+	destinationToken?: string
+	isMainnet?: boolean
+	baseUrl?: string
+	squidRouterUrl?: string
 	slippage?: number
 }
 
@@ -234,12 +234,12 @@ export interface ISquidToken {
 }
 
 export interface ICreateClaimXChainPayload {
-	isMainnet: boolean
-	squidRouterUrl?: string
 	link: string
 	recipient: string
 	destinationChainId: number
-	destinationToken: string
+	destinationToken?: string
+	squidRouterUrl?: string
+	isMainnet?: boolean
 	slippage?: number
 }
 
