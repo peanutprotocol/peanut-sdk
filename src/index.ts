@@ -6,12 +6,11 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, ethers } from 'ethersv5' // v5
+import { BigNumber, ethers } from 'ethersv5'
 import { TransactionReceipt, TransactionRequest } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
-	PEANUT_ABI_V5,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
@@ -231,9 +230,6 @@ async function getContract(_chainId: string, signerOrProvider: any, version = nu
 		case 'Bv4':
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
 			break
-		case 'v5':
-			PEANUT_ABI = PEANUT_ABI_V5
-			break
 		case 'Rv4.2':
 			PEANUT_ABI = PEANUT_ROUTER_ABI_V4_2
 			break
@@ -315,48 +311,6 @@ async function getApprovedERC1155(
 	}
 	return approved
 }
-
-// async function approveSpendERC20(
-// 	signer: ethers.providers.JsonRpcSigner,
-// 	chainId: string,
-// 	tokenAddress: string,
-// 	_amount: number | BigNumber,
-// 	tokenDecimals = 18,
-// 	isRawAmount = false,
-// 	contractVersion = DEFAULT_CONTRACT_VERSION
-// ) {
-// 	/* Approves the contract to spend the specified amount of tokens */
-// 	signer = await getAbstractSigner(signer)
-// 	const signerAddress = await signer.getAddress()
-
-// 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
-// 	const spender = _PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][contractVersion]
-// 	if (!spender) throw new Error('Spender address not found for the given chain and contract version')
-
-// 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer)
-// 	let allowance = await getAllowanceERC20(tokenContract, spender, signerAddress, signer)
-
-// 	const txDetails = await prepareApproveERC20Tx(
-// 		chainId,
-// 		tokenAddress,
-// 		spender,
-// 		_amount,
-// 		tokenDecimals,
-// 		isRawAmount,
-// 		contractVersion
-// 	)
-
-// 	if (txDetails != null) {
-// 		const txOptions = await setFeeOptions({ provider: signer.provider, eip1559: true })
-// 		const tx = await signer.sendTransaction({ ...txDetails, ...txOptions })
-// 		const txReceipt = await tx.wait()
-// 		let allowance = await getAllowanceERC20(tokenContract, spender, signerAddress, signer)
-// 		return { allowance, txReceipt }
-// 	} else {
-// 		console.log('Allowance already enough, no need to approve more (allowance: ' + allowance.toString() + ')')
-// 		return { allowance, txReceipt: null }
-// 	}
-// }
 
 async function prepareApproveERC20Tx(
 	address: string,
@@ -719,7 +673,7 @@ async function prepareTxs({
 		)
 	}
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
-	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
+	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks)
 
 	const unsignedTxs: ethers.providers.TransactionRequest[] = []
@@ -821,29 +775,6 @@ async function prepareTxs({
 
 	const keys = passwords.map((password) => generateKeysFromString(password)) // deterministically generate keys from password
 
-	// HAVE TO SET FEE OPTIONS AT SIGNING TIME
-	// set transaction options
-	// try {
-	// 	txOptions = await setFeeOptions({
-	// 		txOptions,
-	// 		provider: provider,
-	// 		// TODO: setFeeOptions should take into account if chain supports eip1559? or should we just set this to empty?
-	// 		// eip1559: structSigner.eip1559,
-	// 		// maxFeePerGas: structSigner.maxFeePerGas,
-	// 		// maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
-	// 		// gasLimit: structSigner.gasLimit,
-	// 	})
-	// } catch (error) {
-	// 	console.error(error)
-	// 	return {
-	// 		unsignedTxs: [],
-	// 		status: new interfaces.SDKStatus(
-	// 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_SETTING_FEE_OPTIONS,
-	// 			'Error setting fee options'
-	// 		),
-	// 	}
-	// }
-
 	let contract
 	let depositParams
 	let depositTx
@@ -857,17 +788,6 @@ async function prepareTxs({
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
 
-		// TODO: this will fail if allowance is not enough
-		// removing estimating gas limit from here
-		// try {
-		// 	const estimatedGasLimit = await estimateGasLimit(contract, 'makeDeposit', depositParams, txOptions)
-		// 	if (estimatedGasLimit) {
-		// 		txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
-		// 	}
-		// } catch (error) {
-		// 	// do nothing
-		// 	config.verbose && console.log('Error estimating gas limit:', error)
-		// }
 		try {
 			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
 		} catch (error) {
@@ -887,24 +807,6 @@ async function prepareTxs({
 			keys.map((key) => key.address),
 		]
 		contract = await getContract(String(linkDetails.chainId), provider, batcherContractVersion) // get the contract instance
-
-		// HAVE TO ESTIMATE GAS IN SIGNING PROCESS
-		// let estimatedGasLimit
-		// try {
-		// 	estimatedGasLimit = await estimateGasLimit(contract, 'batchMakeDeposit', depositParams, txOptions)
-		// } catch (error) {
-		// 	console.error(error)
-		// 	return {
-		// 		unsignedTxs: [],
-		// 		status: new interfaces.SDKStatus(
-		// 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_ESTIMATING_GAS_LIMIT,
-		// 			'Error estimating gas limit'
-		// 		),
-		// 	}
-		// }
-		// if (estimatedGasLimit) {
-		// 	txOptions.gasLimit = ethers.BigNumber.from(estimatedGasLimit.toString())
-		// }
 
 		try {
 			depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
@@ -1023,9 +925,6 @@ async function getLinksFromTx({
 
 	// get deposit idx
 	const peanutContractVersion = detectContractVersionFromTxReceipt(txReceipt, String(linkDetails.chainId))
-
-	// TODO: See if its one deposit or many, and call getDepositIdx or getDepositIdxs accordingly
-	// or: always call getDepositIdxs? <-- bingo
 	const idxs: number[] = getDepositIdxs(txReceipt, String(linkDetails.chainId), peanutContractVersion) // doesn't work on V3!
 	const links: string[] = []
 	idxs.map((idx) => {
@@ -1407,7 +1306,7 @@ async function getAllDepositsForSigner({
 			deposits.push(deposit)
 		}
 	} else {
-		// v4: we now have getAllDeposits available
+		// v4+: we now have getAllDeposits available
 		const address = await signer.getAddress()
 		// const allDeposits = await contract.getAllDeposits();
 		deposits = await contract.getAllDepositsForAddress(address)
@@ -1632,8 +1531,9 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
 			claimed = true
 		}
-		config.verbose && console.log('Pre-v5 claim checking behaviour, claimed:', claimed)
+		config.verbose && console.log('Pre-4.2 claim checking behaviour, claimed:', claimed)
 	} else {
+		// v4.2+
 		claimed = deposit.claimed
 		config.verbose && console.log('v4.2+ claim checking behaviour, claimed:', claimed)
 	}
@@ -1649,16 +1549,6 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 			config.verbose && console.log('No timestamp found in deposit for version', contractVersion)
 		}
 	}
-	//  else if (['v5'].includes(contractVersion)) {
-	// 	if (deposit.timestamp) {
-	// 		depositDate = new Date(deposit.timestamp * 1000)
-	// 		if (deposit.timestamp == 0) {
-	// 			depositDate = null
-	// 		}
-	// 	} else {
-	// 		config.verbose && console.log('No timestamp found in deposit for version', contractVersion)
-	// 	}
-	// }
 
 	let tokenAmount = '0'
 	let tokenDecimals = null
@@ -2183,8 +2073,9 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (peanutContractVersion == 'v4') {
-		console.warn('WARNING: only returning unclaimed deposits for v4 contracts')
+	if (!['v4', 'v4.2'].includes(peanutContractVersion)) {
+		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
+		return
 	}
 
 	config.verbose &&
@@ -2211,11 +2102,10 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		}
 	}) // get all address deposits
 
-	if (peanutContractVersion == 'v5' || peanutContractVersion == 'v4') {
-		addressDeposits = addressDeposits.filter((deposit: any) => {
-			return deposit.senderAddress.toString() == address.toString()
-		})
-	} // in v4 and v5 contractversion, filter out deposits not made by the address
+	// filter out deposits not made by the address
+	addressDeposits = addressDeposits.filter((deposit: any) => {
+		return deposit.senderAddress.toString() == address.toString()
+	})
 
 	config.verbose && console.log('all deposits made by address: ', addressDeposits)
 
@@ -2575,7 +2465,6 @@ const peanut = {
 	ERC721_ABI,
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
-	PEANUT_ABI_V5,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	TOKEN_DETAILS,
@@ -2656,7 +2545,6 @@ export {
 	ERC721_ABI,
 	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
-	PEANUT_ABI_V5,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
 	TOKEN_DETAILS,

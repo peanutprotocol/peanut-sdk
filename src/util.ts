@@ -28,7 +28,7 @@ export function greeting() {
  * @returns {Object} - An object containing the address and privateKey
  */
 export function generateKeysFromString(string: string) {
-	const privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)) // v5
+	const privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string))
 	const wallet = new ethers.Wallet(privateKey)
 	return {
 		address: wallet.address,
@@ -41,10 +41,10 @@ export function generateKeysFromString(string: string) {
  */
 export function hash_string(str: string) {
 	//@HUGO: I've added in a .toString() here, but I'm not sure if it's good
-	let hash = ethers.utils.toUtf8Bytes(str).toString() // v5
-	hash = ethers.utils.hexlify(hash) // v5
-	hash = ethers.utils.hexZeroPad(hash, 32) // v5
-	hash = ethers.utils.keccak256(hash) // v5
+	let hash = ethers.utils.toUtf8Bytes(str).toString()
+	hash = ethers.utils.hexlify(hash)
+	hash = ethers.utils.hexZeroPad(hash, 32)
+	hash = ethers.utils.keccak256(hash)
 	return hash
 }
 
@@ -61,7 +61,7 @@ export async function signMessageWithPrivatekey(message: string, privateKey: str
  * Verifies a signature with a public key and returns true if valid
  */
 export function verifySignature(message: string, signature: string, address: string) {
-	const messageSigner = ethers.utils.verifyMessage(message, signature) // v5
+	const messageSigner = ethers.utils.verifyMessage(message, signature)
 	return messageSigner == address
 }
 
@@ -69,14 +69,14 @@ export function verifySignature(message: string, signature: string, address: str
  * Adds the EIP191 prefix to a message and hashes it same as solidity
  */
 export function solidityHashBytesEIP191(bytes: any) {
-	return ethers.utils.hashMessage(bytes) // v5
+	return ethers.utils.hashMessage(bytes)
 }
 
 /**
  * Hashes an address to a 32 byte hex string
  */
 export function solidityHashAddress(address: string) {
-	return ethers.utils.solidityKeccak256(['address'], [address]) // v5
+	return ethers.utils.solidityKeccak256(['address'], [address])
 }
 
 /**
@@ -130,7 +130,7 @@ export async function signWithdrawalMessage(
  * Signs a hash
  */
 export async function signHash(stringHash: string, privateKey: string) {
-	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
+	const stringHashbinary = ethers.utils.arrayify(stringHash)
 	const signer = new ethers.Wallet(privateKey)
 	const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
 	return signature
@@ -328,14 +328,14 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (contractVersion === 'v4') {
-		// In v5, the index is now an indexed topic rather than part of the log data
+	} else if (['v4', 'V4.2'].includes(contractVersion)) {
+		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(`0x${logs[logIndex].topics[1].slice(2)}`)
 		} catch (error) {
-			console.error('Error parsing deposit index from v5 logs:', error)
+			console.error(`Error parsing deposit index from ${contractVersion} logs:', error`)
 		}
 	} else {
 		console.error('Unsupported contract version:', contractVersion)
