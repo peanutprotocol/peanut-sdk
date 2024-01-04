@@ -375,13 +375,9 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 export function toLowerCaseKeys(obj: any): any {
 	let newObj: any = {}
 	Object.keys(obj).forEach((key) => {
+		// Convert only the top-level keys to lowercase
 		let lowerCaseKey = key.toLowerCase()
-
-		if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-			newObj[lowerCaseKey] = toLowerCaseKeys(obj[key])
-		} else {
-			newObj[lowerCaseKey] = obj[key]
-		}
+		newObj[lowerCaseKey] = obj[key]
 	})
 	return newObj
 }
