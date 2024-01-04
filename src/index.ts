@@ -9,7 +9,6 @@
 import { BigNumber, ethers } from 'ethersv5'
 import { TransactionReceipt, TransactionRequest } from '@ethersproject/abstract-provider'
 import {
-	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
@@ -218,9 +217,6 @@ async function getContract(_chainId: string, signerOrProvider: any, version = nu
 	// Determine which ABI version to use based on the version provided
 	let PEANUT_ABI
 	switch (version) {
-		case 'v3':
-			PEANUT_ABI = PEANUT_ABI_V3
-			break
 		case 'v4':
 			PEANUT_ABI = PEANUT_ABI_V4
 			break
@@ -925,7 +921,7 @@ async function getLinksFromTx({
 
 	// get deposit idx
 	const peanutContractVersion = detectContractVersionFromTxReceipt(txReceipt, String(linkDetails.chainId))
-	const idxs: number[] = getDepositIdxs(txReceipt, String(linkDetails.chainId), peanutContractVersion) // doesn't work on V3!
+	const idxs: number[] = getDepositIdxs(txReceipt, String(linkDetails.chainId), peanutContractVersion)
 	const links: string[] = []
 	idxs.map((idx) => {
 		links.push(
@@ -1294,24 +1290,8 @@ async function getAllDepositsForSigner({
 		getLatestContractVersion({ chainId: chainId, type: 'normal' })
 	}
 	const contract = await getContract(chainId, signer, contractVersion)
-	let deposits
-	if (contractVersion == 'v3') {
-		// throw warning if using v3
-		console.warn('WARNING: This function is not efficient for v3 contracts. Not recommended to use.')
-		const depositCount = await contract.getDepositCount()
-		deposits = []
-		for (let i = 0; i < depositCount; i++) {
-			config.verbose && console.log('fetching deposit: ', i)
-			const deposit = await contract.deposits(i)
-			deposits.push(deposit)
-		}
-	} else {
-		// v4+: we now have getAllDeposits available
-		const address = await signer.getAddress()
-		// const allDeposits = await contract.getAllDeposits();
-		deposits = await contract.getAllDepositsForAddress(address)
-	}
-	return deposits
+	const address = await signer.getAddress()
+	return await contract.getAllDepositsForAddress(address)
 }
 
 /**
@@ -1529,7 +1509,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const senderAddress = deposit.senderAddress
 
 	let claimed = false
-	if (['v2', 'v3', 'v4'].includes(contractVersion)) {
+	if (['v2', 'v4'].includes(contractVersion)) {
 		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
 			claimed = true
 		}
@@ -2462,7 +2442,6 @@ const peanut = {
 	ERC1155_ABI,
 	ERC20_ABI,
 	ERC721_ABI,
-	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
@@ -2543,7 +2522,6 @@ export {
 	ERC1155_ABI,
 	ERC20_ABI,
 	ERC721_ABI,
-	PEANUT_ABI_V3,
 	PEANUT_ABI_V4,
 	PEANUT_BATCHER_ABI_V4,
 	PEANUT_CONTRACTS,
