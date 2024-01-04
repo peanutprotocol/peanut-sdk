@@ -1338,7 +1338,7 @@ async function createClaimXChainPayload({
 	destinationChainId,
 	destinationToken,
 	slippage,
-}: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {	
+}: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
@@ -2511,6 +2511,7 @@ const peanut = {
 	prepareGaslessDepositTx,
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
+	EIP3009Tokens,
 }
 
 export default peanut
@@ -2591,4 +2592,5 @@ export {
 	prepareGaslessDepositTx,
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
+	EIP3009Tokens,
 }
