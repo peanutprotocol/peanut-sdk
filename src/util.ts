@@ -119,7 +119,7 @@ export async function signWithdrawalMessage(
 		const addressHashBinary = ethers.utils.arrayify(addressHash)
 		config.verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
 		const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-		const signature = signAddress(recipient, privateKey) // sign with link keys
+		const signature = await signAddress(recipient, privateKey) // sign with link keys
 		claimParams = [depositIdx, recipient, addressHashEIP191, signature]
 	}
 
@@ -303,6 +303,7 @@ export function getLinkFromParams(
 
 /**
  * Returns the deposit index from a tx receipt
+ * @deprecated will be removed in Feb 2024
  */
 export function getDepositIdx(txReceipt: any, chainId: number | string, contractVersion: string) {
 	/* returns the deposit index from a tx receipt */
@@ -352,12 +353,6 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 	const logs = txReceipt.logs
 	const depositIdxs = []
 	config.verbose && console.log('logs: ', logs)
-
-	// events
-	// event DepositEvent(
-	//     uint256 indexed _index, uint8 indexed _contractType, uint256 _amount, address indexed _senderAddress
-	// );
-	// const logTopic = ethers.utils.id('Deposit(uint256,address,uint64,uint8,uint64,uint256)') // Update with correct event signature
 	const logTopic = ethers.utils.id('DepositEvent(uint256,uint8,uint256,address)') // Update with correct event signature
 
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
