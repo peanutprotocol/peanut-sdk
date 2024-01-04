@@ -8,7 +8,29 @@ export const EIP3009Tokens: EIP3009TokensInterface = {
 			name: 'USD Coin',
 			version: '2',
 		},
+		'0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174': {
+			chainId: 137,
+			verifyingContract: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+			name: 'USD Coin (PoS)',
+			version: '1',
+		},
 	},
+	42161: {
+		'0xaf88d065e77c8cC2239327C5EDb3A432268e5831': {
+			chainId: 42161,
+			verifyingContract: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+			name: 'USD Coin',
+			version: '2',
+		},
+	}, // usdc.e on arb does not have transferWithAuthorization
+	10: {
+		'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
+			chainId: 10,
+			verifyingContract: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+			name: 'USD Coin',
+			version: '2',
+		},
+	}, // usdc.e on opti does not have transferWithAuthorization
 	8453: {
 		'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
 			chainId: 8453,
