@@ -369,6 +369,23 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 	return depositIdxs
 }
 
+/**
+ * Returns an object with the keys in lowerCase
+ */
+export function toLowerCaseKeys(obj: any): any {
+	let newObj: any = {}
+	Object.keys(obj).forEach((key) => {
+		let lowerCaseKey = key.toLowerCase()
+
+		if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+			newObj[lowerCaseKey] = toLowerCaseKeys(obj[key])
+		} else {
+			newObj[lowerCaseKey] = obj[key]
+		}
+	})
+	return newObj
+}
+
 export function getLinksFromMultilink(link: string): string[] {
 	const url = new URL(link)
 	const searchParams = new URLSearchParams(url.search)

@@ -49,6 +49,7 @@ import {
 	compareDeposits,
 	signAddress,
 	getSquidRouterUrl,
+	toLowerCaseKeys,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -2190,7 +2191,7 @@ async function makeGaslessDepositPayload({
 		)
 	}
 
-	const chain3009Info = EIP3009Tokens[linkDetails.chainId]
+	const chain3009Info = toLowerCaseKeys(EIP3009Tokens[linkDetails.chainId])
 	if (!chain3009Info) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
@@ -2198,7 +2199,8 @@ async function makeGaslessDepositPayload({
 		)
 	}
 
-	const tokenDomain = chain3009Info[linkDetails.tokenAddress]
+	const tokenDomain = chain3009Info[linkDetails.tokenAddress.toLowerCase()]
+
 	if (!tokenDomain) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
