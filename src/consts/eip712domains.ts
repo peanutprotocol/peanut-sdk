@@ -8,13 +8,7 @@ export const EIP3009Tokens: EIP3009TokensInterface = {
 			name: 'USD Coin',
 			version: '2',
 		},
-		'0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174': {
-			chainId: 137,
-			verifyingContract: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-			name: 'USD Coin (PoS)',
-			version: '1',
-		},
-	},
+	}, // usdc.e on polygon doe have transferWithAuthorization but not receiveWithAuthorization lol, so we don't add it to this list
 	42161: {
 		'0xaf88d065e77c8cC2239327C5EDb3A432268e5831': {
 			chainId: 42161,
