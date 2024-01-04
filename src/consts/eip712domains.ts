@@ -22,7 +22,7 @@ export const EIP3009Tokens: EIP3009TokensInterface = {
 			name: 'USD Coin',
 			version: '2',
 		},
-	}, // usdc.e on arb does not have transferWithAuthorization
+	}, // usdc.e on arb does not have transferWithAuthorization, so we don't add it to this list
 	10: {
 		'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85': {
 			chainId: 10,
