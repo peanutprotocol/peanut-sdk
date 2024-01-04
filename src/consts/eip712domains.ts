@@ -30,7 +30,7 @@ export const EIP3009Tokens: EIP3009TokensInterface = {
 			name: 'USD Coin',
 			version: '2',
 		},
-	}, // usdc.e on opti does not have transferWithAuthorization
+	}, // usdc.e on opti does not have transferWithAuthorization, so we don't add it to this list
 	8453: {
 		'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913': {
 			chainId: 8453,
