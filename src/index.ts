@@ -19,6 +19,7 @@ import {
 	TOKEN_DETAILS,
 	VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
+	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
 	LATEST_STABLE_BATCHER_VERSION,
 	TOKEN_TYPES,
 	PEANUT_ROUTER_ABI_V4_2,
@@ -2030,7 +2031,9 @@ function getLatestContractVersion({
 
 		// If experimental is false, filter out versions that are not 'v4'
 		if (!experimental && type === 'normal') {
-			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+			versions = versions
+				.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+				.filter((version) => !(version === LATEST_EXPERIMENTAL_CONTRACT_VERSION))
 		}
 
 		const highestVersion = versions[0]
