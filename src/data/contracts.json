@@ -139,22 +139,37 @@
 	},
 	"59144": {
 		"name": "linea",
+		"mainnet": "true",
 		"v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
 		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
 	},
 	"59140": {
 		"name": "linea-testnet",
+		"mainnet": "false",
 		"v4": "0x897F8EDdB345F0d16081615823F76055Ad60A00c",
 		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5",
 		"v5": "0x690481Ce72b1080Bd928A35A0ECF329BE902cD6a"
 	},
 	"1442": {
 		"name": "polygon-zkevm-testnet",
+		"mainnet": "false",
 		"v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
 		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5",
 		"v5": "0x690481Ce72b1080Bd928A35A0ECF329BE902cD6a"
 	},
 	"5001": {
+		"name": "mantle-testnet",
+		"mainnet": "false",
 		"v5": "0x690481Ce72b1080Bd928A35A0ECF329BE902cD6a"
+	},
+	"324": {
+		"name": "zksync-era-mainnet",
+		"mainnet": "true",
+		"v4": "0x0f8d307723107d3A466223E09113A1EE6f8411DF"
+	},
+	"300": {
+		"name": "zksync-era-sepolia",
+		"mainnet": "false",
+		"v4": "0xC39dC50b46BE62B8f209853E2D36E1Fcab349404"
 	}
 }

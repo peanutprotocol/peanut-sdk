@@ -198,6 +198,7 @@ async function getContract(_chainId: string, signerOrProvider: any, version = nu
 	const chainId = parseInt(_chainId)
 
 	// Determine which ABI version to use based on the version provided
+	config.verbose && console.log('finding contract for ', 'version', version, 'chainId', chainId)
 	let PEANUT_ABI
 	switch (version) {
 		case 'v3':
@@ -1278,7 +1279,7 @@ async function claimLink({
 	const addressHashBinary = ethers.utils.arrayify(addressHash) // v5
 	config.verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
 	const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
-	const signature = signAddress(recipient, keys.privateKey) // sign with link keys
+	const signature = await signAddress(recipient, keys.privateKey) // sign with link keys
 
 	if (config.verbose) {
 		// print the params
@@ -1296,13 +1297,20 @@ async function claimLink({
 		// eip1559,
 		// maxFeePerGas,
 		// maxPriorityFeePerGas,
-		// gasLimit,
 		// verbose,
 	})
 
 	const claimParams = [depositIdx, recipient, addressHashEIP191, signature]
-	config.verbose && console.log('claimParams: ', claimParams)
-	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+	config.verbose &&
+		console.log(
+			'submitting tx on contract address: ',
+			contract.address,
+			'on chain: ',
+			chainId,
+			'...',
+			'claimParams: ',
+			claimParams
+		)
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
@@ -2370,9 +2378,9 @@ function getLatestContractVersion({
 				return (partsB[1] || 0) - (partsA[1] || 0)
 			})
 
-		// If experimental is false, filter out versions that are not 'v4'
+		// If experimental is false, filter out versions don't match LATEST_STABLE_CONTRACT_VERSION exactly
 		if (!experimental && type === 'normal') {
-			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+			versions = versions.filter((version) => version === LATEST_STABLE_CONTRACT_VERSION)
 		}
 
 		const highestVersion = versions[0]
