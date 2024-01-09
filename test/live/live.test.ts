@@ -63,7 +63,7 @@ describe('optimism goerli', function () {
 })
 
 describe('zksync', function () {
-	it.only('zksync Sepolia: should create a native link and claim it', async function () {
+	it('zksync Sepolia: should create a native link and claim it', async function () {
 		const chainId = '300'
 		const provider = await peanut.getDefaultProvider(chainId)
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
@@ -84,7 +84,7 @@ describe('zksync', function () {
 		peanut.toggleVerbose()
 	}, 60000)
 
-	it.only('zksync Mainnet: should create a native link and claim it', async function () {
+	it('zksync Mainnet: should create a native link and claim it', async function () {
 		const chainId = '324'
 		const provider = await peanut.getDefaultProvider(chainId)
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
