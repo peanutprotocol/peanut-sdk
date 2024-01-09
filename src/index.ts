@@ -1297,8 +1297,6 @@ async function claimLink({
 		// eip1559,
 		// maxFeePerGas,
 		// maxPriorityFeePerGas,
-		// 1 million gas limit // test
-		// gasLimit: ethers.BigNumber.from(1000000),
 		// verbose,
 	})
 

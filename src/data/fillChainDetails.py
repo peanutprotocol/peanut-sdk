@@ -67,7 +67,6 @@ def get_chain_ids(contracts):
     return [
         chain_id
         for chain_id in chain_ids
-        # if any(contracts[chain_id].get(f"v{i}") for i in range(3, 10))
     ]
 
 
