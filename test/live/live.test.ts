@@ -62,6 +62,53 @@ describe('optimism goerli', function () {
 	// }, 60000)
 })
 
+describe('zksync', function () {
+	it.only('zksync Sepolia: should create a native link and claim it', async function () {
+		const chainId = '300'
+		const provider = await peanut.getDefaultProvider(chainId)
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: Number(chainId),
+					tokenAmount: 0.000001,
+					tokenType: 0,
+				},
+			},
+			9000
+		)
+		peanut.toggleVerbose()
+	}, 60000)
+
+	it.only('zksync Mainnet: should create a native link and claim it', async function () {
+		const chainId = '324'
+		const provider = await peanut.getDefaultProvider(chainId)
+		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: wallet,
+				},
+				linkDetails: {
+					chainId: Number(chainId),
+					tokenAmount: 0.000001,
+					tokenType: 0,
+				},
+			},
+			9000
+		)
+		// Add assertion here
+	}, 60000)
+	// it('should create an erc20 link and claim it', async function () {
+	// 	// TODO. Do nothing for now
+	// }, 60000)
+})
+
 describe('polygon', function () {
 	const chainId = 137
 	const tokenAmount = 0.0001
