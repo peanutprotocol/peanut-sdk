@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////////
 
 import { BigNumber, ethers } from 'ethersv5'
-import { TransactionReceipt, TransactionRequest } from '@ethersproject/abstract-provider'
+import { Provider, TransactionReceipt, TransactionRequest } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V4,
 	PEANUT_BATCHER_ABI_V4,
@@ -443,8 +443,13 @@ async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> 
 	return ethers.utils.parseUnits(tip, 'gwei')
 }
 
+/**
+ * Estimate gas price. If txRequest is supplied, also estimate the gas limit
+ * @returns struct with gas info
+ */
 async function setFeeOptions({
 	txOptions,
+	txRequest,
 	provider,
 	eip1559 = true,
 	maxFeePerGas = null,
@@ -453,9 +458,11 @@ async function setFeeOptions({
 	gasPriceMultiplier = 1.3,
 	maxPriorityFeePerGas,
 	maxPriorityFeePerGasMultiplier = 1.2,
+	gasLimitMultiplier = 2,
 }: {
 	txOptions?: any
-	provider: any
+	txRequest?: TransactionRequest
+	provider: Provider
 	eip1559?: boolean
 	maxFeePerGas?: ethers.BigNumber | null
 	maxFeePerGasMultiplier?: number
@@ -463,6 +470,7 @@ async function setFeeOptions({
 	gasPriceMultiplier?: number
 	maxPriorityFeePerGas?: ethers.BigNumber | null
 	maxPriorityFeePerGasMultiplier?: number
+	gasLimitMultiplier?: number
 }) {
 	// eip1559 = true
 	config.verbose && console.log('Setting tx options...')
@@ -484,8 +492,9 @@ async function setFeeOptions({
 
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
-	} else if (chainId == 56) {
-		txOptions.gasLimit = ethers.BigNumber.from('1000000')
+	} else if (txRequest) {
+		const gasLimitRaw = await provider.estimateGas(txRequest)
+		txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
 	}
 	config.verbose && console.log('checking if eip1559 is supported...')
 
@@ -1926,6 +1935,8 @@ async function getSquidRouteRaw({
 		enableForecall,
 		enableBoost,
 	}
+
+	config.verbose && console.log('Getting squid route with params', params)
 
 	try {
 		const response: Response = await fetch(squidRouterUrl, {
