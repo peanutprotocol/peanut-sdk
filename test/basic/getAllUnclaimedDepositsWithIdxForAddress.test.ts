@@ -5,19 +5,18 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 describe('getAllCreatedLinksForAddress', () => {
-	const RPC_URL_GOERLI = process.env.INFURA_GOERLI_RPC
-	const PUB_KEY = '0x2d826aD1EAD5c8a2bC46ab93d9D0c6BEe0d39918'
+	const ADDRESS = '0x2d826aD1EAD5c8a2bC46ab93d9D0c6BEe0d39918'
 
-	it('should return all deposits for the given address', async () => {
-		const chainId = '5'
-		const address = PUB_KEY
-		const provider = new ethers.providers.JsonRpcProvider(RPC_URL_GOERLI)
-		const peanutContractVersion = 'v5'
+	it('should return all deposits for the given address if the provider is undefined', async () => {
+		const chainId = '137'
+		const address = ADDRESS
+		const peanutContractVersion = 'v4'
+
+		peanut.toggleVerbose(true)
 
 		const allCreatedLinks = await peanut.getAllUnclaimedDepositsWithIdxForAddress({
 			address,
 			chainId,
-			provider,
 			peanutContractVersion,
 		})
 
@@ -26,8 +25,8 @@ describe('getAllCreatedLinksForAddress', () => {
 
 	it('should return all deposits for the given address if the provider is undefined', async () => {
 		const chainId = '137'
-		const address = PUB_KEY
-		const peanutContractVersion = 'v4'
+		const address = ADDRESS
+		const peanutContractVersion = 'v4.2'
 
 		peanut.toggleVerbose(true)
 
