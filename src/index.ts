@@ -24,6 +24,7 @@ import {
 	TOKEN_TYPES,
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_ABI_V4_2,
+	FALLBACK_CONTRACT_VERSION,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -2041,11 +2042,17 @@ function getLatestContractVersion({
 				return (partsB[1] || 0) - (partsA[1] || 0)
 			})
 
-		// If experimental is false, filter out versions that are not 'v4'
+		// Adjust the filtering logic based on the experimental flag and contract version variables
 		if (!experimental && type === 'normal') {
-			versions = versions
-				.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
-				.filter((version) => !(version === LATEST_EXPERIMENTAL_CONTRACT_VERSION))
+			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+
+			if (versions.length === 0) {
+				versions = [FALLBACK_CONTRACT_VERSION]
+			}
+
+			if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
+				versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
+			}
 		}
 
 		const highestVersion = versions[0]
