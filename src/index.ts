@@ -24,6 +24,7 @@ import {
 	TOKEN_TYPES,
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_ABI_V4_2,
+	FALLBACK_CONTRACT_VERSION,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -107,7 +108,9 @@ async function fetchGetBalance(rpcUrl: string) {
 	return json
 }
 
-async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
+/**
+ * This function is used to get the default provider for a given chainId.
+ */ async function getDefaultProvider(chainId: string): Promise<ethers.providers.JsonRpcProvider> {
 	config.verbose && console.log('Getting default provider for chainId ', chainId)
 	if (!CHAIN_DETAILS[chainId]) {
 		throw new Error(`Chain ID ${chainId} not supported yet`)
@@ -149,6 +152,14 @@ async function getDefaultProvider(chainId: string): Promise<ethers.providers.Jso
 	} catch (error) {
 		throw new Error('No alive provider found for chainId ' + chainId)
 	}
+}
+
+/**
+ * Like getDefaultProvider, but only returns a string with the RPC URL.
+ */
+async function getDefaultProviderUrl(chainId: string): Promise<string> {
+	const provider = await getDefaultProvider(chainId)
+	return provider.connection.url
 }
 
 async function createValidProvider(rpcUrl: string): Promise<ethers.providers.JsonRpcProvider> {
@@ -458,7 +469,7 @@ async function setFeeOptions({
 	gasPriceMultiplier = 1.3,
 	maxPriorityFeePerGas,
 	maxPriorityFeePerGasMultiplier = 1.2,
-	gasLimitMultiplier = 2,
+	gasLimitMultiplier = 1,
 }: {
 	txOptions?: any
 	txRequest?: TransactionRequest
@@ -499,8 +510,9 @@ async function setFeeOptions({
 	config.verbose && console.log('checking if eip1559 is supported...')
 
 	// Check if EIP-1559 is supported
-	// if on milkomeda or bnb, set eip1559 to false
-	if (chainId === 2001 || chainId === 200101 || chainId === 56) {
+	// if on milkomeda or bnb or linea, set eip1559 to false
+	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
+	if (chainId === 2001 || chainId === 200101 || chainId === 56 || chainId === 59144 || chainId === 59140) {
 		eip1559 = false
 		config.verbose && console.log('Setting eip1559 to false as an exception')
 	} else if (chainDetails && chainDetails.features) {
@@ -2051,11 +2063,17 @@ function getLatestContractVersion({
 				return (partsB[1] || 0) - (partsA[1] || 0)
 			})
 
-		// If experimental is false, filter out versions that are not 'v4'
+		// Adjust the filtering logic based on the experimental flag and contract version variables
 		if (!experimental && type === 'normal') {
-			versions = versions
-				.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
-				.filter((version) => !(version === LATEST_EXPERIMENTAL_CONTRACT_VERSION))
+			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+
+			if (versions.length === 0) {
+				versions = [FALLBACK_CONTRACT_VERSION]
+			}
+
+			if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
+				versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
+			}
 		}
 
 		const highestVersion = versions[0]
