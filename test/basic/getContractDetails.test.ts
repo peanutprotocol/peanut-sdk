@@ -12,11 +12,11 @@ describe('get contract type test', () => {
 		const provider = await peanut.getDefaultProvider(chainId)
 		const contractAddress = '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'
 
-		const x = await peanut.getContractDetails({
+		const x = await peanut.getTokenContractDetails({
 			provider: provider,
 			address: contractAddress,
 		})
 
-		console.log(x)
+		expect(x).toEqual({ type: 1, name: 'USD Coin (Arb1)', symbol: 'USDC', decimals: 6 })
 	})
 })

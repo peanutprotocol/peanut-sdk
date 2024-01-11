@@ -669,14 +669,7 @@ async function prepareTxs({
 	provider,
 }: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
 	if (!provider) {
-		try {
-			provider = await getDefaultProvider(String(linkDetails.chainId))
-		} catch (error) {
-			throw new interfaces.SDKStatus(
-				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
-				'Error getting the default provider'
-			)
-		}
+		provider = await getDefaultProvider(String(linkDetails.chainId))
 	}
 
 	if (peanutContractVersion == null) {
@@ -1004,7 +997,7 @@ async function validateLinkDetails(
 
 	if (!linkDetails.tokenDecimals || !linkDetails.tokenType) {
 		try {
-			const contractDetails = await getContractDetails({
+			const contractDetails = await getTokenContractDetails({
 				address: linkDetails.tokenAddress,
 				provider: provider,
 			})
@@ -2481,7 +2474,7 @@ async function makeReclaimGasless({
 /**
  * gets the contract type
  */
-async function getContractType({
+async function getTokenContractType({
 	provider,
 	address,
 }: {
@@ -2526,17 +2519,18 @@ async function supportsInterface(contract, interfaceId) {
 	}
 }
 
-async function getContractDetails({
+async function getTokenContractDetails({
 	address,
 	provider,
 }: {
 	address: string
 	provider: ethers.providers.Provider
 }): Promise<{ type: interfaces.EPeanutLinkType; decimals?: number; name?: string; symbol?: string }> {
-	//get the contract type
-	const contractType = await getContractType({ address: address, provider: provider })
 	//@ts-ignore
-	const batchprov = new ethers.providers.JsonRpcBatchProvider(provider.connection.url)
+	const batchProvider = new ethers.providers.JsonRpcBatchProvider(provider.connection.url)
+
+	//get the contract type
+	const contractType = await getTokenContractType({ address: address, provider: batchProvider })
 
 	config.verbose && console.log('contractType: ', contractType)
 	switch (contractType) {
@@ -2547,7 +2541,7 @@ async function getContractDetails({
 			}
 		}
 		case 1: {
-			const contract = new ethers.Contract(address, ERC20_ABI, batchprov)
+			const contract = new ethers.Contract(address, ERC20_ABI, batchProvider)
 			const [name, symbol, decimals] = await Promise.all([
 				contract.name(),
 				contract.symbol(),
@@ -2562,7 +2556,7 @@ async function getContractDetails({
 			}
 		}
 		case 2: {
-			const contract = new ethers.Contract(address, ERC721_ABI, batchprov)
+			const contract = new ethers.Contract(address, ERC721_ABI, batchProvider)
 			const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
 			config.verbose && console.log('details: ', [fetchedName, fetchedSymbol])
 			return {
@@ -2572,7 +2566,7 @@ async function getContractDetails({
 			}
 		}
 		case 3: {
-			const contract = new ethers.Contract(address, ERC1155_ABI, batchprov)
+			const contract = new ethers.Contract(address, ERC1155_ABI, batchProvider)
 			const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
 			config.verbose && console.log('details: ', [fetchedName, fetchedSymbol])
 			return {
@@ -2663,8 +2657,8 @@ const peanut = {
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
 	EIP3009Tokens,
-	getContractType,
-	getContractDetails,
+	getTokenContractType,
+	getTokenContractDetails,
 }
 
 export default peanut
@@ -2747,6 +2741,6 @@ export {
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
 	EIP3009Tokens,
-	getContractType,
-	getContractDetails,
+	getTokenContractType,
+	getTokenContractDetails,
 }

@@ -184,7 +184,7 @@ describe('goerli', function () {
 		)
 	}, 60000)
 
-	it.only('should create a native link and claim it (without pasing in tokenType', async function () {
+	it('should create a native link and claim it (without pasing in tokenType', async function () {
 		const goerliProvider = await peanut.getDefaultProvider(String(chainId))
 		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 		await createAndClaimLink(
@@ -201,7 +201,7 @@ describe('goerli', function () {
 		)
 	}, 60000)
 
-	it.only('should create an erc20 link and claim it (without passing in tokentype & tokendecimals', async function () {
+	it('should create an erc20 link and claim it (without passing in tokentype & tokendecimals', async function () {
 		const goerliProvider = await peanut.getDefaultProvider(String(chainId))
 		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
 		const tokenAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB' // goerli LINK
