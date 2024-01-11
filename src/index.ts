@@ -680,11 +680,15 @@ async function prepareTxs({
 	passwords = [],
 	provider,
 }: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
+	if (!provider) {
+		provider = await getDefaultProvider(String(linkDetails.chainId))
+	}
+
 	if (peanutContractVersion == null) {
 		peanutContractVersion = getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
 	}
 	try {
-		linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
+		linkDetails = await validateLinkDetails(linkDetails, passwords, numberOfLinks, provider)
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
@@ -995,11 +999,28 @@ async function getTxReceiptFromHash(
 	return txReceipt
 }
 
-function validateLinkDetails(
+async function validateLinkDetails(
 	linkDetails: interfaces.IPeanutLinkDetails,
 	passwords: string[],
-	numberOfLinks: number
-): interfaces.IPeanutLinkDetails {
+	numberOfLinks: number,
+	provider: ethers.providers.Provider
+): Promise<interfaces.IPeanutLinkDetails> {
+	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
+
+	if (!linkDetails.tokenDecimals || !linkDetails.tokenType) {
+		try {
+			const contractDetails = await getTokenContractDetails({
+				address: linkDetails.tokenAddress,
+				provider: provider,
+			})
+
+			linkDetails.tokenType = contractDetails.type
+			contractDetails.decimals && (linkDetails.tokenDecimals = contractDetails.decimals)
+		} catch (error) {
+			throw new Error('Contract type not supported')
+		}
+	}
+
 	if (!linkDetails || !linkDetails.chainId || !linkDetails.tokenAmount) {
 		throw new Error(
 			'validateLinkDetails function requires linkDetails object with chainId and tokenAmount properties'
@@ -1016,7 +1037,6 @@ function validateLinkDetails(
 	}
 
 	// Use nullish coalescing operator to provide default values
-	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
 	linkDetails.tokenType = linkDetails.tokenType ?? 0
 	linkDetails.tokenId = linkDetails.tokenId ?? 0
 	linkDetails.baseUrl = linkDetails.baseUrl ?? 'https://peanut.to/claim'
@@ -1076,7 +1096,7 @@ async function createLink({
 		getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
 	}
 	password = password || (await getRandomString(16))
-	linkDetails = validateLinkDetails(linkDetails, [password], 1)
+	linkDetails = await validateLinkDetails(linkDetails, [password], 1, structSigner.signer.provider)
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
@@ -1138,7 +1158,7 @@ async function createLinks({
 		getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
 	}
 	passwords = passwords || (await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16))))
-	linkDetails = validateLinkDetails(linkDetails, passwords, numberOfLinks)
+	linkDetails = await validateLinkDetails(linkDetails, passwords, numberOfLinks, structSigner.signer.provider)
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
@@ -2469,6 +2489,114 @@ async function makeReclaimGasless({
 	}
 }
 
+/**
+ * gets the contract type
+ */
+async function getTokenContractType({
+	provider,
+	address,
+}: {
+	provider: ethers.providers.Provider
+	address: string
+}): Promise<interfaces.EPeanutLinkType> {
+	const minimalABI = [
+		'function supportsInterface(bytes4) view returns (bool)',
+		'function totalSupply() view returns (uint256)',
+		'function balanceOf(address) view returns (uint256)',
+	]
+
+	// Interface Ids for ERC721 and ERC1155
+	const ERC721_INTERFACE_ID = '0x80ac58cd' // ERC721
+	const ERC1155_INTERFACE_ID = '0xd9b67a26' // ERC1155
+
+	const contract = new ethers.Contract(address, minimalABI, provider)
+
+	const isERC721 = await supportsInterface(contract, ERC721_INTERFACE_ID)
+	const isERC1155 = await supportsInterface(contract, ERC1155_INTERFACE_ID)
+	let isERC20 = false
+
+	// Check for ERC20 if it's not ERC721 or ERC1155
+	if (!isERC721 && !isERC1155) {
+		isERC20 = await contract
+			.totalSupply()
+			.then(() => true)
+			.catch(() => false)
+	}
+
+	if (address.toLowerCase() === ethers.constants.AddressZero.toLowerCase()) return 0
+	if (isERC20) return 1
+	if (isERC721) return 2
+	if (isERC1155) return 3
+}
+
+async function supportsInterface(contract, interfaceId) {
+	try {
+		return await contract.supportsInterface(interfaceId)
+	} catch (error) {
+		return false
+	}
+}
+
+async function getTokenContractDetails({
+	address,
+	provider,
+}: {
+	address: string
+	provider: ethers.providers.Provider
+}): Promise<{ type: interfaces.EPeanutLinkType; decimals?: number; name?: string; symbol?: string }> {
+	//@ts-ignore
+	const batchProvider = new ethers.providers.JsonRpcBatchProvider(provider.connection.url)
+
+	//get the contract type
+	const contractType = await getTokenContractType({ address: address, provider: batchProvider })
+
+	config.verbose && console.log('contractType: ', contractType)
+	switch (contractType) {
+		case 0: {
+			return {
+				type: 0,
+				decimals: 18,
+			}
+		}
+		case 1: {
+			const contract = new ethers.Contract(address, ERC20_ABI, batchProvider)
+			const [name, symbol, decimals] = await Promise.all([
+				contract.name(),
+				contract.symbol(),
+				contract.decimals(),
+			])
+			config.verbose && console.log('details: ', [name, symbol, decimals])
+			return {
+				type: 1,
+				name: name,
+				symbol: symbol,
+				decimals: decimals,
+			}
+		}
+		case 2: {
+			const contract = new ethers.Contract(address, ERC721_ABI, batchProvider)
+			const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
+			config.verbose && console.log('details: ', [fetchedName, fetchedSymbol])
+			return {
+				type: 2,
+				name: fetchedName,
+				symbol: fetchedSymbol,
+			}
+		}
+		case 3: {
+			const contract = new ethers.Contract(address, ERC1155_ABI, batchProvider)
+			const [fetchedName, fetchedSymbol] = await Promise.all([contract.name(), contract.symbol()])
+			config.verbose && console.log('details: ', [fetchedName, fetchedSymbol])
+			return {
+				type: 3,
+				name: fetchedName,
+				symbol: fetchedSymbol,
+				decimals: null,
+			}
+		}
+	}
+}
+
 const peanut = {
 	CHAIN_DETAILS,
 	LATEST_STABLE_BATCHER_VERSION,
@@ -2547,6 +2675,8 @@ const peanut = {
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
 	EIP3009Tokens,
+	getTokenContractType,
+	getTokenContractDetails,
 }
 
 export default peanut
@@ -2629,4 +2759,6 @@ export {
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
 	EIP3009Tokens,
+	getTokenContractType,
+	getTokenContractDetails,
 }

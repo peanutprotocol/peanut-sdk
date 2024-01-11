@@ -183,6 +183,44 @@ describe('goerli', function () {
 			9000
 		)
 	}, 60000)
+
+	it('should create a native link and claim it (without pasing in tokenType', async function () {
+		const goerliProvider = await peanut.getDefaultProvider(String(chainId))
+		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: goerliWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+				},
+			},
+			9000
+		)
+	}, 60000)
+
+	it('should create an erc20 link and claim it (without passing in tokentype & tokendecimals', async function () {
+		const goerliProvider = await peanut.getDefaultProvider(String(chainId))
+		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
+		const tokenAddress = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB' // goerli LINK
+
+		// create link
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: goerliWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenAddress: tokenAddress,
+				},
+			},
+			9000
+		)
+	}, 180000)
 	it('should create an erc20 link and claim it', async function () {
 		const goerliProvider = await peanut.getDefaultProvider(String(chainId))
 		const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', goerliProvider)
