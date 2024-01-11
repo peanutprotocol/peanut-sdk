@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethersv5'
-import { Provider, TransactionRequest } from '@ethersproject/abstract-provider'
+import { Provider } from '@ethersproject/abstract-provider'
 
 //General export interface s and enums
 export interface IPeanutSigner {
@@ -44,8 +44,11 @@ export interface ICreatedPeanutLink {
 	txHash: string
 }
 
-export interface IPeanutUnsignedTransactions {
-	unsignedTxs: TransactionRequest // change this any type to correct type
+export interface IPeanutUnsignedTransaction {
+	to: string
+	nonce: number
+	data: string
+	value: BigInt
 }
 
 export interface IReturnSuccessObject {
@@ -156,13 +159,13 @@ export interface IPrepareTxsParams {
 }
 
 export interface IPrepareTxsResponse {
-	unsignedTxs: TransactionRequest[]
+	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
-	unsignedTx: TransactionRequest
+	unsignedTx: IPeanutUnsignedTransaction
 }
 
 export interface ISignAndSubmitTxResponse {
