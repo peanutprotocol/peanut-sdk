@@ -687,9 +687,11 @@ async function prepareTxs({
 	if (peanutContractVersion == null) {
 		peanutContractVersion = getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
 	}
+
 	try {
 		linkDetails = await validateLinkDetails(linkDetails, passwords, numberOfLinks, provider)
 	} catch (error) {
+		console.error({ 'Error validating link details:': error })
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
 			'Error validating link details: please make sure all required fields are provided and valid'
@@ -1018,7 +1020,7 @@ async function validateLinkDetails(
 ): Promise<interfaces.IPeanutLinkDetails> {
 	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
 
-	if (!linkDetails.tokenDecimals || !linkDetails.tokenType) {
+	if (linkDetails.tokenDecimals == undefined || linkDetails.tokenType == undefined) {
 		try {
 			const contractDetails = await getTokenContractDetails({
 				address: linkDetails.tokenAddress,
