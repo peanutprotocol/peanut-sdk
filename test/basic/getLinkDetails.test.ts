@@ -84,11 +84,11 @@ describe('getLinkDetails', function () {
 			console.log(linkDetails.depositDate)
 		}, 1000000)
 
-		it.only('v4 with different trackId (p in trackId) should have password', async function () {
-			const link = 'https://smold.app/peanut/claim?c=137&v=v4.2&i=237&t=smoldapp#p=wkCqiUWH07D4VGbk'
+		it('v4 with different trackId (p in trackId) should have password', async function () {
+			const link = 'https://peanut.to/claim#?c=137&v=v4&i=297&p=zoOnfUtvnMX1xt8A&t=smoldapp'
 			const linkDetails = await peanut.getLinkDetails({ link })
 			console.log(linkDetails)
-			expect(linkDetails.password).toBe('wkCqiUWH07D4VGbk')
+			expect(linkDetails.password).toBe('zoOnfUtvnMX1xt8A')
 		}, 1000000)
 
 		it('should include senderAddress', async function () {
