@@ -20,7 +20,7 @@ describe('getLinkDetails', function () {
 			console.log(linkDetails.depositDate)
 		}, 1000000)
 
-		it.only('v4 with different trackId (p in trackId) should have password', async function () {
+		it('v4 with different trackId (p in trackId) should have password', async function () {
 			const link = 'https://smold.app/peanut/claim?c=137&v=v4.2&i=237&t=smoldapp#p=wkCqiUWH07D4VGbk'
 			const linkDetails = await peanut.getLinkDetails({ link })
 			console.log(linkDetails)
