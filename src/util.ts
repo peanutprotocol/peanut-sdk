@@ -208,7 +208,7 @@ export function getParamsFromLink(link: string): {
 		search = url.hash.startsWith('#?') ? url.hash.substring(1) : ''
 	}
 
-	if (!search.includes('p')) {
+	if (!search.includes('#p')) {
 		search = search + '&' + url.hash.substring(1)
 	}
 
