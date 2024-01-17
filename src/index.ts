@@ -43,7 +43,6 @@ import {
 	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
-	getParamsFromPageURL,
 	getDepositIdx,
 	getDepositIdxs,
 	getLinksFromMultilink,
@@ -209,23 +208,23 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 	}
 }
 
-function getContractAddress(chainId: number, version: string) {
+function getContractAddress(chainId: string, version: string) {
 	// Find the contract address based on the chainId and version provided
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
 	const contractAddress = _PEANUT_CONTRACTS[chainId.toString()] && _PEANUT_CONTRACTS[chainId.toString()][version]
 	return contractAddress
 }
 
-async function getContract(_chainId: string, signerOrProvider: any, version = null) {
+async function getContract(chainId: string, signerOrProvider: any, version = null) {
 	if (signerOrProvider == null) {
 		config.verbose && console.log('signerOrProvider is null, getting default provider...')
-		signerOrProvider = await getDefaultProvider(_chainId)
+		signerOrProvider = await getDefaultProvider(chainId)
 	}
 	if (version == null) {
-		version = getLatestContractVersion({ chainId: _chainId, type: 'normal' })
+		version = getLatestContractVersion({ chainId: chainId, type: 'normal' })
 	}
 
-	const chainId = parseInt(_chainId)
+	chainId
 
 	// Determine which ABI version to use based on the version provided
 	let PEANUT_ABI
@@ -1000,7 +999,7 @@ function detectContractVersionFromTxReceipt(txReceipt: any, chainId: string): st
 
 async function getTxReceiptFromHash(
 	txHash: string,
-	chainId: number,
+	chainId: string,
 	provider?: ethers.providers.Provider
 ): Promise<TransactionReceipt> {
 	provider = provider ?? (await getDefaultProvider(String(chainId)))
@@ -1903,7 +1902,7 @@ async function getXChainOptionsForLink({
 
 	const supportedTokens = await getSquidTokens({ isTestnet })
 
-	const supportedTokensMap = new Map<number, interfaces.ISquidToken[]>()
+	const supportedTokensMap = new Map<string, interfaces.ISquidToken[]>()
 
 	supportedTokens.forEach(({ chainId, address, name, symbol, logoURI }) => {
 		if (!supportedTokensMap.has(chainId)) {
@@ -2660,7 +2659,6 @@ const peanut = {
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
-	getParamsFromPageURL,
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
@@ -2745,7 +2743,6 @@ export {
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
-	getParamsFromPageURL,
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,

@@ -29,7 +29,7 @@ export enum EPeanutLinkType {
 }
 
 export interface IPeanutLinkDetails {
-	chainId: number
+	chainId: string
 	tokenAmount: number
 	tokenType?: EPeanutLinkType
 	tokenAddress?: string
@@ -97,7 +97,7 @@ export interface IClaimLinkXChainGaslessParams {
 	APIKey: string
 	recipientAddress: string
 	link: string
-	destinationChainId: number
+	destinationChainId: string
 	destinationToken?: string
 	isMainnet?: boolean
 	baseUrl?: string
@@ -208,10 +208,10 @@ export interface IGetCrossChainOptionsForLinkParams {
 //getSquidRoute
 export interface IGetSquidRouteParams {
 	squidRouterUrl?: string
-	fromChain: number
+	fromChain: string
 	fromToken: string
 	fromAmount: string
-	toChain: number
+	toChain: string
 	toToken: string
 	fromAddress: string
 	toAddress: string
@@ -222,14 +222,14 @@ export interface IGetSquidRouteParams {
 
 //squid chain and token interfaces
 export interface ISquidChain {
-	chainId: number
+	chainId: string
 	axelarChainName: string
 	chainType: string
 	chainIconURI: string
 }
 
 export interface ISquidToken {
-	chainId: number
+	chainId: string
 	address: string
 	name: string
 	symbol: string
@@ -239,7 +239,7 @@ export interface ISquidToken {
 export interface ICreateClaimXChainPayload {
 	link: string
 	recipient: string
-	destinationChainId: number
+	destinationChainId: string
 	destinationToken?: string
 	squidRouterUrl?: string
 	isMainnet?: boolean
@@ -247,7 +247,7 @@ export interface ICreateClaimXChainPayload {
 }
 
 export interface IXchainClaimPayload {
-	chainId: number
+	chainId: string
 	contractVersion: string
 
 	// Payload to the withdrawAndBridge function
@@ -270,12 +270,12 @@ export interface IPopulateXChainClaimTxParams {
 export interface EIP712Domain {
 	name: string
 	version: string
-	chainId: number
+	chainId: string // Hex
 	verifyingContract: string // address
 }
 
 export interface EIP3009TokensInterface {
-	[chainId: number]: {
+	[chainId: string]: {
 		[address: string]: EIP712Domain // Important! Address must be checksummed
 	}
 }
@@ -295,7 +295,7 @@ export interface IPreparedEIP712Message {
 }
 
 export interface IGaslessDepositPayload {
-	chainId: number
+	chainId: string
 	contractVersion: string
 
 	// Payload to the function itself
@@ -323,13 +323,13 @@ export interface IPrepareGaslessDepositTxParams {
 
 export interface IMakeGaslessReclaimPayloadParams {
 	address: string
-	chainId: number
+	chainId: string
 	depositIndex: number
 	contractVersion?: string
 }
 
 export interface IGaslessReclaimPayload {
-	chainId: number
+	chainId: string
 	contractVersion: string
 
 	// payload to the function itself
