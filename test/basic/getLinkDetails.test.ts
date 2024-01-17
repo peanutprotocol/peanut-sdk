@@ -73,7 +73,7 @@ describe('getLinkDetails for NFT', function () {
 		// Add your expectations here
 		expect(linkDetails).not.toBe(undefined)
 		expect(linkDetails.link).toBe(link)
-		expect(linkDetails.chainId).toBe(5)
+		expect(linkDetails.chainId).toBe('5')
 		expect(linkDetails.depositIndex).toBe(1271)
 		expect(linkDetails.contractVersion).toBe('v4')
 		expect(linkDetails.password).toBe('6ZPOKZdIZzGItRq4')
@@ -85,9 +85,13 @@ describe('getLinkDetails for NFT', function () {
 		expect(linkDetails.claimed).toBe(false)
 		expect(linkDetails.tokenURI).not.toBe(undefined)
 		expect(linkDetails.metadata).not.toBe(undefined)
+		//@ts-ignore
 		expect(linkDetails.metadata.token).toBe('26770')
+		//@ts-ignore
 		expect(linkDetails.metadata.image).not.toBe(undefined)
+		//@ts-ignore
 		expect(linkDetails.metadata.attributes[0].trait_type).toBe('Type')
+		//@ts-ignore
 		expect(linkDetails.metadata.attributes[0].value).toBe('crimson')
 	}, 10000)
 })
@@ -107,7 +111,7 @@ describe('getLinkDetails for Polygon Mumbai', function () {
 			// Add your expectations here
 			expect(linkDetails).not.toBe(undefined)
 			expect(linkDetails.link).toBe(link)
-			expect(linkDetails.chainId).toBe(80001)
+			expect(linkDetails.chainId).toBe('80001')
 			// Add more expectations based on your requirements
 		}
 	}, 20000)

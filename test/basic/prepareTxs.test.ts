@@ -15,7 +15,7 @@ describe('prepareTxs', function () {
 		const response = await peanut.prepareTxs({
 			address: goerliWallet.address,
 			linkDetails: {
-				chainId: 5,
+				chainId: '5',
 				tokenAmount: 0.01,
 				tokenType: 0,
 			},
@@ -31,7 +31,7 @@ describe('prepareTxs', function () {
 		const response = await peanut.prepareTxs({
 			address: goerliWallet.address,
 			linkDetails: {
-				chainId: 5,
+				chainId: '5',
 				tokenAmount: 0.01,
 				tokenType: 1,
 				tokenAddress: '0x73967c6a0904aA032C103b4104747E88c566B1A2',
@@ -50,7 +50,7 @@ describe('prepareTxs', function () {
 			const response = await peanut.prepareTxs({
 				address: goerliWallet.address,
 				linkDetails: {
-					chainId: 5,
+					chainId: '5',
 					tokenAmount: 0.01,
 					tokenType: 0,
 				},
@@ -68,7 +68,7 @@ describe('prepareTxs', function () {
 			const response = await peanut.prepareTxs({
 				address: goerliWallet.address,
 				linkDetails: {
-					chainId: 5,
+					chainId: '5',
 					tokenAmount: -0.01, // Invalid token amount
 					tokenType: 0,
 				},
