@@ -2,7 +2,6 @@ import peanut from '../../src/index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
 import { expect, describe, it } from '@jest/globals'
 import dotenv from 'dotenv'
-import * as interfaces from '../../src/consts/interfaces.consts'
 dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
@@ -59,7 +58,7 @@ describe('prepareTxs', function () {
 				provider: goerliProvider,
 			})
 		} catch (error) {
-			expect(error.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
+			expect(error.code).toBe(peanut.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
 		}
 	})
 
@@ -77,7 +76,7 @@ describe('prepareTxs', function () {
 				provider: goerliProvider,
 			})
 		} catch (error) {
-			expect(error.code).toBe(interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
+			expect(error.code).toBe(peanut.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS)
 		}
 	})
 })

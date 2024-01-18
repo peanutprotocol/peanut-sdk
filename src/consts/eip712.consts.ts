@@ -1,4 +1,4 @@
-import { EIP3009TokensInterface } from './interfaces.consts'
+import { EIP3009TokensInterface } from '../interfaces/interfaces.consts'
 
 export const EIP3009Tokens: EIP3009TokensInterface = {
 	'137': {

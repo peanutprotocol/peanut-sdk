@@ -14,6 +14,8 @@ describe('getAllCreatedLinksForAddress', () => {
 
 		peanut.toggleVerbose(true)
 
+		peanut.getDepositIdx
+
 		const allCreatedLinks = await peanut.getAllUnclaimedDepositsWithIdxForAddress({
 			address,
 			chainId,

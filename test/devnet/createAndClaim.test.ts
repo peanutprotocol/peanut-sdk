@@ -1,4 +1,4 @@
-import peanut, { claimLink } from '../../src/index' // import directly from source code
+import peanut from '../../src/index' // import directly from source code
 import { ethers } from 'ethersv5' // v5
 import { it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
@@ -32,7 +32,7 @@ describe('create and claim links on devnet', function () {
 		expect(parseFloat(formatEther(senderBalanceDiff))).toBeCloseTo(amountToSend)
 
 		const recipientBalanceBefore = await walletRecipient.getBalance()
-		await claimLink({
+		await peanut.claimLink({
 			link,
 			structSigner: {
 				signer: walletRecipient,

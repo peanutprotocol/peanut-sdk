@@ -1,14 +1,13 @@
-import peanut from '../../src/index' // import directly from source code
+import peanut, { ICreateLinkParams } from '../../src/index' // import directly from source code
 import { ethers } from 'ethersv5'
 import { expect, describe, it } from '@jest/globals'
 import { ERC20_ABI } from '../../src/data'
-import * as interfaces from '../../src/consts/interfaces.consts'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
 
-async function createAndClaimLink(options: interfaces.ICreateLinkParams, inbetweenDelay = 1000) {
+async function createAndClaimLink(options: ICreateLinkParams, inbetweenDelay = 1000) {
 	const response = await peanut.createLink(options)
 	if (response.link) {
 		await waitForTransaction(options.structSigner.signer.provider, response.txHash)
