@@ -56,7 +56,7 @@ describe('Peanut API Integration Tests', function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		// peanut.toggleVerbose(true)
 
-		const chainId = 420 // optimism goerli
+		const chainId = '420' // optimism goerli
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		setTimeout(() => {}, 9000)
@@ -95,7 +95,7 @@ describe('Peanut API Integration Tests', function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
-		const chainId = 137 // polygon mainnet
+		const chainId = '137' // polygon mainnet
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))
@@ -137,7 +137,7 @@ describe('Peanut API Integration Tests', function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
-		const chainId = 43114 // optimism goerli
+		const chainId = '43114' // optimism goerli
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))
@@ -178,7 +178,7 @@ describe('Peanut API Integration Tests', function () {
 	it('should create two links and claim them simultaneously', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 
-		const chainId = 420 // optimism goerli
+		const chainId = '420' // optimism goerli
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 
@@ -231,7 +231,7 @@ describe('Peanut API Integration Tests', function () {
 	it('should fail to claim an already claimed link', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 
-		const chainId = 420 // optimism goerli
+		const chainId = '420' // optimism goerli
 		const tokenAmount = 0.0001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 
@@ -278,7 +278,7 @@ describe('Peanut API Integration Tests', function () {
 	it('should fail to claim a link with invalid recipient address', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 
-		const chainId = 420 // optimism goerli
+		const chainId = '420' // optimism goerli
 		const tokenAmount = 0.0001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 
@@ -315,7 +315,7 @@ describe('Peanut API Integration Tests', function () {
 		async function () {
 			const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 
-			const chainId = 420 // optimism goerli
+			const chainId = '420' // optimism goerli
 			const tokenAmount = 0.00001337
 			const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 
@@ -363,7 +363,7 @@ describe('Peanut API Integration Tests', function () {
 
 	it('should create a link on Binance Smart Chain and claim it with api', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
-		const chainId = 56 // Binance Smart Chain
+		const chainId = '56' // Binance Smart Chain
 		const tokenAmount = 0.000001
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))
@@ -397,7 +397,7 @@ describe('Peanut API Integration Tests', function () {
 
 	it('should create a link on Polygon and claim it with api', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
-		const chainId = 137 // Polygon
+		const chainId = '137' // Polygon
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))

@@ -39,7 +39,7 @@ async function waitForTransaction(provider, txHash, timeout = 60000) {
 describe('ERC1155 on polygon-zkevm-testnet', function () {
 	it('should create a native link and claim it', async function () {
 		peanut.toggleVerbose()
-		const CHAIN_ID = 1442
+		const CHAIN_ID = '1442'
 		const provider = await peanut.getDefaultProvider(String(CHAIN_ID))
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		await createAndClaimLink(
@@ -61,7 +61,7 @@ describe('ERC1155 on polygon-zkevm-testnet', function () {
 
 	it('should create a link and claim it through the peanut API', async function () {
 		peanut.toggleVerbose()
-		const CHAIN_ID = 1442
+		const CHAIN_ID = '1442'
 		const provider = await peanut.getDefaultProvider(String(CHAIN_ID))
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		const response = await peanut.createLink({
