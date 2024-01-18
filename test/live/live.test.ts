@@ -48,7 +48,7 @@ describe('optimism goerli', function () {
 					signer: optimismGoerliWallet,
 				},
 				linkDetails: {
-					chainId: 420,
+					chainId: '420',
 					tokenAmount: 0.00001,
 					tokenType: 0,
 				},
@@ -77,7 +77,7 @@ describe('polygon', function () {
 					signer: polygonWallet,
 				},
 				linkDetails: {
-					chainId: chainId,
+					chainId: 'chainId',
 					tokenAmount: tokenAmount,
 					tokenType: 0,
 				},
@@ -99,7 +99,7 @@ describe('polygon', function () {
 					signer: polygonWallet,
 				},
 				linkDetails: {
-					chainId: chainId,
+					chainId: 'chainId',
 					tokenAmount: tokenAmount,
 					tokenDecimals: tokenDecimals,
 					tokenAddress: tokenAddress,
@@ -112,7 +112,7 @@ describe('polygon', function () {
 })
 
 describe('linea', function () {
-	const chainId = 59144
+	const chainId = '59144'
 	const tokenAmount = 0.000001
 
 	console.log('getting fee data in test file')
@@ -162,7 +162,7 @@ describe('linea', function () {
 })
 
 describe('goerli', function () {
-	const chainId = 5
+	const chainId = '5'
 	const tokenAmount = 0.0001
 
 	it('should create a native link and claim it', async function () {
@@ -294,7 +294,7 @@ describe('bnb', function () {
 		const BNB_RPC_URL = 'https://bsc-dataseed.binance.org/'
 		const bnbProvider = new ethers.providers.JsonRpcProvider(BNB_RPC_URL)
 		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', bnbProvider)
-		const chainId = 56
+		const chainId = '56'
 		await createAndClaimLink(
 			{
 				structSigner: {
@@ -314,7 +314,7 @@ describe('bnb', function () {
 	it('bnb mumbai should create a native link with weird tokendecimals and claim it', async function () {
 		peanut.toggleVerbose()
 		const tokenAmount = 0.00001
-		const chainId = 80001
+		const chainId = '80001'
 
 		const provider = await peanut.getDefaultProvider('80001')
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
@@ -341,7 +341,7 @@ describe('base', function () {
 		const tokenAmount = 0.00001
 		// const BASE_RPC_URL = 'https://rpc.base.network/'
 		// const baseProvider = new ethers.providers.JsonRpcProvider(BASE_RPC_URL)
-		const chainId = 8453
+		const chainId = '8453'
 		const baseProvider = await peanut.getDefaultProvider(String(chainId))
 		const baseWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', baseProvider)
 		await createAndClaimLink(
@@ -365,7 +365,7 @@ describe('base-goerli', function () {
 	it('base-goerli should create a native link with weird tokendecimals and claim it', async function () {
 		peanut.toggleVerbose()
 		const tokenAmount = 0.00001
-		const chainId = 84531
+		const chainId = '84531'
 		const baseGoerliProvider = await peanut.getDefaultProvider(String(chainId))
 		const baseGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', baseGoerliProvider)
 		await createAndClaimLink(
@@ -389,7 +389,7 @@ describe('arb', function () {
 	it('arb create a native link with weird tokendecimals and claim it', async function () {
 		peanut.toggleVerbose()
 		const tokenAmount = 0.00001
-		const chainId = 42161
+		const chainId = '42161'
 		const provider = await peanut.getDefaultProvider(String(chainId))
 		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		await createAndClaimLink(
@@ -474,7 +474,7 @@ describe('new wallet test', function () {
 					signer: newWalletConnected,
 				},
 				linkDetails: {
-					chainId: 5,
+					chainId: '5',
 					tokenAmount: 0.00005,
 					tokenType: 0, // 0 for ether
 				},
@@ -496,7 +496,7 @@ describe('new wallet test', function () {
 					signer: newWalletConnected,
 				},
 				linkDetails: {
-					chainId: 5,
+					chainId: '5',
 					tokenAmount: 0.00001,
 					tokenDecimals: tokenDecimals,
 					tokenAddress: tokenAddress,

@@ -22,7 +22,7 @@ describe('gasless functionality through peanut api', () => {
 	// Requirements for the test:
 	// 1. TEST_WALLET_PRIVATE_KEY owns at least 0.01 of mumbai USDC
 	test('make a gasless deposit', async () => {
-		const testingChainId = 80001
+		const testingChainId = '80001'
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		console.log('Wallet addresses', { user: userWallet.address })
@@ -82,7 +82,7 @@ describe('gasless functionality through peanut api', () => {
 	// with index `depositIndex` that is owned by TEST_WALLET_PRIVATE_KEY
 	// 2. TEST_WALLET_PRIVATE_KEY2 owns some MATIC to execute transactions
 	test('make a gasless reclaim', async () => {
-		const testingChainId = 80001
+		const testingChainId = '80001'
 		const depositIndex = 11 // must be a withdrawable deposit
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)

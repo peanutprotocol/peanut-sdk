@@ -10,9 +10,9 @@ const TENDERLY_PROJECT_NAME = 'peanut'
 
 // Templates that need to be created in Tenderly's UI for each chain
 const TEMPLATE_BY_CHAIN: Record<number, string> = {
-	1: 'basic-mainnet',
-	42161: 'basic-arbitrum',
-	137: 'basic-polygon',
+	'1': 'basic-mainnet',
+	'42161': 'basic-arbitrum',
+	'137': 'basic-polygon',
 }
 
 // Since everything happens on devnets, private keys can be shared publicly
@@ -28,7 +28,7 @@ export const SAMPLE_ADDRESS_2 = '0x88f9B82462f6C4bf4a0Fb15e5c3971559a316e7f'
  * @param chainId chain to fork
  * @returns devnet rpc url
  */
-export async function createDevnet(chainId: number) {
+export async function createDevnet(chainId: string) {
 	const templateSlug = TEMPLATE_BY_CHAIN[chainId]
 	if (templateSlug === undefined) throw new Error(`No tenderly template is known for chain id ${chainId}`)
 
@@ -61,7 +61,7 @@ export async function faucetETH(
  * Create a new devnet, create 2 wallets and faucet 10k ETH to each wallet.
  * @returns JsonRpcProvider and 2 wallets
  */
-export async function setupDevnetEnvironment(chainId: number) {
+export async function setupDevnetEnvironment(chainId: string) {
 	const provider = await createDevnet(chainId)
 	const wallet1 = new ethers.Wallet(SAMPLE_PRIVATE_KEY, provider)
 	const wallet2 = new ethers.Wallet(SAMPLE_PRIVATE_KEY_2, provider)
