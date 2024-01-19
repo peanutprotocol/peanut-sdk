@@ -33,8 +33,6 @@ describe('Number Formatting Tests', function () {
 			// Check if the result after trimming is equivalent to 0; if so, skip the iteration
 			if (parseFloat(result) === 0) continue
 
-			console.log(num)
-
 			// Ensure that after trimming, the result doesn't have more decimals than specified
 			const parts = result.split('.')
 			if (parts.length > 1) {
@@ -43,7 +41,6 @@ describe('Number Formatting Tests', function () {
 
 			// Ensure compatibility with ethers BigNumber
 			const bigNumber = ethers.utils.parseUnits(result, decimals)
-			console.log(bigNumber.toString())
 			expect(bigNumber.gt(0)).toBeTruthy()
 		}
 	})

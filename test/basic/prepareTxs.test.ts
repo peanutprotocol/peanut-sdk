@@ -23,7 +23,7 @@ describe('prepareTxs', function () {
 			provider: goerliProvider,
 		})
 
-		expect(response.unsignedTxs.length).toBeGreaterThan(0)
+		expect(response.unsignedTxs.length).toBe(1) // 1 for link creation because tokenType is 0
 	})
 
 	it('should prepare transactions successfully with erc20 token', async function () {
@@ -41,7 +41,23 @@ describe('prepareTxs', function () {
 			provider: goerliProvider,
 		})
 
-		expect(response.unsignedTxs.length).toBeGreaterThan(0)
+		expect(response.unsignedTxs.length).toBe(2) // 1 for erc20 approval, 1 for link creation because tokenType is 1
+	})
+
+	it('should prepare transactions when type and decimals are undefined for erc20', async function () {
+		const response = await peanut.prepareTxs({
+			address: goerliWallet.address,
+			linkDetails: {
+				chainId: '5',
+				tokenAmount: 0.01,
+				tokenAddress: '0x73967c6a0904aA032C103b4104747E88c566B1A2',
+			},
+			numberOfLinks: 1,
+			passwords: ['testpassword'],
+			provider: goerliProvider,
+		})
+
+		expect(response.unsignedTxs.length).toBe(2) // 1 for erc20 approval, 1 for link creation because tokenType is 1
 	})
 
 	it('should fail when numberOfLinks is not equal to passwords.length', async function () {

@@ -5,10 +5,6 @@ import { expect, it, describe } from '@jest/globals'
 peanut.toggleVerbose(false)
 
 describe('setFeeOptions function', () => {
-	// beforeAll(() => {
-	// 	provider = await getDefaultProvider('1')
-	// })
-
 	it('should correctly set fee options for EIP-1559 supported chains', async () => {
 		const provider = await getDefaultProvider('1')
 

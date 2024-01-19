@@ -6,7 +6,7 @@ dotenv.config()
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY // Make sure to add this to your .env
 
 describe('detect contract version, function ()', () => {
-	let txReceipt1, txReceipt2, txReceipt3
+	let txReceipt1, txReceipt2, txReceipt3, txReceipt4
 
 	beforeAll(async () => {
 		const response1 = await fetch(
@@ -38,6 +38,15 @@ describe('detect contract version, function ()', () => {
 			throw new Error('Failed to fetch the second transaction receipt from Etherscan.')
 		}
 		txReceipt3 = data3.result
+
+		const response4 = await fetch(
+			`https://api-goerli.etherscan.io/api?module=proxy&action=eth_getTransactionReceipt&txhash=0x54bef78b581e0acfbdd37185ed86ea36fc0dc5b0e0e38bb181f8c640c523abc5&apikey=${ETHERSCAN_API_KEY}`
+		)
+		const data4 = await response4.json()
+		if (!data3 || !data3.result) {
+			throw new Error('Failed to fetch the second transaction receipt from Etherscan.')
+		}
+		txReceipt4 = data4.result
 	})
 
 	it('detect contract version should return v4', async () => {
@@ -51,5 +60,9 @@ describe('detect contract version, function ()', () => {
 	it('detect v4 for batch fn', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt3, '5') // goerli
 		expect(version).toEqual('v4')
+	})
+	it('detect v4.2', async () => {
+		const version = peanut.detectContractVersionFromTxReceipt(txReceipt4, '5') // goerli
+		expect(version).toEqual('v4.2')
 	})
 })

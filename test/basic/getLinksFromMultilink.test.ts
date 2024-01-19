@@ -49,17 +49,4 @@ describe('getLinksFromMultilink function', () => {
 		const actualLinks = peanut.getLinksFromMultilink(multilink)
 		expect(actualLinks).toEqual(expectedLinks)
 	})
-
-	// not implementing as of now
-	// it('should handle the hash in the middle t and random param', () => {
-	// 	const multilink = 'https://peanut.to/claim?c=1&v=v3#&i=101,102,103&p=ggHmiXLTAG6Kwjvr&t=ui&random=1'
-	// 	const expectedLinks = [
-	// 		'https://peanut.to/claim?c=1&v=v3#&i=101&p=ggHmiXLTAG6Kwjvr&t=ui&random=1',
-	// 		'https://peanut.to/claim?c=1&v=v3#&i=102&p=ggHmiXLTAG6Kwjvr&t=ui&random=1',
-	// 		'https://peanut.to/claim?c=1&v=v3#&i=103&p=ggHmiXLTAG6Kwjvr&t=ui&random=1',
-	// 	]
-
-	// 	const actualLinks = peanut.getLinksFromMultilink(multilink)
-	// 	expect(actualLinks).toEqual(expectedLinks)
-	// })
 })

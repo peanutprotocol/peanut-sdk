@@ -21,9 +21,11 @@ describe('getLinksFromTx eth mainnet', function () {
 		})
 
 		console.log(links)
+
+		expect(links.links[0]).toBe('https://peanut.to/claim?c=1&v=v4&i=49#p=password1')
 	}, 10000)
 
-	it('mainnet', async function () {
+	it('mainnet with trackId', async function () {
 		const tx_hash = '0xa082092246c81a7e10c15704f438d95e463ea64dc6444241651fcff309c180c7'
 		const linkDetails = {
 			chainId: '1',
@@ -39,6 +41,6 @@ describe('getLinksFromTx eth mainnet', function () {
 			passwords: ['password1'],
 		})
 
-		console.log(links)
+		expect(links.links[0]).toBe('https://peanut.to/claim?c=1&v=v4&i=49&t=trackId#p=password1')
 	}, 10000)
 })
