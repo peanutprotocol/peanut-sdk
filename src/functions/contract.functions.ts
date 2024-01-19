@@ -23,8 +23,6 @@ export async function getContract(chainId: string, signerOrProvider: any, versio
 		version = getLatestContractVersion({ chainId: chainId, type: 'normal' })
 	}
 
-	chainId
-
 	// Determine which ABI version to use based on the version provided
 	let PEANUT_ABI
 	switch (version) {

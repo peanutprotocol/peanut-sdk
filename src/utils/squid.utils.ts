@@ -83,7 +83,7 @@ export async function getXChainOptionsForLink({
 
 	const supportedChains = await getSquidChains({ isTestnet })
 
-	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId.toString() === sourceChainId)
+	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
 
 	if (!isSourceChainSupported) {
 		throw new interfaces.SDKStatus(
@@ -104,7 +104,7 @@ export async function getXChainOptionsForLink({
 	})
 
 	const destinationChains = supportedChains
-		.filter((chain) => chain.chainId.toString() !== sourceChainId && chain.chainType === 'evm')
+		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
 		.map(({ chainId, axelarChainName, chainType, chainIconURI }) => ({
 			chainId,
 			axelarChainName,

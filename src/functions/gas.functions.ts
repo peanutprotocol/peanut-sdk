@@ -77,7 +77,7 @@ export async function setFeeOptions({
 		throw error
 	}
 
-	const chainId = Number(await provider.getNetwork().then((network: any) => network.chainId))
+	const chainId = (await provider.getNetwork().then((network) => network.chainId)).toString()
 	const chainDetails = data.CHAIN_DETAILS[chainId]
 
 	if (gasLimit) {
@@ -91,7 +91,7 @@ export async function setFeeOptions({
 	// Check if EIP-1559 is supported
 	// if on milkomeda or bnb or linea, set eip1559 to false
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
-	if (chainId === 2001 || chainId === 200101 || chainId === 56 || chainId === 59144 || chainId === 59140) {
+	if (chainId === '2001' || chainId === '200101' || chainId === '56' || chainId === '59144' || chainId === '59140') {
 		eip1559 = false
 		config.config.verbose && console.log('Setting eip1559 to false as an exception')
 	} else if (chainDetails && chainDetails.features) {
@@ -129,14 +129,14 @@ export async function setFeeOptions({
 				// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
 				// Sanity check so that it's never more than the base fee.
 				// exception: linea, where baseFee is hardcoded to 7 gwei (minimum allowed)
-				if (![59144, 59140].includes(chainId)) {
+				if (!['59144', '59140'].includes(chainId)) {
 					if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
 						txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 					}
 				}
 
 				// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
-				if (chainId == 137) {
+				if (chainId == '137') {
 					const minPriorityFee = ethers.utils.parseUnits('40', 'gwei')
 					if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
 						txOptions.maxPriorityFeePerGas = minPriorityFee.toString()

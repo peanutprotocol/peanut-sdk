@@ -23,12 +23,12 @@ export async function prepareTxs({
 	provider,
 }: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
 	if (!provider) {
-		provider = await functions.getDefaultProvider(String(linkDetails.chainId))
+		provider = await functions.getDefaultProvider(linkDetails.chainId)
 	}
 
 	if (peanutContractVersion == null) {
 		peanutContractVersion = functions.getLatestContractVersion({
-			chainId: linkDetails.chainId.toString(),
+			chainId: linkDetails.chainId,
 			type: 'normal',
 		})
 	}
@@ -50,7 +50,7 @@ export async function prepareTxs({
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
 		try {
-			provider = await functions.getDefaultProvider(String(linkDetails.chainId))
+			provider = await functions.getDefaultProvider(linkDetails.chainId)
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
@@ -71,7 +71,7 @@ export async function prepareTxs({
 			if (numberOfLinks == 1) {
 				approveTx = await utils.prepareApproveERC20Tx(
 					address,
-					String(linkDetails.chainId),
+					linkDetails.chainId,
 					linkDetails.tokenAddress!,
 					tokenAmountBigNum,
 					linkDetails.tokenDecimals,
@@ -83,7 +83,7 @@ export async function prepareTxs({
 				// approve to the batcher contract
 				approveTx = await utils.prepareApproveERC20Tx(
 					address,
-					String(linkDetails.chainId),
+					linkDetails.chainId,
 					linkDetails.tokenAddress!,
 					totalTokenAmount,
 					linkDetails.tokenDecimals,
@@ -105,7 +105,7 @@ export async function prepareTxs({
 		try {
 			const approveTx = await utils.prepareApproveERC721Tx(
 				address,
-				String(linkDetails.chainId),
+				linkDetails.chainId,
 				linkDetails.tokenAddress!,
 				linkDetails.tokenId
 			)
@@ -124,7 +124,7 @@ export async function prepareTxs({
 		try {
 			const approveTx = await utils.prepareApproveERC1155Tx(
 				address,
-				String(linkDetails.chainId),
+				linkDetails.chainId,
 				linkDetails.tokenAddress!
 			)
 
@@ -156,7 +156,7 @@ export async function prepareTxs({
 			linkDetails.tokenId,
 			keys[0].address,
 		]
-		contract = await functions.getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
+		contract = await functions.getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
 
 		try {
 			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
@@ -169,14 +169,14 @@ export async function prepareTxs({
 		}
 	} else {
 		depositParams = [
-			data.PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion], // The address of the PeanutV4 contract
+			data.PEANUT_CONTRACTS[linkDetails.chainId][peanutContractVersion], // The address of the PeanutV4 contract
 			linkDetails.tokenAddress,
 			linkDetails.tokenType,
 			tokenAmountBigNum,
 			linkDetails.tokenId,
 			keys.map((key) => key.address),
 		]
-		contract = await functions.getContract(String(linkDetails.chainId), provider, batcherContractVersion) // get the contract instance
+		contract = await functions.getContract(linkDetails.chainId, provider, batcherContractVersion) // get the contract instance
 
 		try {
 			depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
@@ -285,8 +285,8 @@ export async function getLinksFromTx({
 	}
 
 	// get deposit idx
-	const peanutContractVersion = functions.detectContractVersionFromTxReceipt(txReceipt, String(linkDetails.chainId))
-	const idxs: number[] = utils.getDepositIdxs(txReceipt, String(linkDetails.chainId), peanutContractVersion)
+	const peanutContractVersion = functions.detectContractVersionFromTxReceipt(txReceipt, linkDetails.chainId)
+	const idxs: number[] = utils.getDepositIdxs(txReceipt, linkDetails.chainId, peanutContractVersion)
 	const links: string[] = []
 	idxs.map((idx) => {
 		links.push(
@@ -316,7 +316,7 @@ export async function createLink({
 	password = null,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreatedPeanutLink> {
 	if (peanutContractVersion == null) {
-		functions.getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+		functions.getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
 	}
 	password = password || (await utils.getRandomString(16))
 	linkDetails = await utils.validateLinkDetails(linkDetails, [password], 1, structSigner.signer.provider)
@@ -378,7 +378,7 @@ export async function createLinks({
 	passwords = null,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreatedPeanutLink[]> {
 	if (peanutContractVersion == null) {
-		functions.getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+		functions.getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
 	}
 	passwords = passwords || (await Promise.all(Array.from({ length: numberOfLinks }, () => utils.getRandomString(16))))
 	linkDetails = await utils.validateLinkDetails(linkDetails, passwords, numberOfLinks, structSigner.signer.provider)

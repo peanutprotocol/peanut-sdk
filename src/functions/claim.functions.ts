@@ -32,7 +32,7 @@ export async function claimLink({
 		config.config.verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = utils.generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await functions.getContract(String(chainId), signer, contractVersion)
+	const contract = await functions.getContract(chainId, signer, contractVersion)
 
 	// cryptography
 	const claimParams = await utils.signWithdrawalMessage(

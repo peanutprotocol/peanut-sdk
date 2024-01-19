@@ -161,13 +161,13 @@ export async function getLinkDetails({ link, provider }: interfaces.IGetLinkDeta
 	const contractVersion = params.contractVersion
 	const depositIdx = params.depositIdx
 	const password = params.password
-	provider = provider || (await functions.getDefaultProvider(String(chainId)))
+	provider = provider || (await functions.getDefaultProvider(chainId))
 	// check that chainID and provider network are the same, else console log warning
 	const network = await provider.getNetwork()
-	if (network.chainId != Number(chainId)) {
+	if (network.chainId.toString() != chainId) {
 		console.warn('WARNING: chainId and provider network are different')
 	}
-	const contract = await functions.getContract(chainId.toString(), provider, contractVersion)
+	const contract = await functions.getContract(chainId, provider, contractVersion)
 
 	config.config.verbose && console.log('fetching deposit: ', depositIdx)
 	let deposit,
@@ -225,7 +225,7 @@ export async function getLinkDetails({ link, provider }: interfaces.IGetLinkDeta
 	if (tokenType == interfaces.EPeanutLinkType.native || tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.config.verbose &&
 			console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
-		const chainDetails = data.TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
+		const chainDetails = data.TOKEN_DETAILS.find((chain) => chain.chainId === chainId)
 		if (!chainDetails) {
 			throw new Error("Couldn't find details for this token")
 		}
@@ -336,8 +336,8 @@ export async function populateXChainClaimTx({
 	payload,
 	provider,
 }: interfaces.IPopulateXChainClaimTxParams): Promise<ethers.providers.TransactionRequest> {
-	if (!provider) provider = await functions.getDefaultProvider(String(payload.chainId))
-	const contract = await functions.getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	if (!provider) provider = await functions.getDefaultProvider(payload.chainId)
+	const contract = await functions.getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const preparedArgs: any[] = [
 		payload.peanutAddress,
 		payload.depositIndex,
@@ -502,7 +502,7 @@ export async function makeGaslessDepositPayload({
 		)
 	}
 
-	const peanutContract = await functions.getContract(linkDetails.chainId.toString(), null, contractVersion)
+	const peanutContract = await functions.getContract(linkDetails.chainId, null, contractVersion)
 	const uintAmount = ethers.utils.parseUnits(linkDetails.tokenAmount.toString(), linkDetails.tokenDecimals)
 	const randomNonceInt = Math.floor(Math.random() * 1e12)
 	const randomNonceHex = '0x' + randomNonceInt.toString(16).padStart(64, '0')
@@ -548,9 +548,9 @@ export async function prepareGaslessDepositTx({
 	payload,
 	signature,
 }: interfaces.IPrepareGaslessDepositTxParams): Promise<ethers.providers.TransactionRequest> {
-	if (!provider) provider = await functions.getDefaultProvider(String(payload.chainId))
+	if (!provider) provider = await functions.getDefaultProvider(payload.chainId)
 
-	const contract = await functions.getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	const contract = await functions.getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const puresig = signature.slice(2) // remove 0x prefix
 	const preparedPayload: any[] = [
 		payload.tokenAddress,
@@ -591,7 +591,7 @@ export async function makeGaslessReclaimPayload({
 			'Error validating link details: this Peanut version does not support gasless revocations'
 		)
 	}
-	const peanutVault = await functions.getContract(chainId.toString(), null, contractVersion)
+	const peanutVault = await functions.getContract(chainId, null, contractVersion)
 
 	const payload: interfaces.IGaslessReclaimPayload = {
 		chainId: chainId,
@@ -671,9 +671,9 @@ export async function prepareGaslessReclaimTx({
 	payload,
 	signature,
 }: interfaces.IPrepareGaslessReclaimTxParams): Promise<ethers.providers.TransactionRequest> {
-	if (!provider) provider = await functions.getDefaultProvider(String(payload.chainId))
+	if (!provider) provider = await functions.getDefaultProvider(payload.chainId)
 
-	const contract = await functions.getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	const contract = await functions.getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const preparedPayload: any[] = [[payload.depositIndex], payload.signer, signature]
 	console.log('Prepared payload', { preparedPayload })
 	let unsignedTx: ethers.providers.TransactionRequest
