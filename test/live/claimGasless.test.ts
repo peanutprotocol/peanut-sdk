@@ -9,7 +9,7 @@ const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY!
 async function createAndClaimLinkGasless(
 	createOptions: ICreateLinkParams,
 	recipientAddress: string = ethers.constants.AddressZero,
-	claimUrl: string = 'http://localhost:8000/claim-v2'
+	claimUrl: string = 'https://peanut-api-ts-9lo6.onrender.com/claim-v2'
 ) {
 	const response = await peanut.createLink(createOptions)
 	console.log('Link created: ' + response.link)

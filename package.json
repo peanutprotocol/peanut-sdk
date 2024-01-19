@@ -10,6 +10,7 @@
 		"test:basic": "npm run pkg-move && jest test/basic --silent",
 		"test:live": "npm run pkg-move && jest test/live --silent",
 		"test:full": "npm run pkg-move && jest --coverage --silent",
+		"test:devnet": "npm run pkg-move && jest test/devnet --silent",
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",

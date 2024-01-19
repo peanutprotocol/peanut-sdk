@@ -7,7 +7,7 @@ dotenv.config()
 describe('Peanut XChain claiming tests', function () {
 	it('Create a link and claim it cross-chain', async function () {
 		peanut.toggleVerbose(true)
-		const userPrivateKey = process.env.TEST_WALLET_X_CHAIN_USER!
+		const userPrivateKey = process.env.TEST_WALLET_PRIVATE_KEY!
 		const relayerPrivateKey = process.env.TEST_WALLET_X_CHAIN_RELAYER!
 
 		// Parameters that affect the test behaviour
@@ -17,7 +17,7 @@ describe('Peanut XChain claiming tests', function () {
 		// if link is empty, a new one will be created
 		let link = ''
 
-		const sourceChainProvider = await peanut.getDefaultProvider(String(sourceChainId))
+		const sourceChainProvider = await peanut.getDefaultProvider(sourceChainId)
 
 		const userSourceChainWallet = new ethers.Wallet(userPrivateKey, sourceChainProvider)
 		const relayerSourceChainWallet = new ethers.Wallet(relayerPrivateKey, sourceChainProvider)

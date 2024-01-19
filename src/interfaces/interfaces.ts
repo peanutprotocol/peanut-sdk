@@ -165,7 +165,7 @@ export interface IPrepareTxsResponse {
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
-	unsignedTx: IPeanutUnsignedTransaction
+	unsignedTx: IPeanutUnsignedTransaction | ethers.providers.TransactionRequest
 }
 
 export interface ISignAndSubmitTxResponse {
