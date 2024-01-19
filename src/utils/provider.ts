@@ -1,7 +1,7 @@
 import * as ethers from 'ethersv5'
 
 import * as consts from '../consts'
-import * as utils from '../utils'
+import * as utils from '.'
 import * as config from '../config'
 import * as data from '../data'
 

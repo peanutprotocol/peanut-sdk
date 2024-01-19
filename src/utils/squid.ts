@@ -1,12 +1,14 @@
 import * as ethers from 'ethersv5'
 
 import * as consts from '../consts'
-import * as utils from '../utils'
+import * as utils from '.'
 import * as config from '../config'
 import * as data from '../data'
-import * as functions from './index'
 import * as interfaces from '../interfaces'
 
+/**
+ * Returns all squid chains that is possible to bridge to
+ */
 export async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
 	const url = isTestnet ? `${consts.squidBaseUrlTestnet}/chains` : `${consts.squidBaseUrlMainnet}/chains`
@@ -37,6 +39,9 @@ export async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Pro
 	}
 }
 
+/**
+ * Returns all squid chains that is possible to bridge to
+ */
 export async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidToken[]> {
 	const url = isTestnet ? `${consts.squidBaseUrlTestnet}/tokens` : `${consts.squidBaseUrlMainnet}/tokens`
 

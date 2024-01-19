@@ -9,7 +9,7 @@
 import * as utils from './utils'
 import * as config from './config'
 import * as data from './data'
-import * as functions from './functions'
+import * as functions from './modules'
 import * as interfaces from './interfaces'
 import * as consts from './consts'
 
@@ -27,7 +27,7 @@ export const peanut = {
 export * from './utils'
 export * from './config'
 export * from './data'
-export * from './functions'
+export * from './modules'
 export * from './interfaces'
 export * from './consts'
 

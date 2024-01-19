@@ -11,3 +11,9 @@ export const ANYONE_WITHDRAWAL_MODE = '0x000000000000000000000000000000000000000
 export const RECIPIENT_WITHDRAWAL_MODE = '0x2bb5bef2b248d3edba501ad918c3ab524cce2aea54d4c914414e1c4401dc4ff4'
 
 export const peanutReclaimApiBaseUrl = 'https://api.peanut.to/reclaim'
+
+export const peanutSquidRouteUrlMainnet = 'https://api.peanut.to/get-squid-route'
+export const peanutSquidRouteUrlTestnet = 'https://api.peanut.to/get-squid-route/testnet'
+
+export const squidBaseUrlMainnet = 'https://v2.api.squidrouter.com/v2'
+export const squidBaseUrlTestnet = 'https://testnet.v2.api.squidrouter.com/v2'

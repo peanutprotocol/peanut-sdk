@@ -1,10 +1,10 @@
 import * as ethers from 'ethersv5'
 
 import * as consts from '../consts'
-import * as utils from '../utils'
+import * as utils from '.'
 import * as config from '../config'
 import * as data from '../data'
-import * as functions from '../functions'
+import * as functions from '../modules'
 import * as interfaces from '../interfaces'
 
 /**
@@ -97,7 +97,7 @@ export async function createClaimXChainPayload({
 	const routingArgs = [
 		'0x1900',
 		routerAddress,
-		linkDetails.chainId,
+		parseInt(linkDetails.chainId),
 		vaultAddress,
 		linkDetails.depositIndex,
 		squidAddress,

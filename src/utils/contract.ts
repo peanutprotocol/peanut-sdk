@@ -1,10 +1,10 @@
 import * as ethers from 'ethersv5'
 
 import * as consts from '../consts'
-import * as utils from '../utils'
+import * as utils from '.'
 import * as config from '../config'
 import * as data from '../data'
-import * as functions from './index'
+import * as functions from '../modules/index'
 import * as interfaces from '../interfaces'
 
 export function getContractAddress(chainId: string, version: string) {

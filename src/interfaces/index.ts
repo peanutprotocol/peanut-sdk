@@ -1,1 +1,1 @@
-export * from './interfaces.consts'
+export * from './interfaces'

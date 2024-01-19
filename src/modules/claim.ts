@@ -4,7 +4,7 @@ import * as consts from '../consts'
 import * as utils from '../utils'
 import * as config from '../config'
 import * as data from '../data'
-import * as functions from '../functions'
+import * as functions from '.'
 import * as interfaces from '../interfaces'
 
 /**
