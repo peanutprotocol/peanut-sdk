@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////////
 
 import { BigNumber, ethers } from 'ethersv5'
-import { Provider, TransactionReceipt, TransactionRequest } from '@ethersproject/abstract-provider'
+import { Provider, TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V4,
 	PEANUT_BATCHER_ABI_V4,
@@ -51,6 +51,8 @@ import {
 	signAddress,
 	getSquidRouterUrl,
 	toLowerCaseKeys,
+	ethersV5ToPeanutTx,
+	peanutToEthersV5Tx,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -328,7 +330,7 @@ async function prepareApproveERC20Tx(
 	contractVersion = null,
 	provider?: any, // why does TS complain about string here?
 	spenderAddress?: string | undefined
-): Promise<ethers.providers.TransactionRequest | null> {
+): Promise<interfaces.IPeanutUnsignedTransaction | null> {
 	//TODO: implement address
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, defaultProvider)
@@ -355,8 +357,8 @@ async function prepareApproveERC20Tx(
 	}
 	config.verbose && console.log('Approving ' + amount.toString() + ' tokens for spender ' + spender)
 
-	const tx = tokenContract.populateTransaction.approve(spender, amount)
-	return tx
+	const tx = await tokenContract.populateTransaction.approve(spender, amount)
+	return ethersV5ToPeanutTx(tx)
 }
 
 async function prepareApproveERC721Tx(
@@ -367,7 +369,7 @@ async function prepareApproveERC721Tx(
 	provider?: any,
 	spenderAddress?: string | undefined,
 	contractVersion = null
-): Promise<ethers.providers.TransactionRequest | null> {
+): Promise<interfaces.IPeanutUnsignedTransaction | null> {
 	if (contractVersion == null) {
 		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
 	}
@@ -389,8 +391,8 @@ async function prepareApproveERC721Tx(
 	}
 
 	// Prepare the transaction to approve the spender for the specified token ID
-	const tx = tokenContract.populateTransaction.approve(spender, tokenId, { from: address })
-	return tx
+	const tx = await tokenContract.populateTransaction.approve(spender, tokenId, { from: address })
+	return ethersV5ToPeanutTx(tx)
 }
 
 async function prepareApproveERC1155Tx(
@@ -400,7 +402,7 @@ async function prepareApproveERC1155Tx(
 	provider?: any,
 	spenderAddress?: string | undefined,
 	contractVersion = null
-): Promise<ethers.providers.TransactionRequest | null> {
+): Promise<interfaces.IPeanutUnsignedTransaction | null> {
 	if (contractVersion == null) {
 		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
 	}
@@ -421,9 +423,9 @@ async function prepareApproveERC1155Tx(
 	}
 
 	// Prepare the transaction to approve the spender for the specified token ID
-	const tx = tokenContract.populateTransaction.setApprovalForAll(spender, true, { from: address })
+	const tx = await tokenContract.populateTransaction.setApprovalForAll(spender, true, { from: address })
 	config.verbose && console.log('Approval needed for operator')
-	return tx
+	return ethersV5ToPeanutTx(tx)
 }
 
 async function supportsEIP1559(provider: ethers.providers.Provider): Promise<boolean> {
@@ -469,7 +471,7 @@ async function setFeeOptions({
 	gasLimitMultiplier = 1,
 }: {
 	txOptions?: any
-	txRequest?: TransactionRequest
+	txRequest?: interfaces.IPeanutUnsignedTransaction
 	provider: Provider
 	eip1559?: boolean
 	maxFeePerGas?: ethers.BigNumber | null
@@ -501,7 +503,7 @@ async function setFeeOptions({
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
 	} else if (txRequest) {
-		const gasLimitRaw = await provider.estimateGas(txRequest)
+		const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(txRequest))
 		txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
 	}
 	config.verbose && console.log('checking if eip1559 is supported...')
@@ -664,8 +666,8 @@ function trim_decimal_overflow(_n: number, decimals: number) {
 
 /**
  * Returns an array of transactions necessary to create a link (e.g. 1. approve, 2. makeDeposit)
- * all values obligatory
- *
+ * all values obligatory.
+ * @notice It's crucial to execute transactions in the order that they are returned in!
  * @param address - The senders wallet address. This is NOT the token contract address.
  */
 async function prepareDepositTxs({
@@ -698,7 +700,7 @@ async function prepareDepositTxs({
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks)
 
-	const unsignedTxs: ethers.providers.TransactionRequest[] = []
+	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
 		try {
@@ -719,7 +721,7 @@ async function prepareDepositTxs({
 	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
 		try {
-			let approveTx
+			let approveTx: interfaces.IPeanutUnsignedTransaction
 			if (numberOfLinks == 1) {
 				approveTx = await prepareApproveERC20Tx(
 					address,
@@ -799,7 +801,7 @@ async function prepareDepositTxs({
 
 	let contract
 	let depositParams
-	let depositTx
+	let depositTx: interfaces.IPeanutUnsignedTransaction
 	if (numberOfLinks == 1) {
 		depositParams = [
 			linkDetails.tokenAddress,
@@ -811,7 +813,8 @@ async function prepareDepositTxs({
 		contract = await getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
 
 		try {
-			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
+			const depositTxRequest = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
+			depositTx = ethersV5ToPeanutTx(depositTxRequest)
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
@@ -831,7 +834,8 @@ async function prepareDepositTxs({
 		contract = await getContract(linkDetails.chainId, provider, batcherContractVersion) // get the contract instance
 
 		try {
-			depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
+			const depositTxRequest = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
+			depositTx = ethersV5ToPeanutTx(depositTxRequest)
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
@@ -841,35 +845,10 @@ async function prepareDepositTxs({
 	}
 
 	unsignedTxs.push(depositTx)
-
-	// if 2 or more transactions, assign them sequential nonces
-	if (unsignedTxs.length > 1) {
-		// txOptions.nonce = structSigner.nonce || (await structSigner.signer.getTransactionCount()) // no nonce anymore?
-		let nonce
-		try {
-			nonce = await provider.getTransactionCount(address)
-		} catch (error) {
-			throw new interfaces.SDKStatus(
-				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_TX_COUNT,
-				'Error getting the transaction count'
-			)
-		}
-
-		unsignedTxs.forEach((tx, i) => (tx.nonce = nonce + i))
-	}
-
 	config.verbose && console.log('unsignedTxs: ', unsignedTxs)
 
 	return {
-		unsignedTxs: unsignedTxs.map((unsignedTx) => {
-			const tx: interfaces.IPeanutUnsignedTransaction = {
-				to: unsignedTx.to,
-				nonce: unsignedTx.nonce ? Number(unsignedTx.nonce) : null,
-				data: unsignedTx.data.toString(),
-				value: unsignedTx.value ? BigInt(unsignedTx.value.toString()) : null,
-			}
-			return tx
-		}),
+		unsignedTxs,
 	}
 }
 
@@ -1497,7 +1476,7 @@ async function createClaimXChainPayload({
 async function populateXChainClaimTx({
 	payload,
 	provider,
-}: interfaces.IPopulateXChainClaimTxParams): Promise<TransactionRequest> {
+}: interfaces.IPopulateXChainClaimTxParams): Promise<interfaces.IPeanutUnsignedTransaction> {
 	if (!provider) provider = await getDefaultProvider(payload.chainId)
 	const contract = await getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const preparedArgs: any[] = [
@@ -1509,9 +1488,14 @@ async function populateXChainClaimTx({
 		payload.squidData,
 		payload.routingSignature,
 	]
-	let unsignedTx: ethers.providers.TransactionRequest
+	let unsignedTx: interfaces.IPeanutUnsignedTransaction
 	try {
-		unsignedTx = await contract.populateTransaction.withdrawAndBridge(...preparedArgs)
+		const txRequest = await contract.populateTransaction.withdrawAndBridge(...preparedArgs)
+		unsignedTx = {
+			to: txRequest.to,
+			data: txRequest.data,
+			value: BigInt(payload.squidFee.toString())
+		}
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR,
@@ -1519,7 +1503,6 @@ async function populateXChainClaimTx({
 			'Error making a withdrawAndBridge transaction'
 		)
 	}
-	unsignedTx.value = payload.squidFee
 	return unsignedTx
 }
 
@@ -1733,7 +1716,7 @@ async function claimLinkGasless({
 	}
 	const body = {
 		claimParams: payload.claimParams,
-		chain: payload.chainId,
+		chainId: payload.chainId,
 		version: payload.contractVersion,
 		apiKey: APIKey,
 	}
@@ -2315,7 +2298,7 @@ async function prepareGaslessDepositTx({
 	provider,
 	payload,
 	signature,
-}: interfaces.IPrepareGaslessDepositTxParams): Promise<TransactionRequest> {
+}: interfaces.IPrepareGaslessDepositTxParams): Promise<interfaces.IPeanutUnsignedTransaction> {
 	if (!provider) provider = await getDefaultProvider(payload.chainId)
 
 	const contract = await getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
@@ -2332,9 +2315,10 @@ async function prepareGaslessDepositTx({
 		`0x${puresig.slice(0, 32 * 2)}`, // r
 		`0x${puresig.slice(32 * 2, 64 * 2)}`, // s
 	]
-	let unsignedTx: ethers.providers.TransactionRequest
+	let unsignedTx: interfaces.IPeanutUnsignedTransaction
 	try {
-		unsignedTx = await contract.populateTransaction.makeDepositWithAuthorization(...preparedPayload)
+		const txRequest = await contract.populateTransaction.makeDepositWithAuthorization(...preparedPayload)
+		unsignedTx = ethersV5ToPeanutTx(txRequest)
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
@@ -2438,15 +2422,16 @@ async function prepareGaslessReclaimTx({
 	provider,
 	payload,
 	signature,
-}: interfaces.IPrepareGaslessReclaimTxParams): Promise<TransactionRequest> {
+}: interfaces.IPrepareGaslessReclaimTxParams): Promise<interfaces.IPeanutUnsignedTransaction> {
 	if (!provider) provider = await getDefaultProvider(payload.chainId)
 
 	const contract = await getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const preparedPayload: any[] = [[payload.depositIndex], payload.signer, signature]
 	console.log('Prepared payload', { preparedPayload })
-	let unsignedTx: ethers.providers.TransactionRequest
+	let unsignedTx: interfaces.IPeanutUnsignedTransaction
 	try {
-		unsignedTx = await contract.populateTransaction.withdrawDepositSenderGasless(...preparedPayload)
+		const txRequest = await contract.populateTransaction.withdrawDepositSenderGasless(...preparedPayload)
+		unsignedTx = ethersV5ToPeanutTx(txRequest)
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
@@ -2642,6 +2627,7 @@ const peanut = {
 	createMultiLinkFromLinks,
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
+	ethersV5ToPeanutTx,
 	formatNumberAvoidScientific,
 	generateKeysFromString,
 	getAllDepositsForSigner,
@@ -2669,6 +2655,7 @@ const peanut = {
 	interfaces,
 	makeDepositGasless,
 	makeReclaimGasless,
+	peanutToEthersV5Tx,
 	prepareTxs,
 	prepareDepositTxs,
 	resetProviderCache,
@@ -2726,6 +2713,7 @@ export {
 	createMultiLinkFromLinks,
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
+	ethersV5ToPeanutTx,
 	formatNumberAvoidScientific,
 	generateKeysFromString,
 	getAllDepositsForSigner,
@@ -2753,6 +2741,7 @@ export {
 	interfaces,
 	makeDepositGasless,
 	makeReclaimGasless,
+	peanutToEthersV5Tx,
 	prepareTxs,
 	prepareDepositTxs,
 	resetProviderCache,

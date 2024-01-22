@@ -45,10 +45,9 @@ export interface ICreatedPeanutLink {
 }
 
 export interface IPeanutUnsignedTransaction {
-	to: string
-	nonce: number
-	data: string
-	value: BigInt
+	to?: string
+	data?: string
+	value?: BigInt
 }
 
 export interface IReturnSuccessObject {
