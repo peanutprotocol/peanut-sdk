@@ -211,7 +211,7 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 function getContractAddress(chainId: string, version: string) {
 	// Find the contract address based on the chainId and version provided
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
-	const contractAddress = _PEANUT_CONTRACTS[chainId.toString()] && _PEANUT_CONTRACTS[chainId.toString()][version]
+	const contractAddress = _PEANUT_CONTRACTS[chainId] && _PEANUT_CONTRACTS[chainId][version]
 	return contractAddress
 }
 
@@ -221,10 +221,8 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 		signerOrProvider = await getDefaultProvider(chainId)
 	}
 	if (version == null) {
-		version = getLatestContractVersion({ chainId: chainId, type: 'normal' })
+		version = getLatestContractVersion({ chainId, type: 'normal' })
 	}
-
-	chainId
 
 	// Determine which ABI version to use based on the version provided
 	let PEANUT_ABI
@@ -371,7 +369,7 @@ async function prepareApproveERC721Tx(
 	contractVersion = null
 ): Promise<ethers.providers.TransactionRequest | null> {
 	if (contractVersion == null) {
-		contractVersion = getLatestContractVersion({ chainId: chainId, type: 'normal' })
+		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
 	}
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC721_ABI, defaultProvider)
@@ -404,7 +402,7 @@ async function prepareApproveERC1155Tx(
 	contractVersion = null
 ): Promise<ethers.providers.TransactionRequest | null> {
 	if (contractVersion == null) {
-		contractVersion = getLatestContractVersion({ chainId: chainId, type: 'normal' })
+		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
 	}
 	const defaultProvider = provider || (await getDefaultProvider(chainId))
 	const tokenContract = new ethers.Contract(tokenAddress, ERC1155_ABI, defaultProvider)
@@ -680,11 +678,11 @@ async function prepareDepositTxs({
 	provider,
 }: interfaces.IPrepareDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
 	if (!provider) {
-		provider = await getDefaultProvider(String(linkDetails.chainId))
+		provider = await getDefaultProvider(linkDetails.chainId)
 	}
 
 	if (peanutContractVersion == null) {
-		peanutContractVersion = getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+		peanutContractVersion = getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
 	}
 
 	try {
@@ -704,7 +702,7 @@ async function prepareDepositTxs({
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
 		try {
-			provider = await getDefaultProvider(String(linkDetails.chainId))
+			provider = await getDefaultProvider(linkDetails.chainId)
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
@@ -725,7 +723,7 @@ async function prepareDepositTxs({
 			if (numberOfLinks == 1) {
 				approveTx = await prepareApproveERC20Tx(
 					address,
-					String(linkDetails.chainId),
+					linkDetails.chainId,
 					linkDetails.tokenAddress!,
 					tokenAmountBigNum,
 					linkDetails.tokenDecimals,
@@ -737,7 +735,7 @@ async function prepareDepositTxs({
 				// approve to the batcher contract
 				approveTx = await prepareApproveERC20Tx(
 					address,
-					String(linkDetails.chainId),
+					linkDetails.chainId,
 					linkDetails.tokenAddress!,
 					totalTokenAmount,
 					linkDetails.tokenDecimals,
@@ -759,7 +757,7 @@ async function prepareDepositTxs({
 		try {
 			const approveTx = await prepareApproveERC721Tx(
 				address,
-				String(linkDetails.chainId),
+				linkDetails.chainId,
 				linkDetails.tokenAddress!,
 				linkDetails.tokenId
 			)
@@ -778,7 +776,7 @@ async function prepareDepositTxs({
 		try {
 			const approveTx = await prepareApproveERC1155Tx(
 				address,
-				String(linkDetails.chainId),
+				linkDetails.chainId,
 				linkDetails.tokenAddress!
 			)
 
@@ -810,7 +808,7 @@ async function prepareDepositTxs({
 			linkDetails.tokenId,
 			keys[0].address,
 		]
-		contract = await getContract(String(linkDetails.chainId), provider, peanutContractVersion) // get the contract instance
+		contract = await getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
 
 		try {
 			depositTx = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
@@ -823,14 +821,14 @@ async function prepareDepositTxs({
 		}
 	} else {
 		depositParams = [
-			PEANUT_CONTRACTS[String(linkDetails.chainId)][peanutContractVersion], // The address of the PeanutV4 contract
+			PEANUT_CONTRACTS[linkDetails.chainId][peanutContractVersion], // The address of the PeanutV4 contract
 			linkDetails.tokenAddress,
 			linkDetails.tokenType,
 			tokenAmountBigNum,
 			linkDetails.tokenId,
 			keys.map((key) => key.address),
 		]
-		contract = await getContract(String(linkDetails.chainId), provider, batcherContractVersion) // get the contract instance
+		contract = await getContract(linkDetails.chainId, provider, batcherContractVersion) // get the contract instance
 
 		try {
 			depositTx = await contract.populateTransaction.batchMakeDeposit(...depositParams, txOptions)
@@ -959,8 +957,8 @@ async function getLinksFromTx({
 	}
 
 	// get deposit idx
-	const peanutContractVersion = detectContractVersionFromTxReceipt(txReceipt, String(linkDetails.chainId))
-	const idxs: number[] = getDepositIdxs(txReceipt, String(linkDetails.chainId), peanutContractVersion)
+	const peanutContractVersion = detectContractVersionFromTxReceipt(txReceipt, linkDetails.chainId)
+	const idxs: number[] = getDepositIdxs(txReceipt, linkDetails.chainId, peanutContractVersion)
 	const links: string[] = []
 	idxs.map((idx) => {
 		links.push(
@@ -1002,7 +1000,7 @@ async function getTxReceiptFromHash(
 	chainId: string,
 	provider?: ethers.providers.Provider
 ): Promise<TransactionReceipt> {
-	provider = provider ?? (await getDefaultProvider(String(chainId)))
+	provider = provider ?? (await getDefaultProvider(chainId))
 	const txReceipt = await provider.getTransactionReceipt(txHash)
 	// throw error if txReceipt is null
 	if (txReceipt == null) {
@@ -1105,7 +1103,7 @@ async function createLink({
 	password = null,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreatedPeanutLink> {
 	if (peanutContractVersion == null) {
-		getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+		getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
 	}
 	password = password || (await getRandomString(16))
 	linkDetails = await validateLinkDetails(linkDetails, [password], 1, structSigner.signer.provider)
@@ -1167,7 +1165,7 @@ async function createLinks({
 	passwords = null,
 }: interfaces.ICreateLinksParams): Promise<interfaces.ICreatedPeanutLink[]> {
 	if (peanutContractVersion == null) {
-		getLatestContractVersion({ chainId: linkDetails.chainId.toString(), type: 'normal' })
+		getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
 	}
 	passwords = passwords || (await Promise.all(Array.from({ length: numberOfLinks }, () => getRandomString(16))))
 	linkDetails = await validateLinkDetails(linkDetails, passwords, numberOfLinks, structSigner.signer.provider)
@@ -1244,7 +1242,7 @@ async function claimLink({
 		config.verbose && console.log('recipient not provided, using signer address: ', recipient)
 	}
 	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(String(chainId), signer, contractVersion)
+	const contract = await getContract(chainId, signer, contractVersion)
 
 	// cryptography
 	const claimParams = await signWithdrawalMessage(
@@ -1285,10 +1283,10 @@ async function claimLinkSender({
 	contractVersion = null,
 }: interfaces.IClaimLinkSenderParams): Promise<interfaces.IClaimLinkSenderResponse> {
 	const signer = structSigner.signer
-	const chainId = await signer.getChainId()
-	const contract = await getContract(String(chainId), signer, contractVersion)
+	const chainId = String(await signer.getChainId())
+	const contract = await getContract(chainId, signer, contractVersion)
 	if (contractVersion == null) {
-		getLatestContractVersion({ chainId: chainId.toString(), type: 'normal' })
+		getLatestContractVersion({ chainId, type: 'normal' })
 	}
 	// Prepare transaction options
 	let txOptions = {}
@@ -1342,7 +1340,7 @@ async function getAllDepositsForSigner({
 	verbose?: boolean
 }) {
 	if (contractVersion == null) {
-		getLatestContractVersion({ chainId: chainId, type: 'normal' })
+		getLatestContractVersion({ chainId, type: 'normal' })
 	}
 	const contract = await getContract(chainId, signer, contractVersion)
 	const address = await signer.getAddress()
@@ -1500,8 +1498,8 @@ async function populateXChainClaimTx({
 	payload,
 	provider,
 }: interfaces.IPopulateXChainClaimTxParams): Promise<TransactionRequest> {
-	if (!provider) provider = await getDefaultProvider(String(payload.chainId))
-	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	if (!provider) provider = await getDefaultProvider(payload.chainId)
+	const contract = await getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const preparedArgs: any[] = [
 		payload.peanutAddress,
 		payload.depositIndex,
@@ -1537,13 +1535,13 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	const contractVersion = params.contractVersion
 	const depositIdx = params.depositIdx
 	const password = params.password
-	provider = provider || (await getDefaultProvider(String(chainId)))
+	provider = provider || (await getDefaultProvider(chainId))
 	// check that chainID and provider network are the same, else console log warning
 	const network = await provider.getNetwork()
 	if (network.chainId != Number(chainId)) {
 		console.warn('WARNING: chainId and provider network are different')
 	}
-	const contract = await getContract(chainId.toString(), provider, contractVersion)
+	const contract = await getContract(chainId, provider, contractVersion)
 
 	config.verbose && console.log('fetching deposit: ', depositIdx)
 	let deposit,
@@ -1601,7 +1599,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	if (tokenType == interfaces.EPeanutLinkType.native || tokenType == interfaces.EPeanutLinkType.erc20) {
 		config.verbose &&
 			console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', chainId)
-		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === String(chainId))
+		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === chainId)
 		if (!chainDetails) {
 			throw new Error("Couldn't find details for this token")
 		}
@@ -1683,7 +1681,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 
 	return {
 		link: link,
-		chainId: chainId,
+		chainId,
 		depositIndex: depositIdx,
 		contractVersion: contractVersion,
 		password: password,
@@ -1891,7 +1889,7 @@ async function getXChainOptionsForLink({
 
 	const supportedChains = await getSquidChains({ isTestnet })
 
-	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId.toString() === sourceChainId)
+	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
 
 	if (!isSourceChainSupported) {
 		throw new interfaces.SDKStatus(
@@ -1912,7 +1910,7 @@ async function getXChainOptionsForLink({
 	})
 
 	const destinationChains = supportedChains
-		.filter((chain) => chain.chainId.toString() !== sourceChainId && chain.chainType === 'evm')
+		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
 		.map(({ chainId, axelarChainName, chainType, chainIconURI }) => ({
 			chainId,
 			axelarChainName,
@@ -2195,12 +2193,12 @@ async function claimAllUnclaimedAsSenderPerChain({
 	const provider = structSigner.signer.provider as ethers.providers.JsonRpcProvider
 
 	if (peanutContractVersion == null) {
-		peanutContractVersion = getLatestContractVersion({ chainId: chainId, type: 'normal' })
+		peanutContractVersion = getLatestContractVersion({ chainId, type: 'normal' })
 	}
 
 	const addressDepositsWithIdx = await getAllUnclaimedDepositsWithIdxForAddress({
 		address: address,
-		chainId: chainId,
+		chainId,
 		provider: provider,
 		peanutContractVersion,
 	})
@@ -2272,7 +2270,7 @@ async function makeGaslessDepositPayload({
 		)
 	}
 
-	const peanutContract = await getContract(linkDetails.chainId.toString(), null, contractVersion)
+	const peanutContract = await getContract(linkDetails.chainId, null, contractVersion)
 	const uintAmount = ethers.utils.parseUnits(linkDetails.tokenAmount.toString(), linkDetails.tokenDecimals)
 	const randomNonceInt = Math.floor(Math.random() * 1e12)
 	const randomNonceHex = '0x' + randomNonceInt.toString(16).padStart(64, '0')
@@ -2318,9 +2316,9 @@ async function prepareGaslessDepositTx({
 	payload,
 	signature,
 }: interfaces.IPrepareGaslessDepositTxParams): Promise<TransactionRequest> {
-	if (!provider) provider = await getDefaultProvider(String(payload.chainId))
+	if (!provider) provider = await getDefaultProvider(payload.chainId)
 
-	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	const contract = await getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const puresig = signature.slice(2) // remove 0x prefix
 	const preparedPayload: any[] = [
 		payload.tokenAddress,
@@ -2408,10 +2406,10 @@ async function makeGaslessReclaimPayload({
 			'Error validating link details: this Peanut version does not support gasless revocations'
 		)
 	}
-	const peanutVault = await getContract(chainId.toString(), null, contractVersion)
+	const peanutVault = await getContract(chainId, null, contractVersion)
 
 	const payload: interfaces.IGaslessReclaimPayload = {
-		chainId: chainId,
+		chainId,
 		contractVersion: contractVersion,
 		depositIndex,
 		signer: address,
@@ -2441,9 +2439,9 @@ async function prepareGaslessReclaimTx({
 	payload,
 	signature,
 }: interfaces.IPrepareGaslessReclaimTxParams): Promise<TransactionRequest> {
-	if (!provider) provider = await getDefaultProvider(String(payload.chainId))
+	if (!provider) provider = await getDefaultProvider(payload.chainId)
 
-	const contract = await getContract(String(payload.chainId), provider, payload.contractVersion) // get the contract instance
+	const contract = await getContract(payload.chainId, provider, payload.contractVersion) // get the contract instance
 	const preparedPayload: any[] = [[payload.depositIndex], payload.signer, signature]
 	console.log('Prepared payload', { preparedPayload })
 	let unsignedTx: ethers.providers.TransactionRequest
