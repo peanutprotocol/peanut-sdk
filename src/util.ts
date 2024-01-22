@@ -3,6 +3,7 @@ import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -483,4 +484,28 @@ export function getSquidRouterUrl(isMainnet: boolean, usePeanutApi: boolean): st
 		}
 	}
 	return squidRouteUrl
+}
+
+export function ethersV5ToPeanutTx(txRequest: TransactionRequest): interfaces.IPeanutUnsignedTransaction {
+	// Do this instead of a simple `if (txRequest.value) {...}` so that if the value is
+	// explicitly set to a zero, we keep it as zero instead of turning into null.
+	const valueSet = txRequest.value !== null && txRequest.value !== undefined
+
+	return {
+		to: txRequest.to,
+		data: txRequest.data as string | null, // should always be a string
+		value: valueSet ? BigInt(txRequest.value.toString()) : null,
+	}
+}
+
+export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransaction): TransactionRequest {
+	// Do this instead of a simple `if (txRequest.value) {...}` so that if the value is
+	// explicitly set to a zero, we keep it as zero instead of turning into null.
+	const valueSet = unsignedTx.value !== null && unsignedTx.value !== undefined
+
+	return {
+		to: unsignedTx.to,
+		data: unsignedTx.data,
+		value: valueSet ? BigNumber.from(unsignedTx.value.toString()) : null,
+	}
 }
