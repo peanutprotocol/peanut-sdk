@@ -8,7 +8,7 @@ dotenv.config()
 
 describe('create and claim links on devnet', function () {
 	it('native token single link', async function () {
-		const chainId = 1 // use a mainnet fork
+		const chainId = '1' // use a mainnet fork
 		const { wallet1: walletSender, wallet2: walletRecipient } = await setupDevnetEnvironment(chainId)
 		const amountToSend = 1.5 // Deposit 1.5 ETH in the link
 

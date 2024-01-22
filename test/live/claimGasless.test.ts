@@ -35,7 +35,7 @@ describe('claim gasless', () => {
 				signer: wallet,
 			},
 			linkDetails: {
-				chainId: parseInt(chainId),
+				chainId: chainId,
 				tokenAmount,
 				tokenType: 0,
 				tokenAddress: ethers.constants.AddressZero,
@@ -54,7 +54,7 @@ describe('claim gasless', () => {
 				signer: wallet,
 			},
 			linkDetails: {
-				chainId: parseInt(chainId),
+				chainId: chainId,
 				tokenAmount,
 				tokenType: 0,
 				tokenAddress: ethers.constants.AddressZero,

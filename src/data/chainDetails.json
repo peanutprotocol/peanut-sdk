@@ -28,7 +28,7 @@
 		},
 		"infoURL": "https://ethereum.org",
 		"shortName": "Ethereum",
-		"chainId": 1,
+		"chainId": "1",
 		"networkId": 1,
 		"slip44": 60,
 		"ens": {
@@ -70,7 +70,7 @@
 		},
 		"infoURL": "https://goerli.net/#about",
 		"shortName": "Goerli",
-		"chainId": 5,
+		"chainId": "5",
 		"networkId": 5,
 		"ens": {
 			"registry": "0x112234455c3a32fd11230c42e7bccd4a84e02010"
@@ -118,7 +118,7 @@
 		},
 		"infoURL": "https://polygon.technology/",
 		"shortName": "Polygon",
-		"chainId": 137,
+		"chainId": "137",
 		"networkId": 137,
 		"slip44": 966,
 		"explorers": [
@@ -152,7 +152,7 @@
 		},
 		"infoURL": "https://polygon.technology/",
 		"shortName": "Polygon Mumbai",
-		"chainId": 80001,
+		"chainId": "80001",
 		"networkId": 80001,
 		"explorers": [
 			{
@@ -180,7 +180,7 @@
 		},
 		"infoURL": "https://optimism.io",
 		"shortName": "Optimism",
-		"chainId": 10,
+		"chainId": "10",
 		"networkId": 10,
 		"explorers": [
 			{
@@ -218,7 +218,7 @@
 		},
 		"infoURL": "https://optimism.io",
 		"shortName": "Optimism Goerli",
-		"chainId": 420,
+		"chainId": "420",
 		"networkId": 420,
 		"explorers": [
 			{
@@ -236,7 +236,7 @@
 	},
 	"42161": {
 		"name": "Arbitrum One",
-		"chainId": 42161,
+		"chainId": "42161",
 		"shortName": "Arbitrum One",
 		"chain": "ETH",
 		"networkId": 42161,
@@ -308,7 +308,7 @@
 		},
 		"infoURL": "https://docs.gnosischain.com",
 		"shortName": "Gnosis",
-		"chainId": 100,
+		"chainId": "100",
 		"networkId": 100,
 		"slip44": 700,
 		"explorers": [
@@ -342,7 +342,7 @@
 		},
 		"infoURL": "https://milkomeda.com",
 		"shortName": "Milkomeda Testnet",
-		"chainId": 200101,
+		"chainId": "200101",
 		"networkId": 200101,
 		"explorers": [
 			{
@@ -369,7 +369,7 @@
 		},
 		"infoURL": "https://milkomeda.com",
 		"shortName": "Milkomeda",
-		"chainId": 2001,
+		"chainId": "2001",
 		"networkId": 2001,
 		"explorers": [
 			{
@@ -406,7 +406,7 @@
 		},
 		"infoURL": "https://www.bnbchain.org/en",
 		"shortName": "BNB",
-		"chainId": 56,
+		"chainId": "56",
 		"networkId": 56,
 		"slip44": 714,
 		"explorers": [
@@ -442,7 +442,7 @@
 		},
 		"infoURL": "https://sepolia.otterscan.io",
 		"shortName": "Sepolia",
-		"chainId": 11155111,
+		"chainId": "11155111",
 		"networkId": 11155111,
 		"explorers": [
 			{
@@ -474,7 +474,7 @@
 		},
 		"infoURL": "https://holesky.ethpandaops.io",
 		"shortName": "holesky",
-		"chainId": 17000,
+		"chainId": "17000",
 		"networkId": 17000,
 		"icon": {
 			"url": "https://ipfs.io/ipfs/QmdwQDr6vmBtXmK2TmknkEuZNoaDqTasFdZdu3DRw8b2wt",
@@ -519,7 +519,7 @@
 		},
 		"infoURL": "https://base.org",
 		"shortName": "base",
-		"chainId": 8453,
+		"chainId": "8453",
 		"networkId": 8453,
 		"icon": {
 			"url": "https://ipfs.io/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv",
@@ -553,7 +553,7 @@
 		},
 		"infoURL": "https://base.org",
 		"shortName": "Base Goerli",
-		"chainId": 84531,
+		"chainId": "84531",
 		"networkId": 84531,
 		"icon": {
 			"url": "https://ipfs.io/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv",
@@ -594,7 +594,7 @@
 		},
 		"infoURL": "https://docs.gnosischain.com",
 		"shortName": "Gnosis Chiado",
-		"chainId": 10200,
+		"chainId": "10200",
 		"networkId": 10200,
 		"explorers": [
 			{
@@ -633,7 +633,7 @@
 		},
 		"infoURL": "https://www.avax.network/",
 		"shortName": "Avalanche",
-		"chainId": 43114,
+		"chainId": "43114",
 		"networkId": 43114,
 		"slip44": 9005,
 		"explorers": [
@@ -658,7 +658,7 @@
 		},
 		"infoURL": "https://linea.build",
 		"shortName": "linea",
-		"chainId": 59144,
+		"chainId": "59144",
 		"networkId": 59144,
 		"icon": {
 			"url": "https://ipfs.io/ipfs/QmURjritnHL7a8TwZgsFwp3f272DJmG5paaPtWDZ98QZwH",
@@ -709,7 +709,7 @@
 		},
 		"infoURL": "https://linea.build",
 		"shortName": "linea-testnet",
-		"chainId": 59140,
+		"chainId": "59140",
 		"networkId": 59140,
 		"icon": {
 			"url": "https://ipfs.io/ipfs/QmURjritnHL7a8TwZgsFwp3f272DJmG5paaPtWDZ98QZwH",
@@ -754,7 +754,7 @@
 		},
 		"infoURL": "https://polygon.technology/solutions/polygon-zkevm/",
 		"shortName": "testnet-zkEVM-mango",
-		"chainId": 1442,
+		"chainId": "1442",
 		"networkId": 1442,
 		"explorers": [
 			{
@@ -772,12 +772,8 @@
 	"5001": {
 		"name": "Mantle Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.testnet.mantle.xyz"
-		],
-		"faucets": [
-			"https://faucet.testnet.mantle.xyz"
-		],
+		"rpc": ["https://rpc.testnet.mantle.xyz"],
+		"faucets": ["https://faucet.testnet.mantle.xyz"],
 		"nativeCurrency": {
 			"name": "Testnet Mantle",
 			"symbol": "MNT",
@@ -785,7 +781,7 @@
 		},
 		"infoURL": "https://mantle.xyz",
 		"shortName": "mantle-testnet",
-		"chainId": 5001,
+		"chainId": "5001",
 		"networkId": 5001,
 		"explorers": [
 			{

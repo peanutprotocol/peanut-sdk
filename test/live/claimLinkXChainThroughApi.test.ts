@@ -12,8 +12,8 @@ describe('Peanut XChain claiming tests', function () {
 		const apiKey = process.env.PEANUT_DEV_API_KEY!
 
 		// Parameters that affect the test behaviour
-		const sourceChainId = 137
-		const destinationChainId = 42161
+		const sourceChainId = '137'
+		const destinationChainId = '42161'
 		const amountToTestWith = 0.1
 		// if link is empty, a new one will be created
 		let link = ''

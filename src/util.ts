@@ -96,7 +96,7 @@ export async function signAddress(string: string, privateKey: string) {
  */
 export async function signWithdrawalMessage(
 	vaultVersion: string,
-	chainId: number,
+	chainId: string,
 	vaultAddress: string,
 	depositIdx: number,
 	recipient: string,
@@ -202,26 +202,10 @@ export async function getRandomString(n: number = 16): Promise<string> {
 }
 
 /**
- * Returns the parameters from the current page url
- */
-export function getParamsFromPageURL() {
-	/* returns the parameters from the current page url */
-	const params = new URLSearchParams(window.location.search)
-	let chainId = params.get('c') // can be chain name or chain id
-	chainId = CHAIN_MAP[String(chainId) as keyof typeof CHAIN_MAP].toString()
-	const contractVersion = params.get('v')
-	let depositIdx = params.get('i') ?? ''
-	depositIdx = parseInt(depositIdx).toString()
-	const password = params.get('p')
-
-	return { chainId, contractVersion, depositIdx, password }
-}
-
-/**
  * Returns the parameters from a link
  */
 export function getParamsFromLink(link: string): {
-	chainId: number
+	chainId: string
 	contractVersion: string
 	depositIdx: number
 	password: string
@@ -251,16 +235,8 @@ export function getParamsFromLink(link: string): {
 
 	const params = new URLSearchParams(search)
 
-	const _chainId: string | number = params.get('c') ?? '' // can be chain name or chain id
-	let chainId: number = 0
-	// if can be casted to int, then it's a chain id
-	if (parseInt(_chainId)) {
-		chainId = parseInt(_chainId)
-	} else {
-		// otherwise it's a chain name
-		chainId = CHAIN_MAP[String(_chainId) as keyof typeof CHAIN_MAP]
-	}
-
+	const _chainId: string = params.get('c') ?? '' // can be chain name or chain id
+	let chainId: string = _chainId
 	const contractVersion = params.get('v') ?? ''
 	let depositIdx: string | number = params.get('i') ?? ''
 	depositIdx = parseInt(depositIdx)
@@ -277,7 +253,7 @@ export function getParamsFromLink(link: string): {
  * Returns a link from the given parameters
  */
 export function getLinkFromParams(
-	chainId: number | string,
+	chainId: string,
 	contractVersion: string,
 	depositIdx: number | string,
 	password: string,
@@ -305,14 +281,14 @@ export function getLinkFromParams(
  * Returns the deposit index from a tx receipt
  * @deprecated will be removed in Feb 2024
  */
-export function getDepositIdx(txReceipt: any, chainId: number | string, contractVersion: string) {
+export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: string) {
 	/* returns the deposit index from a tx receipt */
 	const logs = txReceipt.logs
 	let depositIdx
 	let logIndex
 
 	// Identify the logIndex based on chainId
-	if (chainId === 137 || chainId === 80001) {
+	if (chainId === '137' || chainId === '80001') {
 		logIndex = logs.length - 2
 	} else {
 		logIndex = logs.length - 1
@@ -348,7 +324,7 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
 /**
  * Returns an array of deposit indices from a batch transaction receipt
  */
-export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
+export function getDepositIdxs(txReceipt: any, chainId: string, contractVersion: string): number[] {
 	config.verbose && console.log('getting deposit idxs from txHash: ', txReceipt.transactionHash)
 	const logs = txReceipt.logs
 	const depositIdxs = []

@@ -44,7 +44,7 @@ describe('getDepositIdxs', function () {
 			console.log(txReceipt1.logs[i])
 			console.log(txReceipt1.logs[i].topics)
 		}
-		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, 5, 'v4')
+		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, '5', 'v4')
 		console.log(depositIdxs1)
 		expect(depositIdxs1).toEqual([13, 14, 15, 16, 17])
 	})
@@ -55,7 +55,7 @@ describe('getDepositIdxs', function () {
 			console.log(txReceipt2.logs[i])
 			console.log(txReceipt2.logs[i].topics)
 		}
-		const depositIdxs2 = await peanut.getDepositIdxs(txReceipt2, 5, 'v4')
+		const depositIdxs2 = await peanut.getDepositIdxs(txReceipt2, '5', 'v4')
 		console.log(depositIdxs2)
 		expect(depositIdxs2).toEqual([18, 19, 20, 21, 22])
 	})
@@ -92,7 +92,7 @@ describe('getDepositIdxs for single event and not batch', function () {
 			console.log(txReceipt1.logs[i])
 			console.log(txReceipt1.logs[i].topics)
 		}
-		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, 5, 'v4')
+		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, '5', 'v4')
 		console.log(depositIdxs1)
 		expect(depositIdxs1).toEqual([190])
 	})
