@@ -9,8 +9,9 @@ import {
 	makeReclaimGasless,
 	getLinksFromTx,
 	interfaces,
+	createLink,
 } from '../../src/index' // import directly from source code
-import { ethers } from 'ethersv5' // v5
+import { BigNumber, constants, ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -74,7 +75,7 @@ describe('gasless functionality through peanut api', () => {
 		expect(linkInfo.tokenAmount).toBe(String(linkDetails.tokenAmount))
 
 		console.log('Congrats!! Test successful!')
-	}, 30000) // 30 seconds timeout
+	}, 120000)
 
 	// Tests the entire flow from the client to the server for gasless reclaims
 	// Requirements for the test:
@@ -83,25 +84,30 @@ describe('gasless functionality through peanut api', () => {
 	// 2. TEST_WALLET_PRIVATE_KEY2 owns some MATIC to execute transactions
 	test('make a gasless reclaim', async () => {
 		const testingChainId = '80001'
-		const depositIndex = 11 // must be a withdrawable deposit
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		console.log('Wallet addresses', { user: userWallet.address })
 
-		const link = getLinkFromParams(
-			testingChainId,
-			'v4.2',
-			depositIndex,
-			'12345678' // password - doesn't matter, since the link is being reclaimed by the sender
-		)
-		// Make sure that the link exists and is not claimed
+		const { link } = await createLink({
+			structSigner: {
+				signer: userWallet,
+				maxPriorityFeePerGas: BigNumber.from(1500000000),
+			},
+			linkDetails: {
+				chainId: testingChainId,
+				tokenAmount: 0.01,
+				tokenDecimals: 18,
+				tokenAddress: constants.AddressZero,
+			}
+		})
+		console.log('Created link', link)
+
 		let linkDetails = await getLinkDetails({ link, provider })
-		expect(linkDetails.claimed).toBe(false)
 
 		const { payload, message } = await makeGaslessReclaimPayload({
 			address: userWallet.address,
 			contractVersion: 'v4.2',
-			depositIndex,
+			depositIndex: linkDetails.depositIndex,
 			chainId: testingChainId,
 		})
 		console.log('Result', { payload }, { message })
@@ -125,5 +131,5 @@ describe('gasless functionality through peanut api', () => {
 		expect(linkDetails.claimed).toBe(true)
 
 		console.log('Congrats!! Test successful!')
-	}, 30000) // 30 seconds timeout
+	}, 120000)
 })
