@@ -185,5 +185,12 @@
 		"mainnet": "false",
 		"v4": "0xC39dC50b46BE62B8f209853E2D36E1Fcab349404",
 		"v4.2": "0x392bF7Ea002F3630EC3cF559557dA8526cF63aCc"
+	},
+	"534352": {
+		"name": "scroll",
+		"mainnet": "true",
+		"v4": "0x6f6ca0D3a6bF67e68584d4f66d195342bc4cc6Cc",
+		"v4.2": "0x5E164807F0334dd5854447530a5CAfcC8dB57dcE",
+		"Rv4.2": "0xB0CE4b507D424d9E019EfE7F4d00FF78501E69A4"
 	}
 }
