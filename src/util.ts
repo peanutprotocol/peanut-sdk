@@ -2,6 +2,8 @@ import { BigNumber, ethers } from 'ethersv5'
 import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
+import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -27,7 +29,7 @@ export function greeting() {
  * @returns {Object} - An object containing the address and privateKey
  */
 export function generateKeysFromString(string: string) {
-	const privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string)) // v5
+	const privateKey = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(string))
 	const wallet = new ethers.Wallet(privateKey)
 	return {
 		address: wallet.address,
@@ -40,10 +42,10 @@ export function generateKeysFromString(string: string) {
  */
 export function hash_string(str: string) {
 	//@HUGO: I've added in a .toString() here, but I'm not sure if it's good
-	let hash = ethers.utils.toUtf8Bytes(str).toString() // v5
-	hash = ethers.utils.hexlify(hash) // v5
-	hash = ethers.utils.hexZeroPad(hash, 32) // v5
-	hash = ethers.utils.keccak256(hash) // v5
+	let hash = ethers.utils.toUtf8Bytes(str).toString()
+	hash = ethers.utils.hexlify(hash)
+	hash = ethers.utils.hexZeroPad(hash, 32)
+	hash = ethers.utils.keccak256(hash)
 	return hash
 }
 
@@ -60,7 +62,7 @@ export async function signMessageWithPrivatekey(message: string, privateKey: str
  * Verifies a signature with a public key and returns true if valid
  */
 export function verifySignature(message: string, signature: string, address: string) {
-	const messageSigner = ethers.utils.verifyMessage(message, signature) // v5
+	const messageSigner = ethers.utils.verifyMessage(message, signature)
 	return messageSigner == address
 }
 
@@ -68,32 +70,68 @@ export function verifySignature(message: string, signature: string, address: str
  * Adds the EIP191 prefix to a message and hashes it same as solidity
  */
 export function solidityHashBytesEIP191(bytes: any) {
-	return ethers.utils.hashMessage(bytes) // v5
+	return ethers.utils.hashMessage(bytes)
 }
 
 /**
  * Hashes an address to a 32 byte hex string
  */
 export function solidityHashAddress(address: string) {
-	return ethers.utils.solidityKeccak256(['address'], [address]) // v5
+	return ethers.utils.solidityKeccak256(['address'], [address])
 }
 
 /**
  * Hashes a plain address, adds an Ethereum message prefix, hashes it again and then signs it
  */
 export async function signAddress(string: string, privateKey: string) {
-	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]) // v5
-	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
+	const stringHash = ethers.utils.solidityKeccak256(['address'], [string]) // v4
+	const stringHashbinary = ethers.utils.arrayify(stringHash) // v4
 	const signer = new ethers.Wallet(privateKey)
 	const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
 	return signature
 }
 
 /**
+ * Hashes & signs a withdrawal message for peanut vault
+ * @returns a fully ready list of claim params to be passed to the withdrawal function
+ */
+export async function signWithdrawalMessage(
+	vaultVersion: string,
+	chainId: string,
+	vaultAddress: string,
+	depositIdx: number,
+	recipient: string,
+	privateKey: string,
+	onlyRecipientMode?: boolean // only for v4.2
+) {
+	let claimParams: any[]
+	if (vaultVersion == 'v4.2') {
+		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
+		const stringHash = ethers.utils.solidityKeccak256(
+			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],
+			[PEANUT_SALT, chainId, vaultAddress, depositIdx, recipient, extraData]
+		)
+		const stringHashbinary = ethers.utils.arrayify(stringHash)
+		const signer = new ethers.Wallet(privateKey)
+		const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
+		claimParams = [depositIdx, recipient, signature]
+	} else {
+		const addressHash = solidityHashAddress(recipient)
+		const addressHashBinary = ethers.utils.arrayify(addressHash)
+		config.verbose && console.log('addressHash: ', addressHash, ' addressHashBinary: ', addressHashBinary)
+		const addressHashEIP191 = solidityHashBytesEIP191(addressHashBinary)
+		const signature = await signAddress(recipient, privateKey) // sign with link keys
+		claimParams = [depositIdx, recipient, addressHashEIP191, signature]
+	}
+
+	return claimParams
+}
+
+/**
  * Signs a hash
  */
 export async function signHash(stringHash: string, privateKey: string) {
-	const stringHashbinary = ethers.utils.arrayify(stringHash) // v5
+	const stringHashbinary = ethers.utils.arrayify(stringHash)
 	const signer = new ethers.Wallet(privateKey)
 	const signature = await signer.signMessage(stringHashbinary) // this calls ethers.hashMessage and prefixes the hash
 	return signature
@@ -165,26 +203,10 @@ export async function getRandomString(n: number = 16): Promise<string> {
 }
 
 /**
- * Returns the parameters from the current page url
- */
-export function getParamsFromPageURL() {
-	/* returns the parameters from the current page url */
-	const params = new URLSearchParams(window.location.search)
-	let chainId = params.get('c') // can be chain name or chain id
-	chainId = CHAIN_MAP[String(chainId) as keyof typeof CHAIN_MAP].toString()
-	const contractVersion = params.get('v')
-	let depositIdx = params.get('i') ?? ''
-	depositIdx = parseInt(depositIdx).toString()
-	const password = params.get('p')
-
-	return { chainId, contractVersion, depositIdx, password }
-}
-
-/**
  * Returns the parameters from a link
  */
 export function getParamsFromLink(link: string): {
-	chainId: number
+	chainId: string
 	contractVersion: string
 	depositIdx: number
 	password: string
@@ -214,16 +236,8 @@ export function getParamsFromLink(link: string): {
 
 	const params = new URLSearchParams(search)
 
-	const _chainId: string | number = params.get('c') ?? '' // can be chain name or chain id
-	let chainId: number = 0
-	// if can be casted to int, then it's a chain id
-	if (parseInt(_chainId)) {
-		chainId = parseInt(_chainId)
-	} else {
-		// otherwise it's a chain name
-		chainId = CHAIN_MAP[String(_chainId) as keyof typeof CHAIN_MAP]
-	}
-
+	const _chainId: string = params.get('c') ?? '' // can be chain name or chain id
+	let chainId: string = _chainId
 	const contractVersion = params.get('v') ?? ''
 	let depositIdx: string | number = params.get('i') ?? ''
 	depositIdx = parseInt(depositIdx)
@@ -240,7 +254,7 @@ export function getParamsFromLink(link: string): {
  * Returns a link from the given parameters
  */
 export function getLinkFromParams(
-	chainId: number | string,
+	chainId: string,
 	contractVersion: string,
 	depositIdx: number | string,
 	password: string,
@@ -266,15 +280,16 @@ export function getLinkFromParams(
 
 /**
  * Returns the deposit index from a tx receipt
+ * @deprecated will be removed in Feb 2024
  */
-export function getDepositIdx(txReceipt: any, chainId: number | string, contractVersion: string) {
+export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: string) {
 	/* returns the deposit index from a tx receipt */
 	const logs = txReceipt.logs
 	let depositIdx
 	let logIndex
 
 	// Identify the logIndex based on chainId
-	if (chainId === 137 || chainId === 80001) {
+	if (chainId === '137' || chainId === '80001') {
 		logIndex = logs.length - 2
 	} else {
 		logIndex = logs.length - 1
@@ -291,14 +306,14 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (contractVersion === 'v4') {
-		// In v5, the index is now an indexed topic rather than part of the log data
+	} else if (['v4', 'V4.2'].includes(contractVersion)) {
+		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(`0x${logs[logIndex].topics[1].slice(2)}`)
 		} catch (error) {
-			console.error('Error parsing deposit index from v5 logs:', error)
+			console.error(`Error parsing deposit index from ${contractVersion} logs:', error`)
 		}
 	} else {
 		console.error('Unsupported contract version:', contractVersion)
@@ -310,17 +325,11 @@ export function getDepositIdx(txReceipt: any, chainId: number | string, contract
 /**
  * Returns an array of deposit indices from a batch transaction receipt
  */
-export function getDepositIdxs(txReceipt: any, chainId: number | string, contractVersion: string): number[] {
+export function getDepositIdxs(txReceipt: any, chainId: string, contractVersion: string): number[] {
 	config.verbose && console.log('getting deposit idxs from txHash: ', txReceipt.transactionHash)
 	const logs = txReceipt.logs
 	const depositIdxs = []
 	config.verbose && console.log('logs: ', logs)
-
-	// events
-	// event DepositEvent(
-	//     uint256 indexed _index, uint8 indexed _contractType, uint256 _amount, address indexed _senderAddress
-	// );
-	// const logTopic = ethers.utils.id('Deposit(uint256,address,uint64,uint8,uint64,uint256)') // Update with correct event signature
 	const logTopic = ethers.utils.id('DepositEvent(uint256,uint8,uint256,address)') // Update with correct event signature
 
 	const _PEANUT_CONTRACTS = PEANUT_CONTRACTS as { [chainId: string]: { [contractVersion: string]: string } }
@@ -335,6 +344,19 @@ export function getDepositIdxs(txReceipt: any, chainId: number | string, contrac
 	}
 
 	return depositIdxs
+}
+
+/**
+ * Returns an object with the keys in lowerCase
+ */
+export function toLowerCaseKeys(obj: any): any {
+	let newObj: any = {}
+	Object.keys(obj).forEach((key) => {
+		// Convert only the top-level keys to lowercase
+		let lowerCaseKey = key.toLowerCase()
+		newObj[lowerCaseKey] = obj[key]
+	})
+	return newObj
 }
 
 export function getLinksFromMultilink(link: string): string[] {
@@ -443,4 +465,47 @@ export function compareDeposits(deposit1: any, deposit2: any) {
 	) {
 		return true
 	} else return false
+}
+
+export function getSquidRouterUrl(isMainnet: boolean, usePeanutApi: boolean): string {
+	let squidRouteUrl: string
+	if (usePeanutApi) {
+		if (isMainnet) {
+			squidRouteUrl = 'https://api.peanut.to/get-squid-route'
+		} else {
+			squidRouteUrl = 'https://api.peanut.to/get-squid-route/testnet'
+		}
+	} else {
+		// using squid api
+		if (isMainnet) {
+			squidRouteUrl = 'https://v2.api.squidrouter.com/v2/route'
+		} else {
+			squidRouteUrl = 'https://testnet.v2.api.squidrouter.com/v2/route'
+		}
+	}
+	return squidRouteUrl
+}
+
+export function ethersV5ToPeanutTx(txRequest: TransactionRequest): interfaces.IPeanutUnsignedTransaction {
+	// Do this instead of a simple `if (txRequest.value) {...}` so that if the value is
+	// explicitly set to a zero, we keep it as zero instead of turning into null.
+	const valueSet = txRequest.value !== null && txRequest.value !== undefined
+
+	return {
+		to: txRequest.to,
+		data: txRequest.data as string | null, // should always be a string
+		value: valueSet ? BigInt(txRequest.value.toString()) : null,
+	}
+}
+
+export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransaction): TransactionRequest {
+	// Do this instead of a simple `if (txRequest.value) {...}` so that if the value is
+	// explicitly set to a zero, we keep it as zero instead of turning into null.
+	const valueSet = unsignedTx.value !== null && unsignedTx.value !== undefined
+
+	return {
+		to: unsignedTx.to,
+		data: unsignedTx.data,
+		value: valueSet ? BigNumber.from(unsignedTx.value.toString()) : null,
+	}
 }

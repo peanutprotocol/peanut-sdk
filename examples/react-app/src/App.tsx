@@ -118,14 +118,14 @@ function App() {
 
 		const passwords = [peanut.getRandomString(16)]
 
-		const prepareTxsResponse = await peanut.prepareTxs({
+		const prepareDepositTxsResponse = await peanut.prepareDepositTxs({
 			address: address ?? '',
 			linkDetails,
 			passwords,
 		})
 
 		const signedTxs = await Promise.all(
-			prepareTxsResponse.unsignedTxs.map((unsignedTx: any) =>
+			prepareDepositTxsResponse.unsignedTxs.map((unsignedTx: any) =>
 				peanut.signAndSubmitTx({
 					structSigner: {
 						signer: signer,

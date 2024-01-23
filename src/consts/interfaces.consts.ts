@@ -1,5 +1,5 @@
-import { ethers } from 'ethersv5'
-import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { BigNumber, ethers } from 'ethersv5'
+import { Provider } from '@ethersproject/abstract-provider'
 
 //General export interface s and enums
 export interface IPeanutSigner {
@@ -29,9 +29,9 @@ export enum EPeanutLinkType {
 }
 
 export interface IPeanutLinkDetails {
-	chainId: number
+	chainId: string
 	tokenAmount: number
-	tokenType: EPeanutLinkType
+	tokenType?: EPeanutLinkType
 	tokenAddress?: string
 	tokenId?: number
 	tokenDecimals?: number
@@ -44,8 +44,10 @@ export interface ICreatedPeanutLink {
 	txHash: string
 }
 
-export interface IPeanutUnsignedTransactions {
-	unsignedTxs: TransactionRequest // change this any type to correct type
+export interface IPeanutUnsignedTransaction {
+	to?: string
+	data?: string
+	value?: BigInt
 }
 
 export interface IReturnSuccessObject {
@@ -92,12 +94,14 @@ export interface IClaimLinkGaslessParams {
 //claimLinkXChainGasless
 export interface IClaimLinkXChainGaslessParams {
 	APIKey: string
-	baseUrl?: string
 	recipientAddress: string
 	link: string
 	destinationChainId: string
-	destinationTokenAddress?: string
-	isTestnet?: boolean
+	destinationToken?: string
+	isMainnet?: boolean
+	baseUrl?: string
+	squidRouterUrl?: string
+	slippage?: number
 }
 
 export interface IClaimLinkXChainGaslessResponse {
@@ -143,7 +147,7 @@ export interface IClaimLinkSenderResponse {
 }
 
 //prepareCreatetxs
-export interface IPrepareTxsParams {
+export interface IPrepareDepositTxsParams {
 	address: string
 	linkDetails: IPeanutLinkDetails
 	peanutContractVersion?: string
@@ -153,14 +157,14 @@ export interface IPrepareTxsParams {
 	provider?: ethers.providers.Provider
 }
 
-export interface IPrepareTxsResponse {
-	unsignedTxs: TransactionRequest[]
+export interface IPrepareDepositTxsResponse {
+	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
-	unsignedTx: TransactionRequest
+	unsignedTx: IPeanutUnsignedTransaction
 }
 
 export interface ISignAndSubmitTxResponse {
@@ -186,6 +190,13 @@ export interface IGetLinkDetailsParams {
 	provider?: ethers.providers.Provider
 }
 
+// X-Chain
+
+export interface ISquidRoute {
+	value: BigNumber
+	calldata: string
+}
+
 //getCrossChainoptionsForLink
 export interface IGetCrossChainOptionsForLinkParams {
 	isTestnet: boolean
@@ -195,7 +206,7 @@ export interface IGetCrossChainOptionsForLinkParams {
 
 //getSquidRoute
 export interface IGetSquidRouteParams {
-	isTestnet: boolean
+	squidRouterUrl?: string
 	fromChain: string
 	fromToken: string
 	fromAmount: string
@@ -203,23 +214,155 @@ export interface IGetSquidRouteParams {
 	toToken: string
 	fromAddress: string
 	toAddress: string
-	slippage: number
+	slippage?: number
+	enableForecall?: boolean
+	enableBoost?: boolean
 }
 
 //squid chain and token interfaces
 export interface ISquidChain {
-	chainId: number
+	chainId: string
 	axelarChainName: string
 	chainType: string
 	chainIconURI: string
 }
 
 export interface ISquidToken {
-	chainId: number
+	chainId: string
 	address: string
 	name: string
 	symbol: string
 	logoURI: string
+}
+
+export interface ICreateClaimXChainPayload {
+	link: string
+	recipient: string
+	destinationChainId: string
+	destinationToken?: string
+	squidRouterUrl?: string
+	isMainnet?: boolean
+	slippage?: number
+}
+
+export interface IXchainClaimPayload {
+	chainId: string
+	contractVersion: string
+
+	// Payload to the withdrawAndBridge function
+	peanutAddress: string
+	depositIndex: number
+	withdrawalSignature: string
+	squidFee: BigNumber
+	peanutFee: BigNumber
+	squidData: string
+	routingSignature: string
+}
+
+export interface IPopulateXChainClaimTxParams {
+	payload: IXchainClaimPayload
+	provider?: Provider
+}
+
+// Gasless deposits with EIP-3009 via EIP-712
+
+export interface EIP712Domain {
+	name: string
+	version: string
+	chainId: string // Hex
+	verifyingContract: string // address
+}
+
+export interface EIP3009TokensInterface {
+	[chainId: string]: {
+		[address: string]: EIP712Domain // Important! Address must be checksummed
+	}
+}
+
+export interface IPrepareGaslessDepositParams {
+	address: string
+	contractVersion: string
+	linkDetails: IPeanutLinkDetails
+	password: string
+}
+
+export interface IPreparedEIP712Message {
+	types: any
+	primaryType: string
+	domain: EIP712Domain
+	values: any
+}
+
+export interface IGaslessDepositPayload {
+	chainId: string
+	contractVersion: string
+
+	// Payload to the function itself
+	tokenAddress: string
+	from: string
+	uintAmount: ethers.BigNumber
+	pubKey20: string
+	nonce: string // Hex
+	validAfter: ethers.BigNumber
+	validBefore: ethers.BigNumber
+}
+
+export interface IMakeGaslessDepositPayloadResponse {
+	payload: IGaslessDepositPayload
+	message: IPreparedEIP712Message
+}
+
+export interface IPrepareGaslessDepositTxParams {
+	provider?: Provider
+	payload: IGaslessDepositPayload
+	signature: string
+}
+
+// Gasless reclaims via a EIP-712 signature
+
+export interface IMakeGaslessReclaimPayloadParams {
+	address: string
+	chainId: string
+	depositIndex: number
+	contractVersion?: string
+}
+
+export interface IGaslessReclaimPayload {
+	chainId: string
+	contractVersion: string
+
+	// payload to the function itself
+	depositIndex: number
+	signer: string
+}
+
+export interface IMakeGaslessReclaimPayloadResponse {
+	payload: IGaslessReclaimPayload
+	message: IPreparedEIP712Message
+}
+
+export interface IPrepareGaslessReclaimTxParams {
+	provider?: Provider
+	payload: IGaslessReclaimPayload
+	signature: string
+}
+
+export interface IExecuteGaslessReclaimResponse {
+	txHash: string
+}
+
+export interface IMakeDepositGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	payload: IGaslessDepositPayload
+	signature: string
+}
+
+export interface IMakeReclaimGaslessParams {
+	APIKey: string
+	baseUrl?: string
+	payload: IGaslessReclaimPayload
+	signature: string
 }
 
 // error object and enums

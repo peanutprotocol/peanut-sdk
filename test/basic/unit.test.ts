@@ -78,7 +78,7 @@ describe('Unit tests', function () {
 				// assert.equal(params.password, "super_secret_password");
 				// assert.equal(params.trackId, "");
 				// move to expect
-				expect(params.chainId).toBe(5)
+				expect(params.chainId).toBe('5')
 				expect(params.contractVersion).toBe('v3')
 				expect(params.depositIdx).toBe(52)
 				expect(params.password).toBe('super_secret_password')
@@ -87,7 +87,7 @@ describe('Unit tests', function () {
 			it('should return the correct params from a link with a trackId', function () {
 				let link = 'https://peanut.to/claim?c=5&v=v3&i=52&p=super_secret_password&t=123456789'
 				let params = peanut.getParamsFromLink(link)
-				expect(params.chainId).toBe(5)
+				expect(params.chainId).toBe('5')
 				expect(params.contractVersion).toBe('v3')
 				expect(params.depositIdx).toBe(52)
 				expect(params.password).toBe('super_secret_password')
@@ -96,7 +96,7 @@ describe('Unit tests', function () {
 			it('should return correct params from link with hash', function () {
 				let link = 'https://peanut.to/claim#?c=137&v=v3&i=1555&p=eCEge2ooT3fGkFfd&t=sdk'
 				let params = peanut.getParamsFromLink(link)
-				expect(params.chainId).toBe(137)
+				expect(params.chainId).toBe('137')
 				expect(params.contractVersion).toBe('v3')
 				expect(params.depositIdx).toBe(1555)
 				expect(params.password).toBe('eCEge2ooT3fGkFfd')

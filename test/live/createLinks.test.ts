@@ -11,7 +11,7 @@ describe('goerli createLinks tests', function () {
 		new ethers.providers.JsonRpcBatchProvider(RPC_URL)
 	)
 	it('2 goerli links (LIVE)', async function () {
-		const CHAIN_ID = 5 // 80001 for mumbai, 5 for goerli
+		const CHAIN_ID = '5' // 80001 for mumbai, 5 for goerli
 		const TOKEN_AMOUNT = 0.0001
 		const TOKEN_TYPE = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const TOKEN_ADDRESS = ethers.constants.AddressZero
@@ -45,7 +45,7 @@ describe('createLinks tests', function () {
 	it('live test on mumbai', async function () {
 		const provider = await peanut.getDefaultProvider('80001')
 		const WALLET = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY ?? '', provider)
-		const CHAIN_ID = 80001 // 80001 for mumbai
+		const CHAIN_ID = '80001' // 80001 for mumbai
 		const TOKEN_AMOUNT = 0.0001
 		const TOKEN_TYPE = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const TOKEN_ADDRESS = ethers.constants.AddressZero
