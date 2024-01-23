@@ -492,6 +492,7 @@ export function ethersV5ToPeanutTx(txRequest: TransactionRequest): interfaces.IP
 	const valueSet = txRequest.value !== null && txRequest.value !== undefined
 
 	return {
+		from: txRequest.from,
 		to: txRequest.to,
 		data: txRequest.data as string | null, // should always be a string
 		value: valueSet ? BigInt(txRequest.value.toString()) : null,
@@ -504,6 +505,7 @@ export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransac
 	const valueSet = unsignedTx.value !== null && unsignedTx.value !== undefined
 
 	return {
+		from: unsignedTx.from,
 		to: unsignedTx.to,
 		data: unsignedTx.data,
 		value: valueSet ? BigNumber.from(unsignedTx.value.toString()) : null,

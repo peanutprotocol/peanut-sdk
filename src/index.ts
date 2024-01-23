@@ -455,12 +455,12 @@ async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> 
 }
 
 /**
- * Estimate gas price. If txRequest is supplied, also estimate the gas limit
+ * Estimate gas price. If unsignedTx is supplied, also estimate the gas limit
  * @returns struct with gas info
  */
 async function setFeeOptions({
 	txOptions,
-	txRequest,
+	unsignedTx,
 	provider,
 	eip1559 = true,
 	maxFeePerGas = null,
@@ -472,7 +472,7 @@ async function setFeeOptions({
 	gasLimitMultiplier = 1,
 }: {
 	txOptions?: any
-	txRequest?: interfaces.IPeanutUnsignedTransaction
+	unsignedTx?: interfaces.IPeanutUnsignedTransaction
 	provider: Provider
 	eip1559?: boolean
 	maxFeePerGas?: ethers.BigNumber | null
@@ -503,8 +503,8 @@ async function setFeeOptions({
 
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
-	} else if (txRequest) {
-		const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(txRequest))
+	} else if (unsignedTx) {
+		const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(unsignedTx))
 		txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
 	}
 	config.verbose && console.log('checking if eip1559 is supported...')
@@ -879,7 +879,7 @@ async function signAndSubmitTx({
 	}
 
 	// Merge the transaction options into the unsigned transaction
-	_unsignedTx = { ..._unsignedTx, ...txOptions, ...{ nonce: structSigner.nonce } }
+	_unsignedTx = { ..._unsignedTx, ...txOptions }
 
 	let tx: ethers.providers.TransactionResponse
 	try {
