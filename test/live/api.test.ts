@@ -179,7 +179,7 @@ describe('Peanut API Integration Tests', function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
-		const chainId = 300 // optimism goerli
+		const chainId = '300' // optimism goerli
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))
@@ -209,7 +209,7 @@ describe('Peanut API Integration Tests', function () {
 			link: resp.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
-			baseUrl: API_URL,
+			baseUrl: `${API_URL}-v2`,
 		})
 		expect(res.status).toBe('success')
 		console.log('claim link response', res.data)
@@ -221,7 +221,7 @@ describe('Peanut API Integration Tests', function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
-		const chainId = 324 // optimism goerli
+		const chainId = '324' // optimism goerli
 		const tokenAmount = 0.00001337
 		const tokenType = 0 // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
 		const provider = await peanut.getDefaultProvider(String(chainId))
@@ -251,7 +251,7 @@ describe('Peanut API Integration Tests', function () {
 			link: resp.link,
 			recipientAddress: receiverAddress,
 			APIKey: apiToken,
-			baseUrl: API_URL,
+			baseUrl: `${API_URL}-v2`,
 		})
 		expect(res.status).toBe('success')
 		console.log('claim link response', res.data)
@@ -526,7 +526,7 @@ describe('Testnet Tests', function () {
 		it(`should run tests on ${net.name}`, async function () {
 			console.log(`Running tests on ${net.name}`)
 			// Set up your test parameters based on the current testnet
-			const chainId = net.chainId
+			const chainId = String(net.chainId)
 			const provider = await peanut.getDefaultProvider(String(chainId))
 			const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY as string
 			const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, provider)
