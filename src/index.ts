@@ -981,9 +981,10 @@ async function getTxReceiptFromHash(
 	provider?: ethers.providers.Provider
 ): Promise<TransactionReceipt> {
 	provider = provider ?? (await getDefaultProvider(chainId))
-	const txReceipt = await provider.getTransactionReceipt(txHash)
-	// throw error if txReceipt is null
-	if (txReceipt == null) {
+	let txReceipt: TransactionReceipt
+	try {
+		txReceipt = await provider.waitForTransaction(txHash, 1, 10000)
+	} catch (e: any) {
 		throw new Error('Could not fetch transaction receipt')
 	}
 	return txReceipt
