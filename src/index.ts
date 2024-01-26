@@ -512,7 +512,14 @@ async function setFeeOptions({
 	// Check if EIP-1559 is supported
 	// if on milkomeda or bnb or linea, set eip1559 to false
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
-	if (chainId === 2001 || chainId === 200101 || chainId === 56 || chainId === 59144 || chainId === 59140 || chainId === 534352) {
+	if (
+		chainId === 2001 ||
+		chainId === 200101 ||
+		chainId === 56 ||
+		chainId === 59144 ||
+		chainId === 59140 ||
+		chainId === 534352
+	) {
 		eip1559 = false
 		config.verbose && console.log('Setting eip1559 to false as an exception')
 	} else if (chainDetails && chainDetails.features) {
@@ -777,11 +784,7 @@ async function prepareDepositTxs({
 		// Note for testing https://goerli.etherscan.io/address/0x246c7802c82598bff1521eea314cf3beabc33197
 		// can be used for generating and playing with 1155s
 		try {
-			const approveTx = await prepareApproveERC1155Tx(
-				address,
-				linkDetails.chainId,
-				linkDetails.tokenAddress!
-			)
+			const approveTx = await prepareApproveERC1155Tx(address, linkDetails.chainId, linkDetails.tokenAddress!)
 
 			approveTx && unsignedTxs.push(approveTx)
 		} catch (error) {
@@ -883,15 +886,15 @@ async function signAndSubmitTx({
 
 	let tx: ethers.providers.TransactionResponse
 	try {
-		config.verbose && console.log('sending tx: ', _unsignedTx)
+		config.verbose && console.log('broadcasting tx: ', _unsignedTx)
 		config.verbose && console.log('....')
 		tx = await structSigner.signer.sendTransaction(_unsignedTx)
-		config.verbose && console.log('sent tx.')
+		config.verbose && console.log('broadcasted tx...')
 	} catch (error) {
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
 			error,
-			'Error sending the transaction'
+			'Error broadcasting the transaction'
 		)
 	}
 
@@ -1496,7 +1499,7 @@ async function populateXChainClaimTx({
 		unsignedTx = {
 			to: txRequest.to,
 			data: txRequest.data,
-			value: BigInt(payload.squidFee.toString())
+			value: BigInt(payload.squidFee.toString()),
 		}
 	} catch (error) {
 		throw new interfaces.SDKStatus(
