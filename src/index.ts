@@ -892,7 +892,7 @@ async function signAndSubmitTx({
 		config.verbose && console.log('broadcasted tx...')
 	} catch (error) {
 		throw new interfaces.SDKStatus(
-			interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+			interfaces.ESignAndSubmitTx.ERROR_BROADCASTING_TX,
 			error,
 			'Error broadcasting the transaction'
 		)
