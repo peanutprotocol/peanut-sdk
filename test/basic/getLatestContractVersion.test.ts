@@ -57,7 +57,7 @@ describe('getLatestContractVersion', () => {
 
 		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
-		expect(latestContractVersion).toBe('v4')
+		expect(latestContractVersion).toBe('v4.2')
 	})
 
 	it('chain 1 normal experimental', () => {
@@ -66,6 +66,6 @@ describe('getLatestContractVersion', () => {
 
 		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
 
-		expect(latestContractVersion).toBe('v4')
+		expect(latestContractVersion).toBe('v4.2')
 	})
 })

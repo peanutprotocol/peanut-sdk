@@ -45,10 +45,10 @@ export interface ICreatedPeanutLink {
 }
 
 export interface IPeanutUnsignedTransaction {
-	to: string
-	nonce: number
-	data: string
-	value: BigInt
+	from?: string
+	to?: string
+	data?: string
+	value?: BigInt
 }
 
 export interface IReturnSuccessObject {
@@ -148,7 +148,7 @@ export interface IClaimLinkSenderResponse {
 }
 
 //prepareCreatetxs
-export interface IPrepareTxsParams {
+export interface IPrepareDepositTxsParams {
 	address: string
 	linkDetails: IPeanutLinkDetails
 	peanutContractVersion?: string
@@ -158,7 +158,7 @@ export interface IPrepareTxsParams {
 	provider?: ethers.providers.Provider
 }
 
-export interface IPrepareTxsResponse {
+export interface IPrepareDepositTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
@@ -387,7 +387,7 @@ export enum EPrepareCreateTxsStatusCodes {
 }
 
 export enum ESignAndSubmitTx {
-	ERROR_SENDING_TX,
+	ERROR_BROADCASTING_TX,
 	ERROR_SETTING_FEE_OPTIONS,
 }
 

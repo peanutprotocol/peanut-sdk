@@ -21,3 +21,15 @@ or via CDN:
 ### Feedback
 
 This is an early SDK, and we're very open to suggestions and improvements. Please feel free to ping on discord #dev channel, or open an issue (or PR) on the [Github repo](https://github.com/peanutprotocol/peanut-sdk/issues).
+
+# Development
+
+Section for the people that develop this sdk / want to contribute.
+
+## Running devnet tests
+
+1. Install tenderly cli
+2. Type `tenderly login` in the terminal
+3. Choose "Access key" option
+4. Enter the key. Find it in the peanut's notion in the tools section or ask @nebolax.
+5. Ready! Develop & run devnet tests the way you normally do it 🥜

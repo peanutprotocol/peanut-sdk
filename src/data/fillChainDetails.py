@@ -28,10 +28,10 @@ DEFAULT_ICON_URL = "https://raw.githubusercontent.com/spothq/cryptocurrency-icon
 
 def check_rpc(rpc):
     print(f"Checking RPC {rpc}...")
-    if "infura" in rpc.lower():
-        return True
     if rpc.startswith("wss://"):
         return False
+    if "infura" in rpc.lower():
+        return True
     try:
         response = requests.post(
             rpc,
@@ -67,7 +67,6 @@ def get_chain_ids(contracts):
     return [
         chain_id
         for chain_id in chain_ids
-        if any(contracts[chain_id].get(f"v{i}") for i in range(3, 10))
     ]
 
 
@@ -83,6 +82,7 @@ def get_chain_details(chain_id: int):
     rpcs = details.get("rpc", [])
     live_rpcs = [rpc for rpc in rpcs if check_rpc(rpc)]
     details["rpc"] = live_rpcs
+    details["chainId"] = str(details["chainId"])
 
     # display a warning if no live rpcs found
     if len(live_rpcs) == 0:
@@ -171,41 +171,54 @@ def main():
                 continue
         print(f"Fetching details for chain id {chain_id}...")
 
+        # wait 1 second between requests to avoid rate limiting
+        time.sleep(1)
+
         details = get_chain_details(chain_id)
         details["mainnet"] = (
             contracts[str(chain_id)].get("mainnet", "false").lower() == "true"
         )
 
+        if not details:
+            continue
+
+        if chain_id in chain_details:
+            # Add newly fetched fields that don't yet exist
+            # in the current entry in chain_details
+            new_details = { **details, **chain_details[chain_id] }
+
+            # and update a few specific fields
+            new_details['rpc'] = details['rpc']
+            new_details['faucets'] = details['faucets']
+            new_details['explorers'] = details['explorers']
+            new_details['infoURL'] = details['infoURL']
+
+            chain_details[chain_id] = new_details
+            continue
+
+        # Implicit else: create a new entry in chain_details
         # get icon
-        if details:
-            possible_chain_names = []
-            if details.get("icon"):
-                possible_chain_names.append(details["icon"])
-            if details.get("short_name"):
-                possible_chain_names.append(details["short_name"])
-            if details.get("shortName"):
-                possible_chain_names.append(details["shortName"])
-            if details.get("name"):
-                possible_chain_names.append(details["name"])
-                # also split the name by spaces and add each word to the list
-                # possible_chain_names.extend(details["name"].split(" "))
-            if details.get("chain"):
-                possible_chain_names.append(details["chain"])
-            possible_chain_names.extend([name.lower() for name in possible_chain_names])
-            icon = get_chain_icon(possible_chain_names, chain_details.get(chain_id, {}))
-            details["icon"] = icon
+        possible_chain_names = []
+        if details.get("icon"):
+            possible_chain_names.append(details["icon"])
+        if details.get("short_name"):
+            possible_chain_names.append(details["short_name"])
+        if details.get("shortName"):
+            possible_chain_names.append(details["shortName"])
+        if details.get("name"):
+            possible_chain_names.append(details["name"])
+            # also split the name by spaces and add each word to the list
+            # possible_chain_names.extend(details["name"].split(" "))
+        if details.get("chain"):
+            possible_chain_names.append(details["chain"])
+        possible_chain_names.extend([name.lower() for name in possible_chain_names])
+        icon = get_chain_icon(possible_chain_names, chain_details.get(chain_id, {}))
+        details["icon"] = icon
 
-            chain_details[chain_id] = details
-
-        # wait 1 second between requests to avoid rate limiting
-        time.sleep(1)
+        chain_details[chain_id] = details
 
     with open(CHAIN_DETAILS_PATH, "w") as file:
         json.dump(chain_details, file, indent="\t")
-
-    # also overwrite contracts.json with the latest version
-    with open("contracts.json", "w") as file:
-        json.dump(contracts, file, indent="\t")
 
     print("Done. Processed", len(chain_details), "chain ids: ", chain_details.keys())
 

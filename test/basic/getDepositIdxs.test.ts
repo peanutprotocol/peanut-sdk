@@ -37,6 +37,10 @@ describe('getDepositIdxs', function () {
 			console.log(txReceipt1.logs[i].topics)
 		}
 		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, '5', 'v4')
+<<<<<<< HEAD
+=======
+		console.log(depositIdxs1)
+>>>>>>> main
 		expect(depositIdxs1).toEqual([13, 14, 15, 16, 17])
 	})
 
@@ -46,6 +50,10 @@ describe('getDepositIdxs', function () {
 			console.log(txReceipt2.logs[i].topics)
 		}
 		const depositIdxs2 = await peanut.getDepositIdxs(txReceipt2, '5', 'v4')
+<<<<<<< HEAD
+=======
+		console.log(depositIdxs2)
+>>>>>>> main
 		expect(depositIdxs2).toEqual([18, 19, 20, 21, 22])
 	})
 })
@@ -70,6 +78,10 @@ describe('getDepositIdxs for single event and not batch', function () {
 			console.log(txReceipt1.logs[i].topics)
 		}
 		const depositIdxs1 = await peanut.getDepositIdxs(txReceipt1, '5', 'v4')
+<<<<<<< HEAD
+=======
+		console.log(depositIdxs1)
+>>>>>>> main
 		expect(depositIdxs1).toEqual([190])
 	})
 })

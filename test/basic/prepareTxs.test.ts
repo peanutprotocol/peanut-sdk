@@ -9,9 +9,9 @@ const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
 const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL)
 const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
 
-describe('prepareTxs', function () {
+describe('prepareDepositTxs', function () {
 	it('should prepare transactions successfully', async function () {
-		const response = await peanut.prepareTxs({
+		const response = await peanut.prepareDepositTxs({
 			address: goerliWallet.address,
 			linkDetails: {
 				chainId: '5',
@@ -27,7 +27,7 @@ describe('prepareTxs', function () {
 	})
 
 	it('should prepare transactions successfully with erc20 token', async function () {
-		const response = await peanut.prepareTxs({
+		const response = await peanut.prepareDepositTxs({
 			address: goerliWallet.address,
 			linkDetails: {
 				chainId: '5',
@@ -62,7 +62,7 @@ describe('prepareTxs', function () {
 
 	it('should fail when numberOfLinks is not equal to passwords.length', async function () {
 		try {
-			const response = await peanut.prepareTxs({
+			const response = await peanut.prepareDepositTxs({
 				address: goerliWallet.address,
 				linkDetails: {
 					chainId: '5',
@@ -80,7 +80,7 @@ describe('prepareTxs', function () {
 
 	it('should fail when linkDetails are not valid', async function () {
 		try {
-			const response = await peanut.prepareTxs({
+			const response = await peanut.prepareDepositTxs({
 				address: goerliWallet.address,
 				linkDetails: {
 					chainId: '5',

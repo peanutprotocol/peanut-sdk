@@ -9,9 +9,10 @@ import {
 	makeGaslessReclaimPayload,
 	signAndSubmitTx,
 	getLinksFromTx,
-	interfaces,
+	createLink,
+	IPeanutLinkDetails,
 } from '../../src/index' // import directly from source code
-import { BigNumber, ethers } from 'ethersv5' // v5
+import { BigNumber, constants, ethers } from 'ethersv5' // v5
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -30,7 +31,7 @@ describe('gasless functionality', () => {
 		const relayerWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY2 ?? '', provider)
 		console.log('Wallet addresses', { user: userWallet.address, relayer: relayerWallet.address })
 
-		const linkDetails: interfaces.IPeanutLinkDetails = {
+		const linkDetails: IPeanutLinkDetails = {
 			chainId: testingChainId,
 			tokenAmount: 0.01,
 			tokenType: TOKEN_TYPES.ERC20,
@@ -93,29 +94,33 @@ describe('gasless functionality', () => {
 	// 2. TEST_WALLET_PRIVATE_KEY2 owns some MATIC to execute transactions
 	test('make a gasless reclaim', async () => {
 		const testingChainId = '80001'
-		const depositIndex = 9 // must be a withdrawable deposit
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		const relayerWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY2 ?? '', provider)
 		console.log('Wallet addresses', { user: userWallet.address, relayer: relayerWallet.address })
 
-		const link = getLinkFromParams(
-			testingChainId,
-			'v4.2',
-			depositIndex,
-			'12345678' // password - doesn't matter, we only check "claimed" status
-		)
-		// Make sure that the link exists and is not claimed
+		const { link } = await createLink({
+			structSigner: {
+				signer: userWallet,
+			},
+			linkDetails: {
+				chainId: testingChainId,
+				tokenAmount: 0.01,
+				tokenDecimals: 18,
+				tokenAddress: constants.AddressZero,
+			},
+		})
+		console.log('Created link', link)
+
 		let linkDetails = await getLinkDetails({ link, provider })
-		expect(linkDetails.claimed).toBe(false)
 
 		const { payload, message } = await makeGaslessReclaimPayload({
 			address: userWallet.address,
 			contractVersion: 'v4.2',
-			depositIndex,
+			depositIndex: linkDetails.depositIndex,
 			chainId: testingChainId,
 		})
-		console.log('Result', { payload }, { message })
+		console.log('Gasless reclaim payload', { payload }, { message })
 
 		const userDepositSignature = await userWallet._signTypedData(message.domain, message.types, message.values)
 		console.log('Signature', userDepositSignature)
