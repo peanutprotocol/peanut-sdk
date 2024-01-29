@@ -73,7 +73,7 @@ describe('zksync', function () {
 					signer: wallet,
 				},
 				linkDetails: {
-					chainId: Number(chainId),
+					chainId: chainId,
 					tokenAmount: 0.000001,
 					tokenType: 0,
 				},
@@ -94,7 +94,7 @@ describe('zksync', function () {
 					signer: wallet,
 				},
 				linkDetails: {
-					chainId: Number(chainId),
+					chainId: chainId,
 					tokenAmount: 0.000001,
 					tokenType: 0,
 				},

@@ -265,7 +265,7 @@ export async function validateLinkDetails(
  *
  * @param address - The senders wallet address. This is NOT the token contract address.
  */
-export async function prepareTxs({
+export async function prepareDepositTxs({
 	address,
 	linkDetails,
 	peanutContractVersion = null,
@@ -472,6 +472,10 @@ export async function prepareTxs({
 	}
 }
 
+/**
+ * @deprecated Use prepareDepositTxs instead. prepareTxs will be removed in February 2024.
+ */
+export const prepareTxs = prepareDepositTxs
 export async function signAndSubmitTx({
 	structSigner,
 	unsignedTx,

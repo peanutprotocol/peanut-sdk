@@ -24,9 +24,9 @@ export async function createLink({
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
-	let prepareTxsResponse
+	let prepareDepositTxsResponse
 	try {
-		prepareTxsResponse = await utils.prepareTxs({
+		prepareDepositTxsResponse = await utils.prepareDepositTxs({
 			address: await structSigner.signer.getAddress(),
 			linkDetails,
 			peanutContractVersion,
@@ -40,7 +40,7 @@ export async function createLink({
 
 	// Sign and submit the transactions sequentially
 	const signedTxs = []
-	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
+	for (const unsignedTx of prepareDepositTxsResponse.unsignedTxs) {
 		try {
 			const signedTx = await utils.signAndSubmitTx({ structSigner, unsignedTx })
 			signedTxs.push(signedTx)
@@ -86,9 +86,9 @@ export async function createLinks({
 	const provider = structSigner.signer.provider
 
 	// Prepare the transactions
-	let prepareTxsResponse
+	let prepareDepositTxsResponse
 	try {
-		prepareTxsResponse = await utils.prepareTxs({
+		prepareDepositTxsResponse = await utils.prepareDepositTxs({
 			address: await structSigner.signer.getAddress(),
 			linkDetails,
 			peanutContractVersion,
@@ -102,7 +102,7 @@ export async function createLinks({
 
 	// Sign and submit the transactions
 	const signedTxs = []
-	for (const unsignedTx of prepareTxsResponse.unsignedTxs) {
+	for (const unsignedTx of prepareDepositTxsResponse.unsignedTxs) {
 		try {
 			const signedTx = await utils.signAndSubmitTx({ structSigner, unsignedTx })
 			signedTxs.push(signedTx)
