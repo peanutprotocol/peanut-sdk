@@ -1,6 +1,6 @@
-import PACKAGE_JSON from '../data/package.json'
+var pjson = require('../../package.json')
 
-export const VERSION = PACKAGE_JSON.version
+export const VERSION = pjson.version
 
 // CONSTANTS
 export const TOKEN_TYPES = Object.freeze({

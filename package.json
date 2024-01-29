@@ -16,7 +16,7 @@
 		"clean": "rm -r dist || true",
 		"build:lib": "vite build",
 		"build:dev": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
-		"build": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
+		"build": "npm run clean && npm run generate-types && vite build",
 		"analyze": "vite-bundle-visualizer --open",
 		"pkg-move": "cp package.json src/data/package.json",
 		"generate-types": "rm tsconfig.tsbuildinfo || true && tsc --emitDeclarationOnly",
