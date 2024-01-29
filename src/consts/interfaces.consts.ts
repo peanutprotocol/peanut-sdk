@@ -366,6 +366,16 @@ export interface IMakeReclaimGaslessParams {
 	signature: string
 }
 
+export interface IPrepareRaffleDepositTxsParams {
+	userAddress: string
+	linkDetails: IPeanutLinkDetails
+	numberOfLinks: number
+	password: string
+	provider?: Provider
+	peanutContractVersion?: string
+	batcherContractVersion?: string
+}
+
 // error object and enums
 
 export enum ECreateLinkStatusCodes {

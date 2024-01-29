@@ -1045,7 +1045,7 @@ async function validateLinkDetails(
 
 	assert(
 		linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
-			linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+		linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
 	if (
@@ -2603,6 +2603,120 @@ async function getTokenContractDetails({
 	}
 }
 
+function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
+	const values: BigNumber[] = []
+
+	for (let i = 0; i < numberOfLinks - 1; i++) {
+		const random = Math.random() // generate a random value
+
+		// multiplier to be used with BigNumber. 1e9 is the precision
+		const mult = BigNumber.from(Math.floor(random * 1e9))
+
+		// calculate the value
+		const value = totalAmount.mul(mult).div(BigNumber.from(1e9))
+
+		values.push(value)
+		totalAmount = totalAmount.sub(value)
+	}
+
+	// push the remaining amount as is so that the sum adds up to totalAmount
+	values.push(totalAmount)
+
+	return values
+}
+
+async function prepareRaffleDepositTxs({
+	userAddress,
+	linkDetails,
+	numberOfLinks,
+	password,
+	provider,
+	peanutContractVersion,
+	batcherContractVersion = LATEST_STABLE_BATCHER_VERSION,
+}: interfaces.IPrepareRaffleDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
+	if (linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Please pass tokenDecimals to prepareRaffleDepositTxs'
+		)
+	}
+
+	if (!linkDetails.tokenAddress) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Please pass tokenAddress to prepareRaffleDepositTxs'
+		)
+	}
+
+	if (linkDetails.tokenType === null || linkDetails.tokenType === undefined) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Please pass tokenType to prepareRaffleDepositTxs'
+		)
+	}
+
+	if (linkDetails.tokenType !== 1) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Only ERC20 deposits are supported by prepareRaffleDepositTxs'
+		)
+	}
+
+	if (!provider) {
+		provider = await getDefaultProvider(linkDetails.chainId)
+	}
+
+	if (peanutContractVersion == null) {
+		peanutContractVersion = getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
+	}
+
+	let approveTx: interfaces.IPeanutUnsignedTransaction = null
+	approveTx = await prepareApproveERC20Tx(
+		userAddress,
+		linkDetails.chainId,
+		linkDetails.tokenAddress,
+		linkDetails.tokenAmount,
+		linkDetails.tokenDecimals,
+		false, // not a raw amount
+		peanutContractVersion,
+		provider,
+	)
+
+	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
+
+	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
+
+	const { address: pubKey20 } = generateKeysFromString(password)
+
+	const amounts = generateAmountsDistribution(tokenAmountBigNum, numberOfLinks)
+	const tokenAddresses = Array(numberOfLinks).fill(linkDetails.tokenAddress)
+	const tokenTypes = Array(numberOfLinks).fill(linkDetails.tokenType)
+	const tokenIds = Array(numberOfLinks).fill(0) // we don't care about token ids here
+	const pubKeys = Array(numberOfLinks).fill(pubKey20)
+
+	const depositParams = [
+		peanutVaultAddress,
+		tokenAddresses,
+		tokenTypes,
+		amounts,
+		tokenIds,
+		pubKeys,
+	]
+
+	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
+	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(...depositParams)
+	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
+
+	let unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
+	if (approveTx) unsignedTxs.push(approveTx)
+	unsignedTxs.push(depositTx)
+
+	unsignedTxs.forEach((tx) => tx.from = userAddress)
+
+	return { unsignedTxs }
+}
+
 /**
  * @deprecated Use prepareDepositTxs instead. prepareTxs will be removed in February 2024.
  */
@@ -2669,6 +2783,7 @@ const peanut = {
 	peanutToEthersV5Tx,
 	prepareTxs,
 	prepareDepositTxs,
+	prepareRaffleDepositTxs,
 	resetProviderCache,
 	setFeeOptions,
 	signWithdrawalMessage,
@@ -2755,6 +2870,7 @@ export {
 	peanutToEthersV5Tx,
 	prepareTxs,
 	prepareDepositTxs,
+	prepareRaffleDepositTxs,
 	resetProviderCache,
 	setFeeOptions,
 	signWithdrawalMessage,
