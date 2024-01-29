@@ -2,7 +2,7 @@ import * as ethers from 'ethersv5'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 
 import * as consts from '../consts'
-import * as functions from '../modules'
+import * as functions from '../basic'
 import * as config from '../config'
 /**
  * Prints a greeting message to the console.

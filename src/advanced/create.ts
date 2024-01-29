@@ -4,7 +4,7 @@ import * as consts from '../consts'
 import * as utils from '.'
 import * as config from '../config'
 import * as data from '../data'
-import * as functions from '../modules'
+import * as functions from '../basic'
 import * as interfaces from '../interfaces'
 
 export async function getAllowanceERC20(

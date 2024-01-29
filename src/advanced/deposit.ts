@@ -1,6 +1,6 @@
 import * as ethers from 'ethersv5'
 
-import * as functions from '../modules'
+import * as functions from '../basic'
 import * as config from '../config'
 import * as data from '../data'
 /**

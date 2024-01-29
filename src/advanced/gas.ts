@@ -5,7 +5,7 @@ import * as consts from '../consts'
 import * as utils from '.'
 import * as config from '../config'
 import * as data from '../data'
-import * as functions from '../modules/index'
+import * as functions from '../basic/index'
 import * as interfaces from '../interfaces'
 
 export async function supportsEIP1559(provider: ethers.providers.Provider): Promise<boolean> {

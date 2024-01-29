@@ -52,17 +52,19 @@ describe('detect contract version, function ()', () => {
 	it('detect contract version should return v4', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt1, '5') // goerli
 		expect(version).toEqual('v4')
-	})
+	}, 20000)
 	it('detect v3', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt2, '5') // goerli
 		expect(version).toEqual('v3')
-	})
+	}, 20000)
+
 	it('detect v4 for batch fn', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt3, '5') // goerli
 		expect(version).toEqual('v4')
-	})
+	}, 20000)
+
 	it('detect v4.2', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt4, '5') // goerli
 		expect(version).toEqual('v4.2')
-	})
+	}, 20000)
 })

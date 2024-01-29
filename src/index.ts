@@ -6,16 +6,16 @@
 //
 /////////////////////////////////////////////////////////
 
-import * as utils from './utils'
+import * as utils from './advanced'
 import * as config from './config'
 import * as data from './data'
-import * as functions from './modules'
+import * as functions from './basic'
 import * as interfaces from './interfaces'
 import * as consts from './consts'
 
 utils.greeting()
 
-export const peanut = {
+export const peanut: any = {
 	...utils,
 	...config,
 	...data,
@@ -24,10 +24,10 @@ export const peanut = {
 	...consts,
 }
 
-export * from './utils'
+export * from './advanced'
 export * from './config'
 export * from './data'
-export * from './modules'
+export * from './basic'
 export * from './interfaces'
 export * from './consts'
 
