@@ -1,6 +1,30 @@
 import { EIP3009TokensInterface } from '../interfaces/interfaces'
 
 export const EIP3009Tokens: EIP3009TokensInterface = {
+	'1': {
+		'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
+			chainId: '1',
+			verifyingContract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+			name: 'USD Coin',
+			version: '2',
+		},
+	},
+	'43114': {
+		'0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E': {
+			chainId: '43114',
+			verifyingContract: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+			name: 'USD Coin',
+			version: '2',
+		},
+	},
+	'534352': {
+		'0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4': {
+			chainId: '534352',
+			verifyingContract: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+			name: 'USD Coin',
+			version: '2',
+		},
+	},
 	'137': {
 		'0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359': {
 			chainId: '137',
