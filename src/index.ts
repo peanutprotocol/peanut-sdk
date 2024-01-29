@@ -1790,6 +1790,12 @@ async function claimLinkXChainGasless({
 	})
 	const data = await claimResponse.json()
 	console.log('Claim x-chain response', { data })
+	if (data.error) {
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR,
+			`Got error ${data.error} from the API while claiming x-chain`
+		)
+	}
 	return { txHash: data.txHash }
 }
 
