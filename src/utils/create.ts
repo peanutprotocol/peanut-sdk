@@ -273,7 +273,7 @@ export async function prepareTxs({
 	numberOfLinks = 1,
 	passwords = [],
 	provider,
-}: interfaces.IPrepareTxsParams): Promise<interfaces.IPrepareTxsResponse> {
+}: interfaces.IPrepareDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
 	if (!provider) {
 		provider = await functions.getDefaultProvider(linkDetails.chainId)
 	}
@@ -464,7 +464,6 @@ export async function prepareTxs({
 		unsignedTxs: unsignedTxs.map((unsignedTx) => {
 			const tx: interfaces.IPeanutUnsignedTransaction = {
 				to: unsignedTx.to,
-				nonce: unsignedTx.nonce ? Number(unsignedTx.nonce) : null,
 				data: unsignedTx.data.toString(),
 				value: unsignedTx.value ? BigInt(unsignedTx.value.toString()) : null,
 			}
@@ -509,7 +508,7 @@ export async function signAndSubmitTx({
 		config.config.verbose && console.log('sent tx.')
 	} catch (error) {
 		throw new interfaces.SDKStatus(
-			interfaces.ESignAndSubmitTx.ERROR_SENDING_TX,
+			interfaces.ESignAndSubmitTx.ERROR_BROADCASTING_TX,
 			error,
 			'Error sending the transaction'
 		)
