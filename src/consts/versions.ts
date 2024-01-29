@@ -1,7 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pjson = require('../../package.json')
+import packageDetails from '../../package.json'
 
-export const VERSION = pjson.version
+export const VERSION = packageDetails.version
 
 // CONSTANTS
 export const TOKEN_TYPES = Object.freeze({
