@@ -1,28 +1,36 @@
 import peanut from '../../src/index' // import directly from source code
 describe('getLatestContractVersion', () => {
-	it('should return the latest contract version when chainId and type are valid', () => {
+	it('chain 5 normal no experimental', () => {
 		const chainId = '5'
 		const type = 'normal'
 
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: false })
 
-		expect(latestContractVersion).toBe('v4')
+		expect(latestContractVersion).toBe('v4.2')
 	})
-	it('should return the experimental contract version', () => {
+	it('chain 5 normal experimental', () => {
 		const chainId = '5'
 		const type = 'normal'
 
 		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
 
-		expect(latestContractVersion).toBe('v5')
+		expect(latestContractVersion).toBe('v4.2')
 	})
-	it('should return the latest contract version even if versions are not in order', () => {
+	it('chain 137 normal no experimental', () => {
 		const chainId = '137'
 		const type = 'normal'
 
 		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
-		expect(latestContractVersion).toBe('v4')
+		expect(latestContractVersion).toBe('v4.2')
+	})
+	it('chain 137 normal experimental', () => {
+		const chainId = '137'
+		const type = 'normal'
+
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
+
+		expect(latestContractVersion).toBe('v4.2')
 	})
 
 	it('should throw an error if the given chainId is not defined', () => {
@@ -41,5 +49,23 @@ describe('getLatestContractVersion', () => {
 		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
 		expect(latestContractVersion).toBe('Bv4')
+	})
+
+	it('chain 1 normal no experimental', () => {
+		const chainId = '1'
+		const type = 'normal'
+
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
+
+		expect(latestContractVersion).toBe('v4.2')
+	})
+
+	it('chain 1 normal experimental', () => {
+		const chainId = '1'
+		const type = 'normal'
+
+		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
+
+		expect(latestContractVersion).toBe('v4.2')
 	})
 })
