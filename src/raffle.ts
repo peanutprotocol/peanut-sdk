@@ -2,26 +2,30 @@ import { BigNumber, constants, ethers } from "ethersv5"
 import { ERC20_ABI, TOKEN_DETAILS } from "./data"
 import { claimLinkGasless, createMultiLinkFromLinks, ethersV5ToPeanutTx, generateKeysFromString, getContract, getContractAddress, getDefaultProvider, getLatestContractVersion, getLinksFromMultilink, getLinksFromTx, getParamsFromLink, interfaces, prepareApproveERC20Tx, trim_decimal_overflow } from "."
 
-function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
+export function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
+  const randoms: number[] = []
+  let randomsSum = 0
+  for (let i = 0; i < numberOfLinks; i++) {
+    let value = Math.random()
+    value += 0.05 // communism - make sure that everyone gets a reasonable amount
+    randoms.push(value)
+    randomsSum += value
+  }
+  
   const values: BigNumber[] = []
-
-  for (let i = 0; i < numberOfLinks - 1; i++) {
-    const random = Math.random() // generate a random value
-
-    // multiplier to be used with BigNumber. 1e9 is the precision
-    const mult = BigNumber.from(Math.floor(random * 1e9))
-
-    // calculate the value
-    const value = totalAmount.mul(mult).div(BigNumber.from(1e9))
-
+  let valuesSum: BigNumber = BigNumber.from(0)
+  for (let i = 0; i < numberOfLinks; i++) {
+    const proportion = randoms[i] / randomsSum
+    const value = totalAmount.mul(Math.floor(proportion * 1e9)).div(1e9)
     values.push(value)
-    totalAmount = totalAmount.sub(value)
+    valuesSum = valuesSum.add(value)
   }
 
-  // push the remaining amount as is so that the sum adds up to totalAmount
-  values.push(totalAmount)
+  // Make sum of values exactly match totalAmount
+  const missing = totalAmount.sub(valuesSum)
+  values[0] = values[0].add(missing)
 
-  return values
+  return values 
 }
 
 export async function prepareRaffleDepositTxs({

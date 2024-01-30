@@ -1,5 +1,5 @@
-import { Wallet } from 'ethersv5'
-import { claimRaffleLink, getDefaultProvider, getRaffleInfo, getRaffleLinkFromTx, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
+import { BigNumber, Wallet } from 'ethersv5'
+import { claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLinkFromTx, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -77,5 +77,12 @@ describe('raffle', () => {
     const isActive2 = await isRaffleActive({ link: link2 })
     console.log('Raffle 2 active?', isActive2)
     expect(isActive2).toBe(true)
+  }, 120000)
+
+  test('generate amounts distribution', async () => {
+    const totalAmount = BigNumber.from(1e6)
+    const numberOfLinks = 101
+    const values = generateAmountsDistribution(totalAmount, numberOfLinks)
+    console.log('Values!!', values.map((val) => val.toString()))
   }, 120000)
 })
