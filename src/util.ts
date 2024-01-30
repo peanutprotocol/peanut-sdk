@@ -451,7 +451,6 @@ export function createMultiLinkFromLinks(links: string[]): string {
 	for (const [key, value] of additionalParams.entries()) {
 		hashString += `&${key}=${value}`
 	}
-	url.hash = '#?' + hashString
 
 	return url.toString()
 }
