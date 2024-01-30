@@ -58,7 +58,7 @@ describe('raffle', () => {
   }, 120000)
 
   test('claim raffle link', async () => {
-    const link = ''
+    const link = 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
     const claimInfo = await claimRaffleLink({
       link,
       APIKey,
@@ -68,9 +68,14 @@ describe('raffle', () => {
   }, 120000)
 
   test('is raffle active', async () => {
-    const link = 'https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=12345678'
-    const isActive = await isRaffleActive({ link })
-    console.log('Raffle active?', isActive)
-    expect(isActive).toBe(false)
+    const link1 = 'https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=12345678'
+    const isActive1 = await isRaffleActive({ link: link1 })
+    console.log('Raffle 1 active?', isActive1)
+    expect(isActive1).toBe(false)
+
+    const link2 = 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
+    const isActive2 = await isRaffleActive({ link: link2 })
+    console.log('Raffle 2 active?', isActive2)
+    expect(isActive2).toBe(true)
   }, 120000)
 })

@@ -377,7 +377,12 @@ export function getLinksFromMultilink(link: string): string[] {
 		const newSearchParams = new URLSearchParams(searchParams.toString()) // clone the original search parameters
 		newSearchParams.set('c', cParams.length === 1 ? cParams[0] : cParams[index])
 		newSearchParams.set('i', i)
-		newUrl.hash = '#?' + newSearchParams.toString()
+		if (newSearchParams.has('p')) {
+			newUrl.hash = '#?' + newSearchParams.toString()
+		} else {
+			newUrl.hash = 'p=' + url.hash.slice(3) ?? ''
+			newUrl.search = '?' + newSearchParams.toString()
+		}
 		return newUrl.toString()
 	})
 
@@ -408,11 +413,16 @@ export function createMultiLinkFromLinks(links: string[]): string {
 			}
 		}
 
+		if (searchParams.has('p')) {
+			password = searchParams.get('p') || ''
+		} else {
+			password = url.hash.slice(3)
+		}
+
 		cParams.push(searchParams.get('c') || '')
 		iParams.push(searchParams.get('i') || '')
 		baseUrl = url.origin + url.pathname
 		contractVersion = searchParams.get('v') || ''
-		password = searchParams.get('p') || ''
 		trackId = searchParams.get('t') || ''
 
 		// Store all additional parameters
@@ -441,7 +451,6 @@ export function createMultiLinkFromLinks(links: string[]): string {
 	for (const [key, value] of additionalParams.entries()) {
 		hashString += `&${key}=${value}`
 	}
-	url.hash = '#?' + hashString
 
 	return url.toString()
 }

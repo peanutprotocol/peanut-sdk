@@ -143,14 +143,7 @@ export async function getRaffleLinkFromTx({
 export async function getRaffleInfo({
   link
 }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
-  // const links = getLinksFromMultilink(link)
-  const links = [
-    'https://peanut.to/claim?c=11155111&v=v4.2&i=28#p=12345678',
-    'https://peanut.to/claim?c=11155111&v=v4.2&i=29#p=12345678',
-    'https://peanut.to/claim?c=11155111&v=v4.2&i=30#p=12345678',
-    'https://peanut.to/claim?c=11155111&v=v4.2&i=31#p=12345678',
-    'https://peanut.to/claim?c=11155111&v=v4.2&i=32#p=12345678',
-  ]
+  const links = getLinksFromMultilink(link)
 
   const linksParams: interfaces.ILinkParams[] = []
   links.forEach((link) => linksParams.push(getParamsFromLink(link)))
