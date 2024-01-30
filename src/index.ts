@@ -25,6 +25,7 @@ import {
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_ABI_V4_2,
 	FALLBACK_CONTRACT_VERSION,
+	PEANUT_BATCHER_ABI_V4_2,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -238,6 +239,9 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 			break
 		case 'Bv4':
 			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
+			break
+		case 'Bv4.2':
+			PEANUT_ABI = PEANUT_BATCHER_ABI_V4_2
 			break
 		case 'Rv4.2':
 			PEANUT_ABI = PEANUT_ROUTER_ABI_V4_2
@@ -1045,7 +1049,7 @@ async function validateLinkDetails(
 
 	assert(
 		linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
-			linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+		linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
 	if (
@@ -2608,6 +2612,9 @@ async function getTokenContractDetails({
  */
 const prepareTxs = prepareDepositTxs
 
+import * as raffle from './raffle.ts'
+export * from './raffle.ts'
+
 const peanut = {
 	CHAIN_DETAILS,
 	LATEST_STABLE_BATCHER_VERSION,
@@ -2644,6 +2651,7 @@ const peanut = {
 	getAllDepositsForSigner,
 	getAllUnclaimedDepositsWithIdxForAddress,
 	getContract,
+	getContractAddress,
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
@@ -2684,12 +2692,14 @@ const peanut = {
 	verifySignature,
 	resolveToENSName,
 	makeGaslessDepositPayload,
+	prepareApproveERC20Tx,
 	prepareGaslessDepositTx,
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
 	EIP3009Tokens,
 	getTokenContractType,
 	getTokenContractDetails,
+	...raffle,
 }
 
 export default peanut
@@ -2730,6 +2740,7 @@ export {
 	getAllDepositsForSigner,
 	getAllUnclaimedDepositsWithIdxForAddress,
 	getContract,
+	getContractAddress,
 	getDefaultProvider,
 	getDepositIdx,
 	getDepositIdxs,
@@ -2754,6 +2765,7 @@ export {
 	makeReclaimGasless,
 	peanutToEthersV5Tx,
 	prepareTxs,
+	prepareApproveERC20Tx,
 	prepareDepositTxs,
 	resetProviderCache,
 	setFeeOptions,
