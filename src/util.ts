@@ -205,13 +205,7 @@ export async function getRandomString(n: number = 16): Promise<string> {
 /**
  * Returns the parameters from a link
  */
-export function getParamsFromLink(link: string): {
-	chainId: string
-	contractVersion: string
-	depositIdx: number
-	password: string
-	trackId: string
-} {
+export function getParamsFromLink(link: string): interfaces.ILinkParams {
 	/* returns the parameters from a link */
 	let url
 	try {

@@ -372,9 +372,57 @@ export interface IPrepareRaffleDepositTxsParams {
 	numberOfLinks: number
 	password: string
 	provider?: Provider
-	peanutContractVersion?: string
-	batcherContractVersion?: string
 }
+
+export interface IGetRaffleLinkFromTxParams {
+	txHash: string
+	linkDetails: IPeanutLinkDetails
+	password: string
+	numberOfLinks: number
+}
+
+export interface IGetRaffleLinkFromTxResponse {
+	link: string
+}
+
+export interface IGetRaffleInfoParams {
+	link: string
+}
+
+export interface IRaffleSlot {
+	amount: string
+	claimed: boolean
+}
+
+export interface IRaffleInfo {
+	chainId: string
+	tokenAddress: string
+	tokenDecimals: number
+	tokenSymbol: string
+	tokenName: string
+	slotsDetails: IRaffleSlot[]
+}
+
+export interface ILinkParams {
+	chainId: string
+	contractVersion: string
+	depositIdx: number
+	password: string
+	trackId: string
+}
+
+export interface IPeanutV4_2Deposit {
+	pubKey20: string,
+	amount: BigNumber,
+	tokenAddress: string,
+	contractType: number,
+	claimed: boolean,
+	timestamp: number,
+	tokenId: BigNumber,
+	senderAddress: string
+}
+
+export inter
 
 // error object and enums
 
@@ -424,6 +472,10 @@ export enum EGenericErrorCodes {
 	// Add more generic error codes here if needed
 }
 
+export enum ERaffleErrorCodes {
+	ERROR_VALIDATING_LINK_DETAILS,
+}
+
 // Don't forget to add the new enum to the allErrorEnums type
 export type allErrorEnums =
 	| ECreateLinkStatusCodes
@@ -432,6 +484,7 @@ export type allErrorEnums =
 	| EGetLinkFromTxStatusCodes
 	| EClaimLinkStatusCodes
 	| EXChainStatusCodes
+	| ERaffleErrorCodes
 	| EGenericErrorCodes // New enum added here
 
 export class SDKStatus extends Error {

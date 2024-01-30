@@ -1,6 +1,7 @@
 import PEANUT_ABI_V4 from './data/peanutAbiV4.json'
 import PEANUT_ABI_V4_2 from './data/peanutAbiV4.2.json'
 import PEANUT_BATCHER_ABI_V4 from './data/peanutBatcherV4.abi.json'
+import PEANUT_BATCHER_ABI_V4_2 from './data/peanutBatcherV4.2.abi.json'
 import PEANUT_ROUTER_ABI_V4_2 from './data/peanutRouterAbiV4.2.json'
 import ERC20_ABI from './data/erc20abi.json'
 import ERC721_ABI from './data/erc721abi.json'
@@ -27,14 +28,15 @@ const LATEST_EXPERIMENTAL_CONTRACT_VERSION = 'v4.2'
 const FALLBACK_CONTRACT_VERSION = 'v4'
 const LATEST_STABLE_ROUTER_VERSION = 'Rv4'
 const LATEST_EXPERIMENTAL_ROUTER_VERSION = 'Rv4'
-const LATEST_STABLE_BATCHER_VERSION = 'Bv4'
-const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4'
+const LATEST_STABLE_BATCHER_VERSION = 'Bv4.2'
+const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4.2'
 
 // export all these functions (imported in index.js)
 export {
 	PEANUT_ABI_V4,
 	PEANUT_ABI_V4_2,
 	PEANUT_BATCHER_ABI_V4,
+	PEANUT_BATCHER_ABI_V4_2,
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_CONTRACTS,
 	ERC20_ABI,
