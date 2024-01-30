@@ -12,6 +12,6 @@ describe('Chain Representation Validation', () => {
 
 		const multilink = peanut.createMultiLinkFromLinks(x)
 
-		expect(multilink).toBe('https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#?=12345678')
+		expect(multilink).toBe('https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=12345678')
 	})
 })
