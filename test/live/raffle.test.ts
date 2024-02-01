@@ -1,5 +1,5 @@
 import { BigNumber, Wallet } from 'ethersv5'
-import { claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLinkFromTx, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
+import { claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLinkFromTx, getRandomString, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -10,21 +10,24 @@ describe('raffle', () => {
   toggleVerbose(true)
 
   test('create a link', async () => {
-    const chainId = '11155111'
+    const chainId = '534352'
     const provider = await getDefaultProvider(chainId)
     const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
 
+    const password = await getRandomString()
+    const numberOfLinks = 3
     const linkDetails: interfaces.IPeanutLinkDetails = {
       chainId,
-      tokenAmount: 0.01,
-      tokenDecimals: 18,
-      tokenType: 0,
-      baseUrl: 'https://peanut.to/redpacket',
+      tokenAmount: 1,
+      tokenDecimals: 6,
+      tokenAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+      tokenType: 1,
+      baseUrl: 'https://peanut-nptz58iuw-squirrellabs.vercel.app/packet',
     }
     const { unsignedTxs } = await prepareRaffleDepositTxs({
       linkDetails,
-      numberOfLinks: 5,
-      password: '12345678',
+      numberOfLinks,
+      password,
       userAddress: wallet.address,
     })
 
@@ -45,8 +48,8 @@ describe('raffle', () => {
     const link = await getRaffleLinkFromTx({
       txHash: lastTxHash,
       linkDetails,
-      numberOfLinks: 5,
-      password: '12345678',
+      numberOfLinks,
+      password,
     })
     console.log('Got the raffle link!', link)
   }, 120000)

@@ -431,6 +431,7 @@ export interface IClaimRaffleLinkParams {
 
 export interface IClaimRaffleLinkResponse {
 	txHash: string
+	chainId: string
 	amountReceived: string
 	tokenAddress: string
 	tokenDecimals: number

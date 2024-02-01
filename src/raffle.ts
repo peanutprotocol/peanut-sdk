@@ -239,7 +239,7 @@ export async function claimRaffleLink({
   // all slots end up to be claimed by other people
   while (true) {
     const raffleInfo = await getRaffleInfo({ link })
-    const { tokenAddress, tokenDecimals, tokenName, tokenSymbol } = raffleInfo
+    const { chainId, tokenAddress, tokenDecimals, tokenName, tokenSymbol } = raffleInfo
     const unclaimedSlots = raffleInfo.slotsDetails.filter((slot) => !slot.claimed)
     if (unclaimedSlots.length === 0) {
       throw new interfaces.SDKStatus(
@@ -270,6 +270,7 @@ export async function claimRaffleLink({
 
     return {
       txHash: response.txHash,
+      chainId,
       amountReceived: unclaimedSlots[slotIndexToClaim].amount,
       tokenAddress,
       tokenDecimals,
