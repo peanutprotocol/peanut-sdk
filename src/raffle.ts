@@ -167,9 +167,13 @@ export async function getRaffleInfo({
 
   const contract = await getContract(chainId, null, peanutVersion)
   const deposits: interfaces.IPeanutV4_2Deposit[] = await Promise.all(depositIndices.map((idx) => contract.deposits(idx)))
+  const contractType = deposits[0].contractType
   console.log('Deposit!!', deposits[0])
 
-  const tokenAddress = deposits[0].tokenAddress
+  let tokenAddress = deposits[0].tokenAddress
+  if (contractType == interfaces.EPeanutLinkType.native) {
+    tokenAddress = ethers.constants.AddressZero
+  }
   let tokenSymbol: string = null
   let tokenName: string = null
   let tokenDecimals: number = null
