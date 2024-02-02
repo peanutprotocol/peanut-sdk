@@ -440,6 +440,12 @@ export interface IClaimRaffleLinkResponse {
 	tokenName: string
 }
 
+export interface IRaffleLeaderboardEntry {
+	address: string
+	amount: string
+	name: string | null
+}
+
 // error object and enums
 
 export enum ECreateLinkStatusCodes {
