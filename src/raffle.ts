@@ -158,7 +158,7 @@ export async function getRaffleLinkFromTx({
 	return { link }
 }
 
-export async function getRaffleInfo({ link }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
+export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
 	const links = getLinksFromMultilink(link)
 
 	const linksParams: interfaces.ILinkParams[] = []
@@ -197,7 +197,9 @@ export async function getRaffleInfo({ link }: interfaces.IGetRaffleInfoParams): 
 		(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
 	)
 
-	const provider = await getDefaultProvider(chainId)
+	if (!provider) {
+		provider = await getDefaultProvider(chainId)
+	}
 	if (!tokenDetails) {
 		// Has to be a ERC20 token since native tokens are all listed in tokenDetails.json
 		try {
@@ -237,8 +239,8 @@ export async function getRaffleInfo({ link }: interfaces.IGetRaffleInfoParams): 
 	}
 }
 
-export async function isRaffleActive({ link }: interfaces.IGetRaffleInfoParams): Promise<boolean> {
-	const { slotsDetails } = await getRaffleInfo({ link })
+export async function isRaffleActive({ link, provider }: interfaces.IGetRaffleInfoParams): Promise<boolean> {
+	const { slotsDetails } = await getRaffleInfo({ link, provider })
 	const allClaimed = slotsDetails.every((slot) => slot.claimed)
 	return !allClaimed
 }

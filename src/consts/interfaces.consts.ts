@@ -387,6 +387,7 @@ export interface IGetRaffleLinkFromTxResponse {
 
 export interface IGetRaffleInfoParams {
 	link: string
+	provider?: Provider
 }
 
 export interface IRaffleSlot {
