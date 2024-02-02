@@ -393,6 +393,7 @@ export interface IRaffleSlot {
 	amount: string
 	claimed: boolean
 	_slotlink: string
+	_depositIndex: number
 }
 
 export interface IRaffleInfo {

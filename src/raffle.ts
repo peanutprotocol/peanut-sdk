@@ -225,6 +225,7 @@ export async function getRaffleInfo({ link }: interfaces.IGetRaffleInfoParams): 
 		amount: ethers.utils.formatUnits(deposit.amount, tokenDecimals),
 		claimed: deposit.claimed,
 		_slotlink: links[index],
+		_depositIndex: depositIndices[index],
 	}))
 
 	return {
