@@ -8,7 +8,6 @@ import {
 	getContract,
 	getContractAddress,
 	getDefaultProvider,
-	getLatestContractVersion,
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
@@ -252,6 +251,8 @@ export async function claimRaffleLink({
 	link,
 	APIKey,
 	recipientAddress,
+	recipientName,
+	baseUrl
 }: interfaces.IClaimRaffleLinkParams): Promise<interfaces.IClaimRaffleLinkResponse> {
 	// attempt to claim an unclaimed slot until we do or
 	// all slots end up to be claimed by other people
@@ -291,6 +292,16 @@ export async function claimRaffleLink({
 			continue
 		}
 
+		await addLinkClaim({
+			claimerAddress: recipientAddress,
+			name: recipientName,
+			amount: unclaimedSlots[slotIndexToClaim].amount,
+			depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
+			link,
+			APIKey,
+			baseUrl,
+		})
+
 		return {
 			txHash: response.txHash,
 			chainId,
@@ -301,4 +312,116 @@ export async function claimRaffleLink({
 			tokenSymbol,
 		}
 	}
+}
+
+export async function addUsername({
+	address,
+	name,
+	link,
+	APIKey,
+	baseUrl = 'https://api.peanut.to/add-username'
+}: interfaces.IAddUsername) {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			address,
+			name,
+			link,
+			apiKey: APIKey,
+		}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while adding a username: ${await res.text()}`
+		)
+	}
+}
+
+export async function getUsername({
+	address,
+	link,
+	APIKey,
+	baseUrl = 'https://api.peanut.to/get-username'
+}: interfaces.IGetUsername): Promise<string> {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			address,
+			link,
+			apiKey: APIKey,
+		}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while getting a username: ${await res.text()}`
+		)
+	}
+
+	const json = await res.json()
+	return json.name
+}
+
+export async function addLinkClaim({
+	claimerAddress,
+	name,
+	depositIndex,
+	amount,
+	link,
+	APIKey,
+	baseUrl = 'https://api.peanut.to/add-link-claim'
+}: interfaces.IAddLinkClaim) {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			claimerAddress,
+			name,
+			depositIndex,
+			amount,
+			link,
+			apiKey: APIKey,
+		}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while adding a claim: ${await res.text()}`
+		)
+	}
+}
+
+export async function getRaffleLeaderboard({
+	link,
+	APIKey,
+	baseUrl = 'https://api.peanut.to/get-raffle-leaderboard'
+}: interfaces.IGetRaffleLeaderboard): Promise<interfaces.IRaffleLeaderboardEntry[]> {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			link,
+			apiKey: APIKey,
+		}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while adding a claim: ${await res.text()}`
+		)
+	}
+
+	const json = await res.json()
+	return json.leaderboard
 }

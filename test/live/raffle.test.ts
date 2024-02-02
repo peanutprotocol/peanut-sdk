@@ -1,6 +1,7 @@
 import { BigNumber, Wallet } from 'ethersv5'
-import { claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLinkFromTx, getRandomString, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
+import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
 import dotenv from 'dotenv'
+import { makeRandomAddress } from '../util'
 dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY!
@@ -62,12 +63,20 @@ describe('raffle', () => {
 
   test('claim raffle link', async () => {
     const link = 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
+    const recipientAddress = makeRandomAddress()
+    console.log({ recipient: recipientAddress })
     const claimInfo = await claimRaffleLink({
       link,
       APIKey,
-      recipientAddress: '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72',
+      recipientAddress,
+      recipientName: 'iamtherockfuckingstar'
     })
     console.log('Claimed a raffle slot!!', claimInfo)
+    const leaderboard = await getRaffleLeaderboard({
+      link,
+      APIKey,
+    })
+    console.log('Hooouray, leaderboard!', { leaderboard })
   }, 120000)
 
   test('is raffle active', async () => {
@@ -88,4 +97,64 @@ describe('raffle', () => {
     const values = generateAmountsDistribution(totalAmount, numberOfLinks)
     console.log('Values!!', values.map((val) => val.toString()))
   }, 120000)
+
+  // Smoke tests of raffle names to see that the sdk adapters work.
+  // Main testing happens in the api repository.
+  test('raffle names', async () => {
+    // randomise the password to make the link unique in every test
+    const p = await getRandomString()
+    const link = `https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=${p}`
+
+    const address1 = makeRandomAddress()
+    const address2 = makeRandomAddress()
+    const address3 = makeRandomAddress()
+
+    await addUsername({
+      address: address1,
+      name: 'henlo',
+      link,
+      APIKey,
+    })
+
+    const name = await getUsername({
+      address: address1,
+      link,
+      APIKey,
+    })
+    expect(name).toBe('henlo')
+
+    await addLinkClaim({
+      claimerAddress: address2,
+      name: 'bye-bye',
+      depositIndex: 12,
+      amount: '0.05',
+      link,
+      APIKey,
+    })
+
+    await addLinkClaim({
+      claimerAddress: address3,
+      depositIndex: 13,
+      amount: '0.078',
+      link,
+      APIKey,
+    })
+
+    const leaderboard = await getRaffleLeaderboard({
+      link,
+      APIKey,
+    })
+    expect(leaderboard).toEqual([
+      {
+        address: address3,
+        amount: '0.078',
+        name: null,
+      },
+      {
+        address: address2,
+        amount: '0.05',
+        name: 'bye-bye',
+      },
+    ])
+  })
 })

@@ -428,6 +428,8 @@ export interface IClaimRaffleLinkParams {
 	link: string
 	APIKey: string
 	recipientAddress: string
+	recipientName?: string
+	baseUrl?: string
 }
 
 export interface IClaimRaffleLinkResponse {
@@ -444,6 +446,37 @@ export interface IRaffleLeaderboardEntry {
 	address: string
 	amount: string
 	name: string | null
+}
+
+export interface IAddUsername {
+	address: string
+	name: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetUsername {
+	address: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IAddLinkClaim {
+	claimerAddress: string
+	name?: string
+	depositIndex: number
+	amount: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetRaffleLeaderboard {
+	link: string
+	APIKey: string
+	baseUrl?: string
 }
 
 // error object and enums
@@ -497,6 +530,7 @@ export enum EGenericErrorCodes {
 export enum ERaffleErrorCodes {
 	ERROR_VALIDATING_LINK_DETAILS,
 	ALL_SLOTS_ARE_CLAIMED,
+	ERROR,
 }
 
 // Don't forget to add the new enum to the allErrorEnums type
