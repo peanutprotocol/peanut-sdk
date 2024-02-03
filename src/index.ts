@@ -516,14 +516,7 @@ async function setFeeOptions({
 	// Check if EIP-1559 is supported
 	// if on milkomeda or bnb or linea, set eip1559 to false
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
-	if (
-		chainId === 2001 ||
-		chainId === 200101 ||
-		chainId === 56 ||
-		chainId === 59144 ||
-		chainId === 59140 ||
-		chainId === 534352
-	) {
+	if ([2001, 200101, 56, 59144, 59140, 534352, 5000, 5001].includes(chainId)) {
 		eip1559 = false
 		config.verbose && console.log('Setting eip1559 to false as an exception')
 	} else if (chainDetails && chainDetails.features) {
@@ -1049,7 +1042,7 @@ async function validateLinkDetails(
 
 	assert(
 		linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
-		linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+			linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
 	if (

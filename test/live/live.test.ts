@@ -62,6 +62,32 @@ describe('optimism goerli', function () {
 	// }, 60000)
 })
 
+describe('mantle', function () {
+	it('should create a native link and claim it', async function () {
+		const chainId = '5000'
+		const Provider = await peanut.getDefaultProvider(chainId)
+		const Wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', Provider)
+
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: Wallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: 0.00001,
+					tokenType: 0,
+				},
+			},
+			9000
+		)
+		// Add assertion here
+	}, 60000)
+	// it('should create an erc20 link and claim it', async function () {
+	// 	// TODO. Do nothing for now
+	// }, 60000)
+})
+
 describe('zksync', function () {
 	it('zksync Sepolia: should create a native link and claim it', async function () {
 		const chainId = '300'
@@ -74,7 +100,7 @@ describe('zksync', function () {
 					signer: wallet,
 				},
 				linkDetails: {
-					chainId: Number(chainId),
+					chainId: chainId,
 					tokenAmount: 0.000001,
 					tokenType: 0,
 				},
@@ -95,7 +121,7 @@ describe('zksync', function () {
 					signer: wallet,
 				},
 				linkDetails: {
-					chainId: Number(chainId),
+					chainId: chainId,
 					tokenAmount: 0.000001,
 					tokenType: 0,
 				},
