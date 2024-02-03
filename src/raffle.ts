@@ -163,21 +163,15 @@ export async function getRaffleLinkFromTx({
 
 	const link = createMultiLinkFromLinks(links)
 
-	try {
-		await addLinkCreation({
-			creatorAddress,
-			name,
-			amount,
-			link,
-			APIKey,
-			baseUrl,
-		})
-	} catch (error: any) {
-		console.error(
-			'Bad that we got an error from the events api, but not stopping the entire link creation because of this',
-			error,
-		)
-	}
+	// Fire asynchronously and don't wait
+	addLinkCreation({
+		creatorAddress,
+		name,
+		amount,
+		link,
+		APIKey,
+		baseUrl,
+	})
 
 	return { link }
 }
@@ -387,22 +381,16 @@ export async function claimRaffleLink({
 			continue
 		}
 
-		try {
-			await addLinkClaim({
-				claimerAddress: recipientAddress,
-				name: recipientName,
-				amount: unclaimedSlots[slotIndexToClaim].amount,
-				depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
-				link,
-				APIKey,
-				baseUrl,
-			})
-		} catch (error: any) {
-			console.error(
-				'Bad that we got an error from the events api, but not stopping the entire link claiming because of this',
-				error,
-			)
-		}
+		// Fire asynchronously and don't wait
+		addLinkClaim({
+			claimerAddress: recipientAddress,
+			name: recipientName,
+			amount: unclaimedSlots[slotIndexToClaim].amount,
+			depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
+			link,
+			APIKey,
+			baseUrl,
+		})
 
 		return {
 			txHash: response.txHash,
