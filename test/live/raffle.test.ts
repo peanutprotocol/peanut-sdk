@@ -1,5 +1,5 @@
 import { BigNumber, Wallet } from 'ethersv5'
-import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose } from '../../src/index'
+import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
 dotenv.config()
@@ -62,14 +62,14 @@ describe('raffle', () => {
   }, 120000)
 
   test('claim raffle link', async () => {
-    const link = 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
-    const recipientAddress = makeRandomAddress()
+    const link = 'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
+    const recipientAddress = '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72'
     console.log({ recipient: recipientAddress })
     const claimInfo = await claimRaffleLink({
       link,
       APIKey,
       recipientAddress,
-      recipientName: 'iamtherockfuckingstar'
+      recipientName: 'amobest'
     })
     console.log('Claimed a raffle slot!!', claimInfo)
     const leaderboard = await getRaffleLeaderboard({
@@ -156,5 +156,48 @@ describe('raffle', () => {
         name: 'bye-bye',
       },
     ])
+  })
+
+  test('validateRaffleLink', () => {
+    // valid link, noting should be raised
+    validateRaffleLink({
+      link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
+    })
+
+    // password is missing
+    const f2 = () => {
+      validateRaffleLink({
+        link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42'
+      })
+    }
+    expect(f2).toThrow(interfaces.SDKStatus)
+
+    // deposit indices are not consistent
+    const f3 = () => {
+      validateRaffleLink({
+        link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,1001,40,41,42#p=12345678'
+      })
+    }
+    expect(f3).toThrow(interfaces.SDKStatus)
+  })
+
+  test('hasAddressParticipatedInRaffle', async () => {
+    const link = 'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
+
+    // Manually claimed this link for this address
+    const participated1 = await hasAddressParticipatedInRaffle({
+      address: '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72',
+      link,
+      APIKey,
+    })
+    expect(participated1).toBe(true)
+
+    // New random address, so has to be false
+    const participated2 = await hasAddressParticipatedInRaffle({
+      address: makeRandomAddress(),
+      link,
+      APIKey,
+    })
+    expect(participated2).toBe(false)
   })
 })

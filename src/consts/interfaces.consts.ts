@@ -480,6 +480,17 @@ export interface IGetRaffleLeaderboard {
 	baseUrl?: string
 }
 
+export interface IIsAddressEligible {
+	address: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IValidateRaffleLink {
+	link: string
+}
+
 // error object and enums
 
 export enum ECreateLinkStatusCodes {

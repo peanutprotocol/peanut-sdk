@@ -1,4 +1,4 @@
-import { BigNumber, constants, ethers } from 'ethersv5'
+import { BigNumber, constants, ethers, utils } from 'ethersv5'
 import { ERC20_ABI, TOKEN_DETAILS } from './data'
 import {
 	claimLinkGasless,
@@ -158,6 +158,75 @@ export async function getRaffleLinkFromTx({
 	return { link }
 }
 
+/**
+ * Throws an error if the provided raffle link is invalid.
+ */
+export function validateRaffleLink({ link }: interfaces.IValidateRaffleLink) {
+	const links = getLinksFromMultilink(link)
+	
+	const linksParams: interfaces.ILinkParams[] = []
+	links.forEach((link) => linksParams.push(getParamsFromLink(link)))
+
+	const chainId = linksParams[0].chainId
+	const contractVersion = linksParams[0].contractVersion
+	const password = linksParams[0].password
+	const trackId = linksParams[0].trackId
+
+	if (chainId === '' || contractVersion === '' || password === '') throw new interfaces.SDKStatus(
+		interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
+		`chainId, contractVersion or password is empty for raffle link ${link}`
+	)
+
+	linksParams.forEach((params) => {
+		if ( // must be the same for all links
+			params.chainId !== chainId ||
+			params.contractVersion !== contractVersion ||
+			params.password !== password ||
+			params.trackId !== trackId
+		) throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`chainId, contractVersion, password or trackId is not consistent for raffle link ${link}`
+		)
+	})
+
+	// deposit indices must be sequential
+	let prevDepositIndex = linksParams[0].depositIdx
+	linksParams.slice(1).forEach((params) => {
+		if (params.depositIdx !== prevDepositIndex + 1) throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`deposit indices are not sequential for raffle link ${link}`
+		)
+		prevDepositIndex = params.depositIdx
+	})
+
+	return true
+}
+
+/**
+ * Returns a boolean of whether the given address is allowed to
+ * claim a slot in the given raffle link.
+ */
+export async function hasAddressParticipatedInRaffle({
+	address,
+	link,
+	APIKey,
+	baseUrl
+}: interfaces.IIsAddressEligible): Promise<boolean> {
+	const leaderboard = await getRaffleLeaderboard({
+		link,
+		APIKey,
+		baseUrl,
+	})
+
+	for (let i = 0; i < leaderboard.length; i++) {
+		if (utils.getAddress(address) === utils.getAddress(leaderboard[i].address)) {
+			return true // this address has already claimed a slot
+		}
+	}
+
+	return false
+}
+
 export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
 	const links = getLinksFromMultilink(link)
 
@@ -169,7 +238,6 @@ export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInf
 	const depositIndices: number[] = []
 	linksParams.forEach((params) => depositIndices.push(params.depositIdx))
 
-	// TODO: add more validation (check that chain is the same for all links, version is the same, etc.)
 	if (peanutVersion !== 'v4.2') {
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
