@@ -1,5 +1,5 @@
 import { BigNumber, Wallet } from 'ethersv5'
-import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink } from '../../src/index'
+import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink, getGenerosityLeaderboard, addLinkCreation } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
 dotenv.config()
@@ -19,11 +19,11 @@ describe('raffle', () => {
     const numberOfLinks = 3
     const linkDetails: interfaces.IPeanutLinkDetails = {
       chainId,
-      tokenAmount: 1,
+      tokenAmount: 0.1,
       tokenDecimals: 6,
       tokenAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
       tokenType: 1,
-      baseUrl: 'https://peanut-nptz58iuw-squirrellabs.vercel.app/packet',
+      baseUrl: 'https://red.peanut.to/packet',
     }
     const { unsignedTxs } = await prepareRaffleDepositTxs({
       linkDetails,
@@ -51,6 +51,11 @@ describe('raffle', () => {
       linkDetails,
       numberOfLinks,
       password,
+      creatorAddress: wallet.address,
+      name: 'baobob',
+      amount: '1',
+      APIKey,
+      baseUrl: 'http://localhost:8000/add-link-creation',
     })
     console.log('Got the raffle link!', link)
   }, 120000)
@@ -199,5 +204,24 @@ describe('raffle', () => {
       APIKey,
     })
     expect(participated2).toBe(false)
+  })
+
+  test('addLinkCreation', async () => {
+    const creatorAddress = '0x53a5746ab21b2F33A2a5990133Aa64d652F93f39'
+    await addLinkCreation({
+      amount: '12345',
+      APIKey,
+      creatorAddress,
+      name: 'boiii',
+      link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
+      baseUrl: 'http://localhost:8000/add-link-creation',
+    })
+  })
+
+  test('getGenerosityLeaderboard', async () => {
+    const leaderboard = await getGenerosityLeaderboard({
+      baseUrl: 'http://localhost:8000/get-generosity-leaderboard',
+    })
+    console.log({ leaderboard })
   })
 })

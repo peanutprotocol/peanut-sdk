@@ -146,7 +146,12 @@ export async function getRaffleLinkFromTx({
 	linkDetails,
 	password,
 	numberOfLinks,
-	provider
+	provider,
+	creatorAddress,
+	name,
+	amount,
+	APIKey,
+	baseUrl,
 }: interfaces.IGetRaffleLinkFromTxParams): Promise<interfaces.IGetRaffleLinkFromTxResponse> {
 	const { links } = await getLinksFromTx({
 		linkDetails,
@@ -157,6 +162,23 @@ export async function getRaffleLinkFromTx({
 	console.log('Links!!', links)
 
 	const link = createMultiLinkFromLinks(links)
+
+	try {
+		await addLinkCreation({
+			creatorAddress,
+			name,
+			amount,
+			link,
+			APIKey,
+			baseUrl,
+		})
+	} catch (error: any) {
+		console.error(
+			'Bad that we got an error from the events api, but not stopping the entire link creation because of this',
+			error,
+		)
+	}
+
 	return { link }
 }
 
@@ -365,15 +387,22 @@ export async function claimRaffleLink({
 			continue
 		}
 
-		await addLinkClaim({
-			claimerAddress: recipientAddress,
-			name: recipientName,
-			amount: unclaimedSlots[slotIndexToClaim].amount,
-			depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
-			link,
-			APIKey,
-			baseUrl,
-		})
+		try {
+			await addLinkClaim({
+				claimerAddress: recipientAddress,
+				name: recipientName,
+				amount: unclaimedSlots[slotIndexToClaim].amount,
+				depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
+				link,
+				APIKey,
+				baseUrl,
+			})
+		} catch (error: any) {
+			console.error(
+				'Bad that we got an error from the events api, but not stopping the entire link claiming because of this',
+				error,
+			)
+		}
 
 		return {
 			txHash: response.txHash,
@@ -473,6 +502,35 @@ export async function addLinkClaim({
 	}
 }
 
+export async function addLinkCreation({
+	creatorAddress,
+	name,
+	amount,
+	link,
+	APIKey,
+	baseUrl = 'https://api.peanut.to/add-link-creation'
+}: interfaces.IAddLinkCreation) {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			creatorAddress,
+			name,
+			amount,
+			link,
+			apiKey: APIKey,
+		}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while adding a creation: ${await res.text()}`
+		)
+	}
+}
+
 export async function getRaffleLeaderboard({
 	link,
 	APIKey,
@@ -491,7 +549,28 @@ export async function getRaffleLeaderboard({
 	if (res.status !== 200) {
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR,
-			`Error while adding a claim: ${await res.text()}`
+			`Error while getting raffle leaderboard: ${await res.text()}`
+		)
+	}
+
+	const json = await res.json()
+	return json.leaderboard
+}
+
+export async function getGenerosityLeaderboard({
+	baseUrl = 'https://api.peanut.to/get-generosity-leaderboard'
+}: interfaces.IGetGenerosityLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while getting generosity leaderboard: ${await res.text()}`
 		)
 	}
 

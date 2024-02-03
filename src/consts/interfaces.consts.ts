@@ -380,6 +380,11 @@ export interface IGetRaffleLinkFromTxParams {
 	password: string
 	numberOfLinks: number
 	provider?: Provider
+	creatorAddress: string
+	name?: string
+	amount: string
+	APIKey: string
+	baseUrl?: string
 }
 
 export interface IGetRaffleLinkFromTxResponse {
@@ -451,6 +456,12 @@ export interface IRaffleLeaderboardEntry {
 	name: string | null
 }
 
+export interface IGenerosityLeaderboardEntry {
+	address: string
+	name: string | null
+	linksCreated: number
+}
+
 export interface IAddUsername {
 	address: string
 	name: string
@@ -476,9 +487,23 @@ export interface IAddLinkClaim {
 	baseUrl?: string
 }
 
+export interface IAddLinkCreation {
+	creatorAddress: string
+	name?: string
+	amount: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+
 export interface IGetRaffleLeaderboard {
 	link: string
 	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetGenerosityLeaderboard {
 	baseUrl?: string
 }
 
