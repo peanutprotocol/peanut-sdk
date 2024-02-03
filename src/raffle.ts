@@ -146,11 +146,13 @@ export async function getRaffleLinkFromTx({
 	linkDetails,
 	password,
 	numberOfLinks,
+	provider
 }: interfaces.IGetRaffleLinkFromTxParams): Promise<interfaces.IGetRaffleLinkFromTxResponse> {
 	const { links } = await getLinksFromTx({
 		linkDetails,
 		txHash,
 		passwords: Array(numberOfLinks).fill(password),
+		provider
 	})
 	console.log('Links!!', links)
 
@@ -245,12 +247,15 @@ export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInf
 		)
 	}
 
-	const contract = await getContract(chainId, null, peanutVersion)
+	if (!provider) {
+		provider = await getDefaultProvider(chainId)
+	}
+
+	const contract = await getContract(chainId, provider, peanutVersion)
 	const deposits: interfaces.IPeanutV4_2Deposit[] = await Promise.all(
 		depositIndices.map((idx) => contract.deposits(idx))
 	)
 	const contractType = deposits[0].contractType
-	console.log('Deposit!!', deposits[0])
 
 	let tokenAddress = deposits[0].tokenAddress
 	if (contractType == interfaces.EPeanutLinkType.native) {
@@ -265,9 +270,6 @@ export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInf
 		(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
 	)
 
-	if (!provider) {
-		provider = await getDefaultProvider(chainId)
-	}
 	if (!tokenDetails) {
 		// Has to be a ERC20 token since native tokens are all listed in tokenDetails.json
 		try {
@@ -322,12 +324,13 @@ export async function claimRaffleLink({
 	APIKey,
 	recipientAddress,
 	recipientName,
-	baseUrl
+	baseUrl,
+	provider,
 }: interfaces.IClaimRaffleLinkParams): Promise<interfaces.IClaimRaffleLinkResponse> {
 	// attempt to claim an unclaimed slot until we do or
 	// all slots end up to be claimed by other people
 	while (true) {
-		const raffleInfo = await getRaffleInfo({ link })
+		const raffleInfo = await getRaffleInfo({ link, provider })
 		const { chainId, tokenAddress, tokenDecimals, tokenName, tokenSymbol } = raffleInfo
 		const unclaimedSlots = raffleInfo.slotsDetails.filter((slot) => !slot.claimed)
 		if (unclaimedSlots.length === 0) {

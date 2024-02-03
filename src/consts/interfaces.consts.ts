@@ -379,6 +379,7 @@ export interface IGetRaffleLinkFromTxParams {
 	linkDetails: IPeanutLinkDetails
 	password: string
 	numberOfLinks: number
+	provider?: Provider
 }
 
 export interface IGetRaffleLinkFromTxResponse {
@@ -431,6 +432,7 @@ export interface IClaimRaffleLinkParams {
 	recipientAddress: string
 	recipientName?: string
 	baseUrl?: string
+	provider?: Provider
 }
 
 export interface IClaimRaffleLinkResponse {
