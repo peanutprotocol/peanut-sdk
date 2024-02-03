@@ -10157,5 +10157,179 @@
 				"logoURI": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/scroll/info/logo.png"
 			}
 		]
+	},
+	{
+		"chainId": "5000",
+		"name": "Mantle",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Mantle",
+				"symbol": "MNT",
+				"decimals": 18,
+				"logoURI": "https://ipfs.io/ipfs/QmYddHh5zdceSsBU7uGfQvEHg6UUtAFbzQBBaePS4whx7o"
+			},
+			{
+				"address": "0x7cbf716aa9a6114281188867572ac87586e4abf2",
+				"name": "Solv Protocol stUSD",
+				"symbol": "STUSD",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33952/thumb/colored.png?1703763176"
+			},
+			{
+				"address": "0x779f4e5fb773e17bc8e809f4ef1abb140861159a",
+				"name": "KTX Finance",
+				"symbol": "KTC",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/30537/thumb/KTX.jpeg?1696529409"
+			},
+			{
+				"address": "0x6a3b0eb5b57c9a4f5772fc900dae427e65f8c1a5",
+				"name": "Cashtree Token",
+				"symbol": "CTT",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31475/thumb/Coin-CTT%28Hi-Res%29.png?1696530287"
+			},
+			{
+				"address": "0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8",
+				"name": "Wrapped Mantle",
+				"symbol": "WMNT",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/30983/thumb/mantle.jpeg?1696529822"
+			},
+			{
+				"address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111",
+				"name": "Wrapped Ether  Mantle Bridge ",
+				"symbol": "WETH",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31013/thumb/wrapped-eth-mantle-bridge.png?1696529850"
+			},
+			{
+				"address": "0xfbec518fcce398ddf467451b3e22de8c47f15026",
+				"name": "We All Got Mantle Illness",
+				"symbol": "WAGMI",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31227/thumb/Screenshot_2023-07-20_at_1.22.52_PM.png?1696530054"
+			},
+			{
+				"address": "0x51cfe5b1e764dc253f4c8c1f19a081ff4c3517ed",
+				"name": "Mantle Inu",
+				"symbol": "MINU",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31014/thumb/mantle-inu.jpeg?1696529851"
+			},
+			{
+				"address": "0x4515a45337f461a11ff0fe8abf3c606ae5dc00c9",
+				"name": "MOE",
+				"symbol": "MOE",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/34422/thumb/MOE.png?1704821927"
+			},
+			{
+				"address": "0x25356aeca4210ef7553140edb9b8026089e49396",
+				"name": "Lendle",
+				"symbol": "LEND",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31588/thumb/lendle_logo_200_200_cg.png?1696530405"
+			},
+			{
+				"address": "0x201eba5cc46d216ce6dc03f6a759e8e766e956ae",
+				"name": "Tether",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1696501661"
+			},
+			{
+				"address": "0x5ecdb76feda945dc71f7d9ce62dfe7eafefffab4",
+				"name": "Minterest",
+				"symbol": "MINTY",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/29455/thumb/MINTY.png?1706817774"
+			},
+			{
+				"address": "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+				"name": "USDC",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/usdc.png?1696506694"
+			},
+			{
+				"address": "0x3e173b825adeef9661920b91a8d50b075ad51ba5",
+				"name": "NFTEarth",
+				"symbol": "NFTE",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/29116/thumb/20230223_224134.jpg?1696528078"
+			},
+			{
+				"address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
+				"name": "Mantle",
+				"symbol": "MNT",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/30980/thumb/token-logo.png?1696529819"
+			},
+			{
+				"address": "0x8fe7176f0bf63358ad9490fd24ac0bdb4dac33a8",
+				"name": "Stable USDLR",
+				"symbol": "USDLR",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33115/thumb/0x68592c5c98c4f4a8a4bc6da2121e65da3d1c0917.png?1700731571"
+			},
+			{
+				"address": "0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979",
+				"name": "Fantom Bomb",
+				"symbol": "BOMB",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/24109/thumb/logo-blue.png?1696523301"
+			},
+			{
+				"address": "0x5be26527e817998a7206475496fde1e68957c5a6",
+				"name": "Ondo US Dollar Yield",
+				"symbol": "USDY",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31700/thumb/usdy_%281%29.png?1696530524"
+			},
+			{
+				"address": "0x981bd9f77c8aafc14ebc86769503f86a3cc29af5",
+				"name": "Tarot",
+				"symbol": "TAROT",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/31800/thumb/TAROT.jpg?1696530615"
+			},
+			{
+				"address": "0x05f41f99e6c72511f157674c6e43eda2a2e599a0",
+				"name": "KUMA Protocol US KUMA Interest Bearing ",
+				"symbol": "USK",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33445/thumb/USK.png?1701888523"
+			},
+			{
+				"address": "0xeb466342c4d449bc9f53a865d5cb90586f405215",
+				"name": "Bridged USD Coin  Axelar ",
+				"symbol": "AXLUSDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/26476/thumb/uausdc_D_3x.png?1696525548"
+			},
+			{
+				"address": "0x872952d3c1caf944852c5adda65633f1ef218a26",
+				"name": "Liquid Crypto",
+				"symbol": "LQDX",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33627/thumb/LQDX.png?1702533263"
+			},
+			{
+				"address": "0x60d01ec2d5e98ac51c8b4cf84dfcce98d527c747",
+				"name": "iZUMi Finance",
+				"symbol": "IZI",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/21791/thumb/izumi-logo-symbol.png?1696521144"
+			},
+			{
+				"address": "0x371c7ec6d8039ff7933a2aa28eb827ffe1f52f07",
+				"name": "JOE",
+				"symbol": "JOE",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/17569/thumb/JoeToken.png?1703732357"
+			}
+		]
 	}
 ]

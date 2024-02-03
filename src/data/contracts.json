@@ -175,10 +175,6 @@
 		"v4": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
 		"Bv4": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5"
 	},
-	"5001": {
-		"name": "mantle-testnet",
-		"mainnet": "false"
-	},
 	"324": {
 		"name": "zksync-era-mainnet",
 		"mainnet": "true",
@@ -198,5 +194,19 @@
 		"v4.2": "0x5E164807F0334dd5854447530a5CAfcC8dB57dcE",
 		"Rv4.2": "0xB0CE4b507D424d9E019EfE7F4d00FF78501E69A4",
 		"Bv4.2": "0xe8EEAa2EAf9571F587da13d262b35fd3e18D0801"
+	},
+	"5000": {
+		"name": "mantle",
+		"mainnet": "true",
+		"v4.2": "0x8d1a17A3A4504aEB17515645BA8098f1D75237f7",
+		"Bv4.2": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5",
+		"Rv4.2": "0x897F8EDdB345F0d16081615823F76055Ad60A00c"
+	},
+	"5001": {
+		"name": "mantle-testnet",
+		"mainnet": "false",
+		"v4.2": "0x5c1b67ED2809e371aabbc58D934282E8Aa7E3fd4",
+		"Bv4.2": "0xa1F413760E942dbbBDD36589526A11f4C013085b",
+		"Rv4.2": "0x2a656515f4f87070670C0f922a45A36be387AaDd"
 	}
 }

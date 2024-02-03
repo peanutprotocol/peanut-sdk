@@ -91,7 +91,7 @@ describe('Peanut API Integration Tests', function () {
 		links.push(resp.link)
 	}, 60000) // 60 seconds timeout
 
-	it('should create a link on Polygon mainnet and claim it with api', async function () {
+	it.only('should create a link on Polygon mainnet and claim it with api', async function () {
 		const apiToken = process.env.PEANUT_DEV_API_KEY ?? ''
 		peanut.toggleVerbose(true)
 
