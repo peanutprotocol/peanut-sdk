@@ -394,6 +394,8 @@ export interface IGetRaffleLinkFromTxResponse {
 export interface IGetRaffleInfoParams {
 	link: string
 	provider?: Provider
+	APIKey?: string
+	baseUrl?: string
 }
 
 export interface IRaffleSlot {
@@ -410,6 +412,8 @@ export interface IRaffleInfo {
 	tokenSymbol: string
 	tokenName: string
 	slotsDetails: IRaffleSlot[]
+	senderAddress: string
+	senderName: string
 }
 
 export interface ILinkParams {

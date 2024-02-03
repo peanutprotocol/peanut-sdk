@@ -245,7 +245,7 @@ export async function hasAddressParticipatedInRaffle({
 	return false
 }
 
-export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
+export async function getRaffleInfo({ link, provider, APIKey, baseUrl }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
 	const links = getLinksFromMultilink(link)
 
 	const linksParams: interfaces.ILinkParams[] = []
@@ -315,6 +315,17 @@ export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInf
 		_depositIndex: depositIndices[index],
 	}))
 
+	const senderAddress = deposits[0].senderAddress
+	let senderName: string | null = null
+	if (APIKey) {
+		senderName = await getUsername({
+			address: senderAddress,
+			link,
+			APIKey,
+			baseUrl,
+		})
+	}
+
 	return {
 		chainId,
 		tokenAddress,
@@ -322,6 +333,8 @@ export async function getRaffleInfo({ link, provider }: interfaces.IGetRaffleInf
 		tokenName,
 		tokenDecimals,
 		slotsDetails,
+		senderAddress,
+		senderName,
 	}
 }
 
