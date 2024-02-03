@@ -436,7 +436,7 @@ export async function getUsername({
 	link,
 	APIKey,
 	baseUrl = 'https://api.peanut.to/get-username'
-}: interfaces.IGetUsername): Promise<string> {
+}: interfaces.IGetUsername): Promise<string | null> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
 		headers: {
@@ -448,6 +448,10 @@ export async function getUsername({
 			apiKey: APIKey,
 		}),
 	})
+
+	// no name for this address, which is ok
+	if (res.status === 404) return null
+
 	if (res.status !== 200) {
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR,
