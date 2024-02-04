@@ -74,7 +74,6 @@ describe('raffle', () => {
 			password,
 			creatorAddress: wallet.address,
 			name: 'baobob',
-			amount: '1',
 			APIKey,
 			baseUrl: 'http://localhost:8000/add-link-creation',
 		})
