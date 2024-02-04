@@ -88,10 +88,11 @@ export async function prepareRaffleDepositTxs({
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
 	}
-
+	
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
+	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 
 	let approveTx: interfaces.IPeanutUnsignedTransaction = null
 	if (linkDetails.tokenType === 1) {
@@ -125,7 +126,6 @@ export async function prepareRaffleDepositTxs({
 		}
 	}
 
-	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
 		...depositParams,
 		txOptions
