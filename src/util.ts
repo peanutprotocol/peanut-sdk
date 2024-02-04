@@ -353,8 +353,18 @@ export function toLowerCaseKeys(obj: any): any {
 	return newObj
 }
 
+function isShortenedLink(link) {
+	const shortenedLinkRegex = /^https?:\/\/[^\/]+\/[^?]*\?c=\d+&v=v\d+\.\d+&i=\(\d+,\d+\)(,\(\d+,\d+\))*#p=\d+$/
+
+	return shortenedLinkRegex.test(link)
+}
+
 export function getLinksFromMultilink(link: string): string[] {
-	const url = new URL(link)
+	let _link = link
+	if (isShortenedLink(link)) {
+		_link = expandMultilink(link)
+	}
+	const url = new URL(_link)
 	const searchParams = new URLSearchParams(url.search)
 
 	// If there is a hash, treat the part after the hash as additional search parameters
@@ -452,7 +462,97 @@ export function createMultiLinkFromLinks(links: string[]): string {
 		hashString += `&${key}=${value}`
 	}
 
-	return url.toString()
+	const shortenedLink = shortenMultilink(url.toString())
+
+	return shortenedLink
+}
+
+export function shortenMultilink(link: string): string {
+	const url = new URL(link)
+	const params = new URLSearchParams(url.search)
+
+	const i = params.get('i')
+	if (i) {
+		const numbers = i
+			.split(',')
+			.map((num) => parseInt(num, 10))
+			.sort((a, b) => a - b)
+
+		let grouped = []
+		let currentGroup = []
+		numbers.forEach((num) => {
+			if (currentGroup.length === 0) {
+				currentGroup.push(num)
+			} else if (num === currentGroup[currentGroup.length - 1] + 1) {
+				currentGroup.push(num)
+			} else {
+				grouped.push(`(${currentGroup[0]},${currentGroup.length})`)
+				currentGroup = [num]
+			}
+		})
+		if (currentGroup.length > 0) {
+			grouped.push(`(${currentGroup[0]},${currentGroup.length})`)
+		}
+
+		let queryString = ''
+		params.forEach((value, key) => {
+			if (key !== 'i') {
+				queryString += `${key}=${encodeURIComponent(value)}&`
+			}
+		})
+		queryString += `i=${grouped.join(',')}`
+
+		if (queryString.endsWith('&')) {
+			queryString = queryString.substring(0, queryString.length - 1)
+		}
+
+		const newUrl = url.origin + url.pathname + '?' + queryString + url.hash
+
+		return newUrl
+	} else {
+		throw new Error('Error shortening the multilink')
+	}
+}
+
+export function expandMultilink(link: string): string {
+	const url = new URL(link)
+	const params = new URLSearchParams(url.search)
+
+	let queryString = ''
+	params.forEach((value, key) => {
+		if (key === 'i') {
+			const groupRegex = /\((\d+),(\d+)\)/g
+			let match
+			let expandedIValues = []
+
+			while ((match = groupRegex.exec(value)) !== null) {
+				const start = parseInt(match[1], 10)
+				const count = parseInt(match[2], 10)
+				for (let i = 0; i < count; i++) {
+					expandedIValues.push(start + i)
+				}
+			}
+
+			if (expandedIValues.length > 0) {
+				queryString += `i=${expandedIValues.join(',')}&`
+			} else {
+				throw new Error('Error expanding the multilink')
+			}
+		} else {
+			// Add other parameters with encoding
+			queryString += `${key}=${encodeURIComponent(value)}&`
+		}
+	})
+
+	// Remove the trailing '&' if it exists
+	if (queryString.endsWith('&')) {
+		queryString = queryString.substring(0, queryString.length - 1)
+	}
+
+	// Construct the new URL
+	const newUrl = url.origin + url.pathname + '?' + queryString + url.hash
+
+	return newUrl
 }
 
 export function compareDeposits(deposit1: any, deposit2: any) {
