@@ -25,7 +25,7 @@ import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY2!
+const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY!
 const APIKey = process.env.PEANUT_DEV_API_KEY!
 
 describe('raffle', () => {
