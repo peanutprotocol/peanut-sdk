@@ -162,15 +162,21 @@ export async function getRaffleLinkFromTx({
 
 	const link = createMultiLinkFromLinks(links)
 
-	// Fire asynchronously and don't wait
-	addLinkCreation({
-		creatorAddress,
-		name,
-		amount: linkDetails.tokenAmount.toString(),
-		link,
-		APIKey,
-		baseUrl,
-	})
+	try {
+		await addLinkCreation({
+			creatorAddress,
+			name,
+			amount: linkDetails.tokenAmount.toString(),
+			link,
+			APIKey,
+			baseUrl,
+		})
+	} catch (error: any) {
+		console.error(
+			'Bad that we got an error from the events api, but not stopping the entire link creation because of this',
+			error,
+		)
+	}
 
 	return { link }
 }
@@ -180,7 +186,7 @@ export async function getRaffleLinkFromTx({
  */
 export function validateRaffleLink({ link }: interfaces.IValidateRaffleLink) {
 	const links = getLinksFromMultilink(link)
-	
+
 	const linksParams: interfaces.ILinkParams[] = []
 	links.forEach((link) => linksParams.push(getParamsFromLink(link)))
 
@@ -398,16 +404,22 @@ export async function claimRaffleLink({
 			continue
 		}
 
-		// Fire asynchronously and don't wait
-		addLinkClaim({
-			claimerAddress: recipientAddress,
-			name: recipientName,
-			amount: unclaimedSlots[slotIndexToClaim].amount,
-			depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
-			link,
-			APIKey,
-			baseUrl,
-		})
+		try {
+			await addLinkClaim({
+				claimerAddress: recipientAddress,
+				name: recipientName,
+				amount: unclaimedSlots[slotIndexToClaim].amount,
+				depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
+				link,
+				APIKey,
+				baseUrl,
+			})
+		} catch (error: any) {
+			console.error(
+				'Bad that we got an error from the events api, but not stopping the entire link claim because of this',
+				error,
+			)
+		}
 
 		return {
 			txHash: response.txHash,
