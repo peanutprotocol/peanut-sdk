@@ -235,11 +235,6 @@ export async function hasAddressParticipatedInRaffle({
 	APIKey,
 	baseUrl
 }: interfaces.IIsAddressEligible): Promise<boolean> {
-	const devWallets = (process.env.RAFFLE_DEV_WALLETS || '').split(',')
-	if (devWallets.includes(address)) {
-		return false // allow multiple claims by dev wallets
-	}
-
 	const leaderboard = await getRaffleLeaderboard({
 		link,
 		APIKey,

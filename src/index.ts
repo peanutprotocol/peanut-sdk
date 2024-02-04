@@ -6,8 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import dotenv from 'dotenv'
-import { BigNumber, ethers } from 'ethersv5'
+import { BigNumber, constants, ethers } from 'ethersv5'
 import { Provider, TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V4,
@@ -68,7 +67,6 @@ import {
 } from './consts/eip712domains.ts'
 
 greeting()
-dotenv.config()
 
 const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
 function resetProviderCache() {
@@ -286,6 +284,7 @@ async function getAllowanceERC20(
 		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
 		console.error('Error fetching ERC20 allowance status:', error)
+		return BigNumber.from(0)
 	}
 	return allowance
 }
@@ -304,6 +303,7 @@ async function getApprovedERC721(
 		approved = await tokenContract.getApproved(tokenId)
 	} catch (error) {
 		console.error('Error fetching ERC721 approval status:', error)
+		return constants.AddressZero
 	}
 	return approved
 }
@@ -323,6 +323,7 @@ async function getApprovedERC1155(
 		approved = await tokenContract.isApprovedForAll(addressOwner, addressOperator)
 	} catch (error) {
 		console.error('Error fetching ERC1155 approval status:', error)
+		return false
 	}
 	return approved
 }

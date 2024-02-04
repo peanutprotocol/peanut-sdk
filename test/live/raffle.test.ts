@@ -1,6 +1,8 @@
 import { BigNumber, Wallet } from 'ethersv5'
 import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink, getGenerosityLeaderboard, addLinkCreation, getLuckinessLeaderboard } from '../../src/index'
+import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
+dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY!
 const APIKey = process.env.PEANUT_DEV_API_KEY!
@@ -200,15 +202,6 @@ describe('raffle', () => {
       APIKey,
     })
     expect(participated2).toBe(false)
-
-    // This address has claimed, but the function has to return false
-    // since it's a dev wallet
-    const participated3 = await hasAddressParticipatedInRaffle({
-      address: '0x53a5746ab21b2F33A2a5990133Aa64d652F93f39',
-      link,
-      APIKey,
-    })
-    expect(participated3).toBe(false)    
   })
 
   test('addLinkCreation', async () => {
@@ -231,6 +224,4 @@ describe('raffle', () => {
     const leaderboard = await getLuckinessLeaderboard({})
     console.log({ leaderboard })
   })
-
-  test
 })
