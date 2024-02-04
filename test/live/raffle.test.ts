@@ -1,5 +1,5 @@
 import { BigNumber, Wallet } from 'ethersv5'
-import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink, getGenerosityLeaderboard, addLinkCreation, getLuckinessLeaderboard } from '../../src/index'
+import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink, getGenerosityLeaderboard, addLinkCreation, getPopularityLeaderboard } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
 dotenv.config()
@@ -220,8 +220,8 @@ describe('raffle', () => {
     console.log({ leaderboard })
   })
 
-  test('getLuckinessLeaderboard', async () => {
-    const leaderboard = await getLuckinessLeaderboard({})
+  test('getPopularityLeaderboard', async () => {
+    const leaderboard = await getPopularityLeaderboard({})
     console.log({ leaderboard })
   })
 })

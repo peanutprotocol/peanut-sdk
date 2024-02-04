@@ -594,7 +594,7 @@ export async function getGenerosityLeaderboard({
 	return json.leaderboard
 }
 
-export async function getLuckinessLeaderboard({
+export async function getPopularityLeaderboard({
 	baseUrl = 'https://api.peanut.to/get-popularity-leaderboard'
 }: interfaces.IGetGenerosityLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
 	const res = await fetch(baseUrl, {
