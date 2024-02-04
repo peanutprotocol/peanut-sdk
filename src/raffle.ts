@@ -581,3 +581,24 @@ export async function getGenerosityLeaderboard({
 	const json = await res.json()
 	return json.leaderboard
 }
+
+export async function getLuckinessLeaderboard({
+	baseUrl = 'https://api.peanut.to/get-popularity-leaderboard'
+}: interfaces.IGetGenerosityLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while getting popularity leaderboard: ${await res.text()}`
+		)
+	}
+
+	const json = await res.json()
+	return json.leaderboard
+}

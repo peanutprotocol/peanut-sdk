@@ -1,5 +1,5 @@
 import { BigNumber, Wallet } from 'ethersv5'
-import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink, getGenerosityLeaderboard, addLinkCreation } from '../../src/index'
+import { addLinkClaim, addUsername, claimRaffleLink, generateAmountsDistribution, getDefaultProvider, getRaffleInfo, getRaffleLeaderboard, getRaffleLinkFromTx, getRandomString, getUsername, interfaces, hasAddressParticipatedInRaffle, isRaffleActive, prepareRaffleDepositTxs, signAndSubmitTx, toggleVerbose, validateRaffleLink, getGenerosityLeaderboard, addLinkCreation, getLuckinessLeaderboard } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
 dotenv.config()
@@ -53,9 +53,7 @@ describe('raffle', () => {
       password,
       creatorAddress: wallet.address,
       name: 'baobob',
-      amount: '1',
       APIKey,
-      baseUrl: 'http://localhost:8000/add-link-creation',
     })
     console.log('Got the raffle link!', link)
   }, 120000)
@@ -214,14 +212,16 @@ describe('raffle', () => {
       creatorAddress,
       name: 'boiii',
       link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
-      baseUrl: 'http://localhost:8000/add-link-creation',
     })
   })
 
   test('getGenerosityLeaderboard', async () => {
-    const leaderboard = await getGenerosityLeaderboard({
-      baseUrl: 'http://localhost:8000/get-generosity-leaderboard',
-    })
+    const leaderboard = await getGenerosityLeaderboard({})
+    console.log({ leaderboard })
+  })
+
+  test('getLuckinessLeaderboard', async () => {
+    const leaderboard = await getLuckinessLeaderboard({})
     console.log({ leaderboard })
   })
 })
