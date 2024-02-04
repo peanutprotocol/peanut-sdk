@@ -6,6 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
+import dotenv from 'dotenv'
 import { BigNumber, ethers } from 'ethersv5'
 import { Provider, TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
@@ -67,6 +68,7 @@ import {
 } from './consts/eip712domains.ts'
 
 greeting()
+dotenv.config()
 
 const providerCache: { [chainId: string]: ethers.providers.JsonRpcProvider } = {}
 function resetProviderCache() {
