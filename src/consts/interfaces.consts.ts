@@ -382,7 +382,6 @@ export interface IGetRaffleLinkFromTxParams {
 	provider?: Provider
 	creatorAddress: string
 	name?: string
-	amount: string
 	APIKey: string
 	baseUrl?: string
 }

@@ -149,7 +149,6 @@ export async function getRaffleLinkFromTx({
 	provider,
 	creatorAddress,
 	name,
-	amount,
 	APIKey,
 	baseUrl,
 }: interfaces.IGetRaffleLinkFromTxParams): Promise<interfaces.IGetRaffleLinkFromTxResponse> {
@@ -167,7 +166,7 @@ export async function getRaffleLinkFromTx({
 	addLinkCreation({
 		creatorAddress,
 		name,
-		amount,
+		amount: linkDetails.tokenAmount.toString(),
 		link,
 		APIKey,
 		baseUrl,
