@@ -88,10 +88,11 @@ export async function prepareRaffleDepositTxs({
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
 	}
-
+	
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
+	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 
 	let approveTx: interfaces.IPeanutUnsignedTransaction = null
 	if (linkDetails.tokenType === 1) {
@@ -125,7 +126,6 @@ export async function prepareRaffleDepositTxs({
 		}
 	}
 
-	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
 		...depositParams,
 		txOptions
@@ -162,15 +162,21 @@ export async function getRaffleLinkFromTx({
 
 	const link = createMultiLinkFromLinks(links)
 
-	// Fire asynchronously and don't wait
-	addLinkCreation({
-		creatorAddress,
-		name,
-		amount: linkDetails.tokenAmount.toString(),
-		link,
-		APIKey,
-		baseUrl,
-	})
+	try {
+		await addLinkCreation({
+			creatorAddress,
+			name,
+			amount: linkDetails.tokenAmount.toString(),
+			link,
+			APIKey,
+			baseUrl,
+		})
+	} catch (error: any) {
+		console.error(
+			'Bad that we got an error from the events api, but not stopping the entire link creation because of this',
+			error,
+		)
+	}
 
 	return { link }
 }
@@ -180,7 +186,7 @@ export async function getRaffleLinkFromTx({
  */
 export function validateRaffleLink({ link }: interfaces.IValidateRaffleLink) {
 	const links = getLinksFromMultilink(link)
-	
+
 	const linksParams: interfaces.ILinkParams[] = []
 	links.forEach((link) => linksParams.push(getParamsFromLink(link)))
 
@@ -393,16 +399,22 @@ export async function claimRaffleLink({
 			continue
 		}
 
-		// Fire asynchronously and don't wait
-		addLinkClaim({
-			claimerAddress: recipientAddress,
-			name: recipientName,
-			amount: unclaimedSlots[slotIndexToClaim].amount,
-			depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
-			link,
-			APIKey,
-			baseUrl,
-		})
+		try {
+			await addLinkClaim({
+				claimerAddress: recipientAddress,
+				name: recipientName,
+				amount: unclaimedSlots[slotIndexToClaim].amount,
+				depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
+				link,
+				APIKey,
+				baseUrl,
+			})
+		} catch (error: any) {
+			console.error(
+				'Bad that we got an error from the events api, but not stopping the entire link claim because of this',
+				error,
+			)
+		}
 
 		return {
 			txHash: response.txHash,
@@ -575,6 +587,27 @@ export async function getGenerosityLeaderboard({
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR,
 			`Error while getting generosity leaderboard: ${await res.text()}`
+		)
+	}
+
+	const json = await res.json()
+	return json.leaderboard
+}
+
+export async function getPopularityLeaderboard({
+	baseUrl = 'https://api.peanut.to/get-popularity-leaderboard'
+}: interfaces.IGetGenerosityLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while getting popularity leaderboard: ${await res.text()}`
 		)
 	}
 

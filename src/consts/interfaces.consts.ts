@@ -465,6 +465,12 @@ export interface IGenerosityLeaderboardEntry {
 	linksCreated: number
 }
 
+export interface IPopularityLeaderboardEntry {
+	address: string
+	name: string | null
+	popularity: number
+}
+
 export interface IAddUsername {
 	address: string
 	name: string

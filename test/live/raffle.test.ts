@@ -19,6 +19,7 @@ import {
 	validateRaffleLink,
 	getGenerosityLeaderboard,
 	addLinkCreation,
+	getPopularityLeaderboard,
 } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
@@ -73,6 +74,7 @@ describe('raffle', () => {
 			password,
 			creatorAddress: wallet.address,
 			name: 'baobob',
+			amount: '1',
 			APIKey,
 			baseUrl: 'http://localhost:8000/add-link-creation',
 		})
