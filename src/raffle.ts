@@ -575,7 +575,7 @@ export async function getRaffleLeaderboard({
 
 export async function getGenerosityLeaderboard({
 	baseUrl = 'https://api.peanut.to/get-generosity-leaderboard'
-}: interfaces.IGetGenerosityLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
+}: interfaces.IGetLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
 		headers: {
@@ -596,7 +596,7 @@ export async function getGenerosityLeaderboard({
 
 export async function getPopularityLeaderboard({
 	baseUrl = 'https://api.peanut.to/get-popularity-leaderboard'
-}: interfaces.IGetGenerosityLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
+}: interfaces.IGetLeaderboard): Promise<interfaces.IPopularityLeaderboardEntry[]> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
 		headers: {
