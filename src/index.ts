@@ -2276,8 +2276,11 @@ async function makeGaslessDepositPayload({
 	const nonceWithPubKeyHex = ethers.utils.solidityKeccak256(['address', 'bytes32'], [pubKey20, randomNonceHex])
 
 	const nowSeconds = Math.floor(Date.now() / 1000)
-	const validAfter = BigNumber.from(nowSeconds)
-	const validBefore = validAfter.add(3600) // valid for 1 hour
+
+	// Make a large window of 2 days to ensure the validity
+	// during transaction simulation and execution
+	const validAfter = BigNumber.from(nowSeconds - 24 * 3600)
+	const validBefore = BigNumber.from(nowSeconds + 24 * 3600)
 
 	const payload: interfaces.IGaslessDepositPayload = {
 		chainId: linkDetails.chainId,
