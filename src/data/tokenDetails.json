@@ -10146,19 +10146,6 @@
 		]
 	},
 	{
-		"chainId": "534352",
-		"name": "Scroll",
-		"tokens": [
-			{
-				"address": "0x0000000000000000000000000000000000000000",
-				"name": "Ether",
-				"symbol": "ETH",
-				"decimals": 18,
-				"logoURI": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/scroll/info/logo.png"
-			}
-		]
-	},
-	{
 		"chainId": "5000",
 		"name": "Mantle",
 		"tokens": [
@@ -10329,6 +10316,159 @@
 				"symbol": "JOE",
 				"decimals": 18,
 				"logoURI": "https://assets.coingecko.com/coins/images/17569/thumb/JoeToken.png?1703732357"
+			}
+		]
+	},
+	{
+		"chainId": "534352",
+		"name": "Scroll",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Ether",
+				"symbol": "ETH",
+				"decimals": 18,
+				"logoURI": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/scroll/info/logo.png"
+			},
+			{
+				"address": "0x46ead9ad6bfa9986c53dde09abf929ac2a7d82c7",
+				"name": "ISSUAA",
+				"symbol": "ISS",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33324/thumb/ISSUAA_Logo2023_200x200px.png?1701437586"
+			},
+			{
+				"address": "0x3e6c99915803631d200441cdf6d84786912b0871",
+				"name": "Lendora Protocol",
+				"symbol": "LORA",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32854/thumb/200.png?1699664986"
+			},
+			{
+				"address": "0x0fc479e2f9b7310bfb1db606cf565dea6910eedc",
+				"name": "Papyrus Swap",
+				"symbol": "PAPYRUS",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32479/thumb/PapyrusLogo.png?1698286849"
+			},
+			{
+				"address": "0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4",
+				"name": "Bridged USD Coin  Scroll ",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/32611/thumb/USDC.png?1698733754"
+			},
+			{
+				"address": "0xf610a9dfb7c89644979b4a0f27063e9e7d7cda32",
+				"name": "Bridged Wrapped Lido Staked Ether  Scro",
+				"symbol": "WSTETH",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32615/thumb/wsteth.png?1698735772"
+			},
+			{
+				"address": "0x5300000000000000000000000000000000000004",
+				"name": "Bridged Wrapped Ether  Scroll ",
+				"symbol": "WETH",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32315/thumb/weth_%281%29.png?1697365181"
+			},
+			{
+				"address": "0x3c1bca5a656e69edcd0d4e36bebb3fcdaca60cf1",
+				"name": "Bridged Wrapped Bitcoin  Scroll ",
+				"symbol": "WBTC",
+				"decimals": 8,
+				"logoURI": "https://assets.coingecko.com/coins/images/32614/thumb/wrapped_bitcoin_wbtc.png?1698735124"
+			},
+			{
+				"address": "0x36f983124b027781216adc94c4d81ef4026ffcdd",
+				"name": "Scroll Doge",
+				"symbol": "ZKDOGE",
+				"decimals": 9,
+				"logoURI": "https://assets.coingecko.com/coins/images/32271/thumb/8d7453f7-340b-4327-9529-180572813a7a.jpeg?1697179075"
+			},
+			{
+				"address": "0xf55bec9cafdbe8730f096aa55dad6d22d44099df",
+				"name": "Bridged Tether  Scroll ",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/32610/thumb/usdt_%281%29.png?1698733524"
+			},
+			{
+				"address": "0xfec65bfb6e5bbcc9ab8ae98f62a8aab2ea51c495",
+				"name": "Perseid Finance",
+				"symbol": "PED",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32805/thumb/perseid.png?1704711269"
+			},
+			{
+				"address": "0xeb466342c4d449bc9f53a865d5cb90586f405215",
+				"name": "Bridged Axelar Wrapped USD Coin  Scroll",
+				"symbol": "AXLUSDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/32612/thumb/USDC.png?1698734090"
+			},
+			{
+				"address": "0x95a52ec1d60e74cd3eb002fe54a2c74b185a4c16",
+				"name": "Skydrome",
+				"symbol": "SKY",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33902/thumb/icon_200x200.png?1703237670"
+			},
+			{
+				"address": "0x9daea97fd467d704c583beda2454e3da27097b60",
+				"name": "Scrollswap Finance",
+				"symbol": "SF",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32269/thumb/h4lCoyvo_400x400.jpg?1697177957"
+			},
+			{
+				"address": "0x63e3c9c06120af5dca2788ecbb30b923e52d0180",
+				"name": "OmniKingdoms Gold",
+				"symbol": "OMKG",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32674/thumb/Avatar.png?1698911193"
+			},
+			{
+				"address": "0xdd6a49995ad38fe7409b5d5cb5539261bd1bc901",
+				"name": "Danjuan Scroll Cat",
+				"symbol": "CAT",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/34637/thumb/200x200.jpg?1705555969"
+			},
+			{
+				"address": "0x0a3bb08b3a15a19b4de82f8acfc862606fb69a2d",
+				"name": "iZUMi Bond USD",
+				"symbol": "IUSD",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/25388/thumb/iusd-logo-symbol-10k%E5%A4%A7%E5%B0%8F.png?1696524521"
+			},
+			{
+				"address": "0x60d01ec2d5e98ac51c8b4cf84dfcce98d527c747",
+				"name": "iZUMi Finance",
+				"symbol": "IZI",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/21791/thumb/izumi-logo-symbol.png?1696521144"
+			},
+			{
+				"address": "0xddeb23905f6987d5f786a93c00bbed3d97af1ccc",
+				"name": "PunkSwap",
+				"symbol": "PUNK",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32270/thumb/punk.jpg?1697178661"
+			},
+			{
+				"address": "0x2b1d36f5b61addaf7da7ebbd11b35fd8cfb0de31",
+				"name": "Interport Token",
+				"symbol": "ITP",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/28338/thumb/ITP_Logo_200.png?1696527344"
+			},
+			{
+				"address": "0x1467b62a6ae5cdcb10a6a8173cfe187dd2c5a136",
+				"name": "Symbiosis",
+				"symbol": "SIS",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/20805/thumb/SymbiosisFinance_logo-150x150.jpeg?1696520198"
 			}
 		]
 	}

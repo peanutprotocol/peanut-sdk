@@ -512,7 +512,7 @@ export interface IGetRaffleLeaderboard {
 	baseUrl?: string
 }
 
-export interface IGetGenerosityLeaderboard {
+export interface IGetLeaderboard {
 	baseUrl?: string
 }
 

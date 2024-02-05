@@ -29,223 +29,239 @@ const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY!
 const APIKey = process.env.PEANUT_DEV_API_KEY!
 
 describe('raffle', () => {
-	toggleVerbose(true)
+  toggleVerbose(true)
 
-	test('create a link', async () => {
-		const chainId = '11155111'
-		const provider = await getDefaultProvider(chainId)
-		const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+  test('create a link', async () => {
+    const chainId = '534352'
+    const provider = await getDefaultProvider(chainId)
+    const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
 
-		const password = await getRandomString()
-		const numberOfLinks = 3
-		const linkDetails: interfaces.IPeanutLinkDetails = {
-			chainId,
-			tokenAmount: 0.1,
-			tokenType: 0,
-			tokenAddress: constants.AddressZero,
-			tokenDecimals: 18,
-			baseUrl: 'https://red.peanut.to/packet',
-		}
-		const { unsignedTxs } = await prepareRaffleDepositTxs({
-			linkDetails,
-			numberOfLinks,
-			password,
-			userAddress: wallet.address,
-		})
+    const password = await getRandomString()
+    const numberOfLinks = 3
+    const linkDetails: interfaces.IPeanutLinkDetails = {
+      chainId,
+      tokenAmount: 0.1,
+      tokenDecimals: 6,
+      tokenAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
+      tokenType: 1,
+      baseUrl: 'https://red.peanut.to/packet',
+    }
+    const { unsignedTxs } = await prepareRaffleDepositTxs({
+      linkDetails,
+      numberOfLinks,
+      password,
+      userAddress: wallet.address,
+    })
 
-		console.log({ unsignedTxs })
+    console.log({ unsignedTxs })
 
-		let lastTxHash = ''
-		for (let i = 0; i < unsignedTxs.length; i++) {
-			const { tx, txHash } = await signAndSubmitTx({
-				structSigner: {
-					signer: wallet,
-				},
-				unsignedTx: unsignedTxs[i],
-			})
-			console.log('Submitted raffle tx with hash:', txHash)
-			lastTxHash = txHash
-			await tx.wait()
-		}
-		const link = await getRaffleLinkFromTx({
-			txHash: lastTxHash,
-			linkDetails,
-			numberOfLinks,
-			password,
-			creatorAddress: wallet.address,
-			name: 'baobob',
-			APIKey,
-			baseUrl: 'http://localhost:8000/add-link-creation',
-		})
-		console.log('Got the raffle link!', link)
-	}, 120000)
+    let lastTxHash = ''
+    for (let i = 0; i < unsignedTxs.length; i++) {
+      const { tx, txHash } = await signAndSubmitTx({
+        structSigner: {
+          signer: wallet,
+        },
+        unsignedTx: unsignedTxs[i]
+      })
+      console.log('Submitted raffle tx with hash:', txHash)
+      lastTxHash = txHash
+      await tx.wait()
+    }
+    const link = await getRaffleLinkFromTx({
+      txHash: lastTxHash,
+      linkDetails,
+      numberOfLinks,
+      password,
+      creatorAddress: wallet.address,
+      name: 'baobob',
+      APIKey,
+    })
+    console.log('Got the raffle link!', link)
+  }, 120000)
 
-	test('get raffle info', async () => {
-		const link = 'https://red.peanut.to/packet?c=11155111&v=v4.2&i=(130,3)#p=I0NbHnPrS5RC0giC'
-		const info = await getRaffleInfo({ link })
-		console.log('Raffle info!', info)
-	}, 120000)
+  test('get raffle info', async () => {
+    const link = ''
+    const info = await getRaffleInfo({ link })
+    console.log('Raffle info!', info)
+  }, 120000)
 
-	test('claim raffle link', async () => {
-		const link = 'https://red.peanut.to/packet?c=11155111&v=v4.2&i=(130,3)#p=I0NbHnPrS5RC0giC'
-		const recipientAddress = '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72'
-		console.log({ recipient: recipientAddress })
-		const claimInfo = await claimRaffleLink({
-			link,
-			APIKey,
-			recipientAddress,
-			recipientName: 'amobest',
-		})
-		console.log('Claimed a raffle slot!!', claimInfo)
-		const leaderboard = await getRaffleLeaderboard({
-			link,
-			APIKey,
-		})
-		console.log('Hooouray, leaderboard!', { leaderboard })
-	}, 120000)
+  test('claim raffle link', async () => {
+    const link = 'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
+    const recipientAddress = '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72'
+    console.log({ recipient: recipientAddress })
+    const claimInfo = await claimRaffleLink({
+      link,
+      APIKey,
+      recipientAddress,
+      recipientName: 'amobest'
+    })
+    console.log('Claimed a raffle slot!!', claimInfo)
+    const leaderboard = await getRaffleLeaderboard({
+      link,
+      APIKey,
+    })
+    console.log('Hooouray, leaderboard!', { leaderboard })
+  }, 120000)
 
-	test('is raffle active', async () => {
-		const link1 = 'https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=12345678'
-		const isActive1 = await isRaffleActive({ link: link1 })
-		console.log('Raffle 1 active?', isActive1)
-		expect(isActive1).toBe(false)
+  test('is raffle active', async () => {
+    const link1 = 'https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=12345678'
+    const isActive1 = await isRaffleActive({ link: link1 })
+    console.log('Raffle 1 active?', isActive1)
+    expect(isActive1).toBe(false)
 
-		const link2 = 'https://red.peanut.to/packet?c=11155111&v=v4.2&i=(130,3)#p=I0NbHnPrS5RC0giC'
-		const isActive2 = await isRaffleActive({ link: link2 })
-		console.log('Raffle 2 active?', isActive2)
-		expect(isActive2).toBe(true)
-	}, 120000)
+    const link2 = 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
+    const isActive2 = await isRaffleActive({ link: link2 })
+    console.log('Raffle 2 active?', isActive2)
+    expect(isActive2).toBe(true)
+  }, 120000)
 
-	test('generate amounts distribution', async () => {
-		const totalAmount = BigNumber.from(1e6)
-		const numberOfLinks = 101
-		const values = generateAmountsDistribution(totalAmount, numberOfLinks)
-		console.log(
-			'Values!!',
-			values.map((val) => val.toString())
-		)
-	}, 120000)
+  test('generate amounts distribution', async () => {
+    const totalAmount = BigNumber.from(1e6)
+    const numberOfLinks = 101
+    const values = generateAmountsDistribution(totalAmount, numberOfLinks)
+    console.log('Values!!', values.map((val) => val.toString()))
+  }, 120000)
 
-	// Smoke tests of raffle names to see that the sdk adapters work.
-	// Main testing happens in the api repository.
-	test('raffle names', async () => {
-		// randomise the password to make the link unique in every test
-		const p = await getRandomString()
-		const link = `https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=${p}`
+  // Smoke tests of raffle names to see that the sdk adapters work.
+  // Main testing happens in the api repository.
+  test('raffle names', async () => {
+    // randomise the password to make the link unique in every test
+    const p = await getRandomString()
+    const link = `https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=${p}`
 
-		const address1 = makeRandomAddress()
-		const address2 = makeRandomAddress()
-		const address3 = makeRandomAddress()
+    const address1 = makeRandomAddress()
+    const address2 = makeRandomAddress()
+    const address3 = makeRandomAddress()
 
-		await addUsername({
-			address: address1,
-			name: 'henlo',
-			link,
-			APIKey,
-		})
+    await addUsername({
+      address: address1,
+      name: 'henlo',
+      link,
+      APIKey,
+    })
 
-		const name = await getUsername({
-			address: address1,
-			link,
-			APIKey,
-		})
-		expect(name).toBe('henlo')
+    const name = await getUsername({
+      address: address1,
+      link,
+      APIKey,
+    })
+    expect(name).toBe('henlo')
 
-		await addLinkClaim({
-			claimerAddress: address2,
-			name: 'bye-bye',
-			depositIndex: 12,
-			amount: '0.05',
-			link,
-			APIKey,
-		})
+    await addLinkClaim({
+      claimerAddress: address2,
+      name: 'bye-bye',
+      depositIndex: 12,
+      amount: '0.05',
+      link,
+      APIKey,
+    })
 
-		await addLinkClaim({
-			claimerAddress: address3,
-			depositIndex: 13,
-			amount: '0.078',
-			link,
-			APIKey,
-		})
+    await addLinkClaim({
+      claimerAddress: address3,
+      depositIndex: 13,
+      amount: '0.078',
+      link,
+      APIKey,
+    })
 
-		const leaderboard = await getRaffleLeaderboard({
-			link,
-			APIKey,
-		})
-		expect(leaderboard).toEqual([
-			{
-				address: address3,
-				amount: '0.078',
-				name: null,
-			},
-			{
-				address: address2,
-				amount: '0.05',
-				name: 'bye-bye',
-			},
-		])
-	})
+    const leaderboard = await getRaffleLeaderboard({
+      link,
+      APIKey,
+    })
+    expect(leaderboard).toEqual([
+      {
+        address: address3,
+        amount: '0.078',
+        name: null,
+      },
+      {
+        address: address2,
+        amount: '0.05',
+        name: 'bye-bye',
+      },
+    ])
+  })
 
-	test('validateRaffleLink', () => {
-		// valid link, noting should be raised
-		validateRaffleLink({
-			link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
-		})
+  test('validateRaffleLink', () => {
+    // valid link, noting should be raised
+    validateRaffleLink({
+      link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
+    })
 
-		// password is missing
-		const f2 = () => {
-			validateRaffleLink({
-				link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42',
-			})
-		}
-		expect(f2).toThrow(interfaces.SDKStatus)
+    // password is missing
+    const f2 = () => {
+      validateRaffleLink({
+        link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42'
+      })
+    }
+    expect(f2).toThrow(interfaces.SDKStatus)
 
-		// deposit indices are not consistent
-		const f3 = () => {
-			validateRaffleLink({
-				link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,1001,40,41,42#p=12345678',
-			})
-		}
-		expect(f3).toThrow(interfaces.SDKStatus)
-	})
+    // deposit indices are not consistent
+    const f3 = () => {
+      validateRaffleLink({
+        link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,1001,40,41,42#p=12345678'
+      })
+    }
+    expect(f3).toThrow(interfaces.SDKStatus)
+  })
 
-	test('hasAddressParticipatedInRaffle', async () => {
-		const link =
-			'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
+  test('hasAddressParticipatedInRaffle', async () => {
+    const link = 'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
 
-		// Manually claimed this link for this address
-		const participated1 = await hasAddressParticipatedInRaffle({
-			address: '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72',
-			link,
-			APIKey,
-		})
-		expect(participated1).toBe(false)
+    // Manually claimed this link for this address
+    const participated1 = await hasAddressParticipatedInRaffle({
+      address: '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72',
+      link,
+      APIKey,
+    })
+    expect(participated1).toBe(true)
 
-		// New random address, so has to be false
-		const participated2 = await hasAddressParticipatedInRaffle({
-			address: makeRandomAddress(),
-			link,
-			APIKey,
-		})
-		expect(participated2).toBe(false)
-	})
+    // New random address, so has to be false
+    const participated2 = await hasAddressParticipatedInRaffle({
+      address: makeRandomAddress(),
+      link,
+      APIKey,
+    })
+    expect(participated2).toBe(false)
+  })
 
-	test('addLinkCreation', async () => {
-		const creatorAddress = '0x53a5746ab21b2F33A2a5990133Aa64d652F93f39'
-		await addLinkCreation({
-			amount: '12345',
-			APIKey,
-			creatorAddress,
-			name: 'boiii',
-			link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
-			baseUrl: 'http://localhost:8000/add-link-creation',
-		})
-	})
+  test('addLinkCreation', async () => {
+    const creatorAddress = '0x53a5746ab21b2F33A2a5990133Aa64d652F93f39'
+    await addLinkCreation({
+      amount: '12345',
+      APIKey,
+      creatorAddress,
+      name: 'boiii',
+      link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
+    })
+  })
 
-	test('getGenerosityLeaderboard', async () => {
-		const leaderboard = await getGenerosityLeaderboard({
-			baseUrl: 'http://localhost:8000/get-generosity-leaderboard',
-		})
-		console.log({ leaderboard })
-	})
+  test('getGenerosityLeaderboard', async () => {
+    const leaderboard = await getGenerosityLeaderboard({})
+    console.log({ leaderboard })
+  })
+
+  test('getPopularityLeaderboard', async () => {
+    const leaderboard = await getPopularityLeaderboard({})
+    console.log({ leaderboard })
+  })
+
+  test('bad password', async () => {
+    const link = 'https://red.peanut.to/packet?c=11155111&v=v4.2&i=180,181,182,183,184,185,186,187,188,189&t=ui#p=oJ0gRayKwakXx3KgFFFFFFF'
+    let raised = false
+    try {
+      await claimRaffleLink({
+        link,
+        APIKey,
+        recipientAddress: makeRandomAddress(),
+      })
+    } catch (error: any) {
+      console.log('Got error!', error)
+      const err: interfaces.SDKStatus = error
+      expect(err.code).toBe(interfaces.ERaffleErrorCodes.ERROR)
+      raised = true
+    }
+    expect(raised).toBe(true)
+  }, 120000)
 })
+
