@@ -354,9 +354,10 @@ export function toLowerCaseKeys(obj: any): any {
 }
 
 function isShortenedLink(link) {
-	const shortenedLinkRegex =
-		/^https?:\/\/[^\/]+\/[^?]*\?c=\d+&v=v\d+\.\d+&i=\(\d+,\d+\)(,\(\d+,\d+\))*#p=[A-Za-z0-9]+$/
-	return shortenedLinkRegex.test(link)
+	const url = new URL(link)
+	const i = url.searchParams.get('i')
+	const shortenedLinkRegex = /^\(\d+,\d+\)$/
+	return shortenedLinkRegex.test(i)
 }
 
 export function getLinksFromMultilink(link: string): string[] {
