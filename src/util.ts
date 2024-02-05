@@ -353,8 +353,19 @@ export function toLowerCaseKeys(obj: any): any {
 	return newObj
 }
 
-export function getLinksFromMultilink(link: string): string[] {
+export function isShortenedLink(link) {
 	const url = new URL(link)
+	const i = url.searchParams.get('i')
+	const shortenedLinkRegex = /^(\(\d+,\d+\))(,\(\d+,\d+\))*$/
+	return shortenedLinkRegex.test(i)
+}
+
+export function getLinksFromMultilink(link: string): string[] {
+	let _link = link
+	if (isShortenedLink(link)) {
+		_link = expandMultilink(link)
+	}
+	const url = new URL(_link)
 	const searchParams = new URLSearchParams(url.search)
 
 	// If there is a hash, treat the part after the hash as additional search parameters
@@ -452,7 +463,65 @@ export function createMultiLinkFromLinks(links: string[]): string {
 		hashString += `&${key}=${value}`
 	}
 
-	return url.toString()
+	const shortenedLink = shortenMultilink(url.toString())
+
+	return shortenedLink
+}
+
+export function shortenMultilink(link: string): string {
+	const url = new URL(link)
+	const params = new URLSearchParams(url.search)
+
+	const i = params.get('i')
+	if (!i) {
+		throw new Error('Error shortening the multilink')
+	}
+
+	const numbers = i.split(',').map((num) => parseInt(num, 10))
+	let grouped = []
+	let start = numbers[0]
+	let count = 1
+
+	for (let i = 1; i <= numbers.length; i++) {
+		if (numbers[i] === numbers[i - 1] + 1) {
+			count++
+		} else {
+			grouped.push(`(${start},${count})`)
+			start = numbers[i]
+			count = 1
+		}
+	}
+
+	params.set('i', grouped.join(','))
+	url.search = decodeURIComponent(params.toString())
+	return url.href
+}
+
+export function expandMultilink(link: string): string {
+	const url = new URL(link)
+	const params = new URLSearchParams(url.search)
+
+	const i = params.get('i')
+	if (!i) {
+		throw new Error('Error expanding the multilink')
+	}
+
+	const expandedIValues = []
+	const groupRegex = /\((\d+),(\d+)\)/g
+	let match
+
+	while ((match = groupRegex.exec(i)) !== null) {
+		const start = parseInt(match[1], 10)
+		const count = parseInt(match[2], 10)
+		for (let j = 0; j < count; j++) {
+			expandedIValues.push(start + j)
+		}
+	}
+
+	params.set('i', expandedIValues.join(','))
+	url.search = decodeURIComponent(params.toString())
+
+	return url.href
 }
 
 export function compareDeposits(deposit1: any, deposit2: any) {
