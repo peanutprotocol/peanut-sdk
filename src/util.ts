@@ -353,10 +353,10 @@ export function toLowerCaseKeys(obj: any): any {
 	return newObj
 }
 
-function isShortenedLink(link) {
+export function isShortenedLink(link) {
 	const url = new URL(link)
 	const i = url.searchParams.get('i')
-	const shortenedLinkRegex = /^\(\d+,\d+\)$/
+	const shortenedLinkRegex = /^(\(\d+,\d+\))(,\(\d+,\d+\))*$/
 	return shortenedLinkRegex.test(i)
 }
 
@@ -477,10 +477,7 @@ export function shortenMultilink(link: string): string {
 		throw new Error('Error shortening the multilink')
 	}
 
-	const numbers = i
-		.split(',')
-		.map((num) => parseInt(num, 10))
-		.sort((a, b) => a - b)
+	const numbers = i.split(',').map((num) => parseInt(num, 10))
 	let grouped = []
 	let start = numbers[0]
 	let count = 1
