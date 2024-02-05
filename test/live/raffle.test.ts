@@ -224,4 +224,22 @@ describe('raffle', () => {
     const leaderboard = await getPopularityLeaderboard({})
     console.log({ leaderboard })
   })
+
+  test('bad password', async () => {
+    const link = 'https://red.peanut.to/packet?c=11155111&v=v4.2&i=180,181,182,183,184,185,186,187,188,189&t=ui#p=oJ0gRayKwakXx3KgFFFFFFF'
+    let raised = false
+    try {
+      await claimRaffleLink({
+        link,
+        APIKey,
+        recipientAddress: makeRandomAddress(),
+      })
+    } catch (error: any) {
+      console.log('Got error!', error)
+      const err: interfaces.SDKStatus = error
+      expect(err.code).toBe(interfaces.ERaffleErrorCodes.ERROR)
+      raised = true
+    }
+    expect(raised).toBe(true)
+  }, 120000)
 })

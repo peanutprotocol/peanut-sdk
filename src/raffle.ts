@@ -375,6 +375,7 @@ export async function claimRaffleLink({
 		}
 
 		const slotIndexToClaim = Math.floor(Math.random() * 1e9) % unclaimedSlots.length
+		const slotToClaim = unclaimedSlots[slotIndexToClaim]
 		console.log(
 			`Attempting to claim slot ${slotIndexToClaim} out of total ${unclaimedSlots.length} unclaimed slots, slotlink: ${unclaimedSlots[slotIndexToClaim]._slotlink}`
 		)
@@ -382,29 +383,31 @@ export async function claimRaffleLink({
 		let response
 		try {
 			response = await claimLinkGasless({
-				link: unclaimedSlots[slotIndexToClaim]._slotlink,
+				link: slotToClaim._slotlink,
 				APIKey,
 				recipientAddress,
 			})
 		} catch (error: any) {
-			console.log('An error occurred while claiming a raffle slot, will retry claiming a different slot', error)
-			continue
-		}
-
-		if (response.error || !response.txHash) {
-			console.log(
-				'Got an error from the relayer while claiming a raffle slot, will retry claiming a different slot',
-				response.error
-			)
-			continue
+			const newRaffleInfo = await getRaffleInfo({ link, provider })
+			const updatedSlotInfo = newRaffleInfo.slotsDetails.find((slot) => slot._depositIndex === slotToClaim._depositIndex)
+			if (updatedSlotInfo.claimed) {
+				console.log(`Slot ${slotIndexToClaim} has already been claimed, will retry claiming a different slot`, error)
+				continue
+			} else {
+				console.log('An unexpected error occured while claiming a raffle slot!', error)
+				throw new interfaces.SDKStatus(
+					interfaces.ERaffleErrorCodes.ERROR,
+					'An unexpected error occured while claiming a raffle slot!'
+				)
+			}
 		}
 
 		try {
 			await addLinkClaim({
 				claimerAddress: recipientAddress,
 				name: recipientName,
-				amount: unclaimedSlots[slotIndexToClaim].amount,
-				depositIndex: unclaimedSlots[slotIndexToClaim]._depositIndex,
+				amount: slotToClaim.amount,
+				depositIndex: slotToClaim._depositIndex,
 				link,
 				APIKey,
 				baseUrl,
