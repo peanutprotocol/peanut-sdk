@@ -524,6 +524,43 @@ export function expandMultilink(link: string): string {
 	return url.href
 }
 
+export function combineRaffleLink(links: string[]): string {
+	let firstCValue = null
+	let firstPValue = null
+	let firstVValue = null
+
+	for (let url of links) {
+		const urlObj = new URL(url)
+		const cValue = urlObj.searchParams.get('c')
+		const vValue = urlObj.searchParams.get('v')
+		const fragment = urlObj.hash.substring(1)
+		const pValue = new URLSearchParams(fragment).get('p')
+
+		if (firstCValue === null) {
+			firstCValue = cValue
+		} else if (firstCValue !== cValue) {
+			throw new Error("Inconsistent 'c' parameter values found.")
+		}
+
+		if (firstPValue === null) {
+			firstPValue = pValue
+		} else if (firstPValue !== pValue) {
+			throw new Error("Inconsistent 'p' parameter values found.")
+		}
+
+		if (firstVValue === null) {
+			firstVValue = vValue
+		} else if (firstVValue !== vValue) {
+			throw new Error("Inconsistent 'v' parameter values found.")
+		}
+	}
+
+	const expandedLinks = links.map((link) => expandMultilink(link))
+	const combinedLink = createMultiLinkFromLinks(expandedLinks)
+
+	return combinedLink
+}
+
 export function compareDeposits(deposit1: any, deposit2: any) {
 	if (
 		deposit1.pubKey20 == deposit2.pubKey20 &&
