@@ -550,6 +550,7 @@ export enum EPrepareCreateTxsStatusCodes {
 export enum ESignAndSubmitTx {
 	ERROR_BROADCASTING_TX,
 	ERROR_SETTING_FEE_OPTIONS,
+	ERROR_INSUFFICIENT_NATIVE_TOKEN,
 }
 
 export enum EGetLinkFromTxStatusCodes {
