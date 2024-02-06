@@ -515,8 +515,23 @@ async function setFeeOptions({
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
 	} else if (unsignedTx) {
-		const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(unsignedTx))
-		txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
+		try {
+			const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(unsignedTx))
+			txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
+		} catch (error: any) {
+			const errLower = String(error).toLowerCase()
+			if (
+				errLower.includes('insufficient funds') ||
+				errLower.includes('insufficient_funds') ||
+				errLower.includes('gas required exceeds allowance')
+			) {
+				throw new interfaces.SDKStatus(
+					interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN,
+				)
+			}
+			// implicit else
+			throw error
+		}
 	}
 	config.verbose && console.log('checking if eip1559 is supported...')
 
@@ -877,7 +892,10 @@ async function signAndSubmitTx({
 			maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
 			gasLimit: structSigner.gasLimit,
 		})
-	} catch (error) {
+	} catch (error: any) {
+		if (error instanceof interfaces.SDKStatus) throw error // propagate
+
+		// else throw a more generic error
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
 			'Error setting the fee options',
@@ -895,6 +913,17 @@ async function signAndSubmitTx({
 		tx = await structSigner.signer.sendTransaction(_unsignedTx)
 		config.verbose && console.log('broadcasted tx...')
 	} catch (error) {
+		const errLower = String(error).toLowerCase()
+		if (
+			errLower.includes('insufficient funds') ||
+			errLower.includes('insufficient_funds') ||
+			errLower.includes('gas required exceeds allowance')
+		) {
+			throw new interfaces.SDKStatus(
+				interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN,
+			)
+		}
+
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_BROADCASTING_TX,
 			error,
@@ -1287,6 +1316,9 @@ async function claimLinkSender({
 			gasLimit: structSigner.gasLimit,
 		})
 	} catch (error) {
+		if (error instanceof interfaces.SDKStatus) throw error // propagate
+
+		// else throw a more generic error
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
 			'Error setting the fee options',
