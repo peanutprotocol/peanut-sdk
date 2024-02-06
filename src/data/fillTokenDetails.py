@@ -64,35 +64,60 @@ def main():
     with open("chainDetails.json", "r") as f:
         chain_details = json.load(f)
 
-    # Load tokenDetails.json if it exists
-    if os.path.exists("tokenDetails.json"):
+    # Initialize or load tokenDetails.json
+    try:
         with open("tokenDetails.json", "r") as f:
             token_details = json.load(f)
-    else:
+    except FileNotFoundError:
         token_details = []
+
+    # Load manual token details
+    try:
+        with open("tokenDetailsManual.json", "r") as f:
+            manual_token_details = json.load(f)
+    except FileNotFoundError:
+        manual_token_details = []
 
     # Fetch the mapping from chainId to CoinGecko ID
     chain_id_to_coingecko_id = fetch_coingecko_id_to_chain_id_mapping()
 
-    # Initialize tokenDetails list and stats
+    # Initialize stats
     total_tokens = 0
     total_errors = 0
     chains_fetched = 0
 
-    # For each platform, fetch tokens if it's in contracts.json
+    # For each platform in chainDetails, ensure it exists in tokenDetails
     for chain_id, details in chain_details.items():
-        # Only fetch tokens if chain_id is not already in tokenDetails.json
-        if any(detail["chainId"] == chain_id for detail in token_details):
-            user_input = input(
-                f"Chain id {chain_id} already exists in tokenDetails.json. Overwrite? (y/n) "
-            )
-            if user_input.lower() != "y":
-                continue
-
-        print(f"Fetching tokens for chainId {chain_id}...")
+        print(f"Processing tokens for chainId {chain_id}...")
         coingecko_id = chain_id_to_coingecko_id.get(int(chain_id))
         tokens = []
         if coingecko_id:
+            # Check if the chainId already has tokens fetched
+            existing_tokens = next(
+                (detail for detail in token_details if detail["chainId"] == chain_id),
+                None,
+            )
+            if existing_tokens and existing_tokens.get("tokens"):
+                user_input = (
+                    input(
+                        f"Tokens already fetched for chainId {chain_id}. Refetch? (y/n): "
+                    )
+                    .strip()
+                    .lower()
+                )
+                if user_input != "y":
+                    print(f"Skipping refetch for chainId {chain_id}.")
+                    # Update stats for already fetched tokens
+                    total_tokens += len(existing_tokens["tokens"])
+                    incomplete_tokens = [
+                        token for token in existing_tokens["tokens"]
+                        if not all(
+                            key in token
+                            for key in ["address", "decimals", "name", "symbol", "logoURI"]
+                        )
+                    ]
+                    total_errors += len(incomplete_tokens)
+                    continue
             tokens = fetch_tokens_for_platform(coingecko_id)
             # wait for 1 second to avoid rate limit
             time.sleep(1)
@@ -110,15 +135,13 @@ def main():
             ]
             total_errors += len(tokens) - len(complete_tokens)
         else:
-            print(f"Warning: No CoinGecko ID found for chainId {chain_id}. Skipping.")
-            complete_tokens = (
-                []
-            )  # No tokens could be fetched, so initialize an empty list
+            print(f"Warning: No CoinGecko ID found for chainId {chain_id}.")
+            complete_tokens = []
 
         # Add native token first in the list
-        logoURI = details.get("icon").get("url", "")
+        logoURI = details.get("icon", {}).get("url", "")
         if logoURI.startswith("ipfs://"):
-            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
+            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://"):]
         native_token = {
             "address": "0x0000000000000000000000000000000000000000",
             "name": details["nativeCurrency"]["name"],
@@ -128,24 +151,64 @@ def main():
         }
         complete_tokens.insert(0, native_token)
 
+        # Construct platform data for this chain
         platform_data = {
             "chainId": chain_id,
             "name": details.get("name", ""),
             "tokens": complete_tokens,
         }
-        token_details.append(platform_data)
+
+        # Update or add the platform data in tokenDetails
+        existing_index = next(
+            (
+                i
+                for i, detail in enumerate(token_details)
+                if detail["chainId"] == chain_id
+            ),
+            None,
+        )
+        if existing_index is not None:
+            token_details[existing_index] = platform_data
+        else:
+            token_details.append(platform_data)
+
+    # Merge manual tokens into tokenDetails
+    def merge_manual_tokens(token_details, manual_token_details):
+        for manual_entry in manual_token_details:
+            chain_id = manual_entry["chainId"]
+            existing_entry_index = next(
+                (i for i, detail in enumerate(token_details) if detail["chainId"] == chain_id),
+                None
+            )
+            if existing_entry_index is not None:
+                # Merge tokens if chainId exists
+                existing_tokens = token_details[existing_entry_index]["tokens"]
+                manual_tokens = manual_entry["tokens"]
+                # This simplistic approach adds manual tokens, replacing any existing ones with the same address
+                existing_tokens_dict = {token["address"]: token for token in existing_tokens}
+                for manual_token in manual_tokens:
+                    existing_tokens_dict[manual_token["address"]] = manual_token
+                token_details[existing_entry_index]["tokens"] = list(existing_tokens_dict.values())
+            else:
+                # Add new chainId entry if it doesn't exist
+                token_details.append(manual_entry)
+
+    merge_manual_tokens(token_details, manual_token_details)
+
+    # Remove entries from tokenDetails that are not in chainDetails
+    token_details = [
+        detail for detail in token_details if detail["chainId"] in chain_details
+    ]
 
     # Save to tokenDetails.json
     with open("tokenDetails.json", "w") as f:
         json.dump(token_details, f, indent="\t")
-
-    # Print stats
     print(f"Total chains fetched: {chains_fetched}")
+    print(f"Total chains actually stored: {len(token_details)}")
     print(f"Total tokens recorded: {total_tokens}")
     print(f"Total tokens with complete data: {total_tokens - total_errors}")
     print(f"Total tokens with missing data: {total_errors}")
-
-    # assert that chainDetails.json and tokenDetails.json have the same number of chains
+    # Assert that chainDetails.json and tokenDetails.json have the same number of chains
     assert len(chain_details) == len(
         token_details
     ), "chainDetails.json and tokenDetails.json have different number of chains"
