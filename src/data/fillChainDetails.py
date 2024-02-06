@@ -64,10 +64,7 @@ def get_contracts():
 def get_chain_ids(contracts):
     chain_ids = list(contracts.keys())
     # filter out all the chain ids that don't have a contract version of 3 or higher
-    return [
-        chain_id
-        for chain_id in chain_ids
-    ]
+    return [chain_id for chain_id in chain_ids]
 
 
 def get_chain_details(chain_id: int):
@@ -161,6 +158,19 @@ def main():
     else:
         chain_details = {}
 
+    # New code: Prompt to remove chain details not in contracts.json
+    existing_chain_ids = list(chain_details.keys())
+    for chain_id in existing_chain_ids:
+        if chain_id not in contracts:
+            user_input = input(
+                f"Chain id {chain_id} is not in contracts.json anymore. Remove from chainDetails.json? (y/n) "
+            )
+            if user_input.lower() == "y":
+                del chain_details[chain_id]
+                print(f"Removed chain id {chain_id} from chainDetails.json.")
+            else:
+                print(f"Kept chain id {chain_id} in chainDetails.json.")
+
     for chain_id in chain_ids:
         # Only fetch details if chain_id is not already in chainDetails.json
         if chain_id in chain_details:
@@ -185,13 +195,13 @@ def main():
         if chain_id in chain_details:
             # Add newly fetched fields that don't yet exist
             # in the current entry in chain_details
-            new_details = { **details, **chain_details[chain_id] }
+            new_details = {**details, **chain_details[chain_id]}
 
             # and update a few specific fields
-            new_details['rpc'] = details['rpc']
-            new_details['faucets'] = details['faucets']
-            new_details['explorers'] = details['explorers']
-            new_details['infoURL'] = details['infoURL']
+            new_details["rpc"] = details["rpc"]
+            new_details["faucets"] = details["faucets"]
+            new_details["explorers"] = details["explorers"]
+            new_details["infoURL"] = details["infoURL"]
 
             chain_details[chain_id] = new_details
             continue
@@ -207,8 +217,6 @@ def main():
             possible_chain_names.append(details["shortName"])
         if details.get("name"):
             possible_chain_names.append(details["name"])
-            # also split the name by spaces and add each word to the list
-            # possible_chain_names.extend(details["name"].split(" "))
         if details.get("chain"):
             possible_chain_names.append(details["chain"])
         possible_chain_names.extend([name.lower() for name in possible_chain_names])

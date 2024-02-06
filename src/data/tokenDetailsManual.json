@@ -1,0 +1,26 @@
+[
+	{
+		"chainId": "5000",
+		"tokens": [
+			{
+				"address": "0x3390108e913824b8ead638444cc52b9abdf63798",
+				"name": "Bella",
+				"symbol": "BEL",
+				"decimals": 18,
+				"logoURI": "https://token-list.mantle.xyz/data/Bella/logo.svg"
+			}
+		]
+	},
+	{
+		"chainId": "5001",
+		"tokens": [
+			{
+				"address": "0x491FD73b7144371c04154A2a39FE5270C2E6A96A",
+				"name": "FLOKI",
+				"symbol": "FLOKI",
+				"decimals": 9,
+				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
+			}
+		]
+	}
+]
