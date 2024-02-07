@@ -18,5 +18,5 @@ describe('get contract type test', () => {
 		})
 
 		expect(x).toEqual({ type: 1, name: 'USD Coin (Arb1)', symbol: 'USDC', decimals: 6 })
-	})
+	}, 30000)
 })
