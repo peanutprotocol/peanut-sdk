@@ -404,6 +404,27 @@ export function createMultiLinkFromLinks(links: string[]): string {
 	if (links.length === 0) {
 		throw new Error('No links provided')
 	}
+	let firstPValue = null
+	let firstVValue = null
+
+	for (let url of links) {
+		const urlObj = new URL(url)
+		const vValue = urlObj.searchParams.get('v')
+		const fragment = urlObj.hash.substring(1)
+		const pValue = new URLSearchParams(fragment).get('p')
+
+		if (firstPValue === null) {
+			firstPValue = pValue
+		} else if (firstPValue !== pValue) {
+			throw new Error("Inconsistent 'p' parameter values found.")
+		}
+
+		if (firstVValue === null) {
+			firstVValue = vValue
+		} else if (firstVValue !== vValue) {
+			throw new Error("Inconsistent 'v' parameter values found.")
+		}
+	}
 
 	const cParams: string[] = []
 	const iParams: string[] = []
@@ -523,38 +544,12 @@ export function expandMultilink(link: string): string {
 
 	return url.href
 }
-
+/**
+ * Cobmines multiple raffle links into one
+ * @param links array of raffle links
+ * @returns 1 raffle link
+ */
 export function combineRaffleLink(links: string[]): string {
-	let firstCValue = null
-	let firstPValue = null
-	let firstVValue = null
-
-	for (let url of links) {
-		const urlObj = new URL(url)
-		const cValue = urlObj.searchParams.get('c')
-		const vValue = urlObj.searchParams.get('v')
-		const fragment = urlObj.hash.substring(1)
-		const pValue = new URLSearchParams(fragment).get('p')
-
-		if (firstCValue === null) {
-			firstCValue = cValue
-		} else if (firstCValue !== cValue) {
-			throw new Error("Inconsistent 'c' parameter values found.")
-		}
-
-		if (firstPValue === null) {
-			firstPValue = pValue
-		} else if (firstPValue !== pValue) {
-			throw new Error("Inconsistent 'p' parameter values found.")
-		}
-
-		if (firstVValue === null) {
-			firstVValue = vValue
-		} else if (firstVValue !== vValue) {
-			throw new Error("Inconsistent 'v' parameter values found.")
-		}
-	}
-
 	const expandedLinks = links.map((link) => expandMultilink(link))
 	const combinedLink = createMultiLinkFromLinks(expandedLinks)
 

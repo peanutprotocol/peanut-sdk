@@ -231,43 +231,22 @@ describe('combine multilinks tests', () => {
 			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456dd',
 		]
 
-		try {
+		expect(() => {
 			peanut.combineRaffleLink(links)
-		} catch (error) {
-			console.error(error)
-			expect(error).toBeDefined()
-		}
+		}).toThrow("Inconsistent 'p' parameter values found.")
 	})
 
 	it('should throw an error if the password is not the same between multiple links', () => {
 		const links = [
 			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
-			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456dd',
-			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456ee',
-			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456dd',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345d678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=1234s5678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456r78',
 		]
 
-		try {
+		expect(() => {
 			peanut.combineRaffleLink(links)
-		} catch (error) {
-			console.error(error)
-			expect(error).toBeDefined()
-		}
-	})
-
-	it('should throw an error if the chainids are not the same between multiple links', () => {
-		const links = [
-			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
-			'https://peanut.to/claim?c=137&v=v4.2&i=(55,100)&t=ui#p=12345678',
-			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
-			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
-		]
-		try {
-			peanut.combineRaffleLink(links)
-		} catch (error) {
-			console.error(error)
-			expect(error).toBeDefined()
-		}
+		}).toThrow("Inconsistent 'p' parameter values found.")
 	})
 
 	it('should throw an error if the contract versions are not the same between multiple links', () => {
@@ -277,11 +256,8 @@ describe('combine multilinks tests', () => {
 			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
 			'https://peanut.to/claim?c=11155111&v=v4&i=(55,100)&t=ui#p=12345678',
 		]
-		try {
+		expect(() => {
 			peanut.combineRaffleLink(links)
-		} catch (error) {
-			console.error(error)
-			expect(error).toBeDefined()
-		}
+		}).toThrow("Inconsistent 'v' parameter values found.")
 	})
 })
