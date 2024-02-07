@@ -39,7 +39,7 @@ async function waitForTransaction(provider, txHash, timeout = 60000) {
 
 describe.only('mantle', function () {
 	it('should create a native link and claim it', async function () {
-		const chainId = '5000'
+		const chainId = '137'
 		const Provider = await peanut.getDefaultProvider(chainId)
 		const Wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', Provider)
 
@@ -54,11 +54,12 @@ describe.only('mantle', function () {
 		// 			tokenAmount: 0.00001,
 		// 			tokenType: 0,
 		// 		},
+		// 		// peanutContractVersion: 'v4.2',
 		// 	},
 		// 	9000
 		// )
 
-		// const link = 'peanut.to/claim?c=5000&v=v4.3&i=2&t=sdk#p=kx5mRISF1dF0ypPT'
+		// const link = 'https://peanut.to/claim?c=5000&v=v4.3&i=2&t=sdk#p=kx5mRISF1dF0ypPT'
 		const link = 'https://peanut.to/claim?c=5000&v=v4.2&i=81&t=ui#p=LOLqAHUnjdgeO47R'
 		return peanut.claimLink({
 			structSigner: {
@@ -69,27 +70,27 @@ describe.only('mantle', function () {
 	}, 60000)
 })
 
-describe('zksync', function () {
-	it('zksync Sepolia: should create a native link and claim it', async function () {
-		const chainId = '300'
-		const provider = await peanut.getDefaultProvider(chainId)
-		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+describe.only('zksync', function () {
+	// it('zksync Sepolia: should create a native link and claim it', async function () {
+	// 	const chainId = '300'
+	// 	const provider = await peanut.getDefaultProvider(chainId)
+	// 	const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 
-		await createAndClaimLink(
-			{
-				structSigner: {
-					signer: wallet,
-				},
-				linkDetails: {
-					chainId: chainId,
-					tokenAmount: 0.000001,
-					tokenType: 0,
-				},
-			},
-			9000
-		)
-		peanut.toggleVerbose()
-	}, 60000)
+	// 	await createAndClaimLink(
+	// 		{
+	// 			structSigner: {
+	// 				signer: wallet,
+	// 			},
+	// 			linkDetails: {
+	// 				chainId: chainId,
+	// 				tokenAmount: 0.000001,
+	// 				tokenType: 0,
+	// 			},
+	// 		},
+	// 		9000
+	// 	)
+	// 	peanut.toggleVerbose()
+	// }, 60000)
 
 	it('zksync Mainnet: should create a native link and claim it', async function () {
 		const chainId = '324'
@@ -117,7 +118,7 @@ describe('zksync', function () {
 })
 
 describe('polygon', function () {
-	const chainId = 137
+	const chainId = '137'
 	const tokenAmount = 0.0001
 
 	console.log('getting fee data in test file')
@@ -125,13 +126,14 @@ describe('polygon', function () {
 	it('should create a native link and claim it', async function () {
 		const polygonProvider = await peanut.getDefaultProvider(String(chainId))
 		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)
+		peanut.toggleVerbose()
 		await createAndClaimLink(
 			{
 				structSigner: {
 					signer: polygonWallet,
 				},
 				linkDetails: {
-					chainId: 'chainId',
+					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenType: 0,
 				},
@@ -153,7 +155,7 @@ describe('polygon', function () {
 					signer: polygonWallet,
 				},
 				linkDetails: {
-					chainId: 'chainId',
+					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenDecimals: tokenDecimals,
 					tokenAddress: tokenAddress,

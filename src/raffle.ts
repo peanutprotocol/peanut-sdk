@@ -82,13 +82,12 @@ export async function prepareRaffleDepositTxs({
 	}
 
 	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = 'v4.2'
-	const batcherContractVersion = 'Bv4.2'
+	const peanutContractVersion = 'v4.3'
+	const batcherContractVersion = 'Bv4.3'
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
 	}
-	
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
@@ -156,7 +155,7 @@ export async function getRaffleLinkFromTx({
 		linkDetails,
 		txHash,
 		passwords: Array(numberOfLinks).fill(password),
-		provider
+		provider,
 	})
 	console.log('Links!!', links)
 
@@ -174,7 +173,7 @@ export async function getRaffleLinkFromTx({
 	} catch (error: any) {
 		console.error(
 			'Bad that we got an error from the events api, but not stopping the entire link creation because of this',
-			error,
+			error
 		)
 	}
 
@@ -195,30 +194,34 @@ export function validateRaffleLink({ link }: interfaces.IValidateRaffleLink) {
 	const password = linksParams[0].password
 	const trackId = linksParams[0].trackId
 
-	if (chainId === '' || contractVersion === '' || password === '') throw new interfaces.SDKStatus(
-		interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-		`chainId, contractVersion or password is empty for raffle link ${link}`
-	)
+	if (chainId === '' || contractVersion === '' || password === '')
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`chainId, contractVersion or password is empty for raffle link ${link}`
+		)
 
 	linksParams.forEach((params) => {
-		if ( // must be the same for all links
+		if (
+			// must be the same for all links
 			params.chainId !== chainId ||
 			params.contractVersion !== contractVersion ||
 			params.password !== password ||
 			params.trackId !== trackId
-		) throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-			`chainId, contractVersion, password or trackId is not consistent for raffle link ${link}`
 		)
+			throw new interfaces.SDKStatus(
+				interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
+				`chainId, contractVersion, password or trackId is not consistent for raffle link ${link}`
+			)
 	})
 
 	// deposit indices must be sequential
 	let prevDepositIndex = linksParams[0].depositIdx
 	linksParams.slice(1).forEach((params) => {
-		if (params.depositIdx !== prevDepositIndex + 1) throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-			`deposit indices are not sequential for raffle link ${link}`
-		)
+		if (params.depositIdx !== prevDepositIndex + 1)
+			throw new interfaces.SDKStatus(
+				interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
+				`deposit indices are not sequential for raffle link ${link}`
+			)
 		prevDepositIndex = params.depositIdx
 	})
 
@@ -233,7 +236,7 @@ export async function hasAddressParticipatedInRaffle({
 	address,
 	link,
 	APIKey,
-	baseUrl
+	baseUrl,
 }: interfaces.IIsAddressEligible): Promise<boolean> {
 	const leaderboard = await getRaffleLeaderboard({
 		link,
@@ -250,7 +253,12 @@ export async function hasAddressParticipatedInRaffle({
 	return false
 }
 
-export async function getRaffleInfo({ link, provider, APIKey, baseUrl }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
+export async function getRaffleInfo({
+	link,
+	provider,
+	APIKey,
+	baseUrl,
+}: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
 	const links = getLinksFromMultilink(link)
 
 	const linksParams: interfaces.ILinkParams[] = []
@@ -261,10 +269,10 @@ export async function getRaffleInfo({ link, provider, APIKey, baseUrl }: interfa
 	const depositIndices: number[] = []
 	linksParams.forEach((params) => depositIndices.push(params.depositIdx))
 
-	if (peanutVersion !== 'v4.2') {
+	if (peanutVersion !== 'v4.3') {
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'Raffles only work with peanut contract v4.2'
+			'Raffles only work with peanut contract v4.3'
 		)
 	}
 
@@ -389,9 +397,14 @@ export async function claimRaffleLink({
 			})
 		} catch (error: any) {
 			const newRaffleInfo = await getRaffleInfo({ link, provider })
-			const updatedSlotInfo = newRaffleInfo.slotsDetails.find((slot) => slot._depositIndex === slotToClaim._depositIndex)
+			const updatedSlotInfo = newRaffleInfo.slotsDetails.find(
+				(slot) => slot._depositIndex === slotToClaim._depositIndex
+			)
 			if (updatedSlotInfo.claimed) {
-				console.log(`Slot ${slotIndexToClaim} has already been claimed, will retry claiming a different slot`, error)
+				console.log(
+					`Slot ${slotIndexToClaim} has already been claimed, will retry claiming a different slot`,
+					error
+				)
 				continue
 			} else {
 				console.log('An unexpected error occured while claiming a raffle slot!', error)
@@ -415,7 +428,7 @@ export async function claimRaffleLink({
 		} catch (error: any) {
 			console.error(
 				'Bad that we got an error from the events api, but not stopping the entire link claim because of this',
-				error,
+				error
 			)
 		}
 
@@ -436,7 +449,7 @@ export async function addUsername({
 	name,
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/add-username'
+	baseUrl = 'https://api.peanut.to/add-username',
 }: interfaces.IAddUsername) {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
@@ -462,7 +475,7 @@ export async function getUsername({
 	address,
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/get-username'
+	baseUrl = 'https://api.peanut.to/get-username',
 }: interfaces.IGetUsername): Promise<string | null> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
@@ -497,7 +510,7 @@ export async function addLinkClaim({
 	amount,
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/add-link-claim'
+	baseUrl = 'https://api.peanut.to/add-link-claim',
 }: interfaces.IAddLinkClaim) {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
@@ -527,7 +540,7 @@ export async function addLinkCreation({
 	amount,
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/add-link-creation'
+	baseUrl = 'https://api.peanut.to/add-link-creation',
 }: interfaces.IAddLinkCreation) {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
@@ -553,7 +566,7 @@ export async function addLinkCreation({
 export async function getRaffleLeaderboard({
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/get-raffle-leaderboard'
+	baseUrl = 'https://api.peanut.to/get-raffle-leaderboard',
 }: interfaces.IGetRaffleLeaderboard): Promise<interfaces.IRaffleLeaderboardEntry[]> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
@@ -577,7 +590,7 @@ export async function getRaffleLeaderboard({
 }
 
 export async function getGenerosityLeaderboard({
-	baseUrl = 'https://api.peanut.to/get-generosity-leaderboard'
+	baseUrl = 'https://api.peanut.to/get-generosity-leaderboard',
 }: interfaces.IGetLeaderboard): Promise<interfaces.IGenerosityLeaderboardEntry[]> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',
@@ -598,7 +611,7 @@ export async function getGenerosityLeaderboard({
 }
 
 export async function getPopularityLeaderboard({
-	baseUrl = 'https://api.peanut.to/get-popularity-leaderboard'
+	baseUrl = 'https://api.peanut.to/get-popularity-leaderboard',
 }: interfaces.IGetLeaderboard): Promise<interfaces.IPopularityLeaderboardEntry[]> {
 	const res = await fetch(baseUrl, {
 		method: 'POST',

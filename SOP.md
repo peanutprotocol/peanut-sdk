@@ -20,3 +20,10 @@ EVM:
 -   update contracts.json (copied from peanut-contracts repo)
 -   update data.ts exports, other imports
 -   update LATEST_CONTRACT_VERSION ... in data ts.
+-   update signWithdrawalMessage
+-   update eip712domains.ts
+-   update createClaimXChainPayload
+-   update getLinkDetails
+-   update prepareRaffleDepositTxs
+-   getRaffleInfo +++++
+-   just CTRL+F for 'v4.2' or 'v4.3'
