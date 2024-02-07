@@ -1285,13 +1285,15 @@ async function claimLink({
 		txOptions,
 		provider: signer.provider,
 	})
-	txOptions = { ...txOptions, ...claimParams }
+
+	const txOptions2 = { ...txOptions, ...claimParams }
 
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
-	config.verbose && console.log('Full tx:', txOptions)
+	config.verbose && console.log('Full tx:', txOptions2)
+	config.verbose && console.log('Full tx:', claimParams, txOptions)
 
 	// withdraw the deposit
-	const tx = await contract.withdrawDeposit(txOptions)
+	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
 	console.log('submitted tx: ', tx.hash, ' now waiting for receipt...')
 	const txReceipt = await tx.wait()
 
@@ -1427,7 +1429,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (contractVersion !== 'v4.2') {
+	if (contractVersion !== 'v4.2' && contractVersion !== 'v4.3') {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1608,7 +1610,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (['v4', 'v4.2'].includes(contractVersion)) {
+	if (['v4', 'v4.2', 'v4.3'].includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2102,8 +2104,8 @@ function getLatestContractVersion({
 	experimental?: boolean
 }): string {
 	try {
+		config.verbose && console.log('getting LatestContractVersion:', chainId, type, experimental)
 		const data = PEANUT_CONTRACTS
-
 		const chainData = data[chainId as unknown as keyof typeof data]
 
 		// Filter keys starting with "v" or "Bv" based on type
@@ -2124,6 +2126,7 @@ function getLatestContractVersion({
 				return (partsB[1] || 0) - (partsA[1] || 0)
 			})
 
+		config.verbose && console.log('Contract Versions found:', versions)
 		// Adjust the filtering logic based on the experimental flag and contract version variables
 		if (!experimental && type === 'normal') {
 			if (!versions.includes(LATEST_STABLE_CONTRACT_VERSION)) {
@@ -2157,7 +2160,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!['v4', 'v4.2'].includes(peanutContractVersion)) {
+	if (!['v4', 'v4.2', 'v4.3'].includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}
