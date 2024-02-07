@@ -573,6 +573,7 @@ export enum EXChainStatusCodes {
 }
 export enum EGenericErrorCodes {
 	GENERIC_ERROR,
+	ERROR_UNSUPPORTED_CHAIN,
 	// Add more generic error codes here if needed
 }
 

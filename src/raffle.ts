@@ -81,6 +81,20 @@ export async function prepareRaffleDepositTxs({
 		}
 	}
 
+	if (linkDetails.tokenAmount === 0) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Amount must be greater than zero in prepareRaffleDepositTxs'
+		)
+	}
+
+	if (numberOfLinks < 2) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'numberOfLinks must be at least 2 in prepareRaffleDepositTxs'
+		)
+	}
+
 	// For simplicity doing raffles always on these contracts
 	const peanutContractVersion = 'v4.2'
 	const batcherContractVersion = 'Bv4.2'
