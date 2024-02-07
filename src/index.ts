@@ -24,8 +24,10 @@ import {
 	TOKEN_TYPES,
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_ABI_V4_2,
+	PEANUT_ABI_V4_3,
 	FALLBACK_CONTRACT_VERSION,
 	PEANUT_BATCHER_ABI_V4_2,
+	PEANUT_BATCHER_ABI_V4_3,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -232,23 +234,33 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 
 	// Determine which ABI version to use based on the version provided
 	config.verbose && console.log('finding contract for ', 'version', version, 'chainId', chainId)
-	let PEANUT_ABI
+	// TODO: this code is annoying to update
+	let CONTRACT_ABI: any
 	switch (version) {
 		case 'v4':
-			PEANUT_ABI = PEANUT_ABI_V4
+			CONTRACT_ABI = PEANUT_ABI_V4
 			break
 		case 'v4.2':
-			PEANUT_ABI = PEANUT_ABI_V4_2
+			CONTRACT_ABI = PEANUT_ABI_V4_2
+			break
+		case 'v4.3':
+			CONTRACT_ABI = PEANUT_ABI_V4_3
 			break
 		case 'Bv4':
-			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4
+			break
+		case 'Bv4.3':
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_3
 			break
 		case 'Bv4.2':
-			PEANUT_ABI = PEANUT_BATCHER_ABI_V4_2
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_2
 			break
 		case 'Rv4.2':
-			PEANUT_ABI = PEANUT_ROUTER_ABI_V4_2
+			CONTRACT_ABI = PEANUT_ROUTER_ABI_V4_2
 			break
+		case 'Rv4.3':
+			CONTRACT_ABI = PEANUT_ABI_V4_3
+
 		default:
 			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
 	}
@@ -260,7 +272,7 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 		throw new Error(`Contract ${version} not deployed on chain ${chainId}`)
 	}
 
-	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
+	const contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signerOrProvider)
 
 	config.verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`)
 
@@ -524,9 +536,7 @@ async function setFeeOptions({
 				errLower.includes('insufficient_funds') ||
 				errLower.includes('gas required exceeds allowance')
 			) {
-				throw new interfaces.SDKStatus(
-					interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN,
-				)
+				throw new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN)
 			}
 			// implicit else
 			throw error
@@ -918,9 +928,7 @@ async function signAndSubmitTx({
 			errLower.includes('insufficient_funds') ||
 			errLower.includes('gas required exceeds allowance')
 		) {
-			throw new interfaces.SDKStatus(
-				interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN,
-			)
+			throw new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN)
 		}
 
 		throw new interfaces.SDKStatus(
@@ -1277,7 +1285,11 @@ async function claimLink({
 		provider: signer.provider,
 	})
 
+	const txOptions2 = { ...txOptions, ...claimParams }
+
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+	config.verbose && console.log('Full tx:', txOptions2)
+	config.verbose && console.log('Full tx:', claimParams, txOptions)
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
@@ -1416,7 +1428,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (contractVersion !== 'v4.2') {
+	if (contractVersion !== 'v4.2' && contractVersion !== 'v4.3') {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1597,7 +1609,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (['v4', 'v4.2'].includes(contractVersion)) {
+	if (['v4', 'v4.2', 'v4.3'].includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2091,16 +2103,18 @@ function getLatestContractVersion({
 	experimental?: boolean
 }): string {
 	try {
+		config.verbose && console.log('getting LatestContractVersion:', chainId, type, experimental)
 		const data = PEANUT_CONTRACTS
-
 		const chainData = data[chainId as unknown as keyof typeof data]
 
 		// Filter keys starting with "v" or "Bv" based on type
 		let versions = Object.keys(chainData)
 			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
 			.sort((a, b) => {
-				const partsA = a.substring(1).split('.').map(Number)
-				const partsB = b.substring(1).split('.').map(Number)
+				const partsA =
+					type === 'batch' ? a.substring(2).split('.').map(Number) : a.substring(1).split('.').map(Number)
+				const partsB =
+					type === 'batch' ? b.substring(2).split('.').map(Number) : b.substring(1).split('.').map(Number)
 
 				// Compare major version first
 				if (partsA[0] !== partsB[0]) {
@@ -2111,16 +2125,17 @@ function getLatestContractVersion({
 				return (partsB[1] || 0) - (partsA[1] || 0)
 			})
 
+		config.verbose && console.log('Contract Versions found:', versions)
 		// Adjust the filtering logic based on the experimental flag and contract version variables
 		if (!experimental && type === 'normal') {
-			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+			if (!versions.includes(LATEST_STABLE_CONTRACT_VERSION)) {
+				if (versions.length === 0) {
+					versions = [FALLBACK_CONTRACT_VERSION]
+				}
 
-			if (versions.length === 0) {
-				versions = [FALLBACK_CONTRACT_VERSION]
-			}
-
-			if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
-				versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
+				if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
+					versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
+				}
 			}
 		}
 
@@ -2144,7 +2159,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!['v4', 'v4.2'].includes(peanutContractVersion)) {
+	if (!['v4', 'v4.2', 'v4.3'].includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}

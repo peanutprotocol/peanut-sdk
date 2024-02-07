@@ -102,10 +102,10 @@ export async function signWithdrawalMessage(
 	depositIdx: number,
 	recipient: string,
 	privateKey: string,
-	onlyRecipientMode?: boolean // only for v4.2
+	onlyRecipientMode?: boolean // only for v4.2+
 ) {
 	let claimParams: any[]
-	if (vaultVersion == 'v4.2') {
+	if (vaultVersion == 'v4.2' || vaultVersion == 'v4.3') {
 		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
 		const stringHash = ethers.utils.solidityKeccak256(
 			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],

@@ -23,7 +23,7 @@ describe('setFeeOptions function', () => {
 		expect(txOptions).toHaveProperty('maxFeePerGas')
 		expect(txOptions).toHaveProperty('maxPriorityFeePerGas')
 		expect(BigInt(txOptions.maxPriorityFeePerGas)).toBeLessThanOrEqual(BigInt(txOptions.maxFeePerGas))
-	})
+	}, 30000)
 
 	it('should correctly set fee options for non-EIP-1559 chains', async () => {
 		const provider = await getDefaultProvider('56')
@@ -35,7 +35,7 @@ describe('setFeeOptions function', () => {
 		})
 
 		expect(txOptions).toHaveProperty('gasPrice')
-	})
+	}, 30000)
 
 	it('should correctly set gas limit for specific chains', async () => {
 		const provider = await getDefaultProvider('137')
@@ -47,7 +47,7 @@ describe('setFeeOptions function', () => {
 
 		expect(txOptions).toHaveProperty('gasLimit')
 		expect(txOptions.gasLimit.toString()).toEqual('1000000')
-	})
+	}, 30000)
 
 	it('should correctly set maxPriorityFeePerGas for specific chains', async () => {
 		const provider = await getDefaultProvider('1')
@@ -59,7 +59,7 @@ describe('setFeeOptions function', () => {
 
 		expect(txOptions).toHaveProperty('maxPriorityFeePerGas')
 		expect(txOptions.maxPriorityFeePerGas.toString()).toEqual(ethers.utils.parseUnits('30', 'gwei').toString())
-	})
+	}, 30000)
 
 	it('should throw an error if provider fails to fetch gas price', async () => {
 		const faultyProvider = new ethers.providers.JsonRpcProvider({
@@ -72,5 +72,5 @@ describe('setFeeOptions function', () => {
 				provider: faultyProvider,
 			})
 		).rejects.toThrow()
-	})
+	}, 30000)
 })

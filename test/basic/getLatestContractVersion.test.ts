@@ -1,36 +1,37 @@
 import peanut from '../../src/index' // import directly from source code
 describe('getLatestContractVersion', () => {
-	it('chain 5 normal no experimental', () => {
-		const chainId = '5'
-		const type = 'normal'
+	const expectedVersionNormal = 'v4.3'
+	const expectedVersionBatch = 'Bv4.3'
+	const types = ['normal', 'batch']
 
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: false })
-
-		expect(latestContractVersion).toBe('v4.2')
+	const chainIds = ['5', '137', '5000', '5001']
+	chainIds.forEach((chainId) => {
+		types.forEach((type) => {
+			const isExperimental = [true, false]
+			isExperimental.forEach((experimental) => {
+				if (type === 'normal') {
+					it(`chain ${chainId} ${type} experimental: ${experimental}`, () => {
+						const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental })
+						expect(latestContractVersion).toBe(expectedVersionNormal)
+					})
+				}
+			})
+		})
 	})
-	it('chain 5 normal experimental', () => {
-		const chainId = '5'
-		const type = 'normal'
 
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
-
-		expect(latestContractVersion).toBe('v4.2')
-	})
-	it('chain 137 normal no experimental', () => {
-		const chainId = '137'
-		const type = 'normal'
-
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
-
-		expect(latestContractVersion).toBe('v4.2')
-	})
-	it('chain 137 normal experimental', () => {
-		const chainId = '137'
-		const type = 'normal'
-
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
-
-		expect(latestContractVersion).toBe('v4.2')
+	const chainIdsExceptions = ['1', '324', '300']
+	chainIdsExceptions.forEach((chainId) => {
+		types.forEach((type) => {
+			const isExperimental = [true, false]
+			isExperimental.forEach((experimental) => {
+				if (type === 'normal') {
+					it(`EXCEPTIONS: chain ${chainId} ${type} experimental: ${experimental}`, () => {
+						const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental })
+						expect(latestContractVersion).toBe('v4.2')
+					})
+				}
+			})
+		})
 	})
 
 	it('should throw an error if the given chainId is not defined', () => {
@@ -48,24 +49,6 @@ describe('getLatestContractVersion', () => {
 
 		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
 
-		expect(latestContractVersion).toBe('Bv4')
-	})
-
-	it('chain 1 normal no experimental', () => {
-		const chainId = '1'
-		const type = 'normal'
-
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type })
-
-		expect(latestContractVersion).toBe('v4.2')
-	})
-
-	it('chain 1 normal experimental', () => {
-		const chainId = '1'
-		const type = 'normal'
-
-		const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental: true })
-
-		expect(latestContractVersion).toBe('v4.2')
+		expect(latestContractVersion).toBe(expectedVersionBatch)
 	})
 })

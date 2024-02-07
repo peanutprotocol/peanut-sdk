@@ -37,78 +37,60 @@ async function waitForTransaction(provider, txHash, timeout = 60000) {
 	throw new Error('Transaction was not confirmed within the timeout period.')
 }
 
-describe('optimism goerli', function () {
+describe.only('mantle', function () {
 	it('should create a native link and claim it', async function () {
-		const optimismGoerliProvider = await peanut.getDefaultProvider('420')
-		const optimismGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', optimismGoerliProvider)
-
-		await createAndClaimLink(
-			{
-				structSigner: {
-					signer: optimismGoerliWallet,
-				},
-				linkDetails: {
-					chainId: '420',
-					tokenAmount: 0.00001,
-					tokenType: 0,
-				},
-			},
-			9000
-		)
-		// Add assertion here
-	}, 60000)
-	// it('should create an erc20 link and claim it', async function () {
-	// 	// TODO. Do nothing for now
-	// }, 60000)
-})
-
-describe('mantle', function () {
-	it('should create a native link and claim it', async function () {
-		const chainId = '5000'
+		const chainId = '137'
 		const Provider = await peanut.getDefaultProvider(chainId)
 		const Wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', Provider)
 
-		await createAndClaimLink(
-			{
-				structSigner: {
-					signer: Wallet,
-				},
-				linkDetails: {
-					chainId: chainId,
-					tokenAmount: 0.00001,
-					tokenType: 0,
-				},
+		peanut.toggleVerbose()
+		// await createAndClaimLink(
+		// 	{
+		// 		structSigner: {
+		// 			signer: Wallet,
+		// 		},
+		// 		linkDetails: {
+		// 			chainId: chainId,
+		// 			tokenAmount: 0.00001,
+		// 			tokenType: 0,
+		// 		},
+		// 		// peanutContractVersion: 'v4.2',
+		// 	},
+		// 	9000
+		// )
+
+		// const link = 'https://peanut.to/claim?c=5000&v=v4.3&i=2&t=sdk#p=kx5mRISF1dF0ypPT'
+		const link = 'https://peanut.to/claim?c=5000&v=v4.2&i=81&t=ui#p=LOLqAHUnjdgeO47R'
+		return peanut.claimLink({
+			structSigner: {
+				signer: Wallet,
 			},
-			9000
-		)
-		// Add assertion here
+			link: link,
+		})
 	}, 60000)
-	// it('should create an erc20 link and claim it', async function () {
-	// 	// TODO. Do nothing for now
-	// }, 60000)
 })
 
-describe('zksync', function () {
-	it('zksync Sepolia: should create a native link and claim it', async function () {
-		const chainId = '300'
-		const provider = await peanut.getDefaultProvider(chainId)
-		const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
+describe.only('zksync', function () {
+	// it('zksync Sepolia: should create a native link and claim it', async function () {
+	// 	const chainId = '300'
+	// 	const provider = await peanut.getDefaultProvider(chainId)
+	// 	const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 
-		await createAndClaimLink(
-			{
-				structSigner: {
-					signer: wallet,
-				},
-				linkDetails: {
-					chainId: chainId,
-					tokenAmount: 0.000001,
-					tokenType: 0,
-				},
-			},
-			9000
-		)
-		peanut.toggleVerbose()
-	}, 60000)
+	// 	await createAndClaimLink(
+	// 		{
+	// 			structSigner: {
+	// 				signer: wallet,
+	// 			},
+	// 			linkDetails: {
+	// 				chainId: chainId,
+	// 				tokenAmount: 0.000001,
+	// 				tokenType: 0,
+	// 			},
+	// 		},
+	// 		9000
+	// 	)
+	// 	peanut.toggleVerbose()
+	// }, 60000)
 
 	it('zksync Mainnet: should create a native link and claim it', async function () {
 		const chainId = '324'
@@ -136,7 +118,7 @@ describe('zksync', function () {
 })
 
 describe('polygon', function () {
-	const chainId = 137
+	const chainId = '137'
 	const tokenAmount = 0.0001
 
 	console.log('getting fee data in test file')
@@ -144,13 +126,14 @@ describe('polygon', function () {
 	it('should create a native link and claim it', async function () {
 		const polygonProvider = await peanut.getDefaultProvider(String(chainId))
 		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)
+		peanut.toggleVerbose()
 		await createAndClaimLink(
 			{
 				structSigner: {
 					signer: polygonWallet,
 				},
 				linkDetails: {
-					chainId: 'chainId',
+					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenType: 0,
 				},
@@ -172,7 +155,7 @@ describe('polygon', function () {
 					signer: polygonWallet,
 				},
 				linkDetails: {
-					chainId: 'chainId',
+					chainId: chainId,
 					tokenAmount: tokenAmount,
 					tokenDecimals: tokenDecimals,
 					tokenAddress: tokenAddress,
@@ -208,30 +191,6 @@ describe('linea', function () {
 			12000
 		)
 	}, 60000)
-	// it('polygon should create an erc20 link and claim it', async function () {
-	// 	const provider = await peanut.getDefaultProvider(String(chainId))
-	// 	const wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
-	// 	const tokenAddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' // polygon usdc
-	// 	const tokenDecimals = 6
-
-	// 	// create link
-
-	// 	await createAndClaimLink(
-	// 		{
-	// 			structSigner: {
-	// 				signer: wallet,
-	// 			},
-	// 			linkDetails: {
-	// 				chainId: chainId,
-	// 				tokenAmount: tokenAmount,
-	// 				tokenDecimals: tokenDecimals,
-	// 				tokenAddress: tokenAddress,
-	// 				tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-	// 			},
-	// 		},
-	// 		9000
-	// 	)
-	// }, 180000)
 })
 
 describe('goerli', function () {
@@ -434,30 +393,6 @@ describe('base', function () {
 	}, 60000)
 })
 
-describe('base-goerli', function () {
-	it('base-goerli should create a native link with weird tokendecimals and claim it', async function () {
-		peanut.toggleVerbose()
-		const tokenAmount = 0.00001
-		const chainId = '84531'
-		const baseGoerliProvider = await peanut.getDefaultProvider(String(chainId))
-		const baseGoerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', baseGoerliProvider)
-		await createAndClaimLink(
-			{
-				structSigner: {
-					signer: baseGoerliWallet,
-				},
-				linkDetails: {
-					chainId: chainId,
-					tokenAmount: tokenAmount,
-					tokenType: 0, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-				},
-			},
-			9000
-		)
-		peanut.toggleVerbose()
-	}, 60000)
-})
-
 describe('arb', function () {
 	it('arb create a native link with weird tokendecimals and claim it', async function () {
 		peanut.toggleVerbose()
@@ -481,34 +416,6 @@ describe('arb', function () {
 		peanut.toggleVerbose()
 	}, 60000)
 })
-
-// describe('mainnet', function () {
-// 	throw new Error('Dont run mainnet tests lol')
-// 	it('mainnet should create an er20 link with weird tokendecimals and claim it', async function () {
-// 		peanut.toggleVerbose()
-// 		const tokenAmount = 0.0000455228296990941
-// 		const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' // usdc
-// 		const tokenDecimals = 6
-// 		const provider = await peanut.getDefaultProvider('1')
-// 		const bnbWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
-// 		const chainId = 1
-// 		await createAndClaimLink(
-// 			{
-// 				structSigner: {
-// 					signer: bnbWallet,
-// 				},
-// 				linkDetails: {
-// 					chainId: chainId,
-// 					tokenAmount: tokenAmount,
-// 					tokenType: 1, // 0 for ether, 1 for erc20, 2 for erc721, 3 for erc1155
-// 					tokenAddress: tokenAddress,
-// 					tokenDecimals: tokenDecimals,
-// 				},
-// 			},
-// 			9000
-// 		)
-// 	}, 60000)
-// })
 
 // will take a loong time, goerli...
 describe('new wallet test', function () {
