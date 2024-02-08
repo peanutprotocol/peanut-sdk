@@ -1,7 +1,6 @@
 import { promisify } from 'util'
 import { exec as execRaw } from 'child_process'
-import { ethers } from 'ethersv5'
-import { formatEther } from 'ethersv5/lib/utils'
+import { ethers, utils} from 'ethersv5'
 import { config } from '../../src/index'
 
 const exec = promisify(execRaw)
@@ -53,7 +52,7 @@ export async function faucetETH(
 	tenderlyProvider.send('tenderly_addBalance', [address, `0x${(amount * 1e18).toString(16)}`])
 	if (config.verbose) {
 		const newBalanceWei = await tenderlyProvider.getBalance(address)
-		console.log(`Fauceted ${amount} ETH to ${address}. New balance: ${formatEther(newBalanceWei)} ETH.`)
+		console.log(`Fauceted ${amount} ETH to ${address}. New balance: ${utils.formatEther(newBalanceWei)} ETH.`)
 	}
 }
 

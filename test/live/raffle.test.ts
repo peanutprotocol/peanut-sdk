@@ -1,18 +1,13 @@
-import { constants, BigNumber, Wallet } from 'ethersv5'
+import { BigNumber, Wallet } from 'ethersv5'
 import {
-	addLinkClaim,
-	addUsername,
-	claimRaffleLink,
 	generateAmountsDistribution,
 	getDefaultProvider,
 	getRaffleInfo,
 	getRaffleLeaderboard,
 	getRaffleLinkFromTx,
 	getRandomString,
-	getUsername,
 	interfaces,
 	hasAddressParticipatedInRaffle,
-	isRaffleActive,
 	prepareRaffleDepositTxs,
 	signAndSubmitTx,
 	toggleVerbose,
@@ -20,6 +15,7 @@ import {
 	getGenerosityLeaderboard,
 	addLinkCreation,
 	getPopularityLeaderboard,
+  claimRaffleLink,
 } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
@@ -32,7 +28,7 @@ describe('raffle', () => {
   toggleVerbose(true)
 
   test('create a link', async () => {
-    const chainId = '534352'
+    const chainId = '137'
     const provider = await getDefaultProvider(chainId)
     const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
 
@@ -41,16 +37,15 @@ describe('raffle', () => {
     const linkDetails: interfaces.IPeanutLinkDetails = {
       chainId,
       tokenAmount: 0.1,
-      tokenDecimals: 6,
-      tokenAddress: '0x06eFdBFf2a14a7c8E15944D1F4A48F9F95F663A4',
-      tokenType: 1,
-      baseUrl: 'https://red.peanut.to/packet',
+      tokenDecimals: 18,
+      tokenType: 0,
     }
     const { unsignedTxs } = await prepareRaffleDepositTxs({
       linkDetails,
       numberOfLinks,
       password,
       userAddress: wallet.address,
+      withMFA: true,
     })
 
     console.log({ unsignedTxs })
@@ -72,9 +67,11 @@ describe('raffle', () => {
       linkDetails,
       numberOfLinks,
       password,
-      creatorAddress: wallet.address,
       name: 'baobob',
+      withMFA: true,
+      withCaptcha: true,
       APIKey,
+      baseUrl: 'http://localhost:8000/submit-raffle-link'
     })
     console.log('Got the raffle link!', link)
   }, 120000)
@@ -103,16 +100,25 @@ describe('raffle', () => {
     console.log('Hooouray, leaderboard!', { leaderboard })
   }, 120000)
 
-  test('is raffle active', async () => {
-    const link1 = 'https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=12345678'
-    const isActive1 = await isRaffleActive({ link: link1 })
-    console.log('Raffle 1 active?', isActive1)
-    expect(isActive1).toBe(false)
-
-    const link2 = 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678'
-    const isActive2 = await isRaffleActive({ link: link2 })
-    console.log('Raffle 2 active?', isActive2)
-    expect(isActive2).toBe(true)
+  test('claim raffle link with mfa', async () => {
+    const link = 'https://peanut.to/claim?c=137&v=v4.3&i=(57,3)#p=cWBDOZyqwwNaTyaW'
+    const recipientAddress = makeRandomAddress()
+    console.log({ recipient: recipientAddress })
+    const claimInfo = await claimRaffleLink({
+      link,
+      APIKey,
+      recipientAddress,
+      recipientName: 'amobest',
+      captchaResponse: 'using test recaptcha api key, so captcha is always valid',
+      baseUrlAuth: 'http://localhost:8000/get-authorisation',
+      baseUrlClaim: 'http://localhost:8000/claim-v2'
+    })
+    console.log('Claimed a raffle slot!!', claimInfo)
+    const leaderboard = await getRaffleLeaderboard({
+      link,
+      APIKey,
+    })
+    console.log('Hooouray, leaderboard!', { leaderboard })
   }, 120000)
 
   test('generate amounts distribution', async () => {
@@ -129,40 +135,8 @@ describe('raffle', () => {
     const p = await getRandomString()
     const link = `https://peanut.to/claim?c=11155111&v=v4.2&i=28,29,30,31,32#p=${p}`
 
-    const address1 = makeRandomAddress()
     const address2 = makeRandomAddress()
     const address3 = makeRandomAddress()
-
-    await addUsername({
-      address: address1,
-      name: 'henlo',
-      link,
-      APIKey,
-    })
-
-    const name = await getUsername({
-      address: address1,
-      link,
-      APIKey,
-    })
-    expect(name).toBe('henlo')
-
-    await addLinkClaim({
-      claimerAddress: address2,
-      name: 'bye-bye',
-      depositIndex: 12,
-      amount: '0.05',
-      link,
-      APIKey,
-    })
-
-    await addLinkClaim({
-      claimerAddress: address3,
-      depositIndex: 13,
-      amount: '0.078',
-      link,
-      APIKey,
-    })
 
     const leaderboard = await getRaffleLeaderboard({
       link,
@@ -228,11 +202,11 @@ describe('raffle', () => {
   test('addLinkCreation', async () => {
     const creatorAddress = '0x53a5746ab21b2F33A2a5990133Aa64d652F93f39'
     await addLinkCreation({
-      amount: '12345',
       APIKey,
-      creatorAddress,
       name: 'boiii',
       link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
+      withMFA: true,
+      withCaptcha: true,
     })
   })
 

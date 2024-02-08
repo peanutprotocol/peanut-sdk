@@ -371,6 +371,7 @@ export interface IPrepareRaffleDepositTxsParams {
 	linkDetails: IPeanutLinkDetails
 	numberOfLinks: number
 	password: string
+	withMFA: boolean
 	provider?: Provider
 }
 
@@ -380,8 +381,9 @@ export interface IGetRaffleLinkFromTxParams {
 	password: string
 	numberOfLinks: number
 	provider?: Provider
-	creatorAddress: string
-	name?: string
+	name: string
+	withMFA: boolean
+	withCaptcha: boolean
 	APIKey: string
 	baseUrl?: string
 }
@@ -392,27 +394,17 @@ export interface IGetRaffleLinkFromTxResponse {
 
 export interface IGetRaffleInfoParams {
 	link: string
-	provider?: Provider
 	APIKey?: string
 	baseUrl?: string
 }
 
-export interface IRaffleSlot {
-	amount: string
-	claimed: boolean
-	_slotlink: string
-	_depositIndex: number
-}
-
 export interface IRaffleInfo {
 	chainId: string
-	tokenAddress: string
-	tokenDecimals: number
-	tokenSymbol: string
-	tokenName: string
-	slotsDetails: IRaffleSlot[]
+	isActive: boolean
 	senderAddress: string
 	senderName: string
+	withMFA: boolean
+	withCaptcha: boolean
 }
 
 export interface ILinkParams {
@@ -439,12 +431,14 @@ export interface IClaimRaffleLinkParams {
 	APIKey: string
 	recipientAddress: string
 	recipientName?: string
-	baseUrl?: string
+	captchaResponse?: string
+	baseUrlAuth?: string
+	baseUrlClaim?: string
 	provider?: Provider
 }
 
 export interface IClaimRaffleLinkResponse {
-	txHash: string
+	txHash?: string
 	chainId: string
 	amountReceived: string
 	tokenAddress: string
@@ -453,10 +447,25 @@ export interface IClaimRaffleLinkResponse {
 	tokenName: string
 }
 
+export interface IGetRaffleAuthorisationParams {
+	link: string
+	APIKey: string
+	recipientAddress: string
+	recipientName: string
+	captchaResponse?: string
+	baseUrl?: string
+}
+
+export interface IGetRaffleAuthorisationResponse {
+	depositIdx: number
+	authorisation: string // MFA signature
+}
+
 export interface IRaffleLeaderboardEntry {
 	address: string
-	amount: string
 	name: string | null
+	amount: string
+	tokenAddress: string
 }
 
 export interface IGenerosityLeaderboardEntry {
@@ -497,14 +506,13 @@ export interface IAddLinkClaim {
 }
 
 export interface IAddLinkCreation {
-	creatorAddress: string
 	name?: string
-	amount: string
 	link: string
+	withMFA: boolean
+	withCaptcha: boolean
 	APIKey: string
 	baseUrl?: string
 }
-
 
 export interface IGetRaffleLeaderboard {
 	link: string

@@ -1,13 +1,15 @@
-import { BigNumber, constants, ethers, utils } from 'ethersv5'
-import { ERC20_ABI, TOKEN_DETAILS } from './data'
+import { BigNumber, Wallet, constants, ethers, utils } from 'ethersv5'
 import {
-	claimLinkGasless,
+	config,
+	createClaimPayload,
 	createMultiLinkFromLinks,
 	ethersV5ToPeanutTx,
 	generateKeysFromString,
 	getContract,
 	getContractAddress,
 	getDefaultProvider,
+	getLinkDetails,
+	getLinkFromParams,
 	getLinksFromMultilink,
 	getLinksFromTx,
 	getParamsFromLink,
@@ -15,6 +17,7 @@ import {
 	prepareApproveERC20Tx,
 	trim_decimal_overflow,
 } from '.'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
 
 export function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
 	const randoms: number[] = []
@@ -47,6 +50,7 @@ export async function prepareRaffleDepositTxs({
 	linkDetails,
 	numberOfLinks,
 	password,
+	withMFA,
 	provider,
 }: interfaces.IPrepareRaffleDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
 	if (linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) {
@@ -139,10 +143,18 @@ export async function prepareRaffleDepositTxs({
 		}
 	}
 
-	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
-		...depositParams,
-		txOptions
-	)
+	let depositTxRequest: TransactionRequest
+	if (withMFA) {
+		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffleMFA(
+			...depositParams,
+			txOptions
+		)
+	} else {
+		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
+			...depositParams,
+			txOptions
+		)
+	}
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
 
 	let unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
@@ -160,8 +172,9 @@ export async function getRaffleLinkFromTx({
 	password,
 	numberOfLinks,
 	provider,
-	creatorAddress,
 	name,
+	withMFA,
+	withCaptcha,
 	APIKey,
 	baseUrl,
 }: interfaces.IGetRaffleLinkFromTxParams): Promise<interfaces.IGetRaffleLinkFromTxResponse> {
@@ -177,10 +190,10 @@ export async function getRaffleLinkFromTx({
 
 	try {
 		await addLinkCreation({
-			creatorAddress,
 			name,
-			amount: linkDetails.tokenAmount.toString(),
 			link,
+			withMFA,
+			withCaptcha,
 			APIKey,
 			baseUrl,
 		})
@@ -269,310 +282,199 @@ export async function hasAddressParticipatedInRaffle({
 
 export async function getRaffleInfo({
 	link,
-	provider,
 	APIKey,
-	baseUrl,
+	baseUrl = 'https://api.peanut.to/get-raffle-info',
 }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
-	const links = getLinksFromMultilink(link)
+	const allSlotLinks = getLinksFromMultilink(link)
+	const params = getParamsFromLink(allSlotLinks[0])
+	const { address: pubKey } = generateKeysFromString(params.password)
 
-	const linksParams: interfaces.ILinkParams[] = []
-	links.forEach((link) => linksParams.push(getParamsFromLink(link)))
-
-	const chainId = linksParams[0].chainId
-	const peanutVersion = linksParams[0].contractVersion
-	const depositIndices: number[] = []
-	linksParams.forEach((params) => depositIndices.push(params.depositIdx))
-
-	if (!['v4.2', 'v4.3'].includes(peanutVersion)) {
-		throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'Raffles only work with peanut contract v4.2+'
-		)
+	const headers = {
+		'Content-Type': 'application/json',
+	}
+	const body = {
+		pubKey,
+		apiKey: APIKey,
 	}
 
-	if (!provider) {
-		provider = await getDefaultProvider(chainId)
+	const response = await fetch(baseUrl, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
+	if (!response.ok) {
+		const error = await response.text()
+		throw new Error(error)
 	}
 
-	const contract = await getContract(chainId, provider, peanutVersion)
-	const deposits: interfaces.IPeanutV4_2Deposit[] = await Promise.all(
-		depositIndices.map((idx) => contract.deposits(idx))
-	)
-	const contractType = deposits[0].contractType
-
-	let tokenAddress = deposits[0].tokenAddress
-	if (contractType == interfaces.EPeanutLinkType.native) {
-		tokenAddress = ethers.constants.AddressZero
-	}
-	let tokenSymbol: string = null
-	let tokenName: string = null
-	let tokenDecimals: number = null
-
-	const allTokenDetails = TOKEN_DETAILS.find((chain) => chain.chainId === chainId)
-	const tokenDetails = allTokenDetails.tokens.find(
-		(token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
-	)
-
-	if (!tokenDetails) {
-		// Has to be a ERC20 token since native tokens are all listed in tokenDetails.json
-		try {
-			const contractERC20 = new ethers.Contract(tokenAddress, ERC20_ABI, provider)
-			const [fetchedSymbol, fetchedName, fetchedDecimals] = await Promise.all([
-				contractERC20.symbol(),
-				contractERC20.name(),
-				contractERC20.decimals(),
-			])
-			tokenSymbol = fetchedSymbol
-			tokenName = fetchedName
-			tokenDecimals = fetchedDecimals
-		} catch (error) {
-			console.error('Error fetching ERC20 info:', error)
-			throw new Error(`Ertor fetching ERC20 info for token ${tokenAddress} on chain ${chainId}`)
-		}
-	} else {
-		tokenSymbol = tokenDetails.symbol
-		tokenName = tokenDetails.name
-		tokenDecimals = tokenDetails.decimals
-	}
-
-	const slotsDetails: interfaces.IRaffleSlot[] = deposits.map((deposit, index) => ({
-		amount: ethers.utils.formatUnits(deposit.amount, tokenDecimals),
-		claimed: deposit.claimed,
-		_slotlink: links[index],
-		_depositIndex: depositIndices[index],
-	}))
-
-	const senderAddress = deposits[0].senderAddress
-	let senderName: string | null = null
-	if (APIKey) {
-		senderName = await getUsername({
-			address: senderAddress,
-			link,
-			APIKey,
-			baseUrl,
-		})
-	}
-
-	return {
-		chainId,
-		tokenAddress,
-		tokenSymbol,
-		tokenName,
-		tokenDecimals,
-		slotsDetails,
-		senderAddress,
-		senderName,
-	}
-}
-
-export async function isRaffleActive({ link, provider }: interfaces.IGetRaffleInfoParams): Promise<boolean> {
-	const { slotsDetails } = await getRaffleInfo({ link, provider })
-	const allClaimed = slotsDetails.every((slot) => slot.claimed)
-	return !allClaimed
+	const data = await response.json()
+	return data.raffleInfo
 }
 
 /**
- * Find an unclaimed slot in a raffle link and claim it!
- * @param param0
+ * Claim a specific slot in a raffle link.
+ * Gets the random index to claim from the server.
  */
 export async function claimRaffleLink({
 	link,
 	APIKey,
 	recipientAddress,
 	recipientName,
-	baseUrl,
+	captchaResponse,
 	provider,
+	baseUrlAuth,
+	baseUrlClaim,
 }: interfaces.IClaimRaffleLinkParams): Promise<interfaces.IClaimRaffleLinkResponse> {
-	// attempt to claim an unclaimed slot until we do or
-	// all slots end up to be claimed by other people
-	while (true) {
-		const raffleInfo = await getRaffleInfo({ link, provider })
-		const { chainId, tokenAddress, tokenDecimals, tokenName, tokenSymbol } = raffleInfo
-		const unclaimedSlots = raffleInfo.slotsDetails.filter((slot) => !slot.claimed)
-		if (unclaimedSlots.length === 0) {
+	const { depositIdx, authorisation } = await getRaffleAuthorisation({
+		link,
+		APIKey,
+		recipientAddress,
+		recipientName,
+		captchaResponse,
+		baseUrl: baseUrlAuth,
+	})
+	const allSlotLinks = getLinksFromMultilink(link)
+	const params = getParamsFromLink(allSlotLinks[0])
+	const slotLink = getLinkFromParams(
+		params.chainId,
+		params.contractVersion,
+		depositIdx,
+		params.password,
+		undefined, // use the default base url
+		params.trackId,
+	)
+	const payload = await createClaimPayload(slotLink, recipientAddress)
+	
+	let withMFA = false
+	if (authorisation) {
+		withMFA = true
+		payload.claimParams.push(authorisation)
+	}
+
+	const headers = {
+		'Content-Type': 'application/json',
+	}
+	const body = {
+		claimParams: payload.claimParams,
+		chainId: payload.chainId,
+		version: payload.contractVersion,
+		withMFA,
+		apiKey: APIKey,
+	}
+
+	const response = await fetch(baseUrlClaim, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
+	if (!response.ok) {
+		const error = await response.text()
+		throw new Error(error)
+	}
+
+	const data = await response.json()
+	const txHash = data.txHash || null
+	const slotDetails = await getLinkDetails({ link: slotLink, provider })
+
+	return {
+		txHash,
+		amountReceived: slotDetails.tokenAmount,
+		chainId: slotDetails.chainId,
+		tokenAddress: slotDetails.tokenAddress,
+		tokenDecimals: slotDetails.tokenDecimals,
+		tokenName: slotDetails.tokenName,
+		tokenSymbol: slotDetails.tokenSymbol,
+	}
+}
+
+export async function getRaffleAuthorisation({
+	link,
+	APIKey,
+	captchaResponse,
+	recipientAddress,
+	recipientName,
+	baseUrl = 'https://api.peanut.to/get-authorisation'
+}: interfaces.IGetRaffleAuthorisationParams): Promise<interfaces.IGetRaffleAuthorisationResponse> {
+	const allSlotLinks = getLinksFromMultilink(link)
+	const params = getParamsFromLink(allSlotLinks[0])
+	const { address: pubKey } = generateKeysFromString(params.password)
+
+	const headers = {
+		'Content-Type': 'application/json',
+	}
+	const body = {
+		pubKey,
+		captchaResponse,
+		recipientAddress,
+		recipientName,
+		apiKey: APIKey,
+	}
+
+	const response = await fetch(baseUrl, {
+		method: 'POST',
+		headers: headers,
+		body: JSON.stringify(body),
+	})
+	if (!response.ok) {
+		const error = await response.text()
+		if (error.includes('All slots have already been claimed')) {
 			throw new interfaces.SDKStatus(
 				interfaces.ERaffleErrorCodes.ALL_SLOTS_ARE_CLAIMED,
-				'All slots have already been claimed for this raffle'
+				'All slots have already been claimed',
 			)
 		}
-
-		const slotIndexToClaim = Math.floor(Math.random() * 1e9) % unclaimedSlots.length
-		const slotToClaim = unclaimedSlots[slotIndexToClaim]
-		console.log(
-			`Attempting to claim slot ${slotIndexToClaim} out of total ${unclaimedSlots.length} unclaimed slots, slotlink: ${unclaimedSlots[slotIndexToClaim]._slotlink}`
-		)
-
-		let response
-		try {
-			response = await claimLinkGasless({
-				link: slotToClaim._slotlink,
-				APIKey,
-				recipientAddress,
-			})
-		} catch (error: any) {
-			const newRaffleInfo = await getRaffleInfo({ link, provider })
-			const updatedSlotInfo = newRaffleInfo.slotsDetails.find(
-				(slot) => slot._depositIndex === slotToClaim._depositIndex
-			)
-			if (updatedSlotInfo.claimed) {
-				console.log(
-					`Slot ${slotIndexToClaim} has already been claimed, will retry claiming a different slot`,
-					error
-				)
-				continue
-			} else {
-				console.log('An unexpected error occured while claiming a raffle slot!', error)
-				throw new interfaces.SDKStatus(
-					interfaces.ERaffleErrorCodes.ERROR,
-					'An unexpected error occured while claiming a raffle slot!'
-				)
-			}
-		}
-
-		try {
-			await addLinkClaim({
-				claimerAddress: recipientAddress,
-				name: recipientName,
-				amount: slotToClaim.amount,
-				depositIndex: slotToClaim._depositIndex,
-				link,
-				APIKey,
-				baseUrl,
-			})
-		} catch (error: any) {
-			console.error(
-				'Bad that we got an error from the events api, but not stopping the entire link claim because of this',
-				error
-			)
-		}
-
-		return {
-			txHash: response.txHash,
-			chainId,
-			amountReceived: unclaimedSlots[slotIndexToClaim].amount,
-			tokenAddress,
-			tokenDecimals,
-			tokenName,
-			tokenSymbol,
-		}
-	}
-}
-
-export async function addUsername({
-	address,
-	name,
-	link,
-	APIKey,
-	baseUrl = 'https://api.peanut.to/add-username',
-}: interfaces.IAddUsername) {
-	const res = await fetch(baseUrl, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			address,
-			name,
-			link,
-			apiKey: APIKey,
-		}),
-	})
-	if (res.status !== 200) {
-		throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR,
-			`Error while adding a username: ${await res.text()}`
-		)
-	}
-}
-
-export async function getUsername({
-	address,
-	link,
-	APIKey,
-	baseUrl = 'https://api.peanut.to/get-username',
-}: interfaces.IGetUsername): Promise<string | null> {
-	const res = await fetch(baseUrl, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			address,
-			link,
-			apiKey: APIKey,
-		}),
-	})
-
-	// no name for this address, which is ok
-	if (res.status === 404) return null
-
-	if (res.status !== 200) {
-		throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR,
-			`Error while getting a username: ${await res.text()}`
-		)
+		throw new Error(error)
 	}
 
-	const json = await res.json()
-	return json.name
-}
-
-export async function addLinkClaim({
-	claimerAddress,
-	name,
-	depositIndex,
-	amount,
-	link,
-	APIKey,
-	baseUrl = 'https://api.peanut.to/add-link-claim',
-}: interfaces.IAddLinkClaim) {
-	const res = await fetch(baseUrl, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			claimerAddress,
-			name,
-			depositIndex,
-			amount,
-			link,
-			apiKey: APIKey,
-		}),
-	})
-	if (res.status !== 200) {
-		throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR,
-			`Error while adding a claim: ${await res.text()}`
-		)
+	const data = await response.json()
+	
+	return {
+		depositIdx: data.depositIdx,
+		authorisation: data.authorisation,
 	}
 }
 
 export async function addLinkCreation({
-	creatorAddress,
 	name,
-	amount,
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/add-link-creation',
+	withMFA,
+	withCaptcha,
+	baseUrl = 'https://api.peanut.to/submit-raffle-link',
 }: interfaces.IAddLinkCreation) {
+	// NON CUSTODIAL WOOHOOOOOOO!!!
+	const hashIndex = link.lastIndexOf('#')
+	const linkToSubmit = link.substring(0, hashIndex)
+	config.verbose && console.log({ link, linkToSubmit })
+
+	const allSlotLinks = getLinksFromMultilink(link)
+	const params = getParamsFromLink(allSlotLinks[0])
+	const { privateKey } = generateKeysFromString(params.password)
+
+	const notNullName = name || ''
+	const digest = utils.solidityKeccak256(['string'], [linkToSubmit + notNullName])
+
+	const wallet = new Wallet(privateKey)
+	const signature = await wallet.signMessage(digest)
+	
 	const res = await fetch(baseUrl, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({
-			creatorAddress,
-			name,
-			amount,
-			link,
+			link: linkToSubmit,
+			senderName: name,
+			signature,
+			withMFA,
+			withCaptcha,
 			apiKey: APIKey,
 		}),
 	})
-	if (res.status !== 200) {
+	if (!res.ok) {
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR,
-			`Error while adding a creation: ${await res.text()}`
+			`Error while submitting a link: ${await res.text()}`
 		)
 	}
 }
@@ -643,4 +545,30 @@ export async function getPopularityLeaderboard({
 
 	const json = await res.json()
 	return json.leaderboard
+}
+
+export async function requiresRaffleCaptcha({
+	link,
+	APIKey,
+	baseUrl = 'https://api.peanut.to/requires-captcha',
+}: interfaces.IGetRaffleLeaderboard): Promise<boolean> {
+	const res = await fetch(baseUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			link,
+			apiKey: APIKey,
+		}),
+	})
+	if (res.status !== 200) {
+		throw new interfaces.SDKStatus(
+			interfaces.ERaffleErrorCodes.ERROR,
+			`Error while getting "requires captcha": ${await res.text()}`
+		)
+	}
+
+	const json = await res.json()
+	return json.requiresCaptcha
 }
