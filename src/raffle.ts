@@ -484,13 +484,17 @@ export async function getRaffleLeaderboard({
 	APIKey,
 	baseUrl = 'https://api.peanut.to/get-raffle-leaderboard',
 }: interfaces.IGetRaffleLeaderboard): Promise<interfaces.IRaffleLeaderboardEntry[]> {
+	const allSlotLinks = getLinksFromMultilink(link)
+	const params = getParamsFromLink(allSlotLinks[0])
+	const { address: pubKey } = generateKeysFromString(params.password)
+
 	const res = await fetch(baseUrl, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
 		body: JSON.stringify({
-			link,
+			pubKey,
 			apiKey: APIKey,
 		}),
 	})
