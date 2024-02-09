@@ -466,6 +466,7 @@ export interface IRaffleLeaderboardEntry {
 	name: string | null
 	amount: string
 	tokenAddress: string
+	tokenSymbol: string
 }
 
 export interface IGenerosityLeaderboardEntry {
