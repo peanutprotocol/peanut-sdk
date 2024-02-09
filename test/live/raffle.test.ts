@@ -77,8 +77,8 @@ describe('raffle', () => {
   }, 120000)
 
   test('get raffle info', async () => {
-    const link = ''
-    const info = await getRaffleInfo({ link })
+    const link = 'https://peanut.to/claim?c=137&v=v4.3&i=(72,3)#p=BJKnd9VcEAWrOXP5'
+    const info = await getRaffleInfo({ link, APIKey, baseUrl: 'http://localhost:8000/get-raffle-info' })
     console.log('Raffle info!', info)
   }, 120000)
 
@@ -90,7 +90,9 @@ describe('raffle', () => {
       link,
       APIKey,
       recipientAddress,
-      recipientName: 'amobest'
+      recipientName: 'amobest',
+      baseUrlAuth: 'http://localhost:8000/get-authorisation',
+      baseUrlClaim: 'http://localhost:8000/claim-v2'
     })
     console.log('Claimed a raffle slot!!', claimInfo)
     const leaderboard = await getRaffleLeaderboard({
@@ -200,13 +202,13 @@ describe('raffle', () => {
   })
 
   test('addLinkCreation', async () => {
-    const creatorAddress = '0x53a5746ab21b2F33A2a5990133Aa64d652F93f39'
     await addLinkCreation({
       APIKey,
       name: 'boiii',
       link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
       withMFA: true,
       withCaptcha: true,
+      baseUrl: 'http://localhost:8000/submit-raffle-link'
     })
   })
 

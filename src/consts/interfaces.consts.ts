@@ -381,7 +381,7 @@ export interface IGetRaffleLinkFromTxParams {
 	password: string
 	numberOfLinks: number
 	provider?: Provider
-	name: string
+	name?: string
 	withMFA: boolean
 	withCaptcha: boolean
 	APIKey: string
