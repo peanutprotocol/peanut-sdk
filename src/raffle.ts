@@ -283,10 +283,10 @@ export async function getRaffleInfo({
 	const depositIndices: number[] = []
 	linksParams.forEach((params) => depositIndices.push(params.depositIdx))
 
-	if (peanutVersion !== 'v4.3') {
+	if (!['v4.2', 'v4.3'].includes(peanutVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'Raffles only work with peanut contract v4.3'
+			'Raffles only work with peanut contract v4.2+'
 		)
 	}
 

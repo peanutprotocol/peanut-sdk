@@ -196,3 +196,68 @@ describe('is short link regex tests', () => {
 		expect(x).toBe(false)
 	})
 })
+
+describe('combine multilinks tests', () => {
+	it('should combine two multilinks correctly', () => {
+		const links = [
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
+		]
+
+		const x = peanut.combineRaffleLink(links)
+
+		expect(x).toBe('https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5),(55,100)&t=ui#p=12345678')
+	})
+
+	it('should combine 5 links correctly', () => {
+		const links = [
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(333,55)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(435,3)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(444,100)&t=ui#p=12345678',
+		]
+
+		const x = peanut.combineRaffleLink(links)
+
+		expect(x).toBe(
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5),(55,100),(333,55),(435,3),(444,100)&t=ui#p=12345678'
+		)
+	})
+
+	it('should throw an error if the password is not the same between multiple links', () => {
+		const links = [
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456dd',
+		]
+
+		expect(() => {
+			peanut.combineRaffleLink(links)
+		}).toThrow("Inconsistent 'p' parameter values found.")
+	})
+
+	it('should throw an error if the password is not the same between multiple links', () => {
+		const links = [
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345d678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=1234s5678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=123456r78',
+		]
+
+		expect(() => {
+			peanut.combineRaffleLink(links)
+		}).toThrow("Inconsistent 'p' parameter values found.")
+	})
+
+	it('should throw an error if the contract versions are not the same between multiple links', () => {
+		const links = [
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(28,5)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4.2&i=(55,100)&t=ui#p=12345678',
+			'https://peanut.to/claim?c=11155111&v=v4&i=(55,100)&t=ui#p=12345678',
+		]
+		expect(() => {
+			peanut.combineRaffleLink(links)
+		}).toThrow("Inconsistent 'v' parameter values found.")
+	})
+})

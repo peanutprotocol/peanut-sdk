@@ -1,6 +1,6 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.4.0-raffle.27",
+	"version": "0.4.0-raffle.31",
 	"description": "The Peanut Protocol SDK! Check out the documentation at https://docs.peanut.to",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
