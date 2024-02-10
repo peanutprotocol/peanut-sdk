@@ -320,7 +320,7 @@ export async function claimRaffleLink({
 	captchaResponse,
 	provider,
 	baseUrlAuth,
-	baseUrlClaim,
+	baseUrlClaim = 'https://api.peanut.to/claim-v2',
 }: interfaces.IClaimRaffleLinkParams): Promise<interfaces.IClaimRaffleLinkResponse> {
 	const { depositIdx, authorisation } = await getRaffleAuthorisation({
 		link,
