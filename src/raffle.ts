@@ -413,11 +413,19 @@ export async function getRaffleAuthorisation({
 		body: JSON.stringify(body),
 	})
 	if (!response.ok) {
-		const error = await response.text()
-		if (error.includes('All slots have already been claimed')) {
+		const error = (await response.text()).toLowerCase()
+		if (error.includes('all slots have already been claimed')) {
 			throw new interfaces.SDKStatus(
 				interfaces.ERaffleErrorCodes.ALL_SLOTS_ARE_CLAIMED,
-				'All slots have already been claimed'
+				'All slots have already been claimed',
+				error
+			)
+		}
+		if (error.includes('captacha is required')) {
+			throw new interfaces.SDKStatus(
+				interfaces.ERaffleErrorCodes.CAPTCHA_REQUIRED,
+				'Captcha is required',
+				error
 			)
 		}
 		throw new Error(error)

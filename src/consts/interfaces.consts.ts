@@ -589,6 +589,7 @@ export enum EGenericErrorCodes {
 export enum ERaffleErrorCodes {
 	ERROR_VALIDATING_LINK_DETAILS,
 	ALL_SLOTS_ARE_CLAIMED,
+	CAPTCHA_REQUIRED,
 	ERROR,
 }
 
