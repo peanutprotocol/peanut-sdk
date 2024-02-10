@@ -16,6 +16,7 @@ import {
 	addLinkCreation,
 	getPopularityLeaderboard,
 	claimRaffleLink,
+	requiresRaffleCaptcha,
 } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
@@ -245,4 +246,14 @@ describe('raffle', () => {
 		}
 		expect(raised).toBe(true)
 	}, 120000)
+
+	test('requiresRaffleCaptcha', async () => {
+		const link = 'https://staging.peanut.to/packet?c=11155111&v=v4.3&i=(106,3)&t=ui#p=cy4maYWaXNXiTse2'
+		const requiresCaptcha = await requiresRaffleCaptcha({
+			link,
+			APIKey,
+			baseUrl: 'https://api.staging.peanut.to/requires-captcha'
+		})
+		console.log({ requiresCaptcha })
+	})
 })
