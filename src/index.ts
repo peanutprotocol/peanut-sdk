@@ -60,6 +60,7 @@ import {
 	toLowerCaseKeys,
 	ethersV5ToPeanutTx,
 	peanutToEthersV5Tx,
+	validateUserName,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -2754,6 +2755,7 @@ const peanut = {
 	EIP3009Tokens,
 	getTokenContractType,
 	getTokenContractDetails,
+	validateUserName,
 	...raffle,
 }
 
@@ -2847,4 +2849,5 @@ export {
 	EIP3009Tokens,
 	getTokenContractType,
 	getTokenContractDetails,
+	validateUserName,
 }
