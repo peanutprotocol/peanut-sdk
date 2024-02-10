@@ -583,6 +583,8 @@ export enum EXChainStatusCodes {
 export enum EGenericErrorCodes {
 	GENERIC_ERROR,
 	ERROR_UNSUPPORTED_CHAIN,
+	ERROR_NAME_TOO_LONG,
+	ERROR_PROHIBITED_SYMBOL,
 	// Add more generic error codes here if needed
 }
 

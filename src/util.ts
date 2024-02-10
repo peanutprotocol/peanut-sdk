@@ -615,3 +615,31 @@ export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransac
 		value: valueSet ? BigNumber.from(unsignedTx.value.toString()) : null,
 	}
 }
+
+/**
+ * Validates a name entered by the user and throws an error if anything is bad.
+ * Checks:
+ * 1. Length - max 16 characters
+ * 2. Scam - forbids stuff like links inside names
+ * @returns the validated name
+ */
+export function validateUserName(name: string | null): string {
+	if (name === null) return // Empty name - all good :)
+	name = name.trim()
+
+	if (name.length > 16) {
+		throw new interfaces.SDKStatus(
+			interfaces.EGenericErrorCodes.ERROR_NAME_TOO_LONG,
+			'Name too long'
+		)
+	}
+
+	if (name.includes('.') && name.indexOf('.') !== name.indexOf('.eth')) {
+		throw new interfaces.SDKStatus(
+			interfaces.EGenericErrorCodes.ERROR_PROHIBITED_SYMBOL,
+			'Names cant contain dots except for ENS domains'
+		)
+	}
+
+	return name
+}
