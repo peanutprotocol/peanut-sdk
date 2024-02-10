@@ -1460,7 +1460,8 @@ async function createClaimXChainPayload({
 	config.verbose && console.log('Squid route calculated :)', { route })
 
 	// cryptography
-	const routerContractVersion = 'R' + linkDetails.contractVersion
+	// TODO: deal with contract upgrades better SOP.md contract upgrads
+	const routerContractVersion = 'Rv4.2'
 	const squidAddress = isMainnet ? SQUID_ADDRESS['mainnet'] : SQUID_ADDRESS['testnet']
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
