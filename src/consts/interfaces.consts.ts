@@ -401,6 +401,8 @@ export interface IGetRaffleInfoParams {
 export interface IRaffleInfo {
 	chainId: string
 	isActive: boolean
+	totalSlotsNumber: number
+	claimedSlotsNumber: number
 	senderAddress: string
 	senderName: string
 	withMFA: boolean
