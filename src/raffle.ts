@@ -150,10 +150,7 @@ export async function prepareRaffleDepositTxs({
 			txOptions
 		)
 	} else {
-		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
-			...depositParams,
-			txOptions
-		)
+		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(...depositParams, txOptions)
 	}
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
 
@@ -341,10 +338,10 @@ export async function claimRaffleLink({
 		depositIdx,
 		params.password,
 		undefined, // use the default base url
-		params.trackId,
+		params.trackId
 	)
 	const payload = await createClaimPayload(slotLink, recipientAddress)
-	
+
 	let withMFA = false
 	if (authorisation) {
 		withMFA = true
@@ -393,7 +390,7 @@ export async function getRaffleAuthorisation({
 	captchaResponse,
 	recipientAddress,
 	recipientName,
-	baseUrl = 'https://api.peanut.to/get-authorisation'
+	baseUrl = 'https://api.peanut.to/get-authorisation',
 }: interfaces.IGetRaffleAuthorisationParams): Promise<interfaces.IGetRaffleAuthorisationResponse> {
 	const allSlotLinks = getLinksFromMultilink(link)
 	const params = getParamsFromLink(allSlotLinks[0])
@@ -420,14 +417,14 @@ export async function getRaffleAuthorisation({
 		if (error.includes('All slots have already been claimed')) {
 			throw new interfaces.SDKStatus(
 				interfaces.ERaffleErrorCodes.ALL_SLOTS_ARE_CLAIMED,
-				'All slots have already been claimed',
+				'All slots have already been claimed'
 			)
 		}
 		throw new Error(error)
 	}
 
 	const data = await response.json()
-	
+
 	return {
 		depositIdx: data.depositIdx,
 		authorisation: data.authorisation,
@@ -456,7 +453,7 @@ export async function addLinkCreation({
 
 	const wallet = new Wallet(privateKey)
 	const signature = await wallet.signMessage(digest)
-	
+
 	const res = await fetch(baseUrl, {
 		method: 'POST',
 		headers: {

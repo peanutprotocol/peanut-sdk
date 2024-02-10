@@ -93,7 +93,7 @@ describe('gasless functionality', () => {
 	// with index `depositIndex` that is owned by TEST_WALLET_PRIVATE_KEY
 	// 2. TEST_WALLET_PRIVATE_KEY2 owns some MATIC to execute transactions
 	test('make a gasless reclaim', async () => {
-		const testingChainId = '80001'		
+		const testingChainId = '80001'
 		const provider = await getDefaultProvider(String(testingChainId))
 		const userWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', provider)
 		const relayerWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY2 ?? '', provider)
@@ -108,7 +108,7 @@ describe('gasless functionality', () => {
 				tokenAmount: 0.01,
 				tokenDecimals: 18,
 				tokenAddress: constants.AddressZero,
-			}
+			},
 		})
 		console.log('Created link', link)
 

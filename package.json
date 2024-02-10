@@ -13,6 +13,7 @@
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",
+		"format": "prettier --write .",
 		"build:lib": "vite build",
 		"build:dev": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
 		"build": "npm run clean && npm run pkg-move && npm run generate-types && vite build",

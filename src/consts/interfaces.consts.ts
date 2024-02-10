@@ -416,13 +416,13 @@ export interface ILinkParams {
 }
 
 export interface IPeanutV4_2Deposit {
-	pubKey20: string,
-	amount: BigNumber,
-	tokenAddress: string,
-	contractType: number,
-	claimed: boolean,
-	timestamp: number,
-	tokenId: BigNumber,
+	pubKey20: string
+	amount: BigNumber
+	tokenAddress: string
+	contractType: number
+	claimed: boolean
+	timestamp: number
+	tokenId: BigNumber
 	senderAddress: string
 }
 

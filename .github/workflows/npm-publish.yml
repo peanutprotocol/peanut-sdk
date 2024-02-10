@@ -30,7 +30,7 @@ jobs:
             # Version bump
             # - name: Bump package version
             # run: |
-            #      git checkout main 
+            #      git checkout main
             #      pnpm version patch
             #      git push origin main --follow-tags
             #  env:

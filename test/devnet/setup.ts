@@ -1,6 +1,6 @@
 import { promisify } from 'util'
 import { exec as execRaw } from 'child_process'
-import { ethers, utils} from 'ethersv5'
+import { ethers, utils } from 'ethersv5'
 import { config } from '../../src/index'
 
 const exec = promisify(execRaw)
