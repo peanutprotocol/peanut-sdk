@@ -199,6 +199,7 @@ export async function getRaffleLinkFromTx({
 /**
  * Returns a boolean of whether the given address is allowed to
  * claim a slot in the given raffle link.
+ * @deprecated pls use getUserRaffleStatus instead
  */
 export async function hasAddressParticipatedInRaffle({
 	address,
@@ -505,6 +506,11 @@ export async function getPopularityLeaderboard({
 	return json.leaderboard
 }
 
+/**
+ * @returns:
+ * 	- requiresCaptcha boolean
+ *  - userResults which is null if the user has not participated yet
+ */
 export async function getUserRaffleStatus({
 	link,
 	APIKey,
