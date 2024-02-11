@@ -417,6 +417,14 @@ export interface ILinkParams {
 	trackId: string
 }
 
+export interface ILinkRawParams {
+	chainId: string
+	contractVersion: string
+	depositIndices: string
+	password: string
+	trackId: string
+}
+
 export interface IPeanutV4_2Deposit {
 	pubKey20: string
 	amount: BigNumber
