@@ -282,6 +282,10 @@ export async function getRaffleInfo({
 	APIKey,
 	baseUrl = 'https://api.peanut.to/get-raffle-info',
 }: interfaces.IGetRaffleInfoParams): Promise<interfaces.IRaffleInfo> {
+	// Submit link for informational purposes
+	const hashIndex = link.lastIndexOf('#')
+	const linkToSubmit = link.substring(0, hashIndex)
+
 	const allSlotLinks = getLinksFromMultilink(link)
 	const params = getParamsFromLink(allSlotLinks[0])
 	const { address: pubKey } = generateKeysFromString(params.password)
@@ -291,6 +295,7 @@ export async function getRaffleInfo({
 	}
 	const body = {
 		pubKey,
+		link: linkToSubmit,
 		apiKey: APIKey,
 	}
 
@@ -392,6 +397,10 @@ export async function getRaffleAuthorisation({
 	recipientName,
 	baseUrl = 'https://api.peanut.to/get-authorisation',
 }: interfaces.IGetRaffleAuthorisationParams): Promise<interfaces.IGetRaffleAuthorisationResponse> {
+	// Submit link for informational purposes
+	const hashIndex = link.lastIndexOf('#')
+	const linkToSubmit = link.substring(0, hashIndex)
+
 	const allSlotLinks = getLinksFromMultilink(link)
 	const params = getParamsFromLink(allSlotLinks[0])
 	const { address: pubKey } = generateKeysFromString(params.password)
@@ -401,6 +410,7 @@ export async function getRaffleAuthorisation({
 	}
 	const body = {
 		pubKey,
+		link: linkToSubmit,
 		captchaResponse,
 		recipientAddress,
 		recipientName,
