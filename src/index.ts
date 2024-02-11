@@ -963,7 +963,9 @@ async function signAndSubmitTx({
 // 	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 // }
 
-// takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
+/**
+ *  takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
+ */
 async function getLinksFromTx({
 	linkDetails,
 	txHash,

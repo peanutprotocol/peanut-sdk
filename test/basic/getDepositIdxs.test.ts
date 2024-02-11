@@ -4,14 +4,41 @@ import { expect, it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-const GOERLI_RPC_URL = 'https://rpc.goerli.eth.gateway.fm'
-const OPTIMISM_GOERLI_RPC_URL = 'https://rpc.goerli.optimism.gateway.fm'
-const INFURA_API_KEY = process.env.INFURA_API_KEY
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY // Make sure to add this to your .env
+describe.only('getDepositIdxs for specific transaction using rpc.mantle.xyz', function () {
+	let txReceipt
 
-const goerliProvider = new ethers.providers.JsonRpcProvider(GOERLI_RPC_URL)
-const optimismGoerliProvider = new ethers.providers.JsonRpcProvider(OPTIMISM_GOERLI_RPC_URL)
+	beforeAll(async () => {
+		const requestBody = {
+			id: 0,
+			jsonrpc: '2.0',
+			method: 'eth_getTransactionReceipt',
+			params: ['0x0e1ba641a3f89f4de9b2b8ee1170e8512d5c85ac1d685a88adce74129849910b'],
+		}
+
+		const response = await fetch(`https://rpc.mantle.xyz/`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(requestBody),
+		})
+		const data = await response.json()
+		console.log(data)
+		if (!data || !data.result) {
+			throw new Error('Failed to fetch the transaction receipt from rpc.mantle.xyz using eth rpc.')
+		}
+		txReceipt = data.result
+	})
+	it('should return an array of deposit indices for the specified transaction', async () => {
+		const depositIdxs = await peanut.getDepositIdxs(txReceipt, '5000', 'v4.3')
+		console.log(depositIdxs)
+		// Replace the expected array below with the actual expected result once known.
+		expect(depositIdxs).toEqual([
+			/* expected array of deposit indices */
+		])
+	})
+})
 
 describe('getDepositIdxs', function () {
 	let txReceipt1, txReceipt2

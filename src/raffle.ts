@@ -154,7 +154,7 @@ export async function prepareRaffleDepositTxs({
 	}
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
 
-	let unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
+	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
 	if (approveTx) unsignedTxs.push(approveTx)
 	unsignedTxs.push(depositTx)
 
