@@ -181,25 +181,18 @@ export async function getRaffleLinkFromTx({
 		passwords: Array(numberOfLinks).fill(password),
 		provider,
 	})
-	console.log('Links!!', links)
-
+	config.verbose && console.log('Links!!', links)
 	const link = createMultiLinkFromLinks(links)
+	config.verbose && console.log('Got a raffle link!', link)
 
-	try {
-		await addLinkCreation({
-			name,
-			link,
-			withMFA,
-			withCaptcha,
-			APIKey,
-			baseUrl,
-		})
-	} catch (error: any) {
-		console.error(
-			'Bad that we got an error from the events api, but not stopping the entire link creation because of this',
-			error
-		)
-	}
+	await addLinkCreation({
+		name,
+		link,
+		withMFA,
+		withCaptcha,
+		APIKey,
+		baseUrl,
+	})
 
 	return { link }
 }
