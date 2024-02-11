@@ -203,9 +203,11 @@ export async function getRandomString(n: number = 16): Promise<string> {
 }
 
 /**
- * Returns the parameters from a link
+ * Returns raw params from the link (so just unpacks the params)
+ * without converting deposit index to a number
+ * @param link 
  */
-export function getParamsFromLink(link: string): interfaces.ILinkParams {
+export function getRawParamsFromLink(link: string): interfaces.ILinkRawParams {
 	/* returns the parameters from a link */
 	let url
 	try {
@@ -233,15 +235,27 @@ export function getParamsFromLink(link: string): interfaces.ILinkParams {
 	const _chainId: string = params.get('c') ?? '' // can be chain name or chain id
 	let chainId: string = _chainId
 	const contractVersion = params.get('v') ?? ''
-	let depositIdx: string | number = params.get('i') ?? ''
-	depositIdx = parseInt(depositIdx)
+	let depositIndices: string | number = params.get('i') ?? ''
 	const password = params.get('p') ?? ''
 	let trackId = '' // optional
 	if (params.get('t')) {
 		trackId = params.get('t') ?? ''
 	}
+	return { chainId, contractVersion, depositIndices, password, trackId }
+}
 
-	return { chainId, contractVersion, depositIdx, password, trackId }
+/**
+ * Returns the parameters from a link
+ */
+export function getParamsFromLink(link: string): interfaces.ILinkParams {
+	const { chainId, contractVersion, depositIndices, password, trackId } = getRawParamsFromLink(link)
+	return {
+		chainId,
+		contractVersion,
+		password,
+		depositIdx: parseInt(depositIndices),
+		trackId,
+	}
 }
 
 /**

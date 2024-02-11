@@ -10,14 +10,13 @@ import {
 	getDefaultProvider,
 	getLinkDetails,
 	getLinkFromParams,
-	getLinksFromMultilink,
 	getLinksFromTx,
-	getParamsFromLink,
 	interfaces,
 	prepareApproveERC20Tx,
 	trim_decimal_overflow,
 } from '.'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { getRawParamsFromLink } from './util'
 
 export function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
 	const randoms: number[] = []
@@ -198,54 +197,6 @@ export async function getRaffleLinkFromTx({
 }
 
 /**
- * Throws an error if the provided raffle link is invalid.
- */
-export function validateRaffleLink({ link }: interfaces.IValidateRaffleLink) {
-	const links = getLinksFromMultilink(link)
-
-	const linksParams: interfaces.ILinkParams[] = []
-	links.forEach((link) => linksParams.push(getParamsFromLink(link)))
-
-	const chainId = linksParams[0].chainId
-	const contractVersion = linksParams[0].contractVersion
-	const password = linksParams[0].password
-	const trackId = linksParams[0].trackId
-
-	if (chainId === '' || contractVersion === '' || password === '')
-		throw new interfaces.SDKStatus(
-			interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-			`chainId, contractVersion or password is empty for raffle link ${link}`
-		)
-
-	linksParams.forEach((params) => {
-		if (
-			// must be the same for all links
-			params.chainId !== chainId ||
-			params.contractVersion !== contractVersion ||
-			params.password !== password ||
-			params.trackId !== trackId
-		)
-			throw new interfaces.SDKStatus(
-				interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-				`chainId, contractVersion, password or trackId is not consistent for raffle link ${link}`
-			)
-	})
-
-	// deposit indices must be sequential
-	let prevDepositIndex = linksParams[0].depositIdx
-	linksParams.slice(1).forEach((params) => {
-		if (params.depositIdx !== prevDepositIndex + 1)
-			throw new interfaces.SDKStatus(
-				interfaces.ERaffleErrorCodes.ERROR_VALIDATING_LINK_DETAILS,
-				`deposit indices are not sequential for raffle link ${link}`
-			)
-		prevDepositIndex = params.depositIdx
-	})
-
-	return true
-}
-
-/**
  * Returns a boolean of whether the given address is allowed to
  * claim a slot in the given raffle link.
  */
@@ -279,8 +230,7 @@ export async function getRaffleInfo({
 	const hashIndex = link.lastIndexOf('#')
 	const linkToSubmit = link.substring(0, hashIndex)
 
-	const allSlotLinks = getLinksFromMultilink(link)
-	const params = getParamsFromLink(allSlotLinks[0])
+	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
 
 	const headers = {
@@ -328,8 +278,7 @@ export async function claimRaffleLink({
 		captchaResponse,
 		baseUrl: baseUrlAuth,
 	})
-	const allSlotLinks = getLinksFromMultilink(link)
-	const params = getParamsFromLink(allSlotLinks[0])
+	const params = getRawParamsFromLink(link)
 	const slotLink = getLinkFromParams(
 		params.chainId,
 		params.contractVersion,
@@ -394,8 +343,7 @@ export async function getRaffleAuthorisation({
 	const hashIndex = link.lastIndexOf('#')
 	const linkToSubmit = link.substring(0, hashIndex)
 
-	const allSlotLinks = getLinksFromMultilink(link)
-	const params = getParamsFromLink(allSlotLinks[0])
+	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
 
 	const headers = {
@@ -455,8 +403,7 @@ export async function addLinkCreation({
 	const linkToSubmit = link.substring(0, hashIndex)
 	config.verbose && console.log({ link, linkToSubmit })
 
-	const allSlotLinks = getLinksFromMultilink(link)
-	const params = getParamsFromLink(allSlotLinks[0])
+	const params = getRawParamsFromLink(link)
 	const { privateKey } = generateKeysFromString(params.password)
 
 	const notNullName = name || ''
@@ -492,8 +439,7 @@ export async function getRaffleLeaderboard({
 	APIKey,
 	baseUrl = 'https://api.peanut.to/get-raffle-leaderboard',
 }: interfaces.IGetRaffleLeaderboard): Promise<interfaces.IRaffleLeaderboardEntry[]> {
-	const allSlotLinks = getLinksFromMultilink(link)
-	const params = getParamsFromLink(allSlotLinks[0])
+	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
 
 	const res = await fetch(baseUrl, {
@@ -564,8 +510,7 @@ export async function requiresRaffleCaptcha({
 	APIKey,
 	baseUrl = 'https://api.peanut.to/requires-captcha',
 }: interfaces.IGetRaffleLeaderboard): Promise<boolean> {
-	const allSlotLinks = getLinksFromMultilink(link)
-	const params = getParamsFromLink(allSlotLinks[0])
+	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
 
 	const res = await fetch(baseUrl, {
