@@ -505,11 +505,11 @@ export async function getPopularityLeaderboard({
 	return json.leaderboard
 }
 
-export async function requiresRaffleCaptcha({
+export async function getUserRaffleStatus({
 	link,
 	APIKey,
-	baseUrl = 'https://api.peanut.to/requires-captcha',
-}: interfaces.IGetRaffleLeaderboard): Promise<boolean> {
+	baseUrl = 'https://api.peanut.to/user-raffle-status',
+}: interfaces.IGetRaffleLeaderboard): Promise<interfaces.IUserRaffleStatus> {
 	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
 
@@ -530,6 +530,5 @@ export async function requiresRaffleCaptcha({
 		)
 	}
 
-	const json = await res.json()
-	return json.requiresCaptcha
+	return await res.json()
 }

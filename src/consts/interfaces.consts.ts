@@ -546,6 +546,11 @@ export interface IValidateRaffleLink {
 	link: string
 }
 
+export interface IUserRaffleStatus {
+	requiresCaptcha: boolean
+	userResults: IRaffleLeaderboardEntry | null
+}
+
 // error object and enums
 
 export enum ECreateLinkStatusCodes {
