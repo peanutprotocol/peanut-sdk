@@ -205,7 +205,7 @@ export async function getRandomString(n: number = 16): Promise<string> {
 /**
  * Returns raw params from the link (so just unpacks the params)
  * without converting deposit index to a number
- * @param link 
+ * @param link
  */
 export function getRawParamsFromLink(link: string): interfaces.ILinkRawParams {
 	/* returns the parameters from a link */
@@ -642,10 +642,7 @@ export function validateUserName(name: string | null): string {
 	name = name.trim()
 
 	if (name.length > 16) {
-		throw new interfaces.SDKStatus(
-			interfaces.EGenericErrorCodes.ERROR_NAME_TOO_LONG,
-			'Name too long'
-		)
+		throw new interfaces.SDKStatus(interfaces.EGenericErrorCodes.ERROR_NAME_TOO_LONG, 'Name too long')
 	}
 
 	if (name.includes('.') && name.indexOf('.') !== name.indexOf('.eth')) {
