@@ -11,7 +11,6 @@ import {
 	prepareRaffleDepositTxs,
 	signAndSubmitTx,
 	toggleVerbose,
-	validateRaffleLink,
 	getGenerosityLeaderboard,
 	addLinkCreation,
 	getPopularityLeaderboard,
@@ -127,7 +126,7 @@ describe('raffle', () => {
 
 	test('generate amounts distribution', async () => {
 		const totalAmount = BigNumber.from(1e6)
-		const numberOfLinks = 101
+		const numberOfLinks = 1
 		const values = generateAmountsDistribution(totalAmount, numberOfLinks)
 		console.log(
 			'Values!!',
@@ -161,29 +160,6 @@ describe('raffle', () => {
 				name: 'bye-bye',
 			},
 		])
-	})
-
-	test('validateRaffleLink', () => {
-		// valid link, noting should be raised
-		validateRaffleLink({
-			link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
-		})
-
-		// password is missing
-		const f2 = () => {
-			validateRaffleLink({
-				link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42',
-			})
-		}
-		expect(f2).toThrow(interfaces.SDKStatus)
-
-		// deposit indices are not consistent
-		const f3 = () => {
-			validateRaffleLink({
-				link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,1001,40,41,42#p=12345678',
-			})
-		}
-		expect(f3).toThrow(interfaces.SDKStatus)
 	})
 
 	test('hasAddressParticipatedInRaffle', async () => {

@@ -91,10 +91,10 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	if (numberOfLinks < 2) {
+	if (numberOfLinks < 1) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'numberOfLinks must be at least 2 in prepareRaffleDepositTxs'
+			'numberOfLinks must be at least 1 in prepareRaffleDepositTxs'
 		)
 	}
 
