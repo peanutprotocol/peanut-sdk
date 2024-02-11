@@ -513,6 +513,7 @@ export async function getPopularityLeaderboard({
  */
 export async function getUserRaffleStatus({
 	link,
+	userAddress,
 	APIKey,
 	baseUrl = 'https://api.peanut.to/user-raffle-status',
 }: interfaces.IGetRaffleLeaderboard): Promise<interfaces.IUserRaffleStatus> {
@@ -526,6 +527,7 @@ export async function getUserRaffleStatus({
 		},
 		body: JSON.stringify({
 			pubKey,
+			userAddress,
 			apiKey: APIKey,
 		}),
 	})

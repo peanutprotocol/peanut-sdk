@@ -527,6 +527,7 @@ export interface IAddLinkCreation {
 
 export interface IGetRaffleLeaderboard {
 	link: string
+	userAddress?: string
 	APIKey: string
 	baseUrl?: string
 }
