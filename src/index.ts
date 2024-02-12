@@ -1446,7 +1446,9 @@ async function createClaimXChainPayload({
 	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	let tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const peanutFee = tokenAmount.mul(2).div(100) // take a 2% fee
+	tokenAmount = tokenAmount.sub(peanutFee)
 	config.verbose && console.log('Getting squid info..')
 
 	const route = await getSquidRoute({
@@ -1470,7 +1472,6 @@ async function createClaimXChainPayload({
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
 	const normalWithdrawalPayload = await createClaimPayload(link, routerAddress, true)
-	const peanutFee = BigNumber.from(tokenAmount).mul(2).div(100) // take a 2% fee
 
 	const routingArgs = [
 		'0x1900',
