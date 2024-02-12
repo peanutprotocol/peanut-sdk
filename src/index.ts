@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, constants, ethers } from 'ethersv5'
+import { BigNumber, constants, ethers, utils } from 'ethersv5'
 import { Provider, TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V4,
@@ -1446,14 +1446,14 @@ async function createClaimXChainPayload({
 	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, linkDetails.tokenDecimals)
+	const tokenAmount = utils.formatUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 
 	const route = await getSquidRoute({
 		squidRouterUrl,
 		fromChain: chainId,
 		fromToken: linkDetails.tokenAddress,
-		fromAmount: String(tokenAmount),
+		fromAmount: tokenAmount,
 		toChain: destinationChainId,
 		toToken: destinationToken,
 		fromAddress: recipient,
