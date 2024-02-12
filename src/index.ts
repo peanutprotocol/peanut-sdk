@@ -1470,6 +1470,7 @@ async function createClaimXChainPayload({
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
 	const normalWithdrawalPayload = await createClaimPayload(link, routerAddress, true)
+	const peanutFee = BigNumber.from(tokenAmount).mul(2).div(100) // take a 2% fee
 
 	const routingArgs = [
 		'0x1900',
@@ -1479,7 +1480,7 @@ async function createClaimXChainPayload({
 		linkDetails.depositIndex,
 		squidAddress,
 		route.value,
-		0, // currently we are not charging any fees
+		peanutFee,
 		route.calldata,
 	]
 	config.verbose && console.log('Routing args', routingArgs)
@@ -1518,7 +1519,7 @@ async function createClaimXChainPayload({
 		depositIndex: linkDetails.depositIndex,
 		withdrawalSignature,
 		squidFee: route.value,
-		peanutFee: BigNumber.from(0),
+		peanutFee,
 		squidData: route.calldata,
 		routingSignature,
 	}
