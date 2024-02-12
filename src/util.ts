@@ -641,7 +641,7 @@ export function validateUserName(name: string | null): string {
 	if (!name) return // Empty name - all good :)
 	name = name.trim()
 
-	if (name.length > 16) {
+	if (name.length > 30) {
 		throw new interfaces.SDKStatus(interfaces.EGenericErrorCodes.ERROR_NAME_TOO_LONG, 'Name too long')
 	}
 
