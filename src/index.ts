@@ -1446,14 +1446,14 @@ async function createClaimXChainPayload({
 	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = utils.formatUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 
 	const route = await getSquidRoute({
 		squidRouterUrl,
 		fromChain: chainId,
 		fromToken: linkDetails.tokenAddress,
-		fromAmount: tokenAmount,
+		fromAmount: tokenAmount.toString(),
 		toChain: destinationChainId,
 		toToken: destinationToken,
 		fromAddress: recipient,
