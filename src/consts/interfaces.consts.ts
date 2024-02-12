@@ -475,6 +475,7 @@ export interface IRaffleLeaderboardEntry {
 	address: string
 	name: string | null
 	amount: string
+	usdValue: string | null
 	tokenAddress: string
 	tokenSymbol: string
 }
