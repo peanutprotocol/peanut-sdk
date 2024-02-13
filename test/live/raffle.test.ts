@@ -15,7 +15,6 @@ import {
 	addLinkCreation,
 	getPopularityLeaderboard,
 	claimRaffleLink,
-	requiresRaffleCaptcha,
 } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
@@ -77,8 +76,8 @@ describe('raffle', () => {
 	}, 120000)
 
 	test('get raffle info', async () => {
-		const link = 'https://peanut.to/claim?c=137&v=v4.3&i=(72,3)#p=BJKnd9VcEAWrOXP5'
-		const info = await getRaffleInfo({ link, APIKey, baseUrl: 'http://localhost:8000/get-raffle-info' })
+		const link = 'https://red.peanut.to/packet?c=5000&v=v4.3&i=(33248,5098)&t=mantle#p=7SMDzKEn7ZOwdwPw'
+		const info = await getRaffleInfo({ link, APIKey })
 		console.log('Raffle info!', info)
 	}, 120000)
 
@@ -222,14 +221,4 @@ describe('raffle', () => {
 		}
 		expect(raised).toBe(true)
 	}, 120000)
-
-	test('requiresRaffleCaptcha', async () => {
-		const link = 'https://staging.peanut.to/packet?c=11155111&v=v4.3&i=(106,3)&t=ui#p=cy4maYWaXNXiTse2'
-		const requiresCaptcha = await requiresRaffleCaptcha({
-			link,
-			APIKey,
-			baseUrl: 'https://api.staging.peanut.to/requires-captcha'
-		})
-		console.log({ requiresCaptcha })
-	})
 })

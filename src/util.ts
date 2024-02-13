@@ -638,7 +638,7 @@ export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransac
  * @returns the validated name
  */
 export function validateUserName(name: string | null): string {
-	if (!name) return // Empty name - all good :)
+	if (!name) return name  // Empty name - all good :)
 	name = name.trim()
 
 	if (name.length > 30) {
