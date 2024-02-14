@@ -16,7 +16,7 @@ import {
 	trim_decimal_overflow,
 } from '.'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
-import { getRawParamsFromLink } from './util'
+import { getRawParamsFromLink, validateUserName } from './util'
 
 export function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
 	const randoms: number[] = []
@@ -346,7 +346,8 @@ export async function getRaffleAuthorisation({
 
 	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
-
+	
+	recipientName = validateUserName(recipientName) // make sure we trim '' and \n
 	const headers = {
 		'Content-Type': 'application/json',
 	}
@@ -407,6 +408,7 @@ export async function addLinkCreation({
 	const params = getRawParamsFromLink(link)
 	const { privateKey } = generateKeysFromString(params.password)
 
+	name = validateUserName(name) // make sure we trim '' and \n
 	const notNullName = name || ''
 	const digest = utils.solidityKeccak256(['string'], [linkToSubmit + notNullName])
 
