@@ -18,12 +18,16 @@ import {
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { getRawParamsFromLink, validateUserName } from './util'
 
-export function generateAmountsDistribution(totalAmount: BigNumber, numberOfLinks: number): BigNumber[] {
+export function generateAmountsDistribution(
+	totalAmount: BigNumber,
+	numberOfLinks: number,
+	exponent: number = 4
+): BigNumber[] {
 	const randoms: number[] = []
 	let randomsSum = 0
 	for (let i = 0; i < numberOfLinks; i++) {
-		let value = Math.random()
-		value += 0.05 // communism - make sure that everyone gets a reasonable amount
+		let value = Math.random() ** exponent // Squaring to make distribution more spikeyt
+		value += 1 / numberOfLinks // communism - make sure that everyone gets a minimal amount
 		randoms.push(value)
 		randomsSum += value
 	}
@@ -375,11 +379,7 @@ export async function getRaffleAuthorisation({
 			)
 		}
 		if (error.includes('captacha is required')) {
-			throw new interfaces.SDKStatus(
-				interfaces.ERaffleErrorCodes.CAPTCHA_REQUIRED,
-				'Captcha is required',
-				error
-			)
+			throw new interfaces.SDKStatus(interfaces.ERaffleErrorCodes.CAPTCHA_REQUIRED, 'Captcha is required', error)
 		}
 		throw new Error(error)
 	}
