@@ -2814,6 +2814,13 @@
 				"symbol": "ZRF",
 				"decimals": 18,
 				"logoURI": "https://assets.coingecko.com/coins/images/32443/thumb/Zurf_logo.png?1698238062"
+			},
+			{
+				"address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+				"name": "USD Coin",
+				"symbol": "USDC`",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
 			}
 		]
 	},
