@@ -29,5 +29,9 @@
 				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
 			}
 		]
+	},
+	{
+		"chainId": "137",
+		"tokens": []
 	}
 ]

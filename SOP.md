@@ -28,3 +28,8 @@ EVM:
 -   getRaffleInfo +++++
 -   just CTRL+F for 'v4.2' or 'v4.3'
 -   change `const routerContractVersion = 'Rv4.2'`
+
+## Adding a custom token
+1. Fill out `src/data/manualTokenDetails.json` with the token details
+2. run `fillTokenDetails.py`
+3. release
