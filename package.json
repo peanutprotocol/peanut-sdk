@@ -1,6 +1,6 @@
 {
 	"name": "@squirrel-labs/peanut-sdk",
-	"version": "0.4.0",
+	"version": "0.4.0-raffle.59",
 	"description": "The Peanut Protocol SDK! Check out the documentation at https://docs.peanut.to",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -13,6 +13,7 @@
 		"prettier": "prettier . --write",
 		"dry-run": "npm pack --dry-run",
 		"clean": "rm -r dist || true",
+		"format": "prettier --write .",
 		"build:lib": "vite build",
 		"build:dev": "npm run clean && npm run pkg-move && npm run generate-types && vite build",
 		"build": "npm run clean && npm run pkg-move && npm run generate-types && vite build",

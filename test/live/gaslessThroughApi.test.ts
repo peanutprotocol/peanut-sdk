@@ -98,7 +98,7 @@ describe('gasless functionality through peanut api', () => {
 				tokenAmount: 0.01,
 				tokenDecimals: 18,
 				tokenAddress: constants.AddressZero,
-			}
+			},
 		})
 		console.log('Created link', link)
 

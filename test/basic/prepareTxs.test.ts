@@ -12,6 +12,7 @@ const goerliWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY, goerliProvider)
 
 describe('prepareDepositTxs', function () {
 	it('should prepare transactions successfully', async function () {
+		peanut.toggleVerbose()
 		const response = await peanut.prepareDepositTxs({
 			address: goerliWallet.address,
 			linkDetails: {

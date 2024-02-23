@@ -366,6 +366,193 @@ export interface IMakeReclaimGaslessParams {
 	signature: string
 }
 
+export interface IPrepareRaffleDepositTxsParams {
+	userAddress: string
+	linkDetails: IPeanutLinkDetails
+	numberOfLinks: number
+	password: string
+	withMFA: boolean
+	provider?: Provider
+}
+
+export interface IGetRaffleLinkFromTxParams {
+	txHash: string
+	linkDetails: IPeanutLinkDetails
+	password: string
+	numberOfLinks: number
+	provider?: Provider
+	name?: string
+	withMFA: boolean
+	withCaptcha: boolean
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetRaffleLinkFromTxResponse {
+	link: string
+}
+
+export interface IGetRaffleInfoParams {
+	link: string
+	APIKey?: string
+	baseUrl?: string
+}
+
+export interface IRaffleInfo {
+	chainId: string
+	isActive: boolean
+	totalSlotsNumber: number
+	claimedSlotsNumber: number
+	senderAddress: string
+	senderName: string
+	withMFA: boolean
+	withCaptcha: boolean
+}
+
+export interface ILinkParams {
+	chainId: string
+	contractVersion: string
+	depositIdx: number
+	password: string
+	trackId: string
+}
+
+export interface ILinkRawParams {
+	chainId: string
+	contractVersion: string
+	depositIndices: string
+	password: string
+	trackId: string
+}
+
+export interface IPeanutV4_2Deposit {
+	pubKey20: string
+	amount: BigNumber
+	tokenAddress: string
+	contractType: number
+	claimed: boolean
+	timestamp: number
+	tokenId: BigNumber
+	senderAddress: string
+}
+
+export interface IClaimRaffleLinkParams {
+	link: string
+	APIKey: string
+	recipientAddress: string
+	recipientName?: string
+	captchaResponse?: string
+	baseUrlAuth?: string
+	baseUrlClaim?: string
+	provider?: Provider
+}
+
+export interface IClaimRaffleLinkResponse {
+	txHash?: string
+	chainId: string
+	amountReceived: string
+	tokenAddress: string
+	tokenDecimals: number
+	tokenSymbol: string
+	tokenName: string
+}
+
+export interface IGetRaffleAuthorisationParams {
+	link: string
+	APIKey: string
+	recipientAddress: string
+	recipientName: string
+	captchaResponse?: string
+	baseUrl?: string
+}
+
+export interface IGetRaffleAuthorisationResponse {
+	depositIdx: number
+	authorisation: string // MFA signature
+}
+
+export interface IRaffleLeaderboardEntry {
+	address: string
+	name: string | null
+	amount: string
+	usdValue: string | null
+	tokenAddress: string
+	tokenSymbol: string
+}
+
+export interface IGenerosityLeaderboardEntry {
+	address: string
+	name: string | null
+	linksCreated: number
+}
+
+export interface IPopularityLeaderboardEntry {
+	address: string
+	name: string | null
+	popularity: number
+}
+
+export interface IAddUsername {
+	address: string
+	name: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetUsername {
+	address: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IAddLinkClaim {
+	claimerAddress: string
+	name?: string
+	depositIndex: number
+	amount: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IAddLinkCreation {
+	name?: string
+	link: string
+	withMFA: boolean
+	withCaptcha: boolean
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetRaffleLeaderboard {
+	link: string
+	userAddress?: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IGetLeaderboard {
+	baseUrl?: string
+}
+
+export interface IIsAddressEligible {
+	address: string
+	link: string
+	APIKey: string
+	baseUrl?: string
+}
+
+export interface IValidateRaffleLink {
+	link: string
+}
+
+export interface IUserRaffleStatus {
+	requiresCaptcha: boolean
+	userResults: IRaffleLeaderboardEntry | null
+}
+
 // error object and enums
 
 export enum ECreateLinkStatusCodes {
@@ -389,6 +576,7 @@ export enum EPrepareCreateTxsStatusCodes {
 export enum ESignAndSubmitTx {
 	ERROR_BROADCASTING_TX,
 	ERROR_SETTING_FEE_OPTIONS,
+	ERROR_INSUFFICIENT_NATIVE_TOKEN,
 }
 
 export enum EGetLinkFromTxStatusCodes {
@@ -411,7 +599,17 @@ export enum EXChainStatusCodes {
 }
 export enum EGenericErrorCodes {
 	GENERIC_ERROR,
+	ERROR_UNSUPPORTED_CHAIN,
+	ERROR_NAME_TOO_LONG,
+	ERROR_PROHIBITED_SYMBOL,
 	// Add more generic error codes here if needed
+}
+
+export enum ERaffleErrorCodes {
+	ERROR_VALIDATING_LINK_DETAILS,
+	ALL_SLOTS_ARE_CLAIMED,
+	CAPTCHA_REQUIRED,
+	ERROR,
 }
 
 // Don't forget to add the new enum to the allErrorEnums type
@@ -422,6 +620,7 @@ export type allErrorEnums =
 	| EGetLinkFromTxStatusCodes
 	| EClaimLinkStatusCodes
 	| EXChainStatusCodes
+	| ERaffleErrorCodes
 	| EGenericErrorCodes // New enum added here
 
 export class SDKStatus extends Error {

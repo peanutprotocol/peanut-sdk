@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////
 
-import { BigNumber, ethers } from 'ethersv5'
+import { BigNumber, constants, ethers, utils } from 'ethersv5'
 import { Provider, TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
 	PEANUT_ABI_V4,
@@ -24,7 +24,10 @@ import {
 	TOKEN_TYPES,
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_ABI_V4_2,
+	PEANUT_ABI_V4_3,
 	FALLBACK_CONTRACT_VERSION,
+	PEANUT_BATCHER_ABI_V4_2,
+	PEANUT_BATCHER_ABI_V4_3,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -43,16 +46,22 @@ import {
 	getRandomString,
 	getLinkFromParams,
 	getParamsFromLink,
+	getRawParamsFromLink,
 	getDepositIdx,
 	getDepositIdxs,
 	getLinksFromMultilink,
 	createMultiLinkFromLinks,
+	isShortenedLink,
+	shortenMultilink,
+	expandMultilink,
+	combineRaffleLink,
 	compareDeposits,
 	signAddress,
 	getSquidRouterUrl,
 	toLowerCaseKeys,
 	ethersV5ToPeanutTx,
 	peanutToEthersV5Tx,
+	validateUserName,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -126,17 +135,17 @@ async function fetchGetBalance(rpcUrl: string) {
 	config.verbose && console.log('rpcs', rpcs)
 
 	// Check if there is an Infura RPC and check for its liveliness
-	let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
+	// let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
 	const INFURA_API_KEY = '4478656478ab4945a1b013fb1d8f20fd'
-	if (infuraRpc) {
-		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', INFURA_API_KEY)
-		config.verbose && console.log('Infura RPC found:', infuraRpc)
-		const provider = await createValidProvider(infuraRpc)
-		if (provider) {
-			providerCache[chainId] = provider
-			return provider
-		}
-	}
+	// if (infuraRpc) {
+	// 	infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', INFURA_API_KEY)
+	// 	config.verbose && console.log('Infura RPC found:', infuraRpc)
+	// 	const provider = await createValidProvider(infuraRpc)
+	// 	if (provider) {
+	// 		providerCache[chainId] = provider
+	// 		return provider
+	// 	}
+	// }
 
 	// If no valid Infura RPC, continue with the current behavior
 	const providerPromises = rpcs.map((rpcUrl) =>
@@ -228,20 +237,33 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 
 	// Determine which ABI version to use based on the version provided
 	config.verbose && console.log('finding contract for ', 'version', version, 'chainId', chainId)
-	let PEANUT_ABI
+	// TODO: this code is annoying to update
+	let CONTRACT_ABI: any
 	switch (version) {
 		case 'v4':
-			PEANUT_ABI = PEANUT_ABI_V4
+			CONTRACT_ABI = PEANUT_ABI_V4
 			break
 		case 'v4.2':
-			PEANUT_ABI = PEANUT_ABI_V4_2
+			CONTRACT_ABI = PEANUT_ABI_V4_2
+			break
+		case 'v4.3':
+			CONTRACT_ABI = PEANUT_ABI_V4_3
 			break
 		case 'Bv4':
-			PEANUT_ABI = PEANUT_BATCHER_ABI_V4
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4
+			break
+		case 'Bv4.3':
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_3
+			break
+		case 'Bv4.2':
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_2
 			break
 		case 'Rv4.2':
-			PEANUT_ABI = PEANUT_ROUTER_ABI_V4_2
+			CONTRACT_ABI = PEANUT_ROUTER_ABI_V4_2
 			break
+		case 'Rv4.3':
+			CONTRACT_ABI = PEANUT_ABI_V4_3
+
 		default:
 			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
 	}
@@ -253,7 +275,7 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 		throw new Error(`Contract ${version} not deployed on chain ${chainId}`)
 	}
 
-	const contract = new ethers.Contract(contractAddress, PEANUT_ABI, signerOrProvider)
+	const contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signerOrProvider)
 
 	config.verbose && console.log(`Connected to contract ${version} on chain ${chainId} at ${contractAddress}`)
 
@@ -280,6 +302,7 @@ async function getAllowanceERC20(
 		allowance = await tokenContract.allowance(address, spender)
 	} catch (error) {
 		console.error('Error fetching ERC20 allowance status:', error)
+		return BigNumber.from(0)
 	}
 	return allowance
 }
@@ -298,6 +321,7 @@ async function getApprovedERC721(
 		approved = await tokenContract.getApproved(tokenId)
 	} catch (error) {
 		console.error('Error fetching ERC721 approval status:', error)
+		return constants.AddressZero
 	}
 	return approved
 }
@@ -317,6 +341,7 @@ async function getApprovedERC1155(
 		approved = await tokenContract.isApprovedForAll(addressOwner, addressOperator)
 	} catch (error) {
 		console.error('Error fetching ERC1155 approval status:', error)
+		return false
 	}
 	return approved
 }
@@ -504,22 +529,28 @@ async function setFeeOptions({
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
 	} else if (unsignedTx) {
-		const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(unsignedTx))
-		txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
+		try {
+			const gasLimitRaw = await provider.estimateGas(peanutToEthersV5Tx(unsignedTx))
+			txOptions.gasLimit = gasLimitRaw.mul(gasLimitMultiplier)
+		} catch (error: any) {
+			const errLower = String(error).toLowerCase()
+			if (
+				errLower.includes('insufficient funds') ||
+				errLower.includes('insufficient_funds') ||
+				errLower.includes('gas required exceeds allowance')
+			) {
+				throw new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN)
+			}
+			// implicit else
+			throw error
+		}
 	}
 	config.verbose && console.log('checking if eip1559 is supported...')
 
 	// Check if EIP-1559 is supported
 	// if on milkomeda or bnb or linea, set eip1559 to false
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
-	if (
-		chainId === 2001 ||
-		chainId === 200101 ||
-		chainId === 56 ||
-		chainId === 59144 ||
-		chainId === 59140 ||
-		chainId === 534352
-	) {
+	if ([2001, 200101, 56, 59144, 59140, 534352, 5000, 5001].includes(chainId)) {
 		eip1559 = false
 		config.verbose && console.log('Setting eip1559 to false as an exception')
 	} else if (chainDetails && chainDetails.features) {
@@ -873,7 +904,10 @@ async function signAndSubmitTx({
 			maxPriorityFeePerGas: structSigner.maxPriorityFeePerGas,
 			gasLimit: structSigner.gasLimit,
 		})
-	} catch (error) {
+	} catch (error: any) {
+		if (error instanceof interfaces.SDKStatus) throw error // propagate
+
+		// else throw a more generic error
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
 			'Error setting the fee options',
@@ -891,6 +925,15 @@ async function signAndSubmitTx({
 		tx = await structSigner.signer.sendTransaction(_unsignedTx)
 		config.verbose && console.log('broadcasted tx...')
 	} catch (error) {
+		const errLower = String(error).toLowerCase()
+		if (
+			errLower.includes('insufficient funds') ||
+			errLower.includes('insufficient_funds') ||
+			errLower.includes('gas required exceeds allowance')
+		) {
+			throw new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.ERROR_INSUFFICIENT_NATIVE_TOKEN)
+		}
+
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_BROADCASTING_TX,
 			error,
@@ -921,7 +964,9 @@ async function signAndSubmitTx({
 // 	return { txHash: tx.hash, tx, status: new interfaces.SDKStatus(interfaces.ESignAndSubmitTx.SUCCESS) }
 // }
 
-// takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
+/**
+ *  takes in a tx hash and linkDetails and returns an array of one or many links (if batched)
+ */
 async function getLinksFromTx({
 	linkDetails,
 	txHash,
@@ -1245,7 +1290,11 @@ async function claimLink({
 		provider: signer.provider,
 	})
 
+	const txOptions2 = { ...txOptions, ...claimParams }
+
 	config.verbose && console.log('submitting tx on contract address: ', contract.address, 'on chain: ', chainId, '...')
+	config.verbose && console.log('Full tx:', txOptions2)
+	config.verbose && console.log('Full tx:', claimParams, txOptions)
 
 	// withdraw the deposit
 	const tx = await contract.withdrawDeposit(...claimParams, txOptions)
@@ -1283,6 +1332,9 @@ async function claimLinkSender({
 			gasLimit: structSigner.gasLimit,
 		})
 	} catch (error) {
+		if (error instanceof interfaces.SDKStatus) throw error // propagate
+
+		// else throw a more generic error
 		throw new interfaces.SDKStatus(
 			interfaces.ESignAndSubmitTx.ERROR_SETTING_FEE_OPTIONS,
 			'Error setting the fee options',
@@ -1381,7 +1433,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (contractVersion !== 'v4.2') {
+	if (contractVersion !== 'v4.2' && contractVersion !== 'v4.3') {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1394,14 +1446,16 @@ async function createClaimXChainPayload({
 	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = parseFloat(linkDetails.tokenAmount) * Math.pow(10, linkDetails.tokenDecimals)
+	let tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const peanutFee = tokenAmount.mul(2).div(100) // take a 2% fee
+	tokenAmount = tokenAmount.sub(peanutFee)
 	config.verbose && console.log('Getting squid info..')
 
 	const route = await getSquidRoute({
 		squidRouterUrl,
 		fromChain: chainId,
 		fromToken: linkDetails.tokenAddress,
-		fromAmount: String(tokenAmount),
+		fromAmount: tokenAmount.toString(),
 		toChain: destinationChainId,
 		toToken: destinationToken,
 		fromAddress: recipient,
@@ -1412,7 +1466,8 @@ async function createClaimXChainPayload({
 	config.verbose && console.log('Squid route calculated :)', { route })
 
 	// cryptography
-	const routerContractVersion = 'R' + linkDetails.contractVersion
+	// TODO: deal with contract upgrades better SOP.md contract upgrads
+	const routerContractVersion = 'Rv4.2'
 	const squidAddress = isMainnet ? SQUID_ADDRESS['mainnet'] : SQUID_ADDRESS['testnet']
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
@@ -1426,7 +1481,7 @@ async function createClaimXChainPayload({
 		linkDetails.depositIndex,
 		squidAddress,
 		route.value,
-		0, // currently we are not charging any fees
+		peanutFee,
 		route.calldata,
 	]
 	config.verbose && console.log('Routing args', routingArgs)
@@ -1465,7 +1520,7 @@ async function createClaimXChainPayload({
 		depositIndex: linkDetails.depositIndex,
 		withdrawalSignature,
 		squidFee: route.value,
-		peanutFee: BigNumber.from(0),
+		peanutFee,
 		squidData: route.calldata,
 		routingSignature,
 	}
@@ -1562,7 +1617,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (['v4', 'v4.2'].includes(contractVersion)) {
+	if (['v4', 'v4.2', 'v4.3'].includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2056,16 +2111,18 @@ function getLatestContractVersion({
 	experimental?: boolean
 }): string {
 	try {
+		config.verbose && console.log('getting LatestContractVersion:', chainId, type, experimental)
 		const data = PEANUT_CONTRACTS
-
 		const chainData = data[chainId as unknown as keyof typeof data]
 
 		// Filter keys starting with "v" or "Bv" based on type
 		let versions = Object.keys(chainData)
 			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
 			.sort((a, b) => {
-				const partsA = a.substring(1).split('.').map(Number)
-				const partsB = b.substring(1).split('.').map(Number)
+				const partsA =
+					type === 'batch' ? a.substring(2).split('.').map(Number) : a.substring(1).split('.').map(Number)
+				const partsB =
+					type === 'batch' ? b.substring(2).split('.').map(Number) : b.substring(1).split('.').map(Number)
 
 				// Compare major version first
 				if (partsA[0] !== partsB[0]) {
@@ -2076,16 +2133,17 @@ function getLatestContractVersion({
 				return (partsB[1] || 0) - (partsA[1] || 0)
 			})
 
+		config.verbose && console.log('Contract Versions found:', versions)
 		// Adjust the filtering logic based on the experimental flag and contract version variables
 		if (!experimental && type === 'normal') {
-			versions = versions.filter((version) => version.startsWith(LATEST_STABLE_CONTRACT_VERSION))
+			if (!versions.includes(LATEST_STABLE_CONTRACT_VERSION)) {
+				if (versions.length === 0) {
+					versions = [FALLBACK_CONTRACT_VERSION]
+				}
 
-			if (versions.length === 0) {
-				versions = [FALLBACK_CONTRACT_VERSION]
-			}
-
-			if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
-				versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
+				if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
+					versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
+				}
 			}
 		}
 
@@ -2109,7 +2167,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!['v4', 'v4.2'].includes(peanutContractVersion)) {
+	if (!['v4', 'v4.2', 'v4.3'].includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}
@@ -2273,8 +2331,11 @@ async function makeGaslessDepositPayload({
 	const nonceWithPubKeyHex = ethers.utils.solidityKeccak256(['address', 'bytes32'], [pubKey20, randomNonceHex])
 
 	const nowSeconds = Math.floor(Date.now() / 1000)
-	const validAfter = BigNumber.from(nowSeconds)
-	const validBefore = validAfter.add(3600) // valid for 1 hour
+
+	// Make a large window of 2 days to ensure the validity
+	// during transaction simulation and execution
+	const validAfter = BigNumber.from(nowSeconds - 24 * 3600)
+	const validBefore = BigNumber.from(nowSeconds + 24 * 3600)
 
 	const payload: interfaces.IGaslessDepositPayload = {
 		chainId: linkDetails.chainId,
@@ -2608,6 +2669,9 @@ async function getTokenContractDetails({
  */
 const prepareTxs = prepareDepositTxs
 
+import * as raffle from './raffle.ts'
+export * from './raffle.ts'
+
 const peanut = {
 	CHAIN_DETAILS,
 	LATEST_STABLE_BATCHER_VERSION,
@@ -2636,6 +2700,9 @@ const peanut = {
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
+	shortenMultilink,
+	expandMultilink,
+	combineRaffleLink,
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
 	ethersV5ToPeanutTx,
@@ -2653,8 +2720,10 @@ const peanut = {
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
+	isShortenedLink,
 	getLinksFromTx,
 	getParamsFromLink,
+	getRawParamsFromLink,
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
@@ -2685,12 +2754,15 @@ const peanut = {
 	verifySignature,
 	resolveToENSName,
 	makeGaslessDepositPayload,
+	prepareApproveERC20Tx,
 	prepareGaslessDepositTx,
 	makeGaslessReclaimPayload,
 	prepareGaslessReclaimTx,
 	EIP3009Tokens,
 	getTokenContractType,
 	getTokenContractDetails,
+	validateUserName,
+	...raffle,
 }
 
 export default peanut
@@ -2723,6 +2795,9 @@ export {
 	createLink,
 	createLinks,
 	createMultiLinkFromLinks,
+	shortenMultilink,
+	expandMultilink,
+	combineRaffleLink,
 	detectContractVersionFromTxReceipt,
 	estimateGasLimit,
 	ethersV5ToPeanutTx,
@@ -2740,8 +2815,10 @@ export {
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
+	isShortenedLink,
 	getLinksFromTx,
 	getParamsFromLink,
+	getRawParamsFromLink,
 	getRandomString,
 	getSquidChains,
 	getSquidRoute,
@@ -2756,6 +2833,7 @@ export {
 	makeReclaimGasless,
 	peanutToEthersV5Tx,
 	prepareTxs,
+	prepareApproveERC20Tx,
 	prepareDepositTxs,
 	resetProviderCache,
 	setFeeOptions,
@@ -2778,4 +2856,5 @@ export {
 	EIP3009Tokens,
 	getTokenContractType,
 	getTokenContractDetails,
+	validateUserName,
 }

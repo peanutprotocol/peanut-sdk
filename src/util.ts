@@ -102,10 +102,10 @@ export async function signWithdrawalMessage(
 	depositIdx: number,
 	recipient: string,
 	privateKey: string,
-	onlyRecipientMode?: boolean // only for v4.2
+	onlyRecipientMode?: boolean // only for v4.2+
 ) {
 	let claimParams: any[]
-	if (vaultVersion == 'v4.2') {
+	if (vaultVersion == 'v4.2' || vaultVersion == 'v4.3') {
 		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
 		const stringHash = ethers.utils.solidityKeccak256(
 			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],
@@ -203,15 +203,11 @@ export async function getRandomString(n: number = 16): Promise<string> {
 }
 
 /**
- * Returns the parameters from a link
+ * Returns raw params from the link (so just unpacks the params)
+ * without converting deposit index to a number
+ * @param link
  */
-export function getParamsFromLink(link: string): {
-	chainId: string
-	contractVersion: string
-	depositIdx: number
-	password: string
-	trackId: string
-} {
+export function getRawParamsFromLink(link: string): interfaces.ILinkRawParams {
 	/* returns the parameters from a link */
 	let url
 	try {
@@ -239,15 +235,27 @@ export function getParamsFromLink(link: string): {
 	const _chainId: string = params.get('c') ?? '' // can be chain name or chain id
 	let chainId: string = _chainId
 	const contractVersion = params.get('v') ?? ''
-	let depositIdx: string | number = params.get('i') ?? ''
-	depositIdx = parseInt(depositIdx)
+	let depositIndices: string | number = params.get('i') ?? ''
 	const password = params.get('p') ?? ''
 	let trackId = '' // optional
 	if (params.get('t')) {
 		trackId = params.get('t') ?? ''
 	}
+	return { chainId, contractVersion, depositIndices, password, trackId }
+}
 
-	return { chainId, contractVersion, depositIdx, password, trackId }
+/**
+ * Returns the parameters from a link
+ */
+export function getParamsFromLink(link: string): interfaces.ILinkParams {
+	const { chainId, contractVersion, depositIndices, password, trackId } = getRawParamsFromLink(link)
+	return {
+		chainId,
+		contractVersion,
+		password,
+		depositIdx: parseInt(depositIndices),
+		trackId,
+	}
 }
 
 /**
@@ -306,7 +314,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (['v4', 'V4.2'].includes(contractVersion)) {
+	} else if (['v4', 'V4.2', 'v4.3'].includes(contractVersion)) {
 		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.
@@ -359,8 +367,19 @@ export function toLowerCaseKeys(obj: any): any {
 	return newObj
 }
 
-export function getLinksFromMultilink(link: string): string[] {
+export function isShortenedLink(link) {
 	const url = new URL(link)
+	const i = url.searchParams.get('i')
+	const shortenedLinkRegex = /^(\(\d+,\d+\))(,\(\d+,\d+\))*$/
+	return shortenedLinkRegex.test(i)
+}
+
+export function getLinksFromMultilink(link: string): string[] {
+	let _link = link
+	if (isShortenedLink(link)) {
+		_link = expandMultilink(link)
+	}
+	const url = new URL(_link)
 	const searchParams = new URLSearchParams(url.search)
 
 	// If there is a hash, treat the part after the hash as additional search parameters
@@ -383,7 +402,12 @@ export function getLinksFromMultilink(link: string): string[] {
 		const newSearchParams = new URLSearchParams(searchParams.toString()) // clone the original search parameters
 		newSearchParams.set('c', cParams.length === 1 ? cParams[0] : cParams[index])
 		newSearchParams.set('i', i)
-		newUrl.hash = '#?' + newSearchParams.toString()
+		if (newSearchParams.has('p')) {
+			newUrl.hash = '#?' + newSearchParams.toString()
+		} else {
+			newUrl.hash = 'p=' + url.hash.slice(3) ?? ''
+			newUrl.search = '?' + newSearchParams.toString()
+		}
 		return newUrl.toString()
 	})
 
@@ -393,6 +417,27 @@ export function getLinksFromMultilink(link: string): string[] {
 export function createMultiLinkFromLinks(links: string[]): string {
 	if (links.length === 0) {
 		throw new Error('No links provided')
+	}
+	let firstPValue = null
+	let firstVValue = null
+
+	for (let url of links) {
+		const urlObj = new URL(url)
+		const vValue = urlObj.searchParams.get('v')
+		const fragment = urlObj.hash.substring(1)
+		const pValue = new URLSearchParams(fragment).get('p')
+
+		if (firstPValue === null) {
+			firstPValue = pValue
+		} else if (firstPValue !== pValue) {
+			throw new Error("Inconsistent 'p' parameter values found.")
+		}
+
+		if (firstVValue === null) {
+			firstVValue = vValue
+		} else if (firstVValue !== vValue) {
+			throw new Error("Inconsistent 'v' parameter values found.")
+		}
 	}
 
 	const cParams: string[] = []
@@ -414,11 +459,16 @@ export function createMultiLinkFromLinks(links: string[]): string {
 			}
 		}
 
+		if (searchParams.has('p')) {
+			password = searchParams.get('p') || ''
+		} else {
+			password = url.hash.slice(3)
+		}
+
 		cParams.push(searchParams.get('c') || '')
 		iParams.push(searchParams.get('i') || '')
 		baseUrl = url.origin + url.pathname
 		contractVersion = searchParams.get('v') || ''
-		password = searchParams.get('p') || ''
 		trackId = searchParams.get('t') || ''
 
 		// Store all additional parameters
@@ -447,9 +497,77 @@ export function createMultiLinkFromLinks(links: string[]): string {
 	for (const [key, value] of additionalParams.entries()) {
 		hashString += `&${key}=${value}`
 	}
-	url.hash = '#?' + hashString
 
-	return url.toString()
+	const shortenedLink = shortenMultilink(url.toString())
+
+	return shortenedLink
+}
+
+export function shortenMultilink(link: string): string {
+	const url = new URL(link)
+	const params = new URLSearchParams(url.search)
+
+	const i = params.get('i')
+	if (!i) {
+		throw new Error('Error shortening the multilink')
+	}
+
+	const numbers = i.split(',').map((num) => parseInt(num, 10))
+	let grouped = []
+	let start = numbers[0]
+	let count = 1
+
+	for (let i = 1; i <= numbers.length; i++) {
+		if (numbers[i] === numbers[i - 1] + 1) {
+			count++
+		} else {
+			grouped.push(`(${start},${count})`)
+			start = numbers[i]
+			count = 1
+		}
+	}
+
+	params.set('i', grouped.join(','))
+	url.search = decodeURIComponent(params.toString())
+	return url.href
+}
+
+export function expandMultilink(link: string): string {
+	const url = new URL(link)
+	const params = new URLSearchParams(url.search)
+
+	const i = params.get('i')
+	if (!i) {
+		throw new Error('Error expanding the multilink')
+	}
+
+	const expandedIValues = []
+	const groupRegex = /\((\d+),(\d+)\)/g
+	let match
+
+	while ((match = groupRegex.exec(i)) !== null) {
+		const start = parseInt(match[1], 10)
+		const count = parseInt(match[2], 10)
+		for (let j = 0; j < count; j++) {
+			expandedIValues.push(start + j)
+		}
+	}
+
+	params.set('i', expandedIValues.join(','))
+	url.search = decodeURIComponent(params.toString())
+
+	return url.href
+}
+/**
+ * Cobmines multiple raffle links into one
+ * @param links array of raffle links
+ * @returns 1 raffle link
+ */
+export function combineRaffleLink(links: string[]): string {
+	const expandedLinks = links.map((link) => expandMultilink(link))
+	const combinedLink = createMultiLinkFromLinks(expandedLinks)
+
+	return combinedLink
 }
 
 export function compareDeposits(deposit1: any, deposit2: any) {
@@ -510,4 +628,29 @@ export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransac
 		data: unsignedTx.data,
 		value: valueSet ? BigNumber.from(unsignedTx.value.toString()) : null,
 	}
+}
+
+/**
+ * Validates a name entered by the user and throws an error if anything is bad.
+ * Checks:
+ * 1. Length - max 16 characters
+ * 2. Scam - forbids stuff like links inside names
+ * @returns the validated name
+ */
+export function validateUserName(name: string | null): string {
+	if (!name) return name  // Empty name - all good :)
+	name = name.trim()
+
+	if (name.length > 30) {
+		throw new interfaces.SDKStatus(interfaces.EGenericErrorCodes.ERROR_NAME_TOO_LONG, 'Name too long')
+	}
+
+	if (name.includes('.') && name.indexOf('.') !== name.indexOf('.eth')) {
+		throw new interfaces.SDKStatus(
+			interfaces.EGenericErrorCodes.ERROR_PROHIBITED_SYMBOL,
+			'Names cant contain dots except for ENS domains'
+		)
+	}
+
+	return name
 }

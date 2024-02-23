@@ -1,0 +1,45 @@
+[
+	{
+		"chainId": "5000",
+		"tokens": [
+			{
+				"address": "0x3390108e913824b8ead638444cc52b9abdf63798",
+				"name": "Bella",
+				"symbol": "BEL",
+				"decimals": 18,
+				"logoURI": "https://token-list.mantle.xyz/data/Bella/logo.svg"
+			},
+			{
+				"address": "0x217B4382a1De262C0FBa97C1B8378904B4a25e4D",
+				"name": "Mantle Dragon",
+				"symbol": "MDragon",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/30980/thumb/token-logo.png?1696529819"
+			}
+		]
+	},
+	{
+		"chainId": "5001",
+		"tokens": [
+			{
+				"address": "0x491FD73b7144371c04154A2a39FE5270C2E6A96A",
+				"name": "FLOKI",
+				"symbol": "FLOKI",
+				"decimals": 9,
+				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
+			}
+		]
+	},
+	{
+		"chainId": "137",
+		"tokens": [
+			{
+				"address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+				"name": "USD Coin",
+				"symbol": "USDC`",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
+			}
+		]
+	}
+]
