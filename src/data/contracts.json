@@ -198,12 +198,14 @@
 	},
 	"1284": {
 		"name": "moonbeam",
+		"mainnet": "true",
 		"v4.3": "0xDC28Bee3f933047f717BC792bcea4c7d3e243554",
 		"Bv4.3": "0x7a888921bEe35450346CC4f5551bf5E2D0aa65cB",
 		"Rv4.2": "0xCf6d9e5eFFde4A418d22C13021720847Ffb68Eb7"
 	},
 	"169": {
 		"name": "manta-pacific",
+		"mainnet": "true",
 		"Bv4.3": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5",
 		"v4.3": "0x897F8EDdB345F0d16081615823F76055Ad60A00c"
 	}
