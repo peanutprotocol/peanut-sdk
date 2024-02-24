@@ -161,9 +161,7 @@
 			"https://polygon-mumbai-bor.publicnode.com",
 			"https://polygon-mumbai.gateway.tenderly.co"
 		],
-		"faucets": [
-			"https://faucet.polygon.technology/"
-		],
+		"faucets": ["https://faucet.polygon.technology/"],
 		"nativeCurrency": {
 			"name": "MATIC",
 			"symbol": "MATIC",
@@ -338,9 +336,7 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": [
-			"https://rpc-mainnet-cardano-evm.c1.milkomeda.com"
-		],
+		"rpc": ["https://rpc-mainnet-cardano-evm.c1.milkomeda.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkAda",
@@ -420,9 +416,7 @@
 			"https://sepolia.gateway.tenderly.co",
 			"https://ethereum-sepolia.publicnode.com"
 		],
-		"faucets": [
-			"http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"
-		],
+		"faucets": ["http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"],
 		"nativeCurrency": {
 			"name": "Sepolia Ether",
 			"symbol": "ETH",
@@ -455,13 +449,8 @@
 		"name": "Holesky",
 		"title": "Ethereum Testnet Holesky",
 		"chain": "ETH",
-		"rpc": [
-			"https://ethereum-holesky.publicnode.com"
-		],
-		"faucets": [
-			"https://faucet.holesky.ethpandaops.io",
-			"https://holesky-faucet.pk910.de"
-		],
+		"rpc": ["https://ethereum-holesky.publicnode.com"],
+		"faucets": ["https://faucet.holesky.ethpandaops.io", "https://holesky-faucet.pk910.de"],
 		"nativeCurrency": {
 			"name": "Testnet ETH",
 			"symbol": "ETH",
@@ -551,10 +540,7 @@
 			"url": "https://ipfs.io/ipfs/QmRALA5qvQBRwWre8ofuhCbr3wxVmPS3kGetRR9uJqbqqe",
 			"format": "png"
 		},
-		"rpc": [
-			"https://api.avax.network/ext/bc/C/rpc",
-			"https://avalanche-c-chain.publicnode.com"
-		],
+		"rpc": ["https://api.avax.network/ext/bc/C/rpc", "https://avalanche-c-chain.publicnode.com"],
 		"features": [
 			{
 				"name": "EIP1559"
@@ -584,10 +570,7 @@
 		"name": "Linea",
 		"title": "Linea Mainnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.linea.build",
-			"https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"
-		],
+		"rpc": ["https://rpc.linea.build", "https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Linea Ether",
@@ -637,12 +620,8 @@
 	"5001": {
 		"name": "Mantle Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.testnet.mantle.xyz"
-		],
-		"faucets": [
-			"https://faucet.testnet.mantle.xyz"
-		],
+		"rpc": ["https://rpc.testnet.mantle.xyz"],
+		"faucets": ["https://faucet.testnet.mantle.xyz"],
 		"nativeCurrency": {
 			"name": "Testnet Mantle",
 			"symbol": "MNT",
@@ -669,9 +648,7 @@
 	"324": {
 		"name": "zkSync Mainnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://mainnet.era.zksync.io"
-		],
+		"rpc": ["https://mainnet.era.zksync.io"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -708,9 +685,7 @@
 	"300": {
 		"name": "zkSync Sepolia Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://sepolia.era.zksync.dev"
-		],
+		"rpc": ["https://sepolia.era.zksync.dev"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -743,9 +718,7 @@
 				}
 			]
 		},
-		"redFlags": [
-			"reusedChainId"
-		],
+		"redFlags": ["reusedChainId"],
 		"mainnet": false
 	},
 	"534352": {
@@ -802,10 +775,7 @@
 			"url": "https://ipfs.io/ipfs/QmYddHh5zdceSsBU7uGfQvEHg6UUtAFbzQBBaePS4whx7o",
 			"format": "png"
 		},
-		"rpc": [
-			"https://rpc.mantle.xyz",
-			"https://mantle.publicnode.com"
-		],
+		"rpc": ["https://rpc.mantle.xyz", "https://mantle.publicnode.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Mantle",
@@ -837,10 +807,7 @@
 	"1284": {
 		"name": "Moonbeam",
 		"chain": "MOON",
-		"rpc": [
-			"https://rpc.api.moonbeam.network",
-			"https://moonbeam.publicnode.com"
-		],
+		"rpc": ["https://rpc.api.moonbeam.network", "https://moonbeam.publicnode.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Glimmer",
@@ -865,11 +832,9 @@
 		}
 	},
 	"169": {
-		"name": "Manta Pacific Mainnet",
+		"name": "Manta Pacific",
 		"chain": "Manta Pacific",
-		"rpc": [
-			"https://pacific-rpc.manta.network/http"
-		],
+		"rpc": ["https://pacific-rpc.manta.network/http"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -889,7 +854,7 @@
 		"chainId": "169",
 		"networkId": 169,
 		"icon": {
-			"url": "https://ipfs.io/ipfs/QmTckcVTViRZ3NqT36MTt8AvgBSmudrbgU3pi8AaNtthoV",
+			"url": "data:image/png;base64,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",
 			"format": "png"
 		},
 		"explorers": [
