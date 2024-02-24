@@ -899,6 +899,6 @@
 				"standard": "EIP3091"
 			}
 		],
-		"mainnet": false
+		"mainnet": true
 	}
 }
