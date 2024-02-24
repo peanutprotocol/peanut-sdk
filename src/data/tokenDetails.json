@@ -11766,5 +11766,130 @@
 				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
 			}
 		]
+	},
+	{
+		"chainId": "169",
+		"name": "Manta Pacific Mainnet",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Ether",
+				"symbol": "ETH",
+				"decimals": 18,
+				"logoURI": "https://ipfs.io/ipfs/QmTckcVTViRZ3NqT36MTt8AvgBSmudrbgU3pi8AaNtthoV"
+			},
+			{
+				"address": "0x95cef13441be50d20ca4558cc0a27b601ac544e5",
+				"name": "Manta Network",
+				"symbol": "MANTA",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/34289/thumb/manta.jpg?1704468717"
+			},
+			{
+				"address": "0xb73603c5d87fa094b7314c74ace2e64d165016fb",
+				"name": "Bridged USD Coin  Manta Pacific ",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/32215/thumb/usdc.png?1696832099"
+			},
+			{
+				"address": "0xcd91716ef98798a85e79048b78287b13ae6b99b2",
+				"name": "Goku Money GAI",
+				"symbol": "GAI",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33309/thumb/GAI200x200.png?1701412062"
+			},
+			{
+				"address": "0x6e9655611b42c10b9af25b6ca08be349df45c370",
+				"name": "Bridged Rocket Pool ETH  Manta Pacific ",
+				"symbol": "RETH",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32219/thumb/reth.png?1696833235"
+			},
+			{
+				"address": "0x1c466b9371f8aba0d7c458be10a62192fcb8aa71",
+				"name": "Bridged Dai Stablecoin  Manta Pacific ",
+				"symbol": "DAI",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32216/thumb/dai_%281%29.png?1696832279"
+			},
+			{
+				"address": "0x305e88d809c9dc03179554bfbf85ac05ce8f18d6",
+				"name": "Bridged Wrapped Bitcoin  Manta Pacific ",
+				"symbol": "WBTC",
+				"decimals": 8,
+				"logoURI": "https://assets.coingecko.com/coins/images/32217/thumb/wbtc_%281%29.png?1696832481"
+			},
+			{
+				"address": "0x2fe3ad97a60eb7c79a976fc18bb5ffd07dd94ba5",
+				"name": "Bridged Wrapped stETH  Manta Pacific ",
+				"symbol": "WSTETH",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32218/thumb/wstETH.png?1696832978"
+			},
+			{
+				"address": "0x41c49790967067a71f893b51f2f311ace46fb773",
+				"name": "CirclePacific",
+				"symbol": "CIRCLE",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/34757/thumb/logo.png?1705981096"
+			},
+			{
+				"address": "0xf417f5a458ec102b90352f697d6e2ac3a3d2851f",
+				"name": "Bridged Tether  Manta Pacific ",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/32214/thumb/usdt_%281%29.png?1696831809"
+			},
+			{
+				"address": "0x0d613b80f9afb3cef99fe26702227d74b0178740",
+				"name": "Minu the Manta",
+				"symbol": "MNU",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/34075/thumb/minu_the_manta_no_back_200px.png?1703907109"
+			},
+			{
+				"address": "0x0dc808adce2099a9f62aa87d9670745aba741746",
+				"name": "Bridged Wrapped Ether  Manta Pacific ",
+				"symbol": "WETH",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32212/thumb/wETH_32.png?1696817415"
+			},
+			{
+				"address": "0xcd5d6de3fdbce1895f0dac13a065673599ed6806",
+				"name": "AsMatch",
+				"symbol": "ASM",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33920/thumb/AsMatch_coin_image.jpg?1703363249"
+			},
+			{
+				"address": "0xf584c4521bb890b0ad1eb68a9b1113339e0a7e85",
+				"name": "MantaSwap",
+				"symbol": "MTS",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/32069/thumb/mts.png?1696530866"
+			},
+			{
+				"address": "0xca24fdce9d4d9bd69c829689baea02e34d025f43",
+				"name": "KUMA",
+				"symbol": "KUMA",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/34151/thumb/200x200_kuma_icon.png?1704191255"
+			},
+			{
+				"address": "0x91647632245cabf3d66121f86c387ae0ad295f9a",
+				"name": "iZUMi Finance",
+				"symbol": "IZI",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/21791/thumb/izumi-logo-symbol.png?1696521144"
+			},
+			{
+				"address": "0xec901da9c68e90798bbbb74c11406a32a70652c3",
+				"name": "StakeStone ETH",
+				"symbol": "STONE",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/33103/thumb/200_200.png?1702602672"
+			}
+		]
 	}
 ]
