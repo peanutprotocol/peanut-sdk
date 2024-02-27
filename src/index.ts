@@ -512,10 +512,26 @@ async function setFeeOptions({
 }) {
 	config.verbose && console.log('Setting tx options...')
 
+	let _chainId: string = ''
+
 	if (!provider && !chainId) {
-		throw new Error('Either provider or chainId must be provided')
+		throw new interfaces.SDKStatus(
+			interfaces.ESetFeeOptionsStatusCodes.ERROR_PROVIDER_OR_CHAINID_REQUIRED,
+			'Either provider or chainId must be provided'
+		)
 	} else if (chainId && !provider) {
+		_chainId = chainId
 		provider = await getDefaultProvider(chainId)
+	} else if (chainId && provider) {
+		// if chainId and provider are both provided, check if they match
+		const network = await provider.getNetwork()
+		if (network.chainId.toString() !== chainId) {
+			throw new interfaces.SDKStatus(
+				interfaces.ESetFeeOptionsStatusCodes.ERROR_PROVIDER_CHAINID_MISMATCH,
+				'ChainId and provider chainId do not match'
+			)
+		}
+		_chainId = chainId
 	}
 
 	let feeData
@@ -530,10 +546,6 @@ async function setFeeOptions({
 		console.error('Failed to fetch gas price from provider:', error)
 		throw error
 	}
-
-	const _chainId = chainId
-		? chainId
-		: (await provider.getNetwork().then((network: any) => network.chainId)).toString()
 	const chainDetails = CHAIN_DETAILS[_chainId]
 
 	if (gasLimit) {
@@ -598,14 +610,14 @@ async function setFeeOptions({
 				// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
 				// Sanity check so that it's never more than the base fee.
 				// exception: linea, where baseFee is hardcoded to 7 gwei (minimum allowed)
-				if (![59144, 59140].includes(_chainId)) {
+				if (!['59144', '59140'].includes(_chainId)) {
 					if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
 						txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 					}
 				}
 
 				// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
-				if (_chainId == 137) {
+				if (_chainId == '137') {
 					const minPriorityFee = ethers.utils.parseUnits('40', 'gwei')
 					if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
 						txOptions.maxPriorityFeePerGas = minPriorityFee.toString()

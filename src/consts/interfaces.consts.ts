@@ -579,6 +579,11 @@ export enum ESignAndSubmitTx {
 	ERROR_INSUFFICIENT_NATIVE_TOKEN,
 }
 
+export enum ESetFeeOptionsStatusCodes {
+	ERROR_PROVIDER_OR_CHAINID_REQUIRED,
+	ERROR_PROVIDER_CHAINID_MISMATCH,
+}
+
 export enum EGetLinkFromTxStatusCodes {
 	ERROR_GETTING_TX_RECEIPT_FROM_HASH,
 }
@@ -622,6 +627,7 @@ export type allErrorEnums =
 	| EXChainStatusCodes
 	| ERaffleErrorCodes
 	| EGenericErrorCodes // New enum added here
+	| ESetFeeOptionsStatusCodes
 
 export class SDKStatus extends Error {
 	code: allErrorEnums
