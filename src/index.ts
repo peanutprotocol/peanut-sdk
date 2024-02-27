@@ -486,7 +486,8 @@ async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> 
 async function setFeeOptions({
 	txOptions,
 	unsignedTx,
-	provider,
+	provider = undefined,
+	chainId = undefined,
 	eip1559 = true,
 	maxFeePerGas = null,
 	maxFeePerGasMultiplier = 1.2,
@@ -498,7 +499,8 @@ async function setFeeOptions({
 }: {
 	txOptions?: any
 	unsignedTx?: interfaces.IPeanutUnsignedTransaction
-	provider: Provider
+	provider?: Provider | undefined
+	chainId?: string | undefined
 	eip1559?: boolean
 	maxFeePerGas?: ethers.BigNumber | null
 	maxFeePerGasMultiplier?: number
@@ -508,8 +510,14 @@ async function setFeeOptions({
 	maxPriorityFeePerGasMultiplier?: number
 	gasLimitMultiplier?: number
 }) {
-	// eip1559 = true
 	config.verbose && console.log('Setting tx options...')
+
+	if (!provider && !chainId) {
+		throw new Error('Either provider or chainId must be provided')
+	} else if (chainId && !provider) {
+		provider = await getDefaultProvider(chainId)
+	}
+
 	let feeData
 	// if not txOptions, create it (oneliner)
 	txOptions = txOptions || {}
@@ -523,8 +531,10 @@ async function setFeeOptions({
 		throw error
 	}
 
-	const chainId = Number(await provider.getNetwork().then((network: any) => network.chainId))
-	const chainDetails = CHAIN_DETAILS[chainId]
+	const _chainId = chainId
+		? chainId
+		: (await provider.getNetwork().then((network: any) => network.chainId)).toString()
+	const chainDetails = CHAIN_DETAILS[_chainId]
 
 	if (gasLimit) {
 		txOptions.gasLimit = gasLimit
@@ -550,7 +560,7 @@ async function setFeeOptions({
 	// Check if EIP-1559 is supported
 	// if on milkomeda or bnb or linea, set eip1559 to false
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
-	if ([2001, 200101, 56, 59144, 59140, 534352, 5000, 5001].includes(chainId)) {
+	if (['2001', '200101', '56', '59144', '59140', '534352', '5000', '5001'].includes(_chainId)) {
 		eip1559 = false
 		config.verbose && console.log('Setting eip1559 to false as an exception')
 	} else if (chainDetails && chainDetails.features) {
@@ -588,14 +598,14 @@ async function setFeeOptions({
 				// for some chains, like arbitrum or base, providers tend to return an incorrect maxPriorityFeePerGas
 				// Sanity check so that it's never more than the base fee.
 				// exception: linea, where baseFee is hardcoded to 7 gwei (minimum allowed)
-				if (![59144, 59140].includes(chainId)) {
+				if (![59144, 59140].includes(_chainId)) {
 					if (BigInt(txOptions.maxPriorityFeePerGas) > lastBaseFeePerGas) {
 						txOptions.maxPriorityFeePerGas = lastBaseFeePerGas.toString()
 					}
 				}
 
 				// for polygon (137), set priority fee to min 40 gwei (they have a minimum of 30 for spam prevention)
-				if (chainId == 137) {
+				if (_chainId == 137) {
 					const minPriorityFee = ethers.utils.parseUnits('40', 'gwei')
 					if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
 						txOptions.maxPriorityFeePerGas = minPriorityFee.toString()
