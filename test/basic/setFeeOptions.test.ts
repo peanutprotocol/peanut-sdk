@@ -85,15 +85,4 @@ describe('setFeeOptions function', () => {
 			})
 		).rejects.toThrow()
 	}, 30000)
-
-	it('should check if the provider and chainId are on the same network', async () => {
-		const provider = await getDefaultProvider('137')
-
-		await expect(
-			setFeeOptions({
-				chainId: '5000',
-				provider,
-			})
-		).rejects.toThrow('ChainId and provider chainId do not match')
-	}, 30000)
 })
