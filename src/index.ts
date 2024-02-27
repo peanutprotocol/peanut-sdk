@@ -510,6 +510,7 @@ async function setFeeOptions({
 	maxPriorityFeePerGasMultiplier?: number
 	gasLimitMultiplier?: number
 }) {
+	//TODO: Technically, if the provided tx Options have all the data filled out, we wouldn't have to check chainid or provider, because there's nth to do. Maybe Implememt an entry check for that
 	config.verbose && console.log('Setting tx options...')
 
 	let _chainId: string = ''
