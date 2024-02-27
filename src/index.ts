@@ -513,7 +513,7 @@ async function setFeeOptions({
 	//TODO: Technically, if the provided tx Options have all the data filled out, we wouldn't have to check chainid or provider, because there's nth to do. Maybe Implememt an entry check for that
 	config.verbose && console.log('Setting tx options...')
 
-	let _chainId: string = ''
+	let _chainId: string = chainId || ''
 
 	if (!provider && !chainId) {
 		throw new interfaces.SDKStatus(
@@ -523,16 +523,10 @@ async function setFeeOptions({
 	} else if (chainId && !provider) {
 		_chainId = chainId
 		provider = await getDefaultProvider(chainId)
-	} else if (chainId && provider) {
+	} else if (!chainId && provider) {
 		// if chainId and provider are both provided, check if they match
 		const network = await provider.getNetwork()
-		if (network.chainId.toString() !== chainId) {
-			throw new interfaces.SDKStatus(
-				interfaces.ESetFeeOptionsStatusCodes.ERROR_PROVIDER_CHAINID_MISMATCH,
-				'ChainId and provider chainId do not match'
-			)
-		}
-		_chainId = chainId
+		_chainId = network.chainId.toString()
 	}
 
 	let feeData
