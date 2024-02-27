@@ -37,6 +37,18 @@ describe('setFeeOptions function', () => {
 		expect(txOptions).toHaveProperty('gasPrice')
 	}, 30000)
 
+	it('should correctly set fee options for non-EIP-1559 chains with only chainId', async () => {
+		const txOptions = await setFeeOptions({
+			chainId: '5000',
+		})
+
+		expect(txOptions).toHaveProperty('gasPrice')
+	}, 30000)
+
+	it('should throw error if no chainId & provider are passed in', async () => {
+		await expect(setFeeOptions({})).rejects.toThrow('Either provider or chainId must be provided')
+	}, 30000)
+
 	it('should correctly set gas limit for specific chains', async () => {
 		const provider = await getDefaultProvider('137')
 
