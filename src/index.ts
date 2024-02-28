@@ -991,17 +991,36 @@ async function getLinksFromTx({
 	provider,
 }: interfaces.IGetLinkFromTxParams): Promise<interfaces.IGetLinkFromTxResponse> {
 	let txReceipt
-	try {
-		config.verbose && console.log(txHash, linkDetails.chainId, provider)
-		txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId, provider)
-	} catch (error) {
+	const maxRetries = 5
+	const retryDelay = 1000 // in ms
+
+	const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		try {
+			config.verbose && console.log(txHash, linkDetails.chainId, provider)
+			txReceipt = await getTxReceiptFromHash(txHash, linkDetails.chainId, provider)
+			break
+		} catch (error) {
+			if (attempt === maxRetries) {
+				throw new interfaces.SDKStatus(
+					interfaces.EGetLinkFromTxStatusCodes.ERROR_GETTING_TX_RECEIPT_FROM_HASH,
+					'Error getting the transaction receipt from the hash'
+				)
+			}
+			console.log(`Attempt ${attempt} failed. Retrying in ${retryDelay}ms...`)
+			await delay(retryDelay)
+		}
+	}
+
+	// if we get here and the txReceipt is still undefined, throw an error
+	if (!txReceipt) {
 		throw new interfaces.SDKStatus(
 			interfaces.EGetLinkFromTxStatusCodes.ERROR_GETTING_TX_RECEIPT_FROM_HASH,
 			'Error getting the transaction receipt from the hash'
 		)
 	}
 
-	// get deposit idx
 	const peanutContractVersion = detectContractVersionFromTxReceipt(txReceipt, linkDetails.chainId)
 	const idxs: number[] = getDepositIdxs(txReceipt, linkDetails.chainId, peanutContractVersion)
 	const links: string[] = []
