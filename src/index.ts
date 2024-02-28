@@ -1324,6 +1324,55 @@ async function claimLink({
 }
 
 /**
+ * Prepares a transaction to claim a link. Broadcasting the transaction is not handled by this function.
+ * @param link: the link to claim
+ * @param recipientAddress: the address to send the link's contents
+ * @param provider: the provider to use for the transaction
+ * @returns
+ */
+async function prepareClaimTx({
+	link,
+	recipientAddress,
+	provider = undefined,
+}: {
+	recipientAddress: string
+	link: string
+	provider?: ethers.providers.JsonRpcProvider
+}): Promise<interfaces.IPeanutUnsignedTransaction> {
+	const params = getParamsFromLink(link)
+	const chainId = params.chainId
+	const contractVersion = params.contractVersion
+	const depositIdx = params.depositIdx
+	const password = params.password
+
+	if (!provider) {
+		provider = await getDefaultProvider(chainId)
+	}
+
+	const keys = generateKeysFromString(password) // deterministically generate keys from password
+	const contract = await getContract(chainId, provider, contractVersion) // weird that signer is passed in here
+
+	// cryptography
+	const claimParams = await signWithdrawalMessage(
+		contractVersion,
+		chainId,
+		contract.address,
+		depositIdx,
+		recipientAddress,
+		keys.privateKey
+	)
+
+	const tx = await contract.populateTransaction.withdrawDeposit(...claimParams)
+
+	const peanutUnsignedTransaction: interfaces.IPeanutUnsignedTransaction = {
+		data: tx?.data,
+		to: tx?.to,
+	}
+
+	return peanutUnsignedTransaction
+}
+
+/**
  * Claims the contents of a link as a sender. Can only be used if a link has not been claimed in a set time period.
  * (24 hours). Only works with links created with v4 of the contract. More gas efficient than claimLink.
  */
@@ -2707,6 +2756,7 @@ const peanut = {
 	calculateCombinedPayloadHash,
 	claimAllUnclaimedAsSenderPerChain,
 	claimLink,
+	prepareClaimTx,
 	claimLinkGasless,
 	claimLinkSender,
 	claimLinkXChainGasless,
@@ -2802,6 +2852,7 @@ export {
 	calculateCombinedPayloadHash,
 	claimAllUnclaimedAsSenderPerChain,
 	claimLink,
+	prepareClaimTx,
 	claimLinkGasless,
 	claimLinkSender,
 	claimLinkXChainGasless,
