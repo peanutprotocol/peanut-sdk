@@ -1328,7 +1328,7 @@ async function claimLink({
  * @param link: the link to claim
  * @param recipientAddress: the address to send the link's contents
  * @param provider: the provider to use for the transaction
- * @returns
+ * @returns the prepared transaction in the form of an IPeanutUnsignedTransaction
  */
 async function prepareClaimTx({
 	link,
@@ -1349,10 +1349,9 @@ async function prepareClaimTx({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	const keys = generateKeysFromString(password) // deterministically generate keys from password
-	const contract = await getContract(chainId, provider, contractVersion) // weird that signer is passed in here
+	const keys = generateKeysFromString(password)
+	const contract = await getContract(chainId, provider, contractVersion)
 
-	// cryptography
 	const claimParams = await signWithdrawalMessage(
 		contractVersion,
 		chainId,
