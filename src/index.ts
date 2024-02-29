@@ -1337,7 +1337,7 @@ async function prepareClaimTx({
 }: {
 	recipientAddress: string
 	link: string
-	provider?: ethers.providers.JsonRpcProvider
+	provider?: ethers.providers.JsonRpcProvider // TODO: update to not use ethers.providers.JsonRpcProvider but just a url
 }): Promise<interfaces.IPeanutUnsignedTransaction> {
 	const params = getParamsFromLink(link)
 	const chainId = params.chainId
