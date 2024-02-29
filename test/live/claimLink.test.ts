@@ -6,7 +6,7 @@ const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
 describe('claimLink', () => {
 	toggleVerbose()
 
-	test.skip('claim a link', async () => {
+	test('claim a link', async () => {
 		const chainId = '137'
 		const Provider = await getDefaultProvider(chainId)
 		const Wallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', Provider)
