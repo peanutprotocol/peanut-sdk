@@ -2888,6 +2888,7 @@ const peanut = {
 	getTokenContractType,
 	getTokenContractDetails,
 	validateUserName,
+	getTxReceiptFromHash,
 	...raffle,
 }
 
@@ -2985,4 +2986,5 @@ export {
 	getTokenContractType,
 	getTokenContractDetails,
 	validateUserName,
+	getTxReceiptFromHash,
 }
