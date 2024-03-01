@@ -11,7 +11,36 @@ describe('claimLinkSender tests', function () {
 		new ethers.providers.JsonRpcBatchProvider(RPC_URL)
 	)
 
-	it('should create a link and claim it using claimLinkSender', async function () {
+	peanut.toggleVerbose(true)
+	it('should prepare the correct tx', async function () {
+		const chainId = '137'
+
+		const unclaimedTxs = await peanut.getAllUnclaimedDepositsWithIdxForAddress({
+			address: WALLET.address,
+			chainId,
+			peanutContractVersion: 'v4.3',
+		})
+
+		console.log(unclaimedTxs[unclaimedTxs.length - 1].idx)
+
+		const preparedClaimTx = await peanut.prepareClaimLinkSenderTx({
+			chainId,
+			depositIndex: unclaimedTxs[unclaimedTxs.length - 1].idx,
+		})
+
+		console.log(preparedClaimTx)
+
+		const feeOptions = peanut.setFeeOptions({
+			provider: WALLET.provider,
+			chainId: chainId,
+		})
+
+		const tx = { ...preparedClaimTx, ...feeOptions }
+
+		console.log({ tx })
+	}, 1000000000)
+
+	it.skip('should create a link and claim it using claimLinkSender', async function () {
 		return true
 		// can't be run if 24 hours hasn't passed since the link was created
 
