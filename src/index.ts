@@ -1471,12 +1471,9 @@ async function prepareClaimLinkSenderTx({
 
 	const tx = await contract.populateTransaction.withdrawDepositSender(depositIndex)
 
-	const peanutUnsignedTransaction: interfaces.IPeanutUnsignedTransaction = {
-		data: tx?.data,
-		to: tx?.to,
-	}
+	const x = ethersV5ToPeanutTx(tx)
 
-	return peanutUnsignedTransaction
+	return x
 }
 
 /**
