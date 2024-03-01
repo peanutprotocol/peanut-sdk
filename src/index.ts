@@ -1459,21 +1459,25 @@ async function prepareClaimLinkSenderTx({
 	chainId: string
 	contractVersion?: string
 }) {
-	if (!provider) {
-		provider = await getDefaultProvider(chainId)
+	try {
+		if (!provider) {
+			provider = await getDefaultProvider(chainId)
+		}
+
+		if (contractVersion == null) {
+			contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
+		}
+
+		const contract = await getContract(chainId, provider, contractVersion)
+
+		const tx = await contract.populateTransaction.withdrawDepositSender(depositIndex)
+
+		const convertedTx = ethersV5ToPeanutTx(tx)
+
+		return convertedTx
+	} catch (error) {
+		throw new interfaces.SDKStatus(interfaces.EClaimLinkStatusCodes.ERROR, error)
 	}
-
-	if (contractVersion == null) {
-		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
-	}
-
-	const contract = await getContract(chainId, provider, contractVersion)
-
-	const tx = await contract.populateTransaction.withdrawDepositSender(depositIndex)
-
-	const x = ethersV5ToPeanutTx(tx)
-
-	return x
 }
 
 /**
