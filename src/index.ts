@@ -1401,10 +1401,13 @@ async function claimLinkSender({
 }: interfaces.IClaimLinkSenderParams): Promise<interfaces.IClaimLinkSenderResponse> {
 	const signer = structSigner.signer
 	const chainId = String(await signer.getChainId())
-	const contract = await getContract(chainId, signer, contractVersion)
+
 	if (contractVersion == null) {
-		getLatestContractVersion({ chainId, type: 'normal' })
+		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
 	}
+
+	const contract = await getContract(chainId, signer, contractVersion)
+
 	// Prepare transaction options
 	let txOptions = {}
 	try {
@@ -1443,6 +1446,37 @@ async function claimLinkSender({
 			throw new Error('Link cannot be claimed yet, please wait 24 hours from creation time')
 		}
 	}
+}
+
+async function prepareClaimLinkSenderTx({
+	depositIndex,
+	provider = undefined,
+	chainId,
+	contractVersion = null,
+}: {
+	depositIndex: number
+	provider?: ethers.providers.JsonRpcProvider // TODO: update to not use ethers.providers.JsonRpcProvider but just a url
+	chainId: string
+	contractVersion?: string
+}) {
+	if (!provider) {
+		provider = await getDefaultProvider(chainId)
+	}
+
+	if (contractVersion == null) {
+		contractVersion = getLatestContractVersion({ chainId, type: 'normal' })
+	}
+
+	const contract = await getContract(chainId, provider, contractVersion)
+
+	const tx = await contract.populateTransaction.withdrawDepositSender(depositIndex)
+
+	const peanutUnsignedTransaction: interfaces.IPeanutUnsignedTransaction = {
+		data: tx?.data,
+		to: tx?.to,
+	}
+
+	return peanutUnsignedTransaction
 }
 
 /**
@@ -2280,10 +2314,14 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		}
 	}) // get all address deposits
 
+	config.verbose && console.log(addressDeposits)
+
 	// filter out deposits not made by the address
 	addressDeposits = addressDeposits.filter((deposit: any) => {
 		return deposit.senderAddress.toString() == address.toString()
 	})
+
+	config.verbose && console.log(addressDeposits)
 
 	config.verbose && console.log('all deposits made by address: ', addressDeposits)
 
@@ -2306,6 +2344,8 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 			senderAddress: deposit.senderAddress,
 		}
 	}) // get all deposits to map idxs
+
+	config.verbose && console.log(mappedDeposits)
 
 	mappedDeposits.map((deposit: any, idx) => {
 		addressDeposits.map((addressDeposit: any) => {
@@ -2777,6 +2817,7 @@ const peanut = {
 	prepareClaimTx,
 	claimLinkGasless,
 	claimLinkSender,
+	prepareClaimLinkSenderTx,
 	claimLinkXChainGasless,
 	config,
 	createClaimPayload,
@@ -2873,6 +2914,7 @@ export {
 	prepareClaimTx,
 	claimLinkGasless,
 	claimLinkSender,
+	prepareClaimLinkSenderTx,
 	claimLinkXChainGasless,
 	config,
 	createClaimPayload,
