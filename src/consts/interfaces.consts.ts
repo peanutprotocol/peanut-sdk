@@ -607,6 +607,8 @@ export enum EGenericErrorCodes {
 	ERROR_UNSUPPORTED_CHAIN,
 	ERROR_NAME_TOO_LONG,
 	ERROR_PROHIBITED_SYMBOL,
+	ERROR_GETTING_TOKENBALANCE,
+	ERROR_UNSUPPORTED_TOKEN,
 	// Add more generic error codes here if needed
 }
 
