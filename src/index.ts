@@ -2791,14 +2791,7 @@ async function getTokenContractDetails({
 
 /**
  * Function to get the balance of a token
- * ! only works for native and ERC20 tokens !
- * @param tokenAddress: the address of the token
- * @param walletAddress: the address of the wallet
- * @param chainId(optional) : the chainId
- * @param tokenType(optional) : the type of the token, has to be of type EPeanutLinkType
- * @param tokenDecimals(optional) : the decimals of the token
- * @param provider(optional) : the provider
- * @returns the balance of the token formatted with the decimals
+ * Not working for ERC721 and ERC1155 tokens yet
  */
 async function getTokenBalance({
 	tokenAddress,
@@ -2806,6 +2799,7 @@ async function getTokenBalance({
 	chainId,
 	tokenType = undefined,
 	tokenDecimals = undefined,
+	tokenId = undefined,
 	provider = undefined,
 }: {
 	tokenAddress: string
@@ -2813,12 +2807,13 @@ async function getTokenBalance({
 	chainId: string
 	tokenType?: interfaces.EPeanutLinkType
 	tokenDecimals?: number
-	provider?: ethers.providers.Provider //TODO: make this optional URL if we decide to remove ethers dependency
+	tokenId?: string
+	provider?: ethers.providers.Provider // TODO: make this optional URL if we decide to remove ethers dependency
 }): Promise<String> {
 	try {
 		if (!provider) provider = await getDefaultProvider(chainId)
 
-		if (tokenAddress === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+		if (tokenAddress.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
 			tokenAddress = ethers.constants.AddressZero.toLowerCase()
 		}
 
@@ -2828,9 +2823,8 @@ async function getTokenBalance({
 			tokenDecimals = tokenDetails.decimals
 		}
 
-		if (tokenType == interfaces.EPeanutLinkType.native) {
+		if (tokenType === interfaces.EPeanutLinkType.native) {
 			const balance = await provider.getBalance(walletAddress)
-
 			return ethers.utils.formatUnits(balance, tokenDecimals)
 		} else {
 			let contractABI
@@ -2860,10 +2854,15 @@ async function getTokenBalance({
 		}
 	} catch (error) {
 		console.error(error)
-		throw new interfaces.SDKStatus(
-			interfaces.EGenericErrorCodes.ERROR_GETTING_TOKENBALANCE,
-			'Error fetching token balance'
-		)
+		if (error instanceof interfaces.SDKStatus) {
+			throw error
+		} else {
+			throw new interfaces.SDKStatus(
+				interfaces.EGenericErrorCodes.ERROR_GETTING_TOKENBALANCE,
+				'Error fetching token balance',
+				error.message
+			)
+		}
 	}
 }
 
