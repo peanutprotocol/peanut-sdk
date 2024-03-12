@@ -2790,6 +2790,83 @@ async function getTokenContractDetails({
 }
 
 /**
+ * Function to get the balance of a token
+ * Not working for ERC721 and ERC1155 tokens yet
+ */
+async function getTokenBalance({
+	tokenAddress,
+	walletAddress,
+	chainId,
+	tokenType = undefined,
+	tokenDecimals = undefined,
+	tokenId = undefined,
+	provider = undefined,
+}: {
+	tokenAddress: string
+	walletAddress: string
+	chainId: string
+	tokenType?: interfaces.EPeanutLinkType
+	tokenDecimals?: number
+	tokenId?: string
+	provider?: ethers.providers.Provider // TODO: make this optional URL if we decide to remove ethers dependency
+}): Promise<String> {
+	try {
+		if (!provider) provider = await getDefaultProvider(chainId)
+
+		if (tokenAddress.toLowerCase() === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee') {
+			tokenAddress = ethers.constants.AddressZero.toLowerCase()
+		}
+
+		if (!tokenType || !tokenDecimals) {
+			const tokenDetails = await getTokenContractDetails({ address: tokenAddress, provider: provider })
+			tokenType = tokenDetails.type
+			tokenDecimals = tokenDetails.decimals
+		}
+
+		if (tokenType === interfaces.EPeanutLinkType.native) {
+			const balance = await provider.getBalance(walletAddress)
+			return ethers.utils.formatUnits(balance, tokenDecimals)
+		} else {
+			let contractABI
+			switch (tokenType) {
+				case interfaces.EPeanutLinkType.erc20: {
+					contractABI = ERC20_ABI
+					break
+				}
+				case interfaces.EPeanutLinkType.erc721: {
+					throw new interfaces.SDKStatus(
+						interfaces.EGenericErrorCodes.ERROR_UNSUPPORTED_TOKEN,
+						'This token type is not supported for fetching balance'
+					)
+				}
+				case interfaces.EPeanutLinkType.erc1155: {
+					throw new interfaces.SDKStatus(
+						interfaces.EGenericErrorCodes.ERROR_UNSUPPORTED_TOKEN,
+						'This token type is not supported for fetching balance'
+					)
+				}
+			}
+
+			const contract = new ethers.Contract(tokenAddress, contractABI, provider)
+
+			const balance = await contract.balanceOf(walletAddress)
+			return ethers.utils.formatUnits(balance, tokenDecimals)
+		}
+	} catch (error) {
+		console.error(error)
+		if (error instanceof interfaces.SDKStatus) {
+			throw error
+		} else {
+			throw new interfaces.SDKStatus(
+				interfaces.EGenericErrorCodes.ERROR_GETTING_TOKENBALANCE,
+				'Error fetching token balance',
+				error.message
+			)
+		}
+	}
+}
+
+/**
  * @deprecated Use prepareDepositTxs instead. prepareTxs will be removed in February 2024.
  */
 const prepareTxs = prepareDepositTxs
@@ -2890,6 +2967,7 @@ const peanut = {
 	getTokenContractDetails,
 	validateUserName,
 	getTxReceiptFromHash,
+	getTokenBalance,
 	...raffle,
 }
 
@@ -2988,4 +3066,5 @@ export {
 	getTokenContractDetails,
 	validateUserName,
 	getTxReceiptFromHash,
+	getTokenBalance,
 }
