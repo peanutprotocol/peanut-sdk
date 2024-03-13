@@ -148,9 +148,14 @@ async function fetchGetBalance(rpcUrl: string) {
 	// }
 
 	// If no valid Infura RPC, continue with the current behavior
-	const providerPromises = rpcs.map((rpcUrl) =>
-		createValidProvider(rpcUrl.replace('${INFURA_API_KEY}', INFURA_API_KEY)).catch((error) => null)
-	)
+	let providerPromises
+	try {
+		providerPromises = rpcs.map((rpcUrl) =>
+			createValidProvider(rpcUrl.replace('${INFURA_API_KEY}', INFURA_API_KEY)).catch((error) => null)
+		)
+	} catch (error) {
+		// Handle erorrs silently
+	}
 
 	try {
 		const provider = await Promise.any(providerPromises)
