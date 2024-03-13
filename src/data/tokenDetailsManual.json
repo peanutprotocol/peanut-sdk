@@ -41,5 +41,67 @@
 				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
 			}
 		]
+	},
+	{
+		"chainId": "42161",
+		"tokens": [
+			{
+				"address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+				"name": "Bridged USDC",
+				"symbol": "USDC.e",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
+			},
+			{
+				"address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
+			}
+		]
+	},
+	{
+		"chainId": "1",
+		"tokens": [
+			{
+				"address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
+			}
+		]
+	},
+	{
+		"chainId": "56",
+		"tokens": [
+			{
+				"address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
+			}
+		]
+	},
+	{
+		"chainId": "43114",
+		"tokens": [
+			{
+				"address": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
+			},
+			{
+				"address": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
+			}
+		]
 	}
 ]

@@ -1402,6 +1402,13 @@
 				"symbol": "PSP",
 				"decimals": 18,
 				"logoURI": "https://assets.coingecko.com/coins/images/20403/thumb/ep7GqM19_400x400.jpg?1696519812"
+			},
+			{
+				"address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
 			}
 		]
 	},
@@ -5555,6 +5562,20 @@
 				"symbol": "CMUMAMI",
 				"decimals": 9,
 				"logoURI": "https://assets.coingecko.com/coins/images/28433/thumb/Cqx8QjSL_400x400.jpeg?1696527429"
+			},
+			{
+				"address": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
+			},
+			{
+				"address": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
 			}
 		]
 	},
@@ -7750,6 +7771,13 @@
 				"symbol": "AMAZINGTEAM",
 				"decimals": 18,
 				"logoURI": "https://assets.coingecko.com/coins/images/25064/thumb/EXlV29q.jpg?1696524214"
+			},
+			{
+				"address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
 			}
 		]
 	},
@@ -10343,6 +10371,20 @@
 				"symbol": "DON",
 				"decimals": 18,
 				"logoURI": "https://assets.coingecko.com/coins/images/22647/thumb/0CHCbFtm_400x400.jpg?1696521960"
+			},
+			{
+				"address": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/33000/thumb/usdc.png?1700119918"
+			},
+			{
+				"address": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
 			}
 		]
 	},
