@@ -407,6 +407,9 @@ export interface IRaffleInfo {
 	senderName: string
 	withMFA: boolean
 	withCaptcha: boolean
+	withENS: boolean
+	withWeb3Email: boolean
+	withSignedMessage: boolean
 }
 
 export interface ILinkParams {
