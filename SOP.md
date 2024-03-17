@@ -30,6 +30,15 @@ EVM:
 -   change `const routerContractVersion = 'Rv4.2'`
 
 ## Adding a custom token
+
 1. Fill out `src/data/manualTokenDetails.json` with the token details
 2. run `fillTokenDetails.py`
 3. release
+
+## Running devnet tests
+
+1. Install tenderly cli
+2. Type `tenderly login` in the terminal
+3. Choose "Access key" option
+4. Enter the key. Find it in the peanut's notion in the tools section or ask @nebolax.
+5. Ready! Develop & run devnet tests the way you normally do it 🥜

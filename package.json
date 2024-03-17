@@ -74,6 +74,7 @@
 		"prettier": "^3.0.2",
 		"raw-loader": "^4.0.2",
 		"registry.npmjs.org": "^1.0.1",
+		"rollup-plugin-visualizer": "^5.12.0",
 		"source-map-support": "^0.5.21",
 		"ts-jest": "^29.1.1",
 		"ts-loader": "^9.4.4",

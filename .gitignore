@@ -8,6 +8,7 @@ dist/
 archive/
 src/data/package.json
 test/basic/playground.test.ts
+bundle-analysis.html
 
 # Logs
 logs
