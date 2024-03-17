@@ -20,6 +20,7 @@ tsconfig.json
 tsconfig.tsbuildinfo
 .github/
 env/
+experiments/
 
 
 *.conf.js

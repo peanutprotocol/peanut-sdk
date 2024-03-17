@@ -554,3 +554,7 @@ export async function getUserRaffleStatus({
 
 	return await res.json()
 }
+
+export function generateRaffleClaimMessage(pubKey: string, recipientAddress: string): string {
+	return `I confirm that:\n1. I am the owner of wallet ${recipientAddress}\n2. I intend to participate in a raffle with id ${pubKey}`
+}
