@@ -8,32 +8,24 @@ beforeEach(() => {
 })
 
 describe('test getDefaultProvider on EVERY chain', function () {
-	test.each(Object.keys(chainDetails))('should return a provider for chain %s', async function (chainId) {
-		// if (chainId !== '100') return
-		// else peanut.toggleVerbose(true)
-		const provider = await peanut.getDefaultProvider(chainId)
-		expect(provider).toBeInstanceOf(ethers.providers.JsonRpcProvider)
+	test.each(Object.keys(chainDetails))(
+		'should return a provider for chain %s',
+		async function (chainId) {
+			// if (chainId !== '100') return
+			// else peanut.toggleVerbose(true)
+			const provider = await peanut.getDefaultProvider(chainId)
+			expect(provider).toBeInstanceOf(ethers.providers.JsonRpcProvider)
 
-		const network = await provider.getNetwork()
-		expect(network.chainId).toBe(parseInt(chainId))
-	})
+			const network = await provider.getNetwork()
+			expect(network.chainId).toBe(parseInt(chainId))
+		},
+		10000
+	)
 })
 
 describe('getDefaultProvider tests', function () {
-	it('should return the default provider for a given chainId', async function () {
-		const chainId = '5' // Goerli testnet
-		const provider = await peanut.getDefaultProvider(chainId)
-
-		// Check that the provider is an instance of ethers.providers.JsonRpcProvider
-		expect(provider).toBeInstanceOf(ethers.providers.JsonRpcProvider)
-
-		// Check that the provider's network matches the expected chainId
-		const network = await provider.getNetwork()
-		expect(network.chainId).toBe(parseInt(chainId))
-	})
-
 	it('should throw an error for an unsupported chainId', async function () {
-		const chainId = '9999' // Unsupported chainId
+		const chainId = '99999929' // Unsupported chainId
 		await expect(peanut.getDefaultProvider(chainId)).rejects.toThrow(`Chain ID ${chainId} not supported yet`)
 	})
 
