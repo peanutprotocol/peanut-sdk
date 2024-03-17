@@ -174,7 +174,10 @@ export async function getRaffleLinkFromTx({
 	provider,
 	name,
 	withMFA,
-	withCaptcha,
+	withENS = false,
+	withCaptcha = false,
+	withSignedMessage = false,
+	withWeb3Email = false,
 	APIKey,
 	baseUrl,
 }: interfaces.IGetRaffleLinkFromTxParams): Promise<interfaces.IGetRaffleLinkFromTxResponse> {
@@ -191,10 +194,13 @@ export async function getRaffleLinkFromTx({
 	await addLinkCreation({
 		name,
 		link,
-		withMFA,
-		withCaptcha,
 		APIKey,
 		baseUrl,
+		withMFA,
+		withCaptcha,
+		withENS: withENS,
+		withSignedMessage: withSignedMessage,
+		withWeb3Email: withWeb3Email,
 	})
 
 	return { link }
@@ -350,7 +356,7 @@ export async function getRaffleAuthorisation({
 
 	const params = getRawParamsFromLink(link)
 	const { address: pubKey } = generateKeysFromString(params.password)
-	
+
 	recipientName = validateUserName(recipientName) // make sure we trim '' and \n
 	const headers = {
 		'Content-Type': 'application/json',
@@ -398,6 +404,9 @@ export async function addLinkCreation({
 	APIKey,
 	withMFA,
 	withCaptcha,
+	withENS = false,
+	withSignedMessage = false,
+	withWeb3Email = false,
 	baseUrl = 'https://api.peanut.to/submit-raffle-link',
 }: interfaces.IAddLinkCreation) {
 	// NON CUSTODIAL WOOHOOOOOOO!!!
@@ -426,6 +435,9 @@ export async function addLinkCreation({
 			signature,
 			withMFA,
 			withCaptcha,
+			withENS,
+			withSignedMessage,
+			withWeb3Email,
 			apiKey: APIKey,
 		}),
 	})

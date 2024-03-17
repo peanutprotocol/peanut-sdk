@@ -372,6 +372,7 @@ export interface IPrepareRaffleDepositTxsParams {
 	numberOfLinks: number
 	password: string
 	withMFA: boolean
+	// no need for other withX options as withMFA is the only one that matters here
 	provider?: Provider
 }
 
@@ -382,10 +383,13 @@ export interface IGetRaffleLinkFromTxParams {
 	numberOfLinks: number
 	provider?: Provider
 	name?: string
-	withMFA: boolean
-	withCaptcha: boolean
 	APIKey: string
 	baseUrl?: string
+	withMFA: boolean
+	withCaptcha: boolean
+	withENS: boolean
+	withWeb3Email: boolean
+	withSignedMessage: boolean
 }
 
 export interface IGetRaffleLinkFromTxResponse {
@@ -525,6 +529,9 @@ export interface IAddLinkCreation {
 	link: string
 	withMFA: boolean
 	withCaptcha: boolean
+	withENS: boolean
+	withWeb3Email: boolean
+	withSignedMessage: boolean
 	APIKey: string
 	baseUrl?: string
 }
