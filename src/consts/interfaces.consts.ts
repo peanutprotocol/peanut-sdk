@@ -370,6 +370,8 @@ export interface IPrepareRaffleDepositTxsParams {
 	userAddress: string
 	linkDetails: IPeanutLinkDetails
 	numberOfLinks: number
+	tokenIds?: BigNumber[]
+	amounts?: BigNumber[]
 	password: string
 	withMFA: boolean
 	// no need for other withX options as withMFA is the only one that matters here

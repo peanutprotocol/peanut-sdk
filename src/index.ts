@@ -28,6 +28,8 @@ import {
 	FALLBACK_CONTRACT_VERSION,
 	PEANUT_BATCHER_ABI_V4_2,
 	PEANUT_BATCHER_ABI_V4_3,
+	PEANUT_ABI_V4_4,
+	PEANUT_BATCHER_ABI_V4_4,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -254,11 +256,17 @@ async function getContract(chainId: string, signerOrProvider: any, version = nul
 		case 'v4.3':
 			CONTRACT_ABI = PEANUT_ABI_V4_3
 			break
+		case 'v4.4':
+			CONTRACT_ABI = PEANUT_ABI_V4_4
+			break
 		case 'Bv4':
 			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4
 			break
 		case 'Bv4.3':
 			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_3
+			break
+		case 'Bv4.4':
+			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_4
 			break
 		case 'Bv4.2':
 			CONTRACT_ABI = PEANUT_BATCHER_ABI_V4_2
@@ -1809,10 +1817,15 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 			symbol = fetchedSymbol
 			tokenURI = fetchedTokenURI
 
-			const response = await fetch(tokenURI)
-			if (response.ok) {
-				metadata = await response.json()
+			try {
+				const response = await fetch(tokenURI)
+				if (response.ok) {
+					metadata = await response.json()
+				}
+			} catch (err: any) {
+				console.warn(`Could not fetch metadata at uri ${tokenURI} for a ERC-721 token ${tokenAddress} due to`, err)
 			}
+
 			tokenDecimals = null
 		} catch (error) {
 			console.error('Error fetching ERC721 info:', error)
@@ -1821,13 +1834,18 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	} else if (tokenType == interfaces.EPeanutLinkType.erc1155) {
 		try {
 			const contract1155 = new ethers.Contract(tokenAddress, ERC1155_ABI, provider)
-			const fetchedTokenURI = await contract1155.tokenURI(deposit.tokenId)
+			const fetchedTokenURI = await contract1155.uri(deposit.tokenId)
 			tokenURI = fetchedTokenURI
 
-			const response = await fetch(tokenURI)
-			if (response.ok) {
-				metadata = await response.json()
+			try {
+				const response = await fetch(tokenURI)
+				if (response.ok) {
+					metadata = await response.json()
+				}
+			} catch (err: any) {
+				console.warn(`Could not fetch metadata at uri ${tokenURI} for a ERC-1155 token ${tokenAddress} due to`, err)
 			}
+
 			name = 'ERC1155 Token (' + deposit.tokenId + ')'
 			symbol = '1155'
 			tokenDecimals = null
