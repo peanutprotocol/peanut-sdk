@@ -1,5 +1,6 @@
 import { BigNumber, Wallet, constants, ethers, utils } from 'ethersv5'
 import {
+	ERC1155_ABI,
 	config,
 	createClaimPayload,
 	createMultiLinkFromLinks,
@@ -16,7 +17,7 @@ import {
 	trim_decimal_overflow,
 } from '.'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
-import { getRawParamsFromLink, validateUserName } from './util'
+import { assert, getRawParamsFromLink, validateUserName } from './util'
 
 export function generateAmountsDistribution(
 	totalAmount: BigNumber,
@@ -52,17 +53,12 @@ export async function prepareRaffleDepositTxs({
 	userAddress,
 	linkDetails,
 	numberOfLinks,
+	tokenIds,
+	amounts,
 	password,
 	withMFA,
 	provider,
 }: interfaces.IPrepareRaffleDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
-	if (linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) {
-		throw new interfaces.SDKStatus(
-			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'Please pass tokenDecimals to prepareRaffleDepositTxs'
-		)
-	}
-
 	if (linkDetails.tokenType === null || linkDetails.tokenType === undefined) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
@@ -70,10 +66,10 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	if ([0, 1].includes(linkDetails.tokenType) === false) {
+	if ((linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) && linkDetails.tokenType !== 2 && !amounts) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'Only ERC20 deposits are supported by prepareRaffleDepositTxs'
+			'tokenDecimals is required for prepareRaffleDepositTxs since tokenType is not 2 (ERC-721) and amounts is not supplied'
 		)
 	}
 
@@ -88,10 +84,17 @@ export async function prepareRaffleDepositTxs({
 		}
 	}
 
-	if (linkDetails.tokenAmount === 0) {
+	if (amounts && linkDetails.tokenAmount) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'Amount must be greater than zero in prepareRaffleDepositTxs'
+			'If `amounts` is provided, linkDetails.tokenAmount can not be supplied'
+		)
+	}
+
+	if (!amounts && linkDetails.tokenAmount === 0 && ![2, 3].includes(linkDetails.tokenType)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'Either amounts or linkDetails.tokenAmount must be provided if its not NFTs'
 		)
 	}
 
@@ -102,15 +105,55 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
+	if ([2, 3].includes(linkDetails.tokenType) && !tokenIds) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'tokenIds must be passed for NFT raffles'
+		)
+	}
+
+	if (tokenIds && tokenIds.length !== numberOfLinks) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'The length of `tokenIds` array must match numberOfLinks or be undefined'
+		)
+	}
+
+	if (amounts && amounts.length !== numberOfLinks) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'The length of `amounts` array must match numberOfLinks or be undefined'
+		)
+	}
+
+	if (amounts && linkDetails.tokenType === 2 && !amounts.every((x) => x === BigNumber.from(1))) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'For ERC-721 NFTs all amounts must be 1'
+		)
+	}
+
+	if ([2, 3].includes(linkDetails.tokenType) && withMFA) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			'MFA raffles are only supported for ETH and ERC20 tokens'
+		)
+	} 
+
+
 	// For simplicity doing raffles always on these contracts
 	const peanutContractVersion = 'v4.3'
-	const batcherContractVersion = 'Bv4.3'
+	const batcherContractVersion = 'Bv4.4'
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
 	}
+
+	// Convert linkDetails.tokenAmount to BigNumber.
+	// Used only for ETH and ERC20 raffles.
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
+	
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
 	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 
@@ -121,22 +164,42 @@ export async function prepareRaffleDepositTxs({
 			linkDetails.chainId,
 			linkDetails.tokenAddress,
 			tokenAmountBigNum,
-			-1, // decimals doesn't matter
+			-1, // decimals doesn't matter since we provide the token amount as a big number already
 			true, // already a prepared bignumber
 			batcherContractVersion,
 			provider
 		)
+	} else if ([2, 3].includes(linkDetails.tokenType)) {
+		// ERC721 and ERC1155 ABIs are same for setApprovalForAll
+		const tokenContract = new ethers.Contract(linkDetails.tokenAddress, ERC1155_ABI, provider)
+		const approved = await tokenContract.isApprovedForAll(userAddress, batcherContract.address)
+		if (!approved) {
+			const approvalTxRequest = await tokenContract.populateTransaction.setApprovalForAll(
+				batcherContract.address,
+				true,
+				{ from: userAddress },
+			)
+			approveTx = ethersV5ToPeanutTx(approvalTxRequest)
+		}
 	}
 
+	// Get the pubkey for which to make the deposit
 	const { address: pubKey20 } = generateKeysFromString(password)
-	const amounts = generateAmountsDistribution(tokenAmountBigNum, numberOfLinks)
-	console.log('Requested amount:', tokenAmountBigNum.toString())
-	console.log(
-		'Got amounts:',
-		amounts.map((am) => am.toString())
-	)
 
-	const depositParams = [peanutVaultAddress, linkDetails.tokenAddress, linkDetails.tokenType, amounts, pubKey20]
+	// Generate random amounts if explicit amounts are not supplied
+	if (!amounts) {
+		if ([2, 3].includes(linkDetails.tokenType)) {
+			// for NFTs, it's always 1 token (1 NFT)
+			amounts = Array(numberOfLinks).fill(1)
+		} else {
+			amounts = generateAmountsDistribution(tokenAmountBigNum, numberOfLinks)
+			console.log('Requested amount:', tokenAmountBigNum.toString())
+			console.log(
+				'Got amounts:',
+				amounts.map((am) => am.toString())
+			)
+		}
+	}
 
 	let txOptions: interfaces.ITxOptions = {}
 	if (linkDetails.tokenType === 0) {
@@ -148,12 +211,32 @@ export async function prepareRaffleDepositTxs({
 
 	let depositTxRequest: TransactionRequest
 	if (withMFA) {
+		assert([0, 1].includes(linkDetails.tokenType), 'MFA works only for ETH and ERC20')
+
+		// Call the specific old function that supports MFA
 		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffleMFA(
-			...depositParams,
+			peanutVaultAddress,
+			linkDetails.tokenAddress,
+			linkDetails.tokenType,
+			amounts,
+			pubKey20,
 			txOptions
 		)
 	} else {
-		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(...depositParams, txOptions)
+		// Call the general function that supports all tokens (but doesn't support MFA)
+		const args = [
+			peanutVaultAddress,
+			Array(numberOfLinks).fill(linkDetails.tokenAddress),
+			Array(numberOfLinks).fill(linkDetails.tokenType),
+			amounts,
+			tokenIds,
+			Array(numberOfLinks).fill(pubKey20)
+		]
+		config.verbose && console.log('Deposit arguments:', args)
+		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
+			...args,
+			txOptions,
+		)
 	}
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
 
