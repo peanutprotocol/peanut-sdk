@@ -1,7 +1,7 @@
 import peanut from '../../src/index' // import directly from source code
 describe('getLatestContractVersion', () => {
-	const expectedVersionNormal = 'v4.3'
-	const expectedVersionBatch = 'Bv4.3'
+	const expectedVersionNormal = 'v4.4'
+	const expectedVersionBatch = 'Bv4.4'
 	const types = ['normal', 'batch']
 
 	const chainIds = ['5', '137', '5000', '5001']

@@ -314,7 +314,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (['v4', 'V4.2', 'v4.3'].includes(contractVersion)) {
+	} else if (['v4', 'V4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
 		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.
