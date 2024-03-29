@@ -76,6 +76,8 @@ export interface ICreateLinkParams {
 	linkDetails: IPeanutLinkDetails
 	peanutContractVersion?: string
 	password?: string
+	recipient?: string // only this address will be able to claim if set
+	reclaimableAfter?: number  // timestamp in seconds
 }
 
 //createLinks
@@ -156,6 +158,8 @@ export interface IPrepareDepositTxsParams {
 	numberOfLinks?: number
 	passwords: string[]
 	provider?: ethers.providers.Provider
+	recipient?: string // only this address will be able to claim if set
+	reclaimableAfter?: number  // timestamp in seconds
 }
 
 export interface IPrepareDepositTxsResponse {

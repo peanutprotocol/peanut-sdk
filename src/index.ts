@@ -747,6 +747,8 @@ async function prepareDepositTxs({
 	numberOfLinks = 1,
 	passwords = [],
 	provider,
+	recipient = constants.AddressZero,
+	reclaimableAfter = 0
 }: interfaces.IPrepareDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
@@ -868,18 +870,40 @@ async function prepareDepositTxs({
 	let depositParams
 	let depositTx: interfaces.IPeanutUnsignedTransaction
 	if (numberOfLinks == 1) {
-		depositParams = [
-			linkDetails.tokenAddress,
-			linkDetails.tokenType,
-			tokenAmountBigNum,
-			linkDetails.tokenId,
-			keys[0].address,
-		]
-		contract = await getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
-
 		try {
-			const depositTxRequest = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
-			depositTx = ethersV5ToPeanutTx(depositTxRequest)
+			if (peanutContractVersion === 'v4.4') {
+				// Using the new, powerful and flexible deposit function!
+				depositParams = [
+					linkDetails.tokenAddress,
+					linkDetails.tokenType,
+					tokenAmountBigNum,
+					linkDetails.tokenId,
+					keys[0].address, // pub key
+					address, // the depositor
+					false, // no MFA
+					recipient, // for recipient-bound deposits
+					reclaimableAfter, // for recipient-bound deposits
+					false, // not a gasless 3009 deposit
+					0, // not a gasless 3009 deposit
+				]
+				contract = await getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
+
+				const depositTxRequest = await contract.populateTransaction.makeCustomDeposit(...depositParams, txOptions)
+				depositTx = ethersV5ToPeanutTx(depositTxRequest)
+			} else {
+				// Using the old, more limited function
+				depositParams = [
+					linkDetails.tokenAddress,
+					linkDetails.tokenType,
+					tokenAmountBigNum,
+					linkDetails.tokenId,
+					keys[0].address, // pub key
+				]
+				contract = await getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
+
+				const depositTxRequest = await contract.populateTransaction.makeDeposit(...depositParams, txOptions)
+				depositTx = ethersV5ToPeanutTx(depositTxRequest)
+			}
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_MAKING_DEPOSIT,
@@ -888,6 +912,12 @@ async function prepareDepositTxs({
 			)
 		}
 	} else {
+		if (recipient !== constants.AddressZero || reclaimableAfter !== 0) {
+			throw new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+				'Recipient-bound deposits are not supported for batch deposits'
+			)
+		}
 		depositParams = [
 			PEANUT_CONTRACTS[linkDetails.chainId][peanutContractVersion], // The address of the PeanutV4 contract
 			linkDetails.tokenAddress,
@@ -1139,7 +1169,7 @@ async function validateLinkDetails(
 
 	assert(
 		linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
-			linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+		linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
 	if (
@@ -1179,6 +1209,8 @@ async function createLink({
 	linkDetails,
 	peanutContractVersion = null,
 	password = null,
+	recipient,
+	reclaimableAfter
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreatedPeanutLink> {
 	if (peanutContractVersion == null) {
 		getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
@@ -1197,6 +1229,8 @@ async function createLink({
 			numberOfLinks: 1,
 			passwords: [password],
 			provider: provider,
+			recipient,
+			reclaimableAfter
 		})
 	} catch (error) {
 		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_PREPARING_TX, error)
@@ -1883,6 +1917,8 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 		tokenURI: tokenURI,
 		metadata: metadata,
 		rawOnchainDepositInfo: depositCopy,
+		recipient: deposit.recipient,
+		reclaimableAfter: deposit.reclaimableAfter,
 	}
 }
 
