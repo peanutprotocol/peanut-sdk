@@ -1,0 +1,355 @@
+[
+	{
+		"type": "function",
+		"name": "batchMakeDeposit",
+		"inputs": [
+			{
+				"name": "_peanutAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_contractType",
+				"type": "uint8",
+				"internalType": "uint8"
+			},
+			{
+				"name": "_amount",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_pubKeys20",
+				"type": "address[]",
+				"internalType": "address[]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			}
+		],
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "batchMakeDepositArbitrary",
+		"inputs": [
+			{
+				"name": "_peanutAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenAddresses",
+				"type": "address[]",
+				"internalType": "address[]"
+			},
+			{
+				"name": "_contractTypes",
+				"type": "uint8[]",
+				"internalType": "uint8[]"
+			},
+			{
+				"name": "_amounts",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "_tokenIds",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "_pubKeys20",
+				"type": "address[]",
+				"internalType": "address[]"
+			},
+			{
+				"name": "_withMFAs",
+				"type": "bool[]",
+				"internalType": "bool[]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			}
+		],
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "batchMakeDepositNoReturn",
+		"inputs": [
+			{
+				"name": "_peanutAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_contractType",
+				"type": "uint8",
+				"internalType": "uint8"
+			},
+			{
+				"name": "_amount",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_pubKeys20",
+				"type": "address[]",
+				"internalType": "address[]"
+			}
+		],
+		"outputs": [],
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "batchMakeDepositRaffle",
+		"inputs": [
+			{
+				"name": "_peanutAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_contractType",
+				"type": "uint8",
+				"internalType": "uint8"
+			},
+			{
+				"name": "_amounts",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "_pubKey20",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			}
+		],
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "batchMakeDepositRaffleMFA",
+		"inputs": [
+			{
+				"name": "_peanutAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenAddress",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_contractType",
+				"type": "uint8",
+				"internalType": "uint8"
+			},
+			{
+				"name": "_amounts",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "_pubKey20",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			}
+		],
+		"stateMutability": "payable"
+	},
+	{
+		"type": "function",
+		"name": "onERC1155BatchReceived",
+		"inputs": [
+			{
+				"name": "_operator",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_from",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_ids",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "_values",
+				"type": "uint256[]",
+				"internalType": "uint256[]"
+			},
+			{
+				"name": "_data",
+				"type": "bytes",
+				"internalType": "bytes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes4",
+				"internalType": "bytes4"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "onERC1155Received",
+		"inputs": [
+			{
+				"name": "_operator",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_from",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_value",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_data",
+				"type": "bytes",
+				"internalType": "bytes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes4",
+				"internalType": "bytes4"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "onERC721Received",
+		"inputs": [
+			{
+				"name": "_operator",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_from",
+				"type": "address",
+				"internalType": "address"
+			},
+			{
+				"name": "_tokenId",
+				"type": "uint256",
+				"internalType": "uint256"
+			},
+			{
+				"name": "_data",
+				"type": "bytes",
+				"internalType": "bytes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bytes4",
+				"internalType": "bytes4"
+			}
+		],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "peanut",
+		"inputs": [],
+		"outputs": [
+			{
+				"name": "",
+				"type": "address",
+				"internalType": "contract PeanutV4"
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "supportsInterface",
+		"inputs": [
+			{
+				"name": "_interfaceId",
+				"type": "bytes4",
+				"internalType": "bytes4"
+			}
+		],
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool",
+				"internalType": "bool"
+			}
+		],
+		"stateMutability": "pure"
+	}
+]

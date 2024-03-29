@@ -12,9 +12,9 @@ import {
 	signAndSubmitTx,
 	toggleVerbose,
 	getGenerosityLeaderboard,
-	addLinkCreation,
 	getPopularityLeaderboard,
 	claimRaffleLink,
+	config,
 } from '../../src/index'
 import dotenv from 'dotenv'
 import { makeRandomAddress } from '../util'
@@ -26,7 +26,7 @@ const APIKey = process.env.PEANUT_DEV_API_KEY!
 describe('raffle', () => {
 	toggleVerbose(true)
 
-	test('create a link', async () => {
+	test('create an ETH raffle', async () => {
 		const chainId = '137'
 		const provider = await getDefaultProvider(chainId)
 		const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
@@ -71,6 +71,65 @@ describe('raffle', () => {
 			withCaptcha: true,
 			APIKey,
 			baseUrl: 'http://localhost:8000/submit-raffle-link',
+			withENS: false,
+			withSignedMessage: false,
+			withWeb3Email: false,
+		})
+		console.log('Got the raffle link!', link)
+	}, 120000)
+
+	test('create a ERC1155 raffle', async () => {
+		const chainId = '137'
+		const provider = await getDefaultProvider(chainId)
+		const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
+		config.verbose && console.log('Using wallet:', wallet.address)
+
+		const password = await getRandomString()
+		const numberOfLinks = 2
+		const withMFA = true
+		const linkDetails: interfaces.IPeanutLinkDetails = {
+			chainId,
+			tokenType: 3,
+			tokenAmount: 0,
+			tokenDecimals: 18,
+			tokenAddress: '0xb9223784be9f67b12ef6F13049ce7180695aAf73',
+		}
+		const { unsignedTxs } = await prepareRaffleDepositTxs({
+			linkDetails,
+			numberOfLinks,
+			tokenIds: [BigNumber.from(6), BigNumber.from(7)],
+			password,
+			userAddress: wallet.address,
+			withMFA,
+		})
+
+		console.log({ unsignedTxs })
+
+		let lastTxHash = ''
+		for (let i = 0; i < unsignedTxs.length; i++) {
+			const { tx, txHash } = await signAndSubmitTx({
+				structSigner: {
+					signer: wallet,
+				},
+				unsignedTx: unsignedTxs[i],
+			})
+			console.log('Submitted raffle tx with hash:', txHash)
+			lastTxHash = txHash
+			await tx.wait()
+		}
+		const link = await getRaffleLinkFromTx({
+			txHash: lastTxHash,
+			linkDetails,
+			numberOfLinks,
+			password,
+			name: 'baobob',
+			withMFA,
+			withCaptcha: false,
+			APIKey,
+			baseUrl: 'http://localhost:8000/submit-raffle-link',
+			withENS: false,
+			withSignedMessage: false,
+			withWeb3Email: false,
 		})
 		console.log('Got the raffle link!', link)
 	}, 120000)
@@ -82,28 +141,12 @@ describe('raffle', () => {
 	}, 120000)
 
 	test('claim raffle link', async () => {
-		const link =
-			'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
-		const recipientAddress = '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72'
-		console.log({ recipient: recipientAddress })
-		const claimInfo = await claimRaffleLink({
-			link,
-			APIKey,
-			recipientAddress,
-			recipientName: 'amobest',
-			baseUrlAuth: 'http://localhost:8000/get-authorisation',
-			baseUrlClaim: 'http://localhost:8000/claim-v2',
-		})
-		console.log('Claimed a raffle slot!!', claimInfo)
-		const leaderboard = await getRaffleLeaderboard({
-			link,
-			APIKey,
-		})
-		console.log('Hooouray, leaderboard!', { leaderboard })
-	}, 120000)
+		// ETH raffle link
+		// const link =
+		// 	'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
 
-	test('claim raffle link with mfa', async () => {
-		const link = 'https://peanut.to/claim?c=137&v=v4.3&i=(57,3)#p=cWBDOZyqwwNaTyaW'
+		// ERC-1155 raffle link
+		const link = 'https://peanut.to/claim?c=137&v=v4.4&i=(12,2)#p=MzsYuUlSwD1gU21M'
 		const recipientAddress = makeRandomAddress()
 		console.log({ recipient: recipientAddress })
 		const claimInfo = await claimRaffleLink({
@@ -111,7 +154,6 @@ describe('raffle', () => {
 			APIKey,
 			recipientAddress,
 			recipientName: 'amobest',
-			captchaResponse: 'using test recaptcha api key, so captcha is always valid',
 			baseUrlAuth: 'http://localhost:8000/get-authorisation',
 			baseUrlClaim: 'http://localhost:8000/claim-v2',
 		})
@@ -119,6 +161,7 @@ describe('raffle', () => {
 		const leaderboard = await getRaffleLeaderboard({
 			link,
 			APIKey,
+			baseUrl: 'http://localhost:8000/get-raffle-leaderboard'
 		})
 		console.log('Hooouray, leaderboard!', { leaderboard })
 	}, 120000)
@@ -180,17 +223,6 @@ describe('raffle', () => {
 			APIKey,
 		})
 		expect(participated2).toBe(false)
-	})
-
-	test('addLinkCreation', async () => {
-		await addLinkCreation({
-			APIKey,
-			name: 'boiii',
-			link: 'https://peanut.to/redpacket?c=11155111&v=v4.2&i=38,39,40,41,42#p=12345678',
-			withMFA: true,
-			withCaptcha: true,
-			baseUrl: 'http://localhost:8000/submit-raffle-link',
-		})
 	})
 
 	test('getGenerosityLeaderboard', async () => {
