@@ -1565,7 +1565,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (contractVersion !== 'v4.2' && contractVersion !== 'v4.3') {
+	if (!['v4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1749,7 +1749,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (['v4', 'v4.2', 'v4.3'].includes(contractVersion)) {
+	if (['v4', 'v4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2309,7 +2309,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!['v4', 'v4.2', 'v4.3'].includes(peanutContractVersion)) {
+	if (!['v4', 'v4.2', 'v4.3', 'v4.4'].includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}

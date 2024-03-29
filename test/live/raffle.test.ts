@@ -85,7 +85,7 @@ describe('raffle', () => {
 		config.verbose && console.log('Using wallet:', wallet.address)
 
 		const password = await getRandomString()
-		const numberOfLinks = 2
+		const numberOfLinks = 10
 		const withMFA = true
 		const linkDetails: interfaces.IPeanutLinkDetails = {
 			chainId,
@@ -97,7 +97,7 @@ describe('raffle', () => {
 		const { unsignedTxs } = await prepareRaffleDepositTxs({
 			linkDetails,
 			numberOfLinks,
-			tokenIds: [BigNumber.from(6), BigNumber.from(7)],
+			tokenIds: Array.from(Array(numberOfLinks).keys()).map((value) => BigNumber.from(value)),
 			password,
 			userAddress: wallet.address,
 			withMFA,
@@ -126,7 +126,7 @@ describe('raffle', () => {
 			withMFA,
 			withCaptcha: false,
 			APIKey,
-			baseUrl: 'http://localhost:8000/submit-raffle-link',
+			// baseUrl: 'http://localhost:8000/submit-raffle-link',
 			withENS: false,
 			withSignedMessage: false,
 			withWeb3Email: false,
@@ -154,14 +154,14 @@ describe('raffle', () => {
 			APIKey,
 			recipientAddress,
 			recipientName: 'amobest',
-			baseUrlAuth: 'http://localhost:8000/get-authorisation',
-			baseUrlClaim: 'http://localhost:8000/claim-v2',
+			// baseUrlAuth: 'http://localhost:8000/get-authorisation',
+			// baseUrlClaim: 'http://localhost:8000/claim-v2',
 		})
 		console.log('Claimed a raffle slot!!', claimInfo)
 		const leaderboard = await getRaffleLeaderboard({
 			link,
 			APIKey,
-			baseUrl: 'http://localhost:8000/get-raffle-leaderboard'
+			// baseUrl: 'http://localhost:8000/get-raffle-leaderboard'
 		})
 		console.log('Hooouray, leaderboard!', { leaderboard })
 	}, 120000)
