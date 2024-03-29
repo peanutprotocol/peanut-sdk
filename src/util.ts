@@ -105,7 +105,7 @@ export async function signWithdrawalMessage(
 	onlyRecipientMode?: boolean // only for v4.2+
 ) {
 	let claimParams: any[]
-	if (vaultVersion == 'v4.2' || vaultVersion == 'v4.3') {
+	if (['v4.2', 'v4.3', 'v4.4'].includes(vaultVersion)) {
 		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
 		const stringHash = ethers.utils.solidityKeccak256(
 			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],

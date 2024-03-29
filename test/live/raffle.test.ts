@@ -79,27 +79,28 @@ describe('raffle', () => {
 	}, 120000)
 
 	test('create a ERC1155 raffle', async () => {
-		const chainId = '11155111'
+		const chainId = '137'
 		const provider = await getDefaultProvider(chainId)
 		const wallet = new Wallet(TEST_WALLET_PRIVATE_KEY, provider)
 		config.verbose && console.log('Using wallet:', wallet.address)
 
 		const password = await getRandomString()
-		const numberOfLinks = 3
+		const numberOfLinks = 2
+		const withMFA = true
 		const linkDetails: interfaces.IPeanutLinkDetails = {
 			chainId,
 			tokenType: 3,
 			tokenAmount: 0,
 			tokenDecimals: 18,
-			tokenAddress: '0xcBA33566e07d7527ec14ff774b668eF8880e24C5',
+			tokenAddress: '0xb9223784be9f67b12ef6F13049ce7180695aAf73',
 		}
 		const { unsignedTxs } = await prepareRaffleDepositTxs({
 			linkDetails,
 			numberOfLinks,
-			tokenIds: [BigNumber.from(13), BigNumber.from(14), BigNumber.from(15)],
+			tokenIds: [BigNumber.from(6), BigNumber.from(7)],
 			password,
 			userAddress: wallet.address,
-			withMFA: false,
+			withMFA,
 		})
 
 		console.log({ unsignedTxs })
@@ -122,7 +123,7 @@ describe('raffle', () => {
 			numberOfLinks,
 			password,
 			name: 'baobob',
-			withMFA: false,
+			withMFA,
 			withCaptcha: false,
 			APIKey,
 			baseUrl: 'http://localhost:8000/submit-raffle-link',
@@ -139,14 +140,14 @@ describe('raffle', () => {
 		console.log('Raffle info!', info)
 	}, 120000)
 
-	test('claim raffle link no mfa', async () => {
+	test('claim raffle link', async () => {
 		// ETH raffle link
 		// const link =
 		// 	'https://red.peanut.to/packet?c=137&v=v4.2&i=637,638,639,640,641,642,643,644,645,646&t=ui#p=rTe4ve5LkxcHbZVb'
 
 		// ERC-1155 raffle link
-		const link = 'https://peanut.to/claim?c=11155111&v=v4.3&i=(568,3)#p=ySkm12fpISGDqaP2'
-		const recipientAddress = '0xa3635c5A3BFb209b5caF76CD4A9CD33De65e2f72'
+		const link = 'https://peanut.to/claim?c=137&v=v4.4&i=(12,2)#p=MzsYuUlSwD1gU21M'
+		const recipientAddress = makeRandomAddress()
 		console.log({ recipient: recipientAddress })
 		const claimInfo = await claimRaffleLink({
 			link,
@@ -161,27 +162,6 @@ describe('raffle', () => {
 			link,
 			APIKey,
 			baseUrl: 'http://localhost:8000/get-raffle-leaderboard'
-		})
-		console.log('Hooouray, leaderboard!', { leaderboard })
-	}, 120000)
-
-	test('claim raffle link with mfa', async () => {
-		const link = 'https://peanut.to/claim?c=137&v=v4.3&i=(57,3)#p=cWBDOZyqwwNaTyaW'
-		const recipientAddress = makeRandomAddress()
-		console.log({ recipient: recipientAddress })
-		const claimInfo = await claimRaffleLink({
-			link,
-			APIKey,
-			recipientAddress,
-			recipientName: 'amobest',
-			captchaResponse: 'using test recaptcha api key, so captcha is always valid',
-			baseUrlAuth: 'http://localhost:8000/get-authorisation',
-			baseUrlClaim: 'http://localhost:8000/claim-v2',
-		})
-		console.log('Claimed a raffle slot!!', claimInfo)
-		const leaderboard = await getRaffleLeaderboard({
-			link,
-			APIKey,
 		})
 		console.log('Hooouray, leaderboard!', { leaderboard })
 	}, 120000)

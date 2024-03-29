@@ -133,16 +133,8 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	if ([2, 3].includes(linkDetails.tokenType) && withMFA) {
-		throw new interfaces.SDKStatus(
-			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
-			'MFA raffles are only supported for ETH and ERC20 tokens'
-		)
-	} 
-
-
 	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = 'v4.3'
+	const peanutContractVersion = 'v4.4'
 	const batcherContractVersion = 'Bv4.4'
 
 	if (!provider) {
@@ -193,8 +185,8 @@ export async function prepareRaffleDepositTxs({
 			amounts = Array(numberOfLinks).fill(1)
 		} else {
 			amounts = generateAmountsDistribution(tokenAmountBigNum, numberOfLinks)
-			console.log('Requested amount:', tokenAmountBigNum.toString())
-			console.log(
+			config.verbose && console.log('Requested amount:', tokenAmountBigNum.toString())
+			config.verbose && console.log(
 				'Got amounts:',
 				amounts.map((am) => am.toString())
 			)
@@ -209,35 +201,21 @@ export async function prepareRaffleDepositTxs({
 		}
 	}
 
-	let depositTxRequest: TransactionRequest
-	if (withMFA) {
-		assert([0, 1].includes(linkDetails.tokenType), 'MFA works only for ETH and ERC20')
-
-		// Call the specific old function that supports MFA
-		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffleMFA(
-			peanutVaultAddress,
-			linkDetails.tokenAddress,
-			linkDetails.tokenType,
-			amounts,
-			pubKey20,
-			txOptions
-		)
-	} else {
-		// Call the general function that supports all tokens (but doesn't support MFA)
-		const args = [
-			peanutVaultAddress,
-			Array(numberOfLinks).fill(linkDetails.tokenAddress),
-			Array(numberOfLinks).fill(linkDetails.tokenType),
-			amounts,
-			tokenIds,
-			Array(numberOfLinks).fill(pubKey20)
-		]
-		config.verbose && console.log('Deposit arguments:', args)
-		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
-			...args,
-			txOptions,
-		)
-	}
+	// Call the general function that supports raffles with all tokens
+	const batchingArgs = [
+		peanutVaultAddress,
+		Array(numberOfLinks).fill(linkDetails.tokenAddress),
+		Array(numberOfLinks).fill(linkDetails.tokenType),
+		amounts,
+		tokenIds,
+		Array(numberOfLinks).fill(pubKey20),
+		Array(numberOfLinks).fill(withMFA),
+	]
+	config.verbose && console.log('Deposit arguments:', batchingArgs)
+	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
+		...batchingArgs,
+		txOptions,
+	)
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
 
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
