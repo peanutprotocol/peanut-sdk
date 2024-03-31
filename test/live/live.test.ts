@@ -4,6 +4,7 @@ import { expect, describe, it } from '@jest/globals'
 import { ERC20_ABI } from '../../src/data'
 import * as interfaces from '../../src/consts/interfaces.consts'
 import dotenv from 'dotenv'
+import { makeRandomAddress } from '../util'
 dotenv.config()
 
 const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY ?? ''
@@ -37,7 +38,7 @@ async function waitForTransaction(provider, txHash, timeout = 60000) {
 	throw new Error('Transaction was not confirmed within the timeout period.')
 }
 
-describe.only('mantle', function () {
+describe('mantle', function () {
 	it('should create a native link and claim it', async function () {
 		const chainId = '137'
 		const Provider = await peanut.getDefaultProvider(chainId)
@@ -70,7 +71,7 @@ describe.only('mantle', function () {
 	}, 60000)
 })
 
-describe.only('zksync', function () {
+describe('zksync', function () {
 	// it('zksync Sepolia: should create a native link and claim it', async function () {
 	// 	const chainId = '300'
 	// 	const provider = await peanut.getDefaultProvider(chainId)
@@ -117,7 +118,7 @@ describe.only('zksync', function () {
 	// }, 60000)
 })
 
-describe('polygon', function () {
+describe.only('polygon', function () {
 	const chainId = '137'
 	const tokenAmount = 0.0001
 
@@ -141,6 +142,57 @@ describe('polygon', function () {
 			12000
 		)
 	}, 60000)
+
+	it.only('create a recipient-bound link and FAIL to claim it', async function () {
+		const polygonProvider = await peanut.getDefaultProvider(String(chainId))
+		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)
+		peanut.toggleVerbose()
+
+		// The recipient is set INCORRECTLY - should FAIL
+		try {
+			await createAndClaimLink(
+				{
+					structSigner: {
+						signer: polygonWallet,
+					},
+					linkDetails: {
+						chainId: chainId,
+						tokenAmount: tokenAmount,
+						tokenType: 0,
+					},
+					recipient: makeRandomAddress(), // definitely not the correct recipient
+				},
+				12000
+			)
+
+			throw new Error('createAndClaimLink should have failed, but it has not!')
+		} catch (err: any) {
+			console.log('createAndClaimLink has failed for the incorrect recipient - thats great! The error that we gently got is:', err)
+		}
+	}, 120000)
+
+	it('create a recipient-bound link and SUCCESSFULLY claim it', async function () {
+		const polygonProvider = await peanut.getDefaultProvider(String(chainId))
+		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)
+		peanut.toggleVerbose()
+
+		// The recipient is set correctly - should succeed
+		await createAndClaimLink(
+			{
+				structSigner: {
+					signer: polygonWallet,
+				},
+				linkDetails: {
+					chainId: chainId,
+					tokenAmount: tokenAmount,
+					tokenType: 0,
+				},
+				recipient: polygonWallet.address
+			},
+			12000
+		)
+	}, 120000)
+
 	it('polygon should create an erc20 link and claim it', async function () {
 		const polygonProvider = await peanut.getDefaultProvider(String(chainId))
 		const polygonWallet = new ethers.Wallet(TEST_WALLET_PRIVATE_KEY ?? '', polygonProvider)

@@ -4,7 +4,25 @@ describe('getLatestContractVersion', () => {
 	const expectedVersionBatch = 'Bv4.4'
 	const types = ['normal', 'batch']
 
-	const chainIds = ['5', '137', '5000', '5001']
+	const chainIds = [
+		// Mainnets
+		'137',
+		'5000',
+		'10',
+		'8453',
+		'42161',
+		'100',
+		'43114',
+		'59144',
+		'324',
+		'534352',
+		'42220',
+		// Testnets
+		'11155111',
+		'80001',
+		'300',
+		'44787',
+	]
 	chainIds.forEach((chainId) => {
 		types.forEach((type) => {
 			const isExperimental = [true, false]
@@ -19,8 +37,25 @@ describe('getLatestContractVersion', () => {
 		})
 	})
 
-	const chainIdsExceptions = ['1', '324', '300']
-	chainIdsExceptions.forEach((chainId) => {
+	// TODO: fix bnb. Could not deploy the v4.4 peanut version
+	// due to problems with bscscan api keys
+	const chainIdsExceptionsV4_3 = ['5', '5001', '56']
+	chainIdsExceptionsV4_3.forEach((chainId) => {
+		types.forEach((type) => {
+			const isExperimental = [true, false]
+			isExperimental.forEach((experimental) => {
+				if (type === 'normal') {
+					it(`EXCEPTIONS: chain ${chainId} ${type} experimental: ${experimental}`, () => {
+						const latestContractVersion = peanut.getLatestContractVersion({ chainId, type, experimental })
+						expect(latestContractVersion).toBe('v4.3')
+					})
+				}
+			})
+		})
+	})
+
+	const chainIdsExceptionsV4_2 = ['1']
+	chainIdsExceptionsV4_2.forEach((chainId) => {
 		types.forEach((type) => {
 			const isExperimental = [true, false]
 			isExperimental.forEach((experimental) => {
