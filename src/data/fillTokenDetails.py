@@ -5,20 +5,22 @@ import time
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
 TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
-TOP_TOKENS_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page={}"
+TOP_N_TO_FILTER = 100
+TOP_TOKENS_PER_PAGE = 100
+TOP_TOKENS_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page={}&page={}"
 
-def fetch_top_coingecko_tokens(limit=2000):
+
+def fetch_top_coingecko_tokens():
     top_tokens = []
-    pages = -(-limit // 250)  # Ceil division
+    pages = -(-TOP_N_TO_FILTER // TOP_TOKENS_PER_PAGE)  # Ceil division
     for page in range(1, pages + 1):
-        response = requests.get(TOP_TOKENS_URL.format(page))
+        response = requests.get(TOP_TOKENS_URL.format(TOP_TOKENS_PER_PAGE, page))
         if response.status_code == 200:
             top_tokens.extend(response.json())
             time.sleep(1)  # Avoid rate limits
         else:
             print(f"Failed to fetch page {page} of top tokens.")
-    top_token_ids = set(token['id'] for token in top_tokens[:limit])
-    return top_token_ids
+    return top_tokens[:TOP_N_TO_FILTER]
 
 
 def fetch_coingecko_id_to_chain_id_mapping():
@@ -73,9 +75,9 @@ def main():
     # Load chainDetails.json
     with open("chainDetails.json", "r") as f:
         chain_details = json.load(f)
-    
+
     # Fetch top tokens from Coingecko
-    top_2000_tokens = fetch_top_coingecko_tokens(2000)
+    top_tokens = fetch_top_coingecko_tokens()
 
     # Fetch the mapping from chainId to CoinGecko ID
     chain_id_to_coingecko_id = fetch_coingecko_id_to_chain_id_mapping()
@@ -96,34 +98,36 @@ def main():
             # wait for 1 second to avoid rate limit
             time.sleep(1)
 
-            # Filter tokens based on top_2000_tokens or within top 50 of the chain
-            # TODO
-            filtered_tokens = [token for i, token in enumerate(tokens) if token['address'] in top_2000_tokens or i < 50]
+            # Filter tokens based on top_tokens
+            filtered_tokens = []
+            for token in tokens:
+                if any(token['name'] == top_token['name'] for top_token in top_tokens):
+                    filtered_tokens.append(token)
+                    if (len(filtered_tokens) >= 50): 
+                        break                
 
-            total_tokens += len(tokens)
+            total_tokens += len(filtered_tokens)
             chains_fetched += 1
 
             # Filter out tokens with missing fields
             complete_tokens = [
                 {key: value for key, value in token.items() if key not in ["chainId"]}
-                for token in tokens
+                for token in filtered_tokens
                 if all(
                     key in token
                     for key in ["address", "decimals", "name", "symbol", "logoURI"]
                 )
             ]
-            total_errors += len(tokens) - len(complete_tokens)
+            total_errors += len(filtered_tokens) - len(complete_tokens)
         else:
             print(f"Warning: No CoinGecko ID found for chainId {chain_id}. Skipping.")
-            complete_tokens = (
-                []
-            )  # No tokens could be fetched, so initialize an empty list
+            complete_tokens = []  # No tokens could be fetched, so initialize an empty list
 
         # Add native token first in the list
         # logoURI = details.get("icon", [{}])[0].get("url", ""),
         logoURI = details.get("icon").get("url", "")
         if logoURI.startswith("ipfs://"):
-            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://"):]
+            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
         native_token = {
             "address": "0x0000000000000000000000000000000000000000",
             "name": details["nativeCurrency"]["name"],
@@ -142,7 +146,7 @@ def main():
 
     with open("tokenDetails.json", "w") as f:
         json.dump(tokenDetails[:100], f)  # Save limited token details
-        
+
     with open("tokenDetailsFull.json", "w") as f:
         json.dump(tokenDetails, f)  # Save full token details without pruning
 
