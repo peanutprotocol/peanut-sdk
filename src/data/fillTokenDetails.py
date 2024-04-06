@@ -1,26 +1,40 @@
 import requests
 import json
 import time
+import codecs
 
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
 TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
-TOP_N_TO_FILTER = 100
-TOP_TOKENS_PER_PAGE = 100
+TOKEN_LIST_URL = "https://api.coingecko.com/api/v3/coins/list?include_platform=true"
 TOP_TOKENS_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page={}&page={}"
+TOP_LIST_MORALIS_URL = (
+    "https://deep-index.moralis.io/api/v2.2/market-data/erc20s/top-tokens"
+)
+MORALIS_API_KEY = "<YOUR_API_KEY_HERE>"
 
 
-def fetch_top_coingecko_tokens():
-    top_tokens = []
-    pages = -(-TOP_N_TO_FILTER // TOP_TOKENS_PER_PAGE)  # Ceil division
-    for page in range(1, pages + 1):
-        response = requests.get(TOP_TOKENS_URL.format(TOP_TOKENS_PER_PAGE, page))
-        if response.status_code == 200:
-            top_tokens.extend(response.json())
-            time.sleep(1)  # Avoid rate limits
-        else:
-            print(f"Failed to fetch page {page} of top tokens.")
-    return top_tokens[:TOP_N_TO_FILTER]
+def moralis_fetch_top_marketcap_list():
+    response = requests.get(
+        TOP_LIST_MORALIS_URL, headers={"x-api-key": MORALIS_API_KEY}
+    )
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 401:
+        print(
+            "Failed to fetch top tokens by marketcap with status 401. Is your moralis api key correct?"
+        )
+    else:
+        print("Failed to fetch top tokens by marketcap.")
+
+
+def fetch_full_coingecko_list():
+    response = requests.get(TOP_TOKENS_URL)
+    print(response)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to fetch list of all tokens.")
 
 
 def fetch_coingecko_id_to_chain_id_mapping():
@@ -69,6 +83,24 @@ def fetch_tokens_for_platform(platform_id):
     return data["tokens"]
 
 
+def get_top_tokens_with_contracts(top_tokens, full_list):
+    top_tokens_by_chain = []
+    for top_token in top_tokens:
+        for full_list_token in full_list:
+            if (
+                top_token["contract_address"] != ""
+                and top_token["token_symbol"].lower()
+                == full_list_token["symbol"].lower()
+                and top_token["contract_address"]
+                in list(full_list_token["platforms"].values())
+            ):
+                token_info = top_token.copy()
+                token_info["platforms"] = full_list_token["platforms"]
+                top_tokens_by_chain.append(token_info)
+
+    return top_tokens_by_chain
+
+
 def main():
     print("Fetching token details...")
 
@@ -76,8 +108,22 @@ def main():
     with open("chainDetails.json", "r") as f:
         chain_details = json.load(f)
 
-    # Fetch top tokens from Coingecko
-    top_tokens = fetch_top_coingecko_tokens()
+    # Fetch top tokens from moralis
+    top_tokens = moralis_fetch_top_marketcap_list()
+    if not top_tokens:
+        raise Exception("Top tokens fetch failed, please try again.")
+
+    with codecs.open("fullList.json", encoding="utf-8", mode="r") as f:
+        full_list = json.load(f)
+
+    # Run this instead to fetch full list from coingecko (careful: rate limits you for a few minutes)
+    # full_list = fetch_full_coingecko_list()
+
+    if not full_list:
+        raise Exception("Full list fetch failed, please try again.")
+
+    # add deployed contract addresses for different networks to top_tokens list
+    top_tokens_by_chain = get_top_tokens_with_contracts(top_tokens, full_list)
 
     # Fetch the mapping from chainId to CoinGecko ID
     chain_id_to_coingecko_id = fetch_coingecko_id_to_chain_id_mapping()
@@ -92,19 +138,20 @@ def main():
     for chain_id, details in chain_details.items():
         print(f"Fetching tokens for chainId {chain_id}...")
         coingecko_id = chain_id_to_coingecko_id.get(int(chain_id))
-        tokens = []
         if coingecko_id:
-            tokens = fetch_tokens_for_platform(coingecko_id)
-            # wait for 1 second to avoid rate limit
-            time.sleep(1)
-
-            # Filter tokens based on top_tokens
+            # Filter tokens based on top_tokens_by_chain
             filtered_tokens = []
-            for token in tokens:
-                if any(token['name'] == top_token['name'] for top_token in top_tokens):
-                    filtered_tokens.append(token)
-                    if (len(filtered_tokens) >= 50): 
-                        break                
+            for top_token in top_tokens_by_chain:
+                if coingecko_id in top_token["platforms"]:
+                    filtered_tokens.append(
+                        {
+                            "address": top_token["contract_address"],
+                            "decimals": top_token["token_decimals"],
+                            "name": top_token["token_name"],
+                            "symbol": top_token["token_symbol"],
+                            "logoURI": top_token["token_logo"],
+                        }
+                    )
 
             total_tokens += len(filtered_tokens)
             chains_fetched += 1
