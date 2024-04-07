@@ -1,16 +1,12 @@
 import requests
 import json
-import time
 import codecs
 
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
 TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
-TOKEN_LIST_URL = "https://api.coingecko.com/api/v3/coins/list?include_platform=true"
 TOP_TOKENS_URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page={}&page={}"
-TOP_LIST_MORALIS_URL = (
-    "https://deep-index.moralis.io/api/v2.2/market-data/erc20s/top-tokens"
-)
+TOP_LIST_MORALIS_URL = "https://deep-index.moralis.io/api/v2.2/market-data/erc20s/top-tokens"
 MORALIS_API_KEY = "<YOUR_API_KEY_HERE>"
 
 
@@ -84,6 +80,10 @@ def fetch_tokens_for_platform(platform_id):
 
 
 def get_top_tokens_with_contracts(top_tokens, full_list):
+    # Iterate through moralis top token list to find the same token address
+    # in a full coingecko token list. Populate 'platforms' field in resulting list
+    # with contract addresses for different networks.
+
     top_tokens_by_chain = []
     for top_token in top_tokens:
         for full_list_token in full_list:
@@ -99,6 +99,16 @@ def get_top_tokens_with_contracts(top_tokens, full_list):
                 top_tokens_by_chain.append(token_info)
 
     return top_tokens_by_chain
+
+
+def format_token_fileds(moralis_token):
+    return {
+        "address": moralis_token["contract_address"],
+        "decimals": moralis_token["token_decimals"],
+        "name": moralis_token["token_name"],
+        "symbol": moralis_token["token_symbol"],
+        "logoURI": moralis_token["token_logo"],
+    }
 
 
 def main():
@@ -140,18 +150,11 @@ def main():
         coingecko_id = chain_id_to_coingecko_id.get(int(chain_id))
         if coingecko_id:
             # Filter tokens based on top_tokens_by_chain
-            filtered_tokens = []
-            for top_token in top_tokens_by_chain:
-                if coingecko_id in top_token["platforms"]:
-                    filtered_tokens.append(
-                        {
-                            "address": top_token["contract_address"],
-                            "decimals": top_token["token_decimals"],
-                            "name": top_token["token_name"],
-                            "symbol": top_token["token_symbol"],
-                            "logoURI": top_token["token_logo"],
-                        }
-                    )
+            filtered_tokens = [
+                format_token_fileds(top_token)
+                for top_token in top_tokens_by_chain
+                if coingecko_id in top_token["platforms"]
+            ]
 
             total_tokens += len(filtered_tokens)
             chains_fetched += 1
