@@ -21,8 +21,9 @@ describe('supportsEIP1559', function () {
 	})
 
 	it('should return false for a provider that does not support EIP-1559', async () => {
-		// Use a provider that does not support EIP-1559 (mantle)
-		const provider = new ethers.providers.JsonRpcProvider('https://1rpc.io/mantle')
+		// Use a provider that does not support EIP-1559 (mantle) EDIT: mantle now supports it. Lmao
+		// we'd need to use smth like ethereum classic (chainId 61)
+		const provider = new ethers.providers.JsonRpcProvider('https://besu-oc.etc-network.info	')
 		const result = await peanut.supportsEIP1559(provider)
 		expect(result).toBe(false)
 	})

@@ -4,9 +4,6 @@ import { expect, it, describe } from '@jest/globals'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY
-const INFURA_API_KEY = process.env.INFURA_API_KEY
-
 describe('getLinkDetails', function () {
 	describe('v4', function () {
 		it('v4 should include timestamp', async function () {
