@@ -181,23 +181,22 @@ async function getDefaultProviderUrl(chainId: string): Promise<string> {
 
 async function createValidProvider(rpcUrl: string): Promise<ethers.providers.JsonRpcProvider> {
 	try {
-		const provider = new ethers.providers.JsonRpcProvider({
-			url: rpcUrl,
-		})
+		const provider = new ethers.providers.JsonRpcProvider({ url: rpcUrl })
 
 		// Check if the RPC is valid by calling fetchGetBalance
 		const response = await fetchGetBalance(rpcUrl)
 		if (response.error) {
-			config.verbose && console.log('JSON RPC Error for:', rpcUrl, response.error.message)
-			throw new Error('Invalid RPC: ' + rpcUrl)
+			throw new interfaces.SDKStatus(
+				interfaces.EGenericErrorCodes.GENERIC_ERROR,
+				response.error.message,
+				`Invalid RPC: ${rpcUrl}`
+			)
 		}
 
-		config.verbose && console.log('RPC is valid:', rpcUrl)
 		return provider
 	} catch (error) {
 		try {
 			if (error.code === 'NETWORK_ERROR') {
-				config.verbose && console.log('Network error for RPC:', rpcUrl, 'Trying with skipFetchSetup...')
 				const provider = new ethers.providers.JsonRpcProvider({
 					url: rpcUrl,
 					skipFetchSetup: true,
@@ -206,22 +205,27 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 				// Check if the RPC is valid by calling fetchGetBalance
 				const response = await fetchGetBalance(rpcUrl)
 				if (response.error) {
-					config.verbose && console.log('JSON RPC Error for:', rpcUrl, response.error.message)
-					throw new Error('Invalid RPC: ' + rpcUrl)
+					throw new interfaces.SDKStatus(
+						interfaces.EGenericErrorCodes.GENERIC_ERROR,
+						response.error.message,
+						`Invalid RPC: ${rpcUrl}`
+					)
 				}
 
 				return provider
 			} else {
-				config.verbose && console.log('Error checking RPC:', rpcUrl, 'Error:', error)
 				// Introduce a delay before throwing the error. This is necessary so that the Promise.any
 				// call in getDefaultProvider doesn't immediately reject the promise and instead waits for a success.
 				await new Promise((resolve) => setTimeout(resolve, 5000))
-				throw new Error('Invalid RPC: ' + rpcUrl)
+				throw new interfaces.SDKStatus(
+					interfaces.EGenericErrorCodes.GENERIC_ERROR,
+					error,
+					`Invalid RPC: ${rpcUrl}`
+				)
 			}
 		} catch (error) {
-			config.verbose && console.log('Error checking RPC (fallback):', rpcUrl, 'Error:', error)
 			await new Promise((resolve) => setTimeout(resolve, 5000))
-			throw new Error('Invalid RPC: ' + rpcUrl)
+			throw new interfaces.SDKStatus(interfaces.EGenericErrorCodes.GENERIC_ERROR, error, `Invalid RPC: ${rpcUrl}`)
 		}
 	}
 }
@@ -493,7 +497,8 @@ async function getEIP1559Tip(chainId: string): Promise<ethers.BigNumber | null> 
 }
 
 /**
- * Estimate gas price. If unsignedTx is supplied, also estimate the gas limit
+ * Estimate gas price. If unsignedTx is supplied, also estimate the gas limit.
+ * @dev This function does not override provided gas options in txOptions.
  * @returns struct with gas info
  */
 async function setFeeOptions({
@@ -582,7 +587,7 @@ async function setFeeOptions({
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
 	if (['2001', '200101', '56', '59144', '59140', '534352', '5000', '5001'].includes(_chainId)) {
 		eip1559 = false
-		config.verbose && console.log('Setting eip1559 to false as an exception')
+		config.verbose && console.log('Chain includes unreliable eip1559 chains. Using legacy gas calculation.')
 	} else if (chainDetails && chainDetails.features) {
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
 		config.verbose && console.log('EIP1559 support determined from chain features:', eip1559)
@@ -631,6 +636,13 @@ async function setFeeOptions({
 						txOptions.maxPriorityFeePerGas = minPriorityFee.toString()
 					}
 				}
+				// for gnosis (100), minimum 1 gwei gas fee
+				if (_chainId == '100') {
+					const minPriorityFee = ethers.utils.parseUnits('1', 'gwei')
+					if (ethers.BigNumber.from(txOptions.maxPriorityFeePerGas).lt(minPriorityFee)) {
+						txOptions.maxPriorityFeePerGas = minPriorityFee.toString()
+					}
+				}
 			}
 
 			// if lastBaseFeePerGas is null, just set maxFeePerGas to feeData.maxFeePerGas * maxFeePerGasMultiplier
@@ -653,19 +665,39 @@ async function setFeeOptions({
 		}
 	}
 	if (!eip1559) {
-		let gasPrice
-		if (gasPrice) {
-			txOptions.gasPrice = gasPrice
-		} else if (txOptions.gasPrice) {
-			gasPrice = txOptions.gasPrice
-		} else if (feeData.gasPrice != null) {
-			txOptions.gasPrice = feeData.gasPrice.toString()
-			gasPrice = BigInt(feeData.gasPrice.toString())
-		}
-		const proposedGasPrice = gasPrice && (gasPrice * BigInt(Math.round(gasPriceMultiplier * 10))) / BigInt(10)
-		txOptions.gasPrice = proposedGasPrice && ethers.BigNumber.from(proposedGasPrice.toString())
-	}
+		// Only initialize gasPrice if it's not already provided in txOptions
+		if (!txOptions.gasPrice) {
+			const gasPrice = feeData.gasPrice ? BigInt(feeData.gasPrice.toString()) : null
 
+			if (gasPrice !== null) {
+				// Apply the gasPriceMultiplier to calculate the proposed gas price
+				let proposedGasPrice = (gasPrice * BigInt(Math.round(gasPriceMultiplier * 100))) / BigInt(100)
+
+				/////// CHAIN EXCEPTIONS /////////
+				// Exception for Gnosis (chain ID 100) to ensure a minimum gas price of 1 gwei
+				if (_chainId === '100') {
+					const minGnosisGasPrice = ethers.utils.parseUnits('1', 'gwei')
+					if (ethers.BigNumber.from(proposedGasPrice.toString()).lt(minGnosisGasPrice)) {
+						proposedGasPrice = BigInt(minGnosisGasPrice.toString())
+					}
+				}
+				// polgon (137) has a minimum gas price of 30 gwei
+				if (_chainId === '137') {
+					const minPolygonGasPrice = ethers.utils.parseUnits('30', 'gwei')
+					if (ethers.BigNumber.from(proposedGasPrice.toString()).lt(minPolygonGasPrice)) {
+						proposedGasPrice = BigInt(minPolygonGasPrice.toString())
+					}
+				}
+
+				// Set the calculated proposed gas price in txOptions if not already provided
+				txOptions.gasPrice = ethers.BigNumber.from(proposedGasPrice.toString())
+			} else {
+				// Handle the case where gasPrice could not be determined
+				console.error('Failed to determine gas price for legacy transaction')
+				// Optionally, set a default gas price here
+			}
+		}
+	}
 	config.verbose && console.log('FINAL txOptions:', txOptions)
 
 	return txOptions
@@ -748,7 +780,7 @@ async function prepareDepositTxs({
 	passwords = [],
 	provider,
 	recipient = constants.AddressZero,
-	reclaimableAfter = 0
+	reclaimableAfter = 0,
 }: interfaces.IPrepareDepositTxsParams): Promise<interfaces.IPrepareDepositTxsResponse> {
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
@@ -888,7 +920,10 @@ async function prepareDepositTxs({
 				]
 				contract = await getContract(linkDetails.chainId, provider, peanutContractVersion) // get the contract instance
 
-				const depositTxRequest = await contract.populateTransaction.makeCustomDeposit(...depositParams, txOptions)
+				const depositTxRequest = await contract.populateTransaction.makeCustomDeposit(
+					...depositParams,
+					txOptions
+				)
 				depositTx = ethersV5ToPeanutTx(depositTxRequest)
 			} else {
 				// Using the old, more limited function
@@ -1169,7 +1204,7 @@ async function validateLinkDetails(
 
 	assert(
 		linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
-		linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
+			linkDetails.tokenAddress != '0x0000000000000000000000000000000000000000',
 		'tokenAddress must be provided for non-ETH tokens'
 	)
 	if (
@@ -1210,7 +1245,7 @@ async function createLink({
 	peanutContractVersion = null,
 	password = null,
 	recipient,
-	reclaimableAfter
+	reclaimableAfter,
 }: interfaces.ICreateLinkParams): Promise<interfaces.ICreatedPeanutLink> {
 	if (peanutContractVersion == null) {
 		getLatestContractVersion({ chainId: linkDetails.chainId, type: 'normal' })
@@ -1230,7 +1265,7 @@ async function createLink({
 			passwords: [password],
 			provider: provider,
 			recipient,
-			reclaimableAfter
+			reclaimableAfter,
 		})
 	} catch (error) {
 		throw new interfaces.SDKStatus(interfaces.ECreateLinkStatusCodes.ERROR_PREPARING_TX, error)
@@ -1857,7 +1892,10 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 					metadata = await response.json()
 				}
 			} catch (err: any) {
-				console.warn(`Could not fetch metadata at uri ${tokenURI} for a ERC-721 token ${tokenAddress} due to`, err)
+				console.warn(
+					`Could not fetch metadata at uri ${tokenURI} for a ERC-721 token ${tokenAddress} due to`,
+					err
+				)
 			}
 
 			tokenDecimals = null
@@ -1877,7 +1915,10 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 					metadata = await response.json()
 				}
 			} catch (err: any) {
-				console.warn(`Could not fetch metadata at uri ${tokenURI} for a ERC-1155 token ${tokenAddress} due to`, err)
+				console.warn(
+					`Could not fetch metadata at uri ${tokenURI} for a ERC-1155 token ${tokenAddress} due to`,
+					err
+				)
 			}
 
 			name = 'ERC1155 Token (' + deposit.tokenId + ')'
