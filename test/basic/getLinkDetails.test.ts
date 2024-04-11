@@ -90,7 +90,7 @@ describe('getLinkDetails for NFT', function () {
 		expect(linkDetails.metadata.attributes[0].trait_type).toBe('Type')
 		//@ts-ignore
 		expect(linkDetails.metadata.attributes[0].value).toBe('crimson')
-	}, 10000)
+	}, 100000)
 })
 
 describe('getLinkDetails for Polygon Mumbai', function () {

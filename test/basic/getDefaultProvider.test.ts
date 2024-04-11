@@ -18,7 +18,7 @@ describe('test getDefaultProvider on EVERY chain', function () {
 			const network = await provider.getNetwork()
 			expect(network.chainId).toBe(parseInt(chainId))
 		},
-		10000
+		100000
 	)
 })
 

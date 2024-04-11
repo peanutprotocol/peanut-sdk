@@ -11797,26 +11797,6 @@
 		]
 	},
 	{
-		"chainId": "5001",
-		"name": "Mantle Testnet",
-		"tokens": [
-			{
-				"address": "0x0000000000000000000000000000000000000000",
-				"name": "Testnet Mantle",
-				"symbol": "MNT",
-				"decimals": 18,
-				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg"
-			},
-			{
-				"address": "0x491FD73b7144371c04154A2a39FE5270C2E6A96A",
-				"name": "FLOKI",
-				"symbol": "FLOKI",
-				"decimals": 9,
-				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
-			}
-		]
-	},
-	{
 		"chainId": "169",
 		"name": "Manta Pacific Mainnet",
 		"tokens": [
@@ -12202,6 +12182,19 @@
 				"symbol": "CELO",
 				"decimals": 18,
 				"logoURI": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/celo/info/logo.png"
+			}
+		]
+	},
+	{
+		"chainId": "5003",
+		"name": "Mantle Sepolia",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Testnet Mantle",
+				"symbol": "MNT",
+				"decimals": 18,
+				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg"
 			}
 		]
 	}
