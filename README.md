@@ -61,7 +61,7 @@ EVM:
 -   update createClaimXChainPayload
 -   update getLinkDetails
 -   update prepareRaffleDepositTxs
--   just CTRL+F for 'v4.2' or 'v4.3'
+-   just CTRL+F for 'v4.2' or 'v4.3' + 15 places
 -   change `const routerContractVersion = 'Rv4.2'`
 
 ## Adding a custom token
