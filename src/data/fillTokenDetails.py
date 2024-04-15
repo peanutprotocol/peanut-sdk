@@ -56,7 +56,7 @@ def fetch_full_coingecko_list():
         print("Failed to fetch list of all tokens.")
 
 
-def format_token_fileds(moralis_token):
+def format_token_fields(moralis_token):
     return {
         "address": moralis_token["contract_address"],
         "decimals": moralis_token["token_decimals"],
@@ -111,17 +111,10 @@ def main():
     except FileNotFoundError:
         manual_token_details = []
 
-    try:
-        with codecs.open("fullList.json", encoding="utf-8", mode="r") as f:
-            full_list = json.load(f)
-    except FileNotFoundError:
-        print("fullList.json not found, fetching...")
-        full_list = fetch_full_coingecko_list()
-        if not full_list:
-            raise Exception("Top tokens fetch failed, please try again.")
-
-        with codecs.open("fullList.json", encoding="utf-8", mode="w") as fl:
-            json.dump(full_list, fl, indent="\t")
+    # Fetch full token list supported by coingecko
+    full_list = fetch_full_coingecko_list()
+    if not full_list:
+        raise Exception("Top tokens fetch failed, please try again.")
 
     # Fetch top tokens from moralis
     top_tokens = moralis_fetch_top_marketcap_list()
@@ -178,7 +171,7 @@ def main():
                     continue
 
             tokens = [
-                format_token_fileds(top_token)
+                format_token_fields(top_token)
                 for top_token in top_tokens_by_chain
                 if coingecko_id in top_token["platforms"]
             ]
