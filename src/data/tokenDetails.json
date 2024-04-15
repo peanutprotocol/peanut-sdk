@@ -32,18 +32,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x6b1fc7eb8799dc72fe25ec4ef2518ccb23ca822dddb4978106d378d915509970.png"
 			},
 			{
-				"address": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-				"decimals": "18",
-				"name": "Liquid staked Ether 2.0",
-				"symbol": "stETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x289c9ccd7da16be523e640469209bce5b35052e709493399dbbf422677ef0052.png"
-			},
-			{
 				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
+			},
+			{
+				"address": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+				"decimals": "18",
+				"name": "Liquid staked Ether 2.0",
+				"symbol": "stETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x289c9ccd7da16be523e640469209bce5b35052e709493399dbbf422677ef0052.png"
 			},
 			{
 				"address": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
@@ -95,18 +95,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
+				"address": "0xc5f0f7b66764f6ec8c8dff7ba683102295e16409",
+				"decimals": "18",
+				"name": "First Digital USD",
+				"symbol": "FDUSD",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x3ed8fb3fdd341457d9f319f9438b64ac497b83932b028ed9e083a4e9635bd4b4.png"
+			},
+			{
 				"address": "0x3c3a81e81dc49a522a592e7622a7e711c06bf354",
 				"decimals": "18",
 				"name": "Mantle",
 				"symbol": "MNT",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe34e32d7530edd1920e4371f4a346c00673210c0b1942056e1047c56060901e1.png"
-			},
-			{
-				"address": "0xb50721bcf8d664c30412cfbc6cf7a15145234ad1",
-				"decimals": "18",
-				"name": "Arbitrum",
-				"symbol": "ARB",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4c78a8a6fb89b6fce24f485927e43e8cdfd783373d7cbb7119f5e16f824a2a93.png"
 			},
 			{
 				"address": "0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b",
@@ -116,18 +116,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xfb859f7f18587fdbbc70931263a2ee7e7be5c25bcc772c60700a9708e8670c65.png"
 			},
 			{
-				"address": "0xf57e7e7c23978c3caec3c3548e3d615c346e79ff",
-				"decimals": "18",
-				"name": "Immutable X",
-				"symbol": "IMX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf6b3e7c45e9978fc0cafd9e494b95684a2bea60c81895deb2db4e42474049101.png"
-			},
-			{
 				"address": "0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24",
 				"decimals": "18",
 				"name": "Render Token",
 				"symbol": "RNDR",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x40b10cd72b7cd17d34b0a27ee33d1bcd7cd00eb7764c28566d0db9656ba62d0b.png"
+			},
+			{
+				"address": "0xb50721bcf8d664c30412cfbc6cf7a15145234ad1",
+				"decimals": "18",
+				"name": "Arbitrum",
+				"symbol": "ARB",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4c78a8a6fb89b6fce24f485927e43e8cdfd783373d7cbb7119f5e16f824a2a93.png"
 			},
 			{
 				"address": "0x75231f58b43240c9718dd58b4967c5114342a86c",
@@ -137,11 +137,11 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd704b11e8f6e4ae251a691a8ca953cc7b10d488a1a93a019e2c2cf6fe306ec85.png"
 			},
 			{
-				"address": "0xc5f0f7b66764f6ec8c8dff7ba683102295e16409",
+				"address": "0xf57e7e7c23978c3caec3c3548e3d615c346e79ff",
 				"decimals": "18",
-				"name": "First Digital USD",
-				"symbol": "FDUSD",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x3ed8fb3fdd341457d9f319f9438b64ac497b83932b028ed9e083a4e9635bd4b4.png"
+				"name": "Immutable X",
+				"symbol": "IMX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf6b3e7c45e9978fc0cafd9e494b95684a2bea60c81895deb2db4e42474049101.png"
 			},
 			{
 				"address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
@@ -158,11 +158,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4afcf6d73c2dd05db368bf9aa018e7cfbbfb7af73d4e572d3800178631cc7eec.png"
 			},
 			{
+				"address": "0xaea46a60368a7bd060eec7df8cba43b7ef41ad85",
+				"decimals": "18",
+				"name": "Fetch",
+				"symbol": "FET",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7d65ac9fbaf5083104aecbe30a44183f1164589dd3e3bdaccd16a73213f9fb3.png"
+			},
+			{
 				"address": "0xe28b3b32b6c345a34ff64674606124dd5aceca30",
 				"decimals": "18",
 				"name": "Injective Token",
 				"symbol": "INJ",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x09ce6af0e0e9e1e1a1b9ca2ebb4c3fb55b58858fe0e3643971bc233653bdafd6.png"
+			},
+			{
+				"address": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+				"decimals": "18",
+				"name": "USDe",
+				"symbol": "USDe",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc02e35ee4fbbe9cb5d01129438e5d20c4f140217c475f2cb7ef9ce0361810fd2.png"
 			},
 			{
 				"address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
@@ -172,11 +186,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c48f80cd5c716ff04af08a5b7f805ca9774dccd74fb42d52249b721fc739a8e.png"
 			},
 			{
-				"address": "0xaea46a60368a7bd060eec7df8cba43b7ef41ad85",
+				"address": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
 				"decimals": "18",
-				"name": "Fetch",
-				"symbol": "FET",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7d65ac9fbaf5083104aecbe30a44183f1164589dd3e3bdaccd16a73213f9fb3.png"
+				"name": "EtherFi wrapped ETH",
+				"symbol": "weETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1c032d5eeff8693ca5a353d77d3c8fe82961530995efc0aae6218030e41c97a7.png"
+			},
+			{
+				"address": "0xae78736cd615f374d3085123a210448e74fc6393",
+				"decimals": "18",
+				"name": "Rocket Pool ETH",
+				"symbol": "rETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0fc1fdb71492153ebfbd160e06f5eb0ba3301b7fa1980643d6d04b31f39199ff.png"
 			},
 			{
 				"address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
@@ -191,41 +212,6 @@
 				"name": "Gala",
 				"symbol": "GALA",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x70d29e8abac48ac0b7575bf26a4217e4135a19f48f6074e36e27a98d99b398eb.png"
-			},
-			{
-				"address": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-				"decimals": "18",
-				"name": "EtherFi wrapped ETH",
-				"symbol": "weETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1c032d5eeff8693ca5a353d77d3c8fe82961530995efc0aae6218030e41c97a7.png"
-			},
-			{
-				"address": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
-				"decimals": "18",
-				"name": "USDe",
-				"symbol": "USDe",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc02e35ee4fbbe9cb5d01129438e5d20c4f140217c475f2cb7ef9ce0361810fd2.png"
-			},
-			{
-				"address": "0xae78736cd615f374d3085123a210448e74fc6393",
-				"decimals": "18",
-				"name": "Rocket Pool ETH",
-				"symbol": "rETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0fc1fdb71492153ebfbd160e06f5eb0ba3301b7fa1980643d6d04b31f39199ff.png"
-			},
-			{
-				"address": "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
-				"decimals": "9",
-				"name": "FLOKI",
-				"symbol": "FLOKI",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd1782e6bb2f822e9f26bc300ebb0f7f88eaaed15bc3ad160563e201be95b93a8.png"
-			},
-			{
-				"address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
-				"decimals": "18",
-				"name": "Aave Token",
-				"symbol": "AAVE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
 			},
 			{
 				"address": "0x19de6b897ed14a376dda0fe53a5420d2ac828a28",
@@ -256,13 +242,6 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5276ffb67d7000391dec3dee3e925b25feaeee6e0e7c7941f000828a9218fcd6.png"
 			},
 			{
-				"address": "0x6123b0049f904d730db3c36a31167d9d4121fa6b",
-				"decimals": "18",
-				"name": "Ribbon",
-				"symbol": "RBN",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x530ad506b81569021b690d0a6a9d1de1f58311c1d1a907443bf4d83aac989ea2.png"
-			},
-			{
 				"address": "0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce",
 				"decimals": "18",
 				"name": "Beam",
@@ -270,95 +249,11 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc9aba06b1fdad9d0ba6fe3efd19955d3e8216a905ed35267f0e6013a2269dedb.png"
 			},
 			{
-				"address": "0x1151cb3d861920e07a38e03eead12c32178567f6",
-				"decimals": "5",
-				"name": "Bonk",
-				"symbol": "Bonk",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2a6294a4a6efeb7eb3e953891764e83a45a0c1b22f1ddb591e2cf84a88681716.png"
-			},
-			{
-				"address": "0xc669928185dbce49d2230cc9b0979be6dc797957",
-				"decimals": "18",
-				"name": "BitTorrent",
-				"symbol": "BTT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf4fc94cae57f372d78d98f9ad928e77a4e29c074ff9b1e743c8d0fc76ffd4d8c.png"
-			},
-			{
-				"address": "0xbb0e17ef65f82ab018d8edd776e8dd940327b28b",
-				"decimals": "18",
-				"name": "Axie Infinity Shard",
-				"symbol": "AXS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x749f49e8ed0de59fef555d90c9ec743e6af23adbcc3b6429de3b97d52e8d7430.png"
-			},
-			{
-				"address": "0x35fa164735182de50811e8e2e824cfb9b6118ac2",
-				"decimals": "18",
-				"name": "ether.fi ETH",
-				"symbol": "eETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x745d1e39a2582b23bfbd05b7a16a2b31c2b6aeff85687ce214cb59a8e53bbf8f.png"
-			},
-			{
-				"address": "0x3845badade8e6dff049820680d1f14bd3903a5d0",
-				"decimals": "18",
-				"name": "SAND",
-				"symbol": "SAND",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x7a9c0cef51ce0c06bf01d66e94f3739efc5542fbfe01b81eca94da05d5c97a0d.png"
-			},
-			{
-				"address": "0xca14007eff0db1f8135f4c25b34de49ab0d42766",
-				"decimals": "18",
-				"name": "StarkNet Token",
-				"symbol": "STRK",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xef46a2cd2351f3629e9b65526a7946406bb9723a7ead8a56caa3fa33f33aa1ec.png"
-			},
-			{
-				"address": "0x3506424f91fd33084466f402d5d97f05f8e3b4af",
-				"decimals": "18",
-				"name": "chiliZ",
-				"symbol": "CHZ",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf7b71c8684507cefb8d8009b3f00672c902af62fad9a7f421c35387e07f83d24.png"
-			},
-			{
-				"address": "0x5b7533812759b45c2b44c19e320ba2cd2681b542",
-				"decimals": "8",
-				"name": "SingularityNET Token",
-				"symbol": "AGIX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x31f77bc25aec4b686436f30f0c9bf63eb709da0bdc3192329209e7094390980c.png"
-			},
-			{
-				"address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
-				"decimals": "18",
-				"name": "Synthetix Network Token",
-				"symbol": "SNX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5aed90c1958ce3a240f8d6672101a931ed2b4462f20ed5946665db40706b3c85.png"
-			},
-			{
-				"address": "0x925206b8a707096ed26ae47c84747fe0bb734f59",
-				"decimals": "8",
-				"name": "WBT",
-				"symbol": "WBT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0eae197fecefe788d570746857f0160fb821e3ec532c58844f0f41c62b79a57a.png"
-			},
-			{
-				"address": "0x163f8c2467924be0ae7b5347228cabf260318753",
-				"decimals": "18",
-				"name": "Worldcoin",
-				"symbol": "WLD",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1d5a9c1f6b20a0259bc3db676a55a2b56d9e1305de9465f589edd15997a22aaa.png"
-			},
-			{
-				"address": "0x667102bd3413bfeaa3dffb48fa8288819e480a88",
-				"decimals": "8",
-				"name": "Tokenize Emblem",
-				"symbol": "TKX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x803f5cb49ff07a2186a0fbfd4bf91111c3b45e15085d254a776eb80bef45a234.png"
-			},
-			{
-				"address": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
-				"decimals": "18",
-				"name": "Decentraland MANA",
-				"symbol": "MANA",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x55f13b83d1067746c72abc201ded57e4deea4e38cf4731a051c4898aac6bf1e1.png"
+				"address": "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
+				"decimals": "9",
+				"name": "FLOKI",
+				"symbol": "FLOKI",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd1782e6bb2f822e9f26bc300ebb0f7f88eaaed15bc3ad160563e201be95b93a8.png"
 			},
 			{
 				"address": "0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3",
@@ -368,11 +263,95 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4e3b531e87c7bf1319d2cd715def1d3985cdcc7e6c4e52ced6633e7522b0ea48.png"
 			},
 			{
-				"address": "0x4d224452801aced8b2f0aebe155379bb5d594381",
+				"address": "0x925206b8a707096ed26ae47c84747fe0bb734f59",
+				"decimals": "8",
+				"name": "WBT",
+				"symbol": "WBT",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0eae197fecefe788d570746857f0160fb821e3ec532c58844f0f41c62b79a57a.png"
+			},
+			{
+				"address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
 				"decimals": "18",
-				"name": "ApeCoin",
-				"symbol": "APE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdfad056a0e4df21918214bc23f2598dbcf2064c981e91cd293dc82b17f5ab8ea.png"
+				"name": "Aave Token",
+				"symbol": "AAVE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
+			},
+			{
+				"address": "0xc669928185dbce49d2230cc9b0979be6dc797957",
+				"decimals": "18",
+				"name": "BitTorrent",
+				"symbol": "BTT",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf4fc94cae57f372d78d98f9ad928e77a4e29c074ff9b1e743c8d0fc76ffd4d8c.png"
+			},
+			{
+				"address": "0x35fa164735182de50811e8e2e824cfb9b6118ac2",
+				"decimals": "18",
+				"name": "ether.fi ETH",
+				"symbol": "eETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x745d1e39a2582b23bfbd05b7a16a2b31c2b6aeff85687ce214cb59a8e53bbf8f.png"
+			},
+			{
+				"address": "0x6123b0049f904d730db3c36a31167d9d4121fa6b",
+				"decimals": "18",
+				"name": "Ribbon",
+				"symbol": "RBN",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x530ad506b81569021b690d0a6a9d1de1f58311c1d1a907443bf4d83aac989ea2.png"
+			},
+			{
+				"address": "0x5b7533812759b45c2b44c19e320ba2cd2681b542",
+				"decimals": "8",
+				"name": "SingularityNET Token",
+				"symbol": "AGIX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x31f77bc25aec4b686436f30f0c9bf63eb709da0bdc3192329209e7094390980c.png"
+			},
+			{
+				"address": "0x667102bd3413bfeaa3dffb48fa8288819e480a88",
+				"decimals": "8",
+				"name": "Tokenize Emblem",
+				"symbol": "TKX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x803f5cb49ff07a2186a0fbfd4bf91111c3b45e15085d254a776eb80bef45a234.png"
+			},
+			{
+				"address": "0x1151cb3d861920e07a38e03eead12c32178567f6",
+				"decimals": "5",
+				"name": "Bonk",
+				"symbol": "Bonk",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2a6294a4a6efeb7eb3e953891764e83a45a0c1b22f1ddb591e2cf84a88681716.png"
+			},
+			{
+				"address": "0xbb0e17ef65f82ab018d8edd776e8dd940327b28b",
+				"decimals": "18",
+				"name": "Axie Infinity Shard",
+				"symbol": "AXS",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x749f49e8ed0de59fef555d90c9ec743e6af23adbcc3b6429de3b97d52e8d7430.png"
+			},
+			{
+				"address": "0xca14007eff0db1f8135f4c25b34de49ab0d42766",
+				"decimals": "18",
+				"name": "StarkNet Token",
+				"symbol": "STRK",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xef46a2cd2351f3629e9b65526a7946406bb9723a7ead8a56caa3fa33f33aa1ec.png"
+			},
+			{
+				"address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
+				"decimals": "18",
+				"name": "Synthetix Network Token",
+				"symbol": "SNX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5aed90c1958ce3a240f8d6672101a931ed2b4462f20ed5946665db40706b3c85.png"
+			},
+			{
+				"address": "0x3845badade8e6dff049820680d1f14bd3903a5d0",
+				"decimals": "18",
+				"name": "SAND",
+				"symbol": "SAND",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x7a9c0cef51ce0c06bf01d66e94f3739efc5542fbfe01b81eca94da05d5c97a0d.png"
+			},
+			{
+				"address": "0x3506424f91fd33084466f402d5d97f05f8e3b4af",
+				"decimals": "18",
+				"name": "chiliZ",
+				"symbol": "CHZ",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf7b71c8684507cefb8d8009b3f00672c902af62fad9a7f421c35387e07f83d24.png"
 			},
 			{
 				"address": "0xe66747a101bff2dba3697199dcce5b743b454759",
@@ -389,32 +368,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8112fbd4a27f246acc6a15f8c78984706ecbdb09f66d2315a0dcebf38c2e9667.png"
 			},
 			{
+				"address": "0x163f8c2467924be0ae7b5347228cabf260318753",
+				"decimals": "18",
+				"name": "Worldcoin",
+				"symbol": "WLD",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1d5a9c1f6b20a0259bc3db676a55a2b56d9e1305de9465f589edd15997a22aaa.png"
+			},
+			{
 				"address": "0x6810e776880c02933d47db1b9fc05908e5386b96",
 				"decimals": "18",
 				"name": "Gnosis Token",
 				"symbol": "GNO",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2f9807644916e89b2447b64c82e387fb277a259d39e56ee37aecf3e7ab106f7a.png"
-			},
-			{
-				"address": "0x152649ea73beab28c5b49b26eb48f7ead6d4c898",
-				"decimals": "18",
-				"name": "PancakeSwap Token",
-				"symbol": "Cake",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1f23fe169ec139784aa3392910c20aec369ac10c012bb977209c0be9410bccfe.png"
-			},
-			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-				"decimals": "6",
-				"name": "Axelar",
-				"symbol": "AXL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
-			},
-			{
-				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
-				"decimals": "18",
-				"name": "Frax Ether",
-				"symbol": "frxETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
 			},
 			{
 				"address": "0x626e8036deb333b408be468f951bdb42433cbf18",
@@ -424,11 +389,11 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xffd4bbdca01210125181e907d10622ae840740936d8930c4d06f043951a73932.png"
 			},
 			{
-				"address": "0xde4ee8057785a7e8e800db58f9784845a5c2cbd6",
+				"address": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
 				"decimals": "18",
-				"name": "Dexe",
-				"symbol": "DEXE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd71f0e33f82eac5627876222ff504c0a4e69442def86dcf4bd3c45004e5c87f1.png"
+				"name": "Decentraland MANA",
+				"symbol": "MANA",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x55f13b83d1067746c72abc201ded57e4deea4e38cf4731a051c4898aac6bf1e1.png"
 			},
 			{
 				"address": "0xb23d80f5fefcddaa212212f028021b41ded428cf",
@@ -438,18 +403,11 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf9d9a7d1351fe0c70432d44cd09c6949275b5035254bdb755baa1e23db6e7ff5.png"
 			},
 			{
-				"address": "0x5283d291dbcf85356a21ba090e6db59121208b44",
+				"address": "0x4d224452801aced8b2f0aebe155379bb5d594381",
 				"decimals": "18",
-				"name": "Blur",
-				"symbol": "BLUR",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x88bc8c8241d581aea804d211b6aa317581aeea5b2f6f2b2aa3e4c1608a86f61d.png"
-			},
-			{
-				"address": "0x767fe9edc9e0df98e07454847909b5e959d7ca0e",
-				"decimals": "18",
-				"name": "Illuvium",
-				"symbol": "ILV",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x42a5d26989406428d01eed3e35e862c6b9e937dbc8a7fbab3c504b81ee796fc6.png"
+				"name": "ApeCoin",
+				"symbol": "APE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdfad056a0e4df21918214bc23f2598dbcf2064c981e91cd293dc82b17f5ab8ea.png"
 			},
 			{
 				"address": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
@@ -459,11 +417,11 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4424049c109201b5bf614654590d085764e7171199028c0d5d0719cb9757cf8.png"
 			},
 			{
-				"address": "0x6b431b8a964bfcf28191b07c91189ff4403957d0",
+				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
 				"decimals": "18",
-				"name": "CorgiAI",
-				"symbol": "CORGIAI",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6251003725e9ad775bce31399f687c8b79ffd2bfd174c2789ad601f3f692ec5.png"
+				"name": "Frax Ether",
+				"symbol": "frxETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
 			},
 			{
 				"address": "0xb62132e35a6c13ee1ee0f84dc5d40bad8d815206",
@@ -473,32 +431,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xfe3866ad922f05b7bb4e5eb6fa6e28040ee51db0b5bfdd0549f53ff86fd52088.png"
 			},
 			{
-				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
+				"address": "0x152649ea73beab28c5b49b26eb48f7ead6d4c898",
 				"decimals": "18",
-				"name": "Wootrade Network",
-				"symbol": "WOO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
+				"name": "PancakeSwap Token",
+				"symbol": "Cake",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1f23fe169ec139784aa3392910c20aec369ac10c012bb977209c0be9410bccfe.png"
 			},
 			{
-				"address": "0xf951e335afb289353dc249e82926178eac7ded78",
+				"address": "0xde4ee8057785a7e8e800db58f9784845a5c2cbd6",
 				"decimals": "18",
-				"name": "swETH",
-				"symbol": "swETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7402f62503a49037379ebe18ac26e5fe7edb9ad9e3645dae34948c297778c43.png"
+				"name": "Dexe",
+				"symbol": "DEXE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd71f0e33f82eac5627876222ff504c0a4e69442def86dcf4bd3c45004e5c87f1.png"
 			},
 			{
-				"address": "0x8457ca5040ad67fdebbcc8edce889a335bc0fbfb",
-				"decimals": "18",
-				"name": "AltLayer Token",
-				"symbol": "ALT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd2e0ffeb78e2a55f1528c6283b34a74ca78290bbf02651d12290ae934b58a3e1.png"
-			},
-			{
-				"address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-				"decimals": "18",
-				"name": "Curve DAO Token",
-				"symbol": "CRV",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
+				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
+				"decimals": "6",
+				"name": "Axelar",
+				"symbol": "AXL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
 			},
 			{
 				"address": "0x0c10bf8fcb7bf5412187a595ab97a3609160b5c6",
@@ -508,48 +459,6 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb50eef87366f2e8a4747fe868111f59e42d6c562f39fc3a52e39abd402fb8c85.png"
 			},
 			{
-				"address": "0x6fb3e0a217407efff7ca062d46c26e5d60a14d69",
-				"decimals": "18",
-				"name": "IoTeX Network",
-				"symbol": "IOTX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b93e2cde1c7df0323494bd719aa4216e0daa9092816fa3c9c3d98ac48eb2146.png"
-			},
-			{
-				"address": "0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb",
-				"decimals": "18",
-				"name": "ether.fi governance token",
-				"symbol": "ETHFI",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd44a951723712454444d6b771e9f797035f339b46e87bcbcf99c945f5ca48837.png"
-			},
-			{
-				"address": "0x967da4048cd07ab37855c090aaf366e4ce1b9f48",
-				"decimals": "18",
-				"name": "Ocean Token",
-				"symbol": "OCEAN",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf94381bd06d806f8d0b541b4adbf5e050a67aaa1bace31db8b1cb66efc0d39ae.png"
-			},
-			{
-				"address": "0x111111111117dc0aa78b770fa6a738034120c302",
-				"decimals": "18",
-				"name": "1INCH Token",
-				"symbol": "1INCH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
-			},
-			{
-				"address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
-				"decimals": "18",
-				"name": "Coinbase Wrapped Staked ETH",
-				"symbol": "cbETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
-			},
-			{
-				"address": "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c",
-				"decimals": "18",
-				"name": "Enjin Coin",
-				"symbol": "ENJ",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5ace0d9d02be582ca75d6cea8db4cd52e8e107681b48d7f78284d1c227a6c9a2.png"
-			},
-			{
 				"address": "0x3593d125a4f7849a1b059e64f4517a86dd60c95d",
 				"decimals": "18",
 				"name": "MANTRA DAO",
@@ -557,39 +466,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe1e84cd4c09cf0c76a6052bca9041e5287ab87335ff222c2883c1b7eab8441d2.png"
 			},
 			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
+				"address": "0xf951e335afb289353dc249e82926178eac7ded78",
 				"decimals": "18",
-				"name": "Frax",
-				"symbol": "FRAX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
+				"name": "swETH",
+				"symbol": "swETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7402f62503a49037379ebe18ac26e5fe7edb9ad9e3645dae34948c297778c43.png"
 			},
 			{
-				"address": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
+				"address": "0x6b431b8a964bfcf28191b07c91189ff4403957d0",
 				"decimals": "18",
-				"name": "Ethereum Name Service",
-				"symbol": "ENS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0a7ca26861a64433388852816b0d73695996fa5eea212f6b910fde11121e2ab9.png"
+				"name": "CorgiAI",
+				"symbol": "CORGIAI",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6251003725e9ad775bce31399f687c8b79ffd2bfd174c2789ad601f3f692ec5.png"
 			},
 			{
-				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
+				"address": "0x767fe9edc9e0df98e07454847909b5e959d7ca0e",
 				"decimals": "18",
-				"name": "Ankr Network",
-				"symbol": "ANKR",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
-			},
-			{
-				"address": "0xe3c408bd53c31c085a1746af401a4042954ff740",
-				"decimals": "8",
-				"name": "GreenMetaverseToken",
-				"symbol": "GMT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf227b4bc147a657e1736353a37aa3a5dfb7d25aa7992b26f7a326eb7cd698abb.png"
-			},
-			{
-				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
-				"decimals": "18",
-				"name": "Staked Frax Ether",
-				"symbol": "sfrxETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
+				"name": "Illuvium",
+				"symbol": "ILV",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x42a5d26989406428d01eed3e35e862c6b9e937dbc8a7fbab3c504b81ee796fc6.png"
 			},
 			{
 				"address": "0x808507121b80c02388fad14726482e061b8da827",
@@ -599,18 +494,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
 			},
 			{
-				"address": "0x00c83aecc790e8a4453e5dd3b0b4b3680501a7a7",
+				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
 				"decimals": "18",
-				"name": "SKALE",
-				"symbol": "SKL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc3a813a501261396bafa3eb6992f02ccee357094f59cf590dac58dff40b38981.png"
+				"name": "Frax",
+				"symbol": "FRAX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
 			},
 			{
-				"address": "0xf17e65822b568b3903685a7c9f496cf7656cc6c2",
+				"address": "0x5283d291dbcf85356a21ba090e6db59121208b44",
 				"decimals": "18",
-				"name": "Biconomy Token",
-				"symbol": "BICO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0c145ebe6ae1b7f5b3be1ffcca5cc91df669f824da5d1420bc85824da2abc805.png"
+				"name": "Blur",
+				"symbol": "BLUR",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x88bc8c8241d581aea804d211b6aa317581aeea5b2f6f2b2aa3e4c1608a86f61d.png"
+			},
+			{
+				"address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
+				"decimals": "18",
+				"name": "Coinbase Wrapped Staked ETH",
+				"symbol": "cbETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
 			},
 			{
 				"address": "0x68749665ff8d2d112fa859aa293f07a622782f38",
@@ -620,25 +522,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x429d3e30bb11cbd3b2546062d0f84617be129998f494755e56602989e0ffc82f.png"
 			},
 			{
-				"address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
 				"decimals": "18",
-				"name": "0x Protocol Token",
-				"symbol": "ZRX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x31f4d1934bc3f5de7a228a07a73dfdf7b904ac86fda63d59a877b4dd8c000cfe.png"
+				"name": "Wootrade Network",
+				"symbol": "WOO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
 			},
 			{
-				"address": "0xd33526068d116ce69f19a9ee46f0bd304f21a51f",
+				"address": "0x967da4048cd07ab37855c090aaf366e4ce1b9f48",
 				"decimals": "18",
-				"name": "Rocket Pool Protocol",
-				"symbol": "RPL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd8e35e7d10f47a2c08f78c83e94593b28b905f7d6f1745b321802f25f3475a0c.png"
+				"name": "Ocean Token",
+				"symbol": "OCEAN",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf94381bd06d806f8d0b541b4adbf5e050a67aaa1bace31db8b1cb66efc0d39ae.png"
 			},
 			{
-				"address": "0xb131f4a55907b10d1f0a50d8ab8fa09ec342cd74",
+				"address": "0x8457ca5040ad67fdebbcc8edce889a335bc0fbfb",
 				"decimals": "18",
-				"name": "Memecoin",
-				"symbol": "MEME",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5389bb31549c1d20acc1980742d3a1fc856e24e52571e5fc82cadb469a742e72.png"
+				"name": "AltLayer Token",
+				"symbol": "ALT",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd2e0ffeb78e2a55f1528c6283b34a74ca78290bbf02651d12290ae934b58a3e1.png"
 			},
 			{
 				"address": "0xaedf386b755465871ff874e3e37af5976e247064",
@@ -648,25 +550,123 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x57b0df480ae344ad8f761df68e624030f82f05c70069c1452ce22f080409ef61.png"
 			},
 			{
-				"address": "0x6c6ee5e31d828de241282b9606c8e98ea48526e2",
+				"address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
 				"decimals": "18",
-				"name": "HoloToken",
-				"symbol": "HOT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x80c064fe36f2d86aa30532c25f83f9fce9a292661af8019f934503835bb273f9.png"
+				"name": "Curve DAO Token",
+				"symbol": "CRV",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
 			},
 			{
-				"address": "0x7dd9c5cba05e151c895fde1cf355c9a1d5da6429",
+				"address": "0x00c83aecc790e8a4453e5dd3b0b4b3680501a7a7",
 				"decimals": "18",
-				"name": "Golem Network Token",
-				"symbol": "GLM",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x3e703bf268f63e9eea2b2c2c636ffa6bc06020718fccfb253b85a28a5a72cf30.png"
+				"name": "SKALE",
+				"symbol": "SKL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc3a813a501261396bafa3eb6992f02ccee357094f59cf590dac58dff40b38981.png"
 			},
 			{
-				"address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
+				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
 				"decimals": "18",
-				"name": "Frax Share",
-				"symbol": "FXS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x66574f5df30978e18325173fae2f9b405182698d5ce9f89324be91ca3e0b5c7d.png"
+				"name": "Staked Frax Ether",
+				"symbol": "sfrxETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
+			},
+			{
+				"address": "0x6fb3e0a217407efff7ca062d46c26e5d60a14d69",
+				"decimals": "18",
+				"name": "IoTeX Network",
+				"symbol": "IOTX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b93e2cde1c7df0323494bd719aa4216e0daa9092816fa3c9c3d98ac48eb2146.png"
+			},
+			{
+				"address": "0x11eef04c884e24d9b7b4760e7476d06ddf797f36",
+				"decimals": "18",
+				"name": "MX Token",
+				"symbol": "MX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb7099a07f5df09811277889a98a46511fcc746593e3a264188cc6f127a635762.png"
+			},
+			{
+				"address": "0x0000000000085d4780b73119b644ae5ecd22b376",
+				"decimals": "18",
+				"name": "TrueUSD",
+				"symbol": "TUSD",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x6bbc9ba2a9a2b2dc607e0cfd790974e99d8b344b743f17f49d296677f3b88a7d.png"
+			},
+			{
+				"address": "0xe3c408bd53c31c085a1746af401a4042954ff740",
+				"decimals": "8",
+				"name": "GreenMetaverseToken",
+				"symbol": "GMT",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf227b4bc147a657e1736353a37aa3a5dfb7d25aa7992b26f7a326eb7cd698abb.png"
+			},
+			{
+				"address": "0x111111111117dc0aa78b770fa6a738034120c302",
+				"decimals": "18",
+				"name": "1INCH Token",
+				"symbol": "1INCH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
+			},
+			{
+				"address": "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c",
+				"decimals": "18",
+				"name": "Enjin Coin",
+				"symbol": "ENJ",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5ace0d9d02be582ca75d6cea8db4cd52e8e107681b48d7f78284d1c227a6c9a2.png"
+			},
+			{
+				"address": "0xe53ec727dbdeb9e2d5456c3be40cff031ab40a55",
+				"decimals": "18",
+				"name": "SuperFarm",
+				"symbol": "SUPER",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xcbcda67931e9bd1f7ad16b1b0f3af4e274e65c0a22a348c5a84ce72ee99bb039.png"
+			},
+			{
+				"address": "0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb",
+				"decimals": "18",
+				"name": "ether.fi governance token",
+				"symbol": "ETHFI",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd44a951723712454444d6b771e9f797035f339b46e87bcbcf99c945f5ca48837.png"
+			},
+			{
+				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
+				"decimals": "18",
+				"name": "Ankr Network",
+				"symbol": "ANKR",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
+			},
+			{
+				"address": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
+				"decimals": "18",
+				"name": "Ethereum Name Service",
+				"symbol": "ENS",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0a7ca26861a64433388852816b0d73695996fa5eea212f6b910fde11121e2ab9.png"
+			},
+			{
+				"address": "0xd33526068d116ce69f19a9ee46f0bd304f21a51f",
+				"decimals": "18",
+				"name": "Rocket Pool Protocol",
+				"symbol": "RPL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd8e35e7d10f47a2c08f78c83e94593b28b905f7d6f1745b321802f25f3475a0c.png"
+			},
+			{
+				"address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+				"decimals": "18",
+				"name": "0x Protocol Token",
+				"symbol": "ZRX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x31f4d1934bc3f5de7a228a07a73dfdf7b904ac86fda63d59a877b4dd8c000cfe.png"
+			},
+			{
+				"address": "0x5faa989af96af85384b8a938c2ede4a7378d9875",
+				"decimals": "18",
+				"name": "Project Galaxy",
+				"symbol": "GAL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2b86d970af5ef1c62e6e758c970889bfad08c55df0d2ef5c7ccc4b389a85dfa0.png"
+			},
+			{
+				"address": "0xb131f4a55907b10d1f0a50d8ab8fa09ec342cd74",
+				"decimals": "18",
+				"name": "Memecoin",
+				"symbol": "MEME",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5389bb31549c1d20acc1980742d3a1fc856e24e52571e5fc82cadb469a742e72.png"
 			},
 			{
 				"address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
@@ -702,235 +702,235 @@
 				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/matic.svg"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
+				"address": "0x0000000000000000000000000000000000001010",
 				"decimals": "18",
 				"name": "Matic Token",
 				"symbol": "MATIC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x650979979c39d252c613b18a0f0def10242de128afc440fb42ee752e2c3dcc20.png"
 			},
 			{
-				"address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+				"address": "0xb33eaad8d922b1083446dc23f610c2567fb5180f",
 				"decimals": "18",
 				"name": "Uniswap",
 				"symbol": "UNI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc592299299cc12c38af6ec87f459357349f542bc38e1c334fe4ee54194b84735.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24",
+				"address": "0x61299774020da444af134c82fa83e3810b309991",
 				"decimals": "18",
 				"name": "Render Token",
 				"symbol": "RNDR",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x40b10cd72b7cd17d34b0a27ee33d1bcd7cd00eb7764c28566d0db9656ba62d0b.png"
 			},
 			{
-				"address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+				"address": "0x6f7c932e7684666c9fd1d44527765433e01ff61d",
 				"decimals": "18",
 				"name": "Maker",
 				"symbol": "MKR",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb9451b9b27e5b017309ad62e9dff4bc181602d2fc948b24368ac8ba1fd99493a.png"
 			},
 			{
-				"address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
+				"address": "0x5fe2b58c013d7601147dcdd68c143a77499f5531",
 				"decimals": "18",
 				"name": "Graph Token",
 				"symbol": "GRT",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4afcf6d73c2dd05db368bf9aa018e7cfbbfb7af73d4e572d3800178631cc7eec.png"
 			},
 			{
-				"address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
-				"decimals": "18",
-				"name": "Lido DAO Token",
-				"symbol": "LDO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb393f51ca81efc39757a6ae91e2d4681094afc9d58aac774085343bb26990ad6.png"
-			},
-			{
-				"address": "0xae78736cd615f374d3085123a210448e74fc6393",
+				"address": "0x0266f4f08d82372cf0fcbccc0ff74309089c74d1",
 				"decimals": "18",
 				"name": "Rocket Pool ETH",
 				"symbol": "rETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0fc1fdb71492153ebfbd160e06f5eb0ba3301b7fa1980643d6d04b31f39199ff.png"
 			},
 			{
-				"address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+				"address": "0xc3c7d422809852031b44ab29eec9f1eff2a58756",
+				"decimals": "18",
+				"name": "Lido DAO Token",
+				"symbol": "LDO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb393f51ca81efc39757a6ae91e2d4681094afc9d58aac774085343bb26990ad6.png"
+			},
+			{
+				"address": "0xd6df932a45c0f255f85145f286ea0b292b21c90b",
 				"decimals": "18",
 				"name": "Aave Token",
 				"symbol": "AAVE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
 			},
 			{
-				"address": "0x1151cb3d861920e07a38e03eead12c32178567f6",
+				"address": "0xe5b49820e5a1063f6f4ddf851327b5e8b2301048",
 				"decimals": "5",
 				"name": "Bonk",
 				"symbol": "Bonk",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2a6294a4a6efeb7eb3e953891764e83a45a0c1b22f1ddb591e2cf84a88681716.png"
 			},
 			{
-				"address": "0x3845badade8e6dff049820680d1f14bd3903a5d0",
-				"decimals": "18",
-				"name": "SAND",
-				"symbol": "SAND",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x7a9c0cef51ce0c06bf01d66e94f3739efc5542fbfe01b81eca94da05d5c97a0d.png"
-			},
-			{
-				"address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
+				"address": "0x50b728d8d964fd00c2d0aad81718b71311fef68a",
 				"decimals": "18",
 				"name": "Synthetix Network Token",
 				"symbol": "SNX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5aed90c1958ce3a240f8d6672101a931ed2b4462f20ed5946665db40706b3c85.png"
 			},
 			{
-				"address": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
+				"address": "0xbbba073c31bf03b8acf7c28ef0738decf3695683",
+				"decimals": "18",
+				"name": "SAND",
+				"symbol": "SAND",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x7a9c0cef51ce0c06bf01d66e94f3739efc5542fbfe01b81eca94da05d5c97a0d.png"
+			},
+			{
+				"address": "0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4",
 				"decimals": "18",
 				"name": "Decentraland MANA",
 				"symbol": "MANA",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x55f13b83d1067746c72abc201ded57e4deea4e38cf4731a051c4898aac6bf1e1.png"
 			},
 			{
-				"address": "0x4d224452801aced8b2f0aebe155379bb5d594381",
+				"address": "0xb7b31a6bc18e48888545ce79e83e06003be70930",
 				"decimals": "18",
 				"name": "ApeCoin",
 				"symbol": "APE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdfad056a0e4df21918214bc23f2598dbcf2064c981e91cd293dc82b17f5ab8ea.png"
 			},
 			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-				"decimals": "6",
-				"name": "Axelar",
-				"symbol": "AXL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
-			},
-			{
-				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
+				"address": "0xee327f889d5947c1dc1934bb208a1e792f953e96",
 				"decimals": "18",
 				"name": "Frax Ether",
 				"symbol": "frxETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
 			},
 			{
-				"address": "0xb62132e35a6c13ee1ee0f84dc5d40bad8d815206",
+				"address": "0x41b3966b4ff7b427969ddf5da3627d6aeae9a48e",
 				"decimals": "18",
 				"name": "Nexo",
 				"symbol": "NEXO",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xfe3866ad922f05b7bb4e5eb6fa6e28040ee51db0b5bfdd0549f53ff86fd52088.png"
 			},
 			{
-				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
-				"decimals": "18",
-				"name": "Wootrade Network",
-				"symbol": "WOO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
+				"address": "0x6e4e624106cb12e168e6533f8ec7c82263358940",
+				"decimals": "6",
+				"name": "Axelar",
+				"symbol": "AXL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
 			},
 			{
-				"address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-				"decimals": "18",
-				"name": "Curve DAO Token",
-				"symbol": "CRV",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
-			},
-			{
-				"address": "0x967da4048cd07ab37855c090aaf366e4ce1b9f48",
-				"decimals": "18",
-				"name": "Ocean Token",
-				"symbol": "OCEAN",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf94381bd06d806f8d0b541b4adbf5e050a67aaa1bace31db8b1cb66efc0d39ae.png"
-			},
-			{
-				"address": "0x111111111117dc0aa78b770fa6a738034120c302",
-				"decimals": "18",
-				"name": "1INCH Token",
-				"symbol": "1INCH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
-			},
-			{
-				"address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
-				"decimals": "18",
-				"name": "Coinbase Wrapped Staked ETH",
-				"symbol": "cbETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
-			},
-			{
-				"address": "0x3593d125a4f7849a1b059e64f4517a86dd60c95d",
+				"address": "0xc3ec80343d2bae2f8e680fdadde7c17e71e114ea",
 				"decimals": "18",
 				"name": "MANTRA DAO",
 				"symbol": "OM",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe1e84cd4c09cf0c76a6052bca9041e5287ab87335ff222c2883c1b7eab8441d2.png"
 			},
 			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
+				"address": "0x45c32fa6df82ead1e2ef74d17b76547eddfaff89",
 				"decimals": "18",
 				"name": "Frax",
 				"symbol": "FRAX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
 			},
 			{
-				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
+				"address": "0x4b4327db1600b8b1440163f667e199cef35385f5",
 				"decimals": "18",
-				"name": "Ankr Network",
-				"symbol": "ANKR",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
+				"name": "Coinbase Wrapped Staked ETH",
+				"symbol": "cbETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
 			},
 			{
-				"address": "0xe3c408bd53c31c085a1746af401a4042954ff740",
-				"decimals": "8",
-				"name": "GreenMetaverseToken",
-				"symbol": "GMT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf227b4bc147a657e1736353a37aa3a5dfb7d25aa7992b26f7a326eb7cd698abb.png"
+				"address": "0x1b815d120b3ef02039ee11dc2d33de7aa4a8c603",
+				"decimals": "18",
+				"name": "Wootrade Network",
+				"symbol": "WOO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
 			},
 			{
-				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
+				"address": "0x282d8efce846a88b159800bd4130ad77443fa1a1",
+				"decimals": "18",
+				"name": "Ocean Token",
+				"symbol": "OCEAN",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf94381bd06d806f8d0b541b4adbf5e050a67aaa1bace31db8b1cb66efc0d39ae.png"
+			},
+			{
+				"address": "0x172370d5cd63279efa6d502dab29171933a610af",
+				"decimals": "18",
+				"name": "Curve DAO Token",
+				"symbol": "CRV",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
+			},
+			{
+				"address": "0x6d1fdbb266fcc09a16a22016369210a15bb95761",
 				"decimals": "18",
 				"name": "Staked Frax Ether",
 				"symbol": "sfrxETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
 			},
 			{
-				"address": "0xd33526068d116ce69f19a9ee46f0bd304f21a51f",
+				"address": "0x714db550b574b3e927af3d93e26127d15721d4c2",
+				"decimals": "8",
+				"name": "GreenMetaverseToken",
+				"symbol": "GMT",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf227b4bc147a657e1736353a37aa3a5dfb7d25aa7992b26f7a326eb7cd698abb.png"
+			},
+			{
+				"address": "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f",
+				"decimals": "18",
+				"name": "1INCH Token",
+				"symbol": "1INCH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
+			},
+			{
+				"address": "0xa1428174f516f527fafdd146b883bb4428682737",
+				"decimals": "18",
+				"name": "SuperFarm",
+				"symbol": "SUPER",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xcbcda67931e9bd1f7ad16b1b0f3af4e274e65c0a22a348c5a84ce72ee99bb039.png"
+			},
+			{
+				"address": "0x101a023270368c0d50bffb62780f4afd4ea79c35",
+				"decimals": "18",
+				"name": "Ankr Network",
+				"symbol": "ANKR",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
+			},
+			{
+				"address": "0x7205705771547cf79201111b4bd8aaf29467b9ec",
 				"decimals": "18",
 				"name": "Rocket Pool Protocol",
 				"symbol": "RPL",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd8e35e7d10f47a2c08f78c83e94593b28b905f7d6f1745b321802f25f3475a0c.png"
-			},
-			{
-				"address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
-				"decimals": "18",
-				"name": "Frax Share",
-				"symbol": "FXS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x66574f5df30978e18325173fae2f9b405182698d5ce9f89324be91ca3e0b5c7d.png"
 			},
 			{
 				"address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
@@ -966,144 +966,144 @@
 				"logoURI": "https://optimistic.etherscan.io/images/svg/brands/main.svg"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x4200000000000000000000000000000000000006",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x68f180fcce6836688e9084f035309e29bf0a2095",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+				"address": "0x6fd9d7ad17242c41f7131d257212c54a0e816691",
 				"decimals": "18",
 				"name": "Uniswap",
 				"symbol": "UNI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc592299299cc12c38af6ec87f459357349f542bc38e1c334fe4ee54194b84735.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
-				"decimals": "18",
-				"name": "Lido DAO Token",
-				"symbol": "LDO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb393f51ca81efc39757a6ae91e2d4681094afc9d58aac774085343bb26990ad6.png"
-			},
-			{
-				"address": "0xae78736cd615f374d3085123a210448e74fc6393",
+				"address": "0x9bcef72be871e61ed4fbbc7630889bee758eb81d",
 				"decimals": "18",
 				"name": "Rocket Pool ETH",
 				"symbol": "rETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0fc1fdb71492153ebfbd160e06f5eb0ba3301b7fa1980643d6d04b31f39199ff.png"
 			},
 			{
-				"address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+				"address": "0xfdb794692724153d1488ccdbe0c56c252596735f",
+				"decimals": "18",
+				"name": "Lido DAO Token",
+				"symbol": "LDO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb393f51ca81efc39757a6ae91e2d4681094afc9d58aac774085343bb26990ad6.png"
+			},
+			{
+				"address": "0x76fb31fb4af56892a25e32cfc43de717950c9278",
 				"decimals": "18",
 				"name": "Aave Token",
 				"symbol": "AAVE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
 			},
 			{
-				"address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
+				"address": "0x8700daec35af8ff88c16bdf0418774cb3d7599b4",
 				"decimals": "18",
 				"name": "Synthetix Network Token",
 				"symbol": "SNX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5aed90c1958ce3a240f8d6672101a931ed2b4462f20ed5946665db40706b3c85.png"
 			},
 			{
-				"address": "0x163f8c2467924be0ae7b5347228cabf260318753",
+				"address": "0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1",
 				"decimals": "18",
 				"name": "Worldcoin",
 				"symbol": "WLD",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1d5a9c1f6b20a0259bc3db676a55a2b56d9e1305de9465f589edd15997a22aaa.png"
 			},
 			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-				"decimals": "6",
-				"name": "Axelar",
-				"symbol": "AXL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
-			},
-			{
-				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
+				"address": "0x6806411765af15bddd26f8f544a34cc40cb9838b",
 				"decimals": "18",
 				"name": "Frax Ether",
 				"symbol": "frxETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
 			},
 			{
-				"address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-				"decimals": "18",
-				"name": "Curve DAO Token",
-				"symbol": "CRV",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
+				"address": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+				"decimals": "6",
+				"name": "Axelar",
+				"symbol": "AXL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
 			},
 			{
-				"address": "0x967da4048cd07ab37855c090aaf366e4ce1b9f48",
+				"address": "0xbc7b1ff1c6989f006a1185318ed4e7b5796e66e1",
 				"decimals": "18",
-				"name": "Ocean Token",
-				"symbol": "OCEAN",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf94381bd06d806f8d0b541b4adbf5e050a67aaa1bace31db8b1cb66efc0d39ae.png"
+				"name": "Pendle",
+				"symbol": "PENDLE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
 			},
 			{
-				"address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
-				"decimals": "18",
-				"name": "Coinbase Wrapped Staked ETH",
-				"symbol": "cbETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
-			},
-			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
+				"address": "0x2e3d870790dc77a83dd1d18184acc7439a53f475",
 				"decimals": "18",
 				"name": "Frax",
 				"symbol": "FRAX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
 			},
 			{
-				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
+				"address": "0xaddb6a0412de1ba0f936dcaeb8aaa24578dcf3b2",
 				"decimals": "18",
-				"name": "Ankr Network",
-				"symbol": "ANKR",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
+				"name": "Coinbase Wrapped Staked ETH",
+				"symbol": "cbETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
 			},
 			{
-				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
+				"address": "0x2561aa2bb1d2eb6629edd7b0938d7679b8b49f9e",
+				"decimals": "18",
+				"name": "Ocean Token",
+				"symbol": "OCEAN",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf94381bd06d806f8d0b541b4adbf5e050a67aaa1bace31db8b1cb66efc0d39ae.png"
+			},
+			{
+				"address": "0x0994206dfe8de6ec6920ff4d779b0d950605fb53",
+				"decimals": "18",
+				"name": "Curve DAO Token",
+				"symbol": "CRV",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
+			},
+			{
+				"address": "0x484c2d6e3cdd945a8b2df735e079178c1036578c",
 				"decimals": "18",
 				"name": "Staked Frax Ether",
 				"symbol": "sfrxETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
 			},
 			{
-				"address": "0x808507121b80c02388fad14726482e061b8da827",
+				"address": "0xaeaeed23478c3a4b798e4ed40d8b7f41366ae861",
 				"decimals": "18",
-				"name": "Pendle",
-				"symbol": "PENDLE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
+				"name": "Ankr Network",
+				"symbol": "ANKR",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
 			}
 		]
 	},
@@ -1119,200 +1119,186 @@
 				"logoURI": "https://arbiscan.io/images/svg/brands/arbitrum.svg"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0xf97f4df75117a78c1a5a0dbb814af92458539fb4",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+				"address": "0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0",
 				"decimals": "18",
 				"name": "Uniswap",
 				"symbol": "UNI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc592299299cc12c38af6ec87f459357349f542bc38e1c334fe4ee54194b84735.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0xb50721bcf8d664c30412cfbc6cf7a15145234ad1",
+				"address": "0x912ce59144191c1204e64559fe8253a0e49e6548",
 				"decimals": "18",
 				"name": "Arbitrum",
 				"symbol": "ARB",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4c78a8a6fb89b6fce24f485927e43e8cdfd783373d7cbb7119f5e16f824a2a93.png"
 			},
 			{
-				"address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
+				"address": "0x9623063377ad1b27544c965ccd7342f7ea7e88c7",
 				"decimals": "18",
 				"name": "Graph Token",
 				"symbol": "GRT",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4afcf6d73c2dd05db368bf9aa018e7cfbbfb7af73d4e572d3800178631cc7eec.png"
 			},
 			{
-				"address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+				"address": "0x25d887ce7a35172c62febfd67a1856f20faebb00",
 				"decimals": "18",
 				"name": "Pepe",
 				"symbol": "PEPE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c48f80cd5c716ff04af08a5b7f805ca9774dccd74fb42d52249b721fc739a8e.png"
 			},
 			{
-				"address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
-				"decimals": "18",
-				"name": "Lido DAO Token",
-				"symbol": "LDO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb393f51ca81efc39757a6ae91e2d4681094afc9d58aac774085343bb26990ad6.png"
-			},
-			{
-				"address": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+				"address": "0x35751007a407ca6feffe80b3cb397736d2cf4dbe",
 				"decimals": "18",
 				"name": "EtherFi wrapped ETH",
 				"symbol": "weETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1c032d5eeff8693ca5a353d77d3c8fe82961530995efc0aae6218030e41c97a7.png"
 			},
 			{
-				"address": "0xae78736cd615f374d3085123a210448e74fc6393",
+				"address": "0xec70dcb4a1efa46b8f2d97c310c9c4790ba5ffa8",
 				"decimals": "18",
 				"name": "Rocket Pool ETH",
 				"symbol": "rETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0fc1fdb71492153ebfbd160e06f5eb0ba3301b7fa1980643d6d04b31f39199ff.png"
 			},
 			{
-				"address": "0x1151cb3d861920e07a38e03eead12c32178567f6",
+				"address": "0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60",
+				"decimals": "18",
+				"name": "Lido DAO Token",
+				"symbol": "LDO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb393f51ca81efc39757a6ae91e2d4681094afc9d58aac774085343bb26990ad6.png"
+			},
+			{
+				"address": "0x09199d9a5f4448d0848e4395d065e1ad9c4a1f74",
 				"decimals": "5",
 				"name": "Bonk",
 				"symbol": "Bonk",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2a6294a4a6efeb7eb3e953891764e83a45a0c1b22f1ddb591e2cf84a88681716.png"
 			},
 			{
-				"address": "0x6810e776880c02933d47db1b9fc05908e5386b96",
+				"address": "0xa0b862f60edef4452f25b4160f177db44deb6cf1",
 				"decimals": "18",
 				"name": "Gnosis Token",
 				"symbol": "GNO",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2f9807644916e89b2447b64c82e387fb277a259d39e56ee37aecf3e7ab106f7a.png"
 			},
 			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-				"decimals": "6",
-				"name": "Axelar",
-				"symbol": "AXL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
-			},
-			{
-				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
+				"address": "0x178412e79c25968a32e89b11f63b33f733770c2a",
 				"decimals": "18",
 				"name": "Frax Ether",
 				"symbol": "frxETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
 			},
 			{
-				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
-				"decimals": "18",
-				"name": "Wootrade Network",
-				"symbol": "WOO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
+				"address": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+				"decimals": "6",
+				"name": "Axelar",
+				"symbol": "AXL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
 			},
 			{
-				"address": "0xf951e335afb289353dc249e82926178eac7ded78",
-				"decimals": "18",
-				"name": "swETH",
-				"symbol": "swETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7402f62503a49037379ebe18ac26e5fe7edb9ad9e3645dae34948c297778c43.png"
-			},
-			{
-				"address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-				"decimals": "18",
-				"name": "Curve DAO Token",
-				"symbol": "CRV",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
-			},
-			{
-				"address": "0x0c10bf8fcb7bf5412187a595ab97a3609160b5c6",
+				"address": "0x680447595e8b7b3aa1b43beb9f6098c79ac2ab3f",
 				"decimals": "18",
 				"name": "Decentralized USD",
 				"symbol": "USDD",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb50eef87366f2e8a4747fe868111f59e42d6c562f39fc3a52e39abd402fb8c85.png"
 			},
 			{
-				"address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
+				"address": "0xbc011a12da28e8f0f528d9ee5e7039e22f91cf18",
 				"decimals": "18",
-				"name": "Coinbase Wrapped Staked ETH",
-				"symbol": "cbETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
+				"name": "swETH",
+				"symbol": "swETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7402f62503a49037379ebe18ac26e5fe7edb9ad9e3645dae34948c297778c43.png"
 			},
 			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
-				"decimals": "18",
-				"name": "Frax",
-				"symbol": "FRAX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
-			},
-			{
-				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
-				"decimals": "18",
-				"name": "Ankr Network",
-				"symbol": "ANKR",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
-			},
-			{
-				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
-				"decimals": "18",
-				"name": "Staked Frax Ether",
-				"symbol": "sfrxETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
-			},
-			{
-				"address": "0x808507121b80c02388fad14726482e061b8da827",
+				"address": "0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8",
 				"decimals": "18",
 				"name": "Pendle",
 				"symbol": "PENDLE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
 			},
 			{
-				"address": "0xf17e65822b568b3903685a7c9f496cf7656cc6c2",
+				"address": "0x17fc002b466eec40dae837fc4be5c67993ddbd6f",
 				"decimals": "18",
-				"name": "Biconomy Token",
-				"symbol": "BICO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0c145ebe6ae1b7f5b3be1ffcca5cc91df669f824da5d1420bc85824da2abc805.png"
+				"name": "Frax",
+				"symbol": "FRAX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
 			},
 			{
-				"address": "0xd33526068d116ce69f19a9ee46f0bd304f21a51f",
+				"address": "0x1debd73e752beaf79865fd6446b0c970eae7732f",
+				"decimals": "18",
+				"name": "Coinbase Wrapped Staked ETH",
+				"symbol": "cbETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
+			},
+			{
+				"address": "0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b",
+				"decimals": "18",
+				"name": "Wootrade Network",
+				"symbol": "WOO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
+			},
+			{
+				"address": "0x11cdb42b0eb46d95f990bedd4695a6e3fa034978",
+				"decimals": "18",
+				"name": "Curve DAO Token",
+				"symbol": "CRV",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x152c7fed43c25a05339d1c5ff33e2cef3df15e487bfdc0aefadd8fd99a81316c.png"
+			},
+			{
+				"address": "0x95ab45875cffdba1e5f451b950bc2e42c0053f39",
+				"decimals": "18",
+				"name": "Staked Frax Ether",
+				"symbol": "sfrxETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
+			},
+			{
+				"address": "0xaeaeed23478c3a4b798e4ed40d8b7f41366ae861",
+				"decimals": "18",
+				"name": "Ankr Network",
+				"symbol": "ANKR",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
+			},
+			{
+				"address": "0xb766039cc6db368759c1e56b79affe831d0cc507",
 				"decimals": "18",
 				"name": "Rocket Pool Protocol",
 				"symbol": "RPL",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd8e35e7d10f47a2c08f78c83e94593b28b905f7d6f1745b321802f25f3475a0c.png"
-			},
-			{
-				"address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
-				"decimals": "18",
-				"name": "Frax Share",
-				"symbol": "FXS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x66574f5df30978e18325173fae2f9b405182698d5ce9f89324be91ca3e0b5c7d.png"
 			},
 			{
 				"address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -1342,42 +1328,42 @@
 				"logoURI": "https://gnosisscan.io/token/images/gnosans_32.png"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x8e5bbbb09ed1ebde8674cda39a0c169401db4252",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0xe2e73a1c69ecf83f464efce6a5be353a37ca09b2",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+				"address": "0x4537e328bf7e4efa29d05caea260d7fe26af9d74",
 				"decimals": "18",
 				"name": "Uniswap",
 				"symbol": "UNI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc592299299cc12c38af6ec87f459357349f542bc38e1c334fe4ee54194b84735.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x44fa8e6f47987339850636f88629646662444217",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0x6810e776880c02933d47db1b9fc05908e5386b96",
+				"address": "0x9c58bacc331c9aa871afd802db6379a98e80cedb",
 				"decimals": "18",
 				"name": "Gnosis Token",
 				"symbol": "GNO",
@@ -1397,28 +1383,28 @@
 				"logoURI": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x6ab6d61428fde76768d7b45d8bfeec19c6ef91a8",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0xf390830df829cf22c53c8840554b98eafc5dcbc2",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x639a647fbe20b6c8ac19e48e2de44ea792c62c5c",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
@@ -1438,35 +1424,35 @@
 				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/bnb.svg"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
+				"address": "0xcc42724c6683b7e57334c4e856f4c9965ed682bd",
 				"decimals": "18",
 				"name": "Matic Token",
 				"symbol": "MATIC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x650979979c39d252c613b18a0f0def10242de128afc440fb42ee752e2c3dcc20.png"
 			},
 			{
-				"address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+				"address": "0xbf5140a22578168fd562dccf235e5d43a02ce9b1",
 				"decimals": "18",
 				"name": "Uniswap",
 				"symbol": "UNI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc592299299cc12c38af6ec87f459357349f542bc38e1c334fe4ee54194b84735.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
@@ -1480,39 +1466,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x3ed8fb3fdd341457d9f319f9438b64ac497b83932b028ed9e083a4e9635bd4b4.png"
 			},
 			{
-				"address": "0xe28b3b32b6c345a34ff64674606124dd5aceca30",
-				"decimals": "18",
-				"name": "Injective Token",
-				"symbol": "INJ",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x09ce6af0e0e9e1e1a1b9ca2ebb4c3fb55b58858fe0e3643971bc233653bdafd6.png"
-			},
-			{
-				"address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
-				"decimals": "18",
-				"name": "Pepe",
-				"symbol": "PEPE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c48f80cd5c716ff04af08a5b7f805ca9774dccd74fb42d52249b721fc739a8e.png"
-			},
-			{
-				"address": "0xaea46a60368a7bd060eec7df8cba43b7ef41ad85",
+				"address": "0x031b41e504677879370e9dbcf937283a8691fa7f",
 				"decimals": "18",
 				"name": "Fetch",
 				"symbol": "FET",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe7d65ac9fbaf5083104aecbe30a44183f1164589dd3e3bdaccd16a73213f9fb3.png"
 			},
 			{
-				"address": "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e",
-				"decimals": "9",
-				"name": "FLOKI",
-				"symbol": "FLOKI",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd1782e6bb2f822e9f26bc300ebb0f7f88eaaed15bc3ad160563e201be95b93a8.png"
+				"address": "0xa2b726b1145a4773f68593cf171187d8ebe4d495",
+				"decimals": "18",
+				"name": "Injective Token",
+				"symbol": "INJ",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x09ce6af0e0e9e1e1a1b9ca2ebb4c3fb55b58858fe0e3643971bc233653bdafd6.png"
 			},
 			{
-				"address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+				"address": "0x25d887ce7a35172c62febfd67a1856f20faebb00",
 				"decimals": "18",
-				"name": "Aave Token",
-				"symbol": "AAVE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
+				"name": "Pepe",
+				"symbol": "PEPE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c48f80cd5c716ff04af08a5b7f805ca9774dccd74fb42d52249b721fc739a8e.png"
 			},
 			{
 				"address": "0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce",
@@ -1522,53 +1494,95 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc9aba06b1fdad9d0ba6fe3efd19955d3e8216a905ed35267f0e6013a2269dedb.png"
 			},
 			{
-				"address": "0x1151cb3d861920e07a38e03eead12c32178567f6",
+				"address": "0xfb5b838b6cfeedc2873ab27866079ac55363d37e",
+				"decimals": "9",
+				"name": "FLOKI",
+				"symbol": "FLOKI",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd1782e6bb2f822e9f26bc300ebb0f7f88eaaed15bc3ad160563e201be95b93a8.png"
+			},
+			{
+				"address": "0xfb6115445bff7b52feb98650c87f44907e58f802",
+				"decimals": "18",
+				"name": "Aave Token",
+				"symbol": "AAVE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
+			},
+			{
+				"address": "0xa697e272a73744b343528c3bc4702f2565b2f422",
 				"decimals": "5",
 				"name": "Bonk",
 				"symbol": "Bonk",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2a6294a4a6efeb7eb3e953891764e83a45a0c1b22f1ddb591e2cf84a88681716.png"
 			},
 			{
-				"address": "0xbb0e17ef65f82ab018d8edd776e8dd940327b28b",
+				"address": "0x715d400f88c167884bbcc41c5fea407ed4d2f8a0",
 				"decimals": "18",
 				"name": "Axie Infinity Shard",
 				"symbol": "AXS",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x749f49e8ed0de59fef555d90c9ec743e6af23adbcc3b6429de3b97d52e8d7430.png"
 			},
 			{
-				"address": "0x152649ea73beab28c5b49b26eb48f7ead6d4c898",
-				"decimals": "18",
-				"name": "PancakeSwap Token",
-				"symbol": "Cake",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1f23fe169ec139784aa3392910c20aec369ac10c012bb977209c0be9410bccfe.png"
-			},
-			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-				"decimals": "6",
-				"name": "Axelar",
-				"symbol": "AXL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
-			},
-			{
-				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
-				"decimals": "18",
-				"name": "Frax Ether",
-				"symbol": "frxETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
-			},
-			{
-				"address": "0x626e8036deb333b408be468f951bdb42433cbf18",
+				"address": "0x33d08d8c7a168333a85285a68c0042b39fc3741d",
 				"decimals": "18",
 				"name": "AIOZ Network",
 				"symbol": "AIOZ",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xffd4bbdca01210125181e907d10622ae840740936d8930c4d06f043951a73932.png"
 			},
 			{
-				"address": "0xde4ee8057785a7e8e800db58f9784845a5c2cbd6",
+				"address": "0x64048a7eecf3a2f1ba9e144aac3d7db6e58f555e",
+				"decimals": "18",
+				"name": "Frax Ether",
+				"symbol": "frxETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
+			},
+			{
+				"address": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
+				"decimals": "18",
+				"name": "PancakeSwap Token",
+				"symbol": "Cake",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1f23fe169ec139784aa3392910c20aec369ac10c012bb977209c0be9410bccfe.png"
+			},
+			{
+				"address": "0x6e88056e8376ae7709496ba64d37fa2f8015ce3e",
 				"decimals": "18",
 				"name": "Dexe",
 				"symbol": "DEXE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd71f0e33f82eac5627876222ff504c0a4e69442def86dcf4bd3c45004e5c87f1.png"
+			},
+			{
+				"address": "0x8b1f4432f943c465a973fedc6d7aa50fc96f1f65",
+				"decimals": "6",
+				"name": "Axelar",
+				"symbol": "AXL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
+			},
+			{
+				"address": "0xd17479997f34dd9156deef8f95a52d81d265be9c",
+				"decimals": "18",
+				"name": "Decentralized USD",
+				"symbol": "USDD",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb50eef87366f2e8a4747fe868111f59e42d6c562f39fc3a52e39abd402fb8c85.png"
+			},
+			{
+				"address": "0xf78d2e7936f5fe18308a3b2951a93b6c4a41f5e2",
+				"decimals": "18",
+				"name": "MANTRA DAO",
+				"symbol": "OM",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe1e84cd4c09cf0c76a6052bca9041e5287ab87335ff222c2883c1b7eab8441d2.png"
+			},
+			{
+				"address": "0xb3ed0a426155b79b898849803e3b36552f7ed507",
+				"decimals": "18",
+				"name": "Pendle",
+				"symbol": "PENDLE",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
+			},
+			{
+				"address": "0x90c97f71e18723b0cf0dfa30ee176ab653e89f40",
+				"decimals": "18",
+				"name": "Frax",
+				"symbol": "FRAX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
 			},
 			{
 				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
@@ -1585,11 +1599,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xd2e0ffeb78e2a55f1528c6283b34a74ca78290bbf02651d12290ae934b58a3e1.png"
 			},
 			{
-				"address": "0x0c10bf8fcb7bf5412187a595ab97a3609160b5c6",
+				"address": "0x3cd55356433c89e50dc51ab07ee0fa0a95623d53",
 				"decimals": "18",
-				"name": "Decentralized USD",
-				"symbol": "USDD",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb50eef87366f2e8a4747fe868111f59e42d6c562f39fc3a52e39abd402fb8c85.png"
+				"name": "Staked Frax Ether",
+				"symbol": "sfrxETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
+			},
+			{
+				"address": "0x40af3827f39d0eacbf4a168f8d4ee67c121d11c9",
+				"decimals": "18",
+				"name": "TrueUSD",
+				"symbol": "TUSD",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x6bbc9ba2a9a2b2dc607e0cfd790974e99d8b344b743f17f49d296677f3b88a7d.png"
+			},
+			{
+				"address": "0x3019bf2a2ef8040c242c9a4c5c4bd4c81678b2a1",
+				"decimals": "8",
+				"name": "GreenMetaverseToken",
+				"symbol": "GMT",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf227b4bc147a657e1736353a37aa3a5dfb7d25aa7992b26f7a326eb7cd698abb.png"
 			},
 			{
 				"address": "0x111111111117dc0aa78b770fa6a738034120c302",
@@ -1599,53 +1627,25 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
 			},
 			{
-				"address": "0x3593d125a4f7849a1b059e64f4517a86dd60c95d",
+				"address": "0x51ba0b044d96c3abfca52b64d733603ccc4f0d4d",
 				"decimals": "18",
-				"name": "MANTRA DAO",
-				"symbol": "OM",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe1e84cd4c09cf0c76a6052bca9041e5287ab87335ff222c2883c1b7eab8441d2.png"
+				"name": "SuperFarm",
+				"symbol": "SUPER",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xcbcda67931e9bd1f7ad16b1b0f3af4e274e65c0a22a348c5a84ce72ee99bb039.png"
 			},
 			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
-				"decimals": "18",
-				"name": "Frax",
-				"symbol": "FRAX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
-			},
-			{
-				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
+				"address": "0xf307910a4c7bbc79691fd374889b36d8531b08e3",
 				"decimals": "18",
 				"name": "Ankr Network",
 				"symbol": "ANKR",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
 			},
 			{
-				"address": "0xe3c408bd53c31c085a1746af401a4042954ff740",
-				"decimals": "8",
-				"name": "GreenMetaverseToken",
-				"symbol": "GMT",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf227b4bc147a657e1736353a37aa3a5dfb7d25aa7992b26f7a326eb7cd698abb.png"
-			},
-			{
-				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
+				"address": "0xe4cc45bb5dbda06db6183e8bf016569f40497aa5",
 				"decimals": "18",
-				"name": "Staked Frax Ether",
-				"symbol": "sfrxETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
-			},
-			{
-				"address": "0x808507121b80c02388fad14726482e061b8da827",
-				"decimals": "18",
-				"name": "Pendle",
-				"symbol": "PENDLE",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
-			},
-			{
-				"address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
-				"decimals": "18",
-				"name": "Frax Share",
-				"symbol": "FXS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x66574f5df30978e18325173fae2f9b405182698d5ce9f89324be91ca3e0b5c7d.png"
+				"name": "Project Galaxy",
+				"symbol": "GAL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2b86d970af5ef1c62e6e758c970889bfad08c55df0d2ef5c7ccc4b389a85dfa0.png"
 			},
 			{
 				"address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
@@ -1694,49 +1694,49 @@
 				"logoURI": "https://ipfs.io/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x4200000000000000000000000000000000000006",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x50c5725949a6f0c72e6c4a641f24049a917db0cb",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0xae78736cd615f374d3085123a210448e74fc6393",
+				"address": "0xb6fe221fe9eef5aba221c348ba20a1bf5e73624c",
 				"decimals": "18",
 				"name": "Rocket Pool ETH",
 				"symbol": "rETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x0fc1fdb71492153ebfbd160e06f5eb0ba3301b7fa1980643d6d04b31f39199ff.png"
 			},
 			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-				"decimals": "6",
-				"name": "Axelar",
-				"symbol": "AXL",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
-			},
-			{
-				"address": "0xb23d80f5fefcddaa212212f028021b41ded428cf",
+				"address": "0xfa980ced6895ac314e7de34ef1bfae90a5add21b",
 				"decimals": "18",
 				"name": "Prime",
 				"symbol": "PRIME",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf9d9a7d1351fe0c70432d44cd09c6949275b5035254bdb755baa1e23db6e7ff5.png"
 			},
 			{
-				"address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
+				"address": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+				"decimals": "6",
+				"name": "Axelar",
+				"symbol": "AXL",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
+			},
+			{
+				"address": "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
 				"decimals": "18",
 				"name": "Coinbase Wrapped Staked ETH",
 				"symbol": "cbETH",
@@ -1756,144 +1756,144 @@
 				"logoURI": "https://ipfs.io/ipfs/QmRALA5qvQBRwWre8ofuhCbr3wxVmPS3kGetRR9uJqbqqe"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+				"address": "0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
 				"decimals": "6",
 				"name": "Tether USD",
 				"symbol": "USDT",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x63adcb79842ad73769d6f2350d9cab2c8b8e0d37f6071dee9418cbd53319543d.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x50b7545627a5162f82a992c33b87adc75187b218",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+				"address": "0x5947bb275c521040051d82396192181b413227a3",
 				"decimals": "18",
 				"name": "ChainLink Token",
 				"symbol": "LINK",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xbb5c4b2f719ea172bb69a53fa3207916d22a773c0119fa11d4e9de2a499bac6e.png"
 			},
 			{
-				"address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+				"address": "0x8ebaf22b6f053dffeaf46f4dd9efa95d89ba8580",
 				"decimals": "18",
 				"name": "Uniswap",
 				"symbol": "UNI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xc592299299cc12c38af6ec87f459357349f542bc38e1c334fe4ee54194b84735.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0xd586e7f844cea2f87f50152665bcbc2c279d8d70",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+				"address": "0x88128fd4b259552a9a1d457f435a6527aab72d42",
 				"decimals": "18",
 				"name": "Maker",
 				"symbol": "MKR",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb9451b9b27e5b017309ad62e9dff4bc181602d2fc948b24368ac8ba1fd99493a.png"
 			},
 			{
-				"address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
+				"address": "0x8a0cac13c7da965a312f08ea4229c37869e85cb9",
 				"decimals": "18",
 				"name": "Graph Token",
 				"symbol": "GRT",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x4afcf6d73c2dd05db368bf9aa018e7cfbbfb7af73d4e572d3800178631cc7eec.png"
 			},
 			{
-				"address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+				"address": "0x63a72806098bd3d9520cc43356dd78afe5d386d9",
 				"decimals": "18",
 				"name": "Aave Token",
 				"symbol": "AAVE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8b3496163ec0a30b8cdebff84257a3bb145cb115f750e859e1c5fb091e76bf63.png"
 			},
 			{
-				"address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
+				"address": "0xbec243c995409e6520d7c41e404da5deba4b209b",
 				"decimals": "18",
 				"name": "Synthetix Network Token",
 				"symbol": "SNX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x5aed90c1958ce3a240f8d6672101a931ed2b4462f20ed5946665db40706b3c85.png"
 			},
 			{
-				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
+				"address": "0x44c784266cf024a60e8acf2427b9857ace194c5d",
 				"decimals": "6",
 				"name": "Axelar",
 				"symbol": "AXL",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
 			},
 			{
-				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
-				"decimals": "18",
-				"name": "Wootrade Network",
-				"symbol": "WOO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
-			},
-			{
-				"address": "0x0c10bf8fcb7bf5412187a595ab97a3609160b5c6",
+				"address": "0xb514cabd09ef5b169ed3fe0fa8dbd590741e81c2",
 				"decimals": "18",
 				"name": "Decentralized USD",
 				"symbol": "USDD",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb50eef87366f2e8a4747fe868111f59e42d6c562f39fc3a52e39abd402fb8c85.png"
 			},
 			{
-				"address": "0x111111111117dc0aa78b770fa6a738034120c302",
-				"decimals": "18",
-				"name": "1INCH Token",
-				"symbol": "1INCH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
-			},
-			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
-				"decimals": "18",
-				"name": "Frax",
-				"symbol": "FRAX",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
-			},
-			{
-				"address": "0x8290333cef9e6d528dd5618fb97a76f268f3edd4",
-				"decimals": "18",
-				"name": "Ankr Network",
-				"symbol": "ANKR",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
-			},
-			{
-				"address": "0x808507121b80c02388fad14726482e061b8da827",
+				"address": "0xfb98b335551a418cd0737375a2ea0ded62ea213b",
 				"decimals": "18",
 				"name": "Pendle",
 				"symbol": "PENDLE",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x84f7d15ac0e43b7f437cf5fcf0c593d6fb0c2884aae434ab1c7e5a03d7ea30df.png"
 			},
 			{
-				"address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+				"address": "0xd24c2ad096400b6fbcd2ad8b24e7acbc21a1da64",
+				"decimals": "18",
+				"name": "Frax",
+				"symbol": "FRAX",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
+			},
+			{
+				"address": "0xabc9547b534519ff73921b1fba6e672b5f58d083",
+				"decimals": "18",
+				"name": "Wootrade Network",
+				"symbol": "WOO",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
+			},
+			{
+				"address": "0x1c20e891bab6b1727d14da358fae2984ed9b59eb",
+				"decimals": "18",
+				"name": "TrueUSD",
+				"symbol": "TUSD",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x6bbc9ba2a9a2b2dc607e0cfd790974e99d8b344b743f17f49d296677f3b88a7d.png"
+			},
+			{
+				"address": "0xd501281565bf7789224523144fe5d98e8b28f267",
+				"decimals": "18",
+				"name": "1INCH Token",
+				"symbol": "1INCH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x33202d07100b9820e2e21d23999effb57ade9fb7e1161214732e64bcc7698174.png"
+			},
+			{
+				"address": "0x20cf1b6e9d856321ed4686877cf4538f2c84b4de",
+				"decimals": "18",
+				"name": "Ankr Network",
+				"symbol": "ANKR",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xdeb1a2d5c820559afef11fa0051b0934a5bbc7372eb7a19c71148c4c1c9cfd86.png"
+			},
+			{
+				"address": "0x596fa47043f99a4e0f122243b841e55375cde0d2",
 				"decimals": "18",
 				"name": "0x Protocol Token",
 				"symbol": "ZRX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x31f4d1934bc3f5de7a228a07a73dfdf7b904ac86fda63d59a877b4dd8c000cfe.png"
-			},
-			{
-				"address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
-				"decimals": "18",
-				"name": "Frax Share",
-				"symbol": "FXS",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x66574f5df30978e18325173fae2f9b405182698d5ce9f89324be91ca3e0b5c7d.png"
 			},
 			{
 				"address": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
@@ -1925,6 +1925,26 @@
 		]
 	},
 	{
+		"chainId": "5001",
+		"name": "Mantle Testnet",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Testnet Mantle",
+				"symbol": "MNT",
+				"decimals": 18,
+				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg"
+			},
+			{
+				"address": "0x491FD73b7144371c04154A2a39FE5270C2E6A96A",
+				"name": "FLOKI",
+				"symbol": "FLOKI",
+				"decimals": 9,
+				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
+			}
+		]
+	},
+	{
 		"chainId": "324",
 		"name": "zkSync Mainnet",
 		"tokens": [
@@ -1936,35 +1956,35 @@
 				"logoURI": "https://ipfs.io/ipfs/QmRkhUD6J3B9WhT4hEWLrcFVTrBhx3CQgNC783aJsrwxSN"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x5aea5775959fbc2557cc8789bc1bf90a239d9a91",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0x1d17cbcf0d6d143135ae902365d2e5e2a16538d4",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0xbbeb516fb02a01611cbbe0453fe3c580d7281011",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x4b9eb6c0b6ea15176bbf62841c6b2a8a398cb656",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
 			},
 			{
-				"address": "0x4691937a7508860f876c9c0a2a617e7d9e945d4b",
+				"address": "0x9e22d758629761fc5708c171d06c2fabb60b5159",
 				"decimals": "18",
 				"name": "Wootrade Network",
 				"symbol": "WOO",
@@ -2010,14 +2030,14 @@
 				"logoURI": "https://ipfs.io/ipfs/QmYddHh5zdceSsBU7uGfQvEHg6UUtAFbzQBBaePS4whx7o"
 			},
 			{
-				"address": "0x3c3a81e81dc49a522a592e7622a7e711c06bf354",
+				"address": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
 				"decimals": "18",
 				"name": "Mantle",
 				"symbol": "MNT",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xe34e32d7530edd1920e4371f4a346c00673210c0b1942056e1047c56060901e1.png"
 			},
 			{
-				"address": "0xd5f7838f5c461feff7fe49ea5ebaf7728bb0adfa",
+				"address": "0xcda86a272531e8640cd7f1a92c01839911b90bb0",
 				"decimals": "18",
 				"name": "mETH",
 				"symbol": "mETH",
@@ -2051,32 +2071,39 @@
 				"logoURI": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/moonbeam/info/logo.png"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0xfa9343c3897324496a05fc75abed6bac29f8a40f",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0x922d641a426dcffaef11680e5358f34d97d112e1",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
 			},
 			{
-				"address": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
+				"address": "0x3405a1bd46b85c5c029483fbecf2f3e611026e45",
 				"decimals": "18",
 				"name": "Matic Token",
 				"symbol": "MATIC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x650979979c39d252c613b18a0f0def10242de128afc440fb42ee752e2c3dcc20.png"
 			},
 			{
-				"address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+				"address": "0x765277eebeca2e31912c9946eae1021199b39c61",
 				"decimals": "18",
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
+			},
+			{
+				"address": "0x82bbd1b6f6de2b7bb63d3e1546e6b1553508be99",
+				"decimals": "18",
+				"name": "Frax Ether",
+				"symbol": "frxETH",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
 			},
 			{
 				"address": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
@@ -2086,45 +2113,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x16515d6c965db5d5571ece47480019aae4c737cad09ad1fa9537ee5ee1ae0897.png"
 			},
 			{
-				"address": "0x5e8422345238f34275888049021821e8e08caa1f",
-				"decimals": "18",
-				"name": "Frax Ether",
-				"symbol": "frxETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x43c9c42b3851d2c1e740decec561944601350e98885bd62b3cbcac25c72d1e83.png"
-			},
-			{
-				"address": "0x853d955acef822db058eb8505911ed77f175b99e",
+				"address": "0x322e86852e492a7ee17f28a78c663da38fb33bfb",
 				"decimals": "18",
 				"name": "Frax",
 				"symbol": "FRAX",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x1a2ff86fdd58ba049a4d17aedd14e201251d2ff862c592e4290773738a91cbae.png"
 			},
 			{
-				"address": "0xac3e018457b222d93114458476f3e3416abbe38f",
+				"address": "0xecf91116348af1cffe335e9807f0051332be128d",
 				"decimals": "18",
 				"name": "Staked Frax Ether",
 				"symbol": "sfrxETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xb4858b33db9db4c7b2150d2870c74ac517d4ca2f0284c8f1384a4e3f044b93f4.png"
-			}
-		]
-	},
-	{
-		"chainId": "5001",
-		"name": "Mantle Testnet",
-		"tokens": [
-			{
-				"address": "0x0000000000000000000000000000000000000000",
-				"name": "Testnet Mantle",
-				"symbol": "MNT",
-				"decimals": 18,
-				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg"
-			},
-			{
-				"address": "0x491FD73b7144371c04154A2a39FE5270C2E6A96A",
-				"name": "FLOKI",
-				"symbol": "FLOKI",
-				"decimals": 9,
-				"logoURI": "https://token-list.mantle.xyz/data/Floki/logo.png"
 			}
 		]
 	},
@@ -2153,21 +2153,21 @@
 				"logoURI": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/celo/info/logo.png"
 			},
 			{
-				"address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+				"address": "0x2def4285787d58a2f811af24755a8150622f4361",
 				"decimals": "18",
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
 			},
 			{
-				"address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+				"address": "0xceba9300f2b948710d2653dd7b07f33a8b32118c",
 				"decimals": "6",
 				"name": "USD Coin",
 				"symbol": "USDC",
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			},
 			{
-				"address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+				"address": "0xd629eb00deced2a080b7ec630ef6ac117e614f1b",
 				"decimals": "8",
 				"name": "Wrapped BTC",
 				"symbol": "WBTC",

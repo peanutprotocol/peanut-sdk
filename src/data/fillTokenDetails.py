@@ -56,9 +56,9 @@ def fetch_full_coingecko_list():
         print("Failed to fetch list of all tokens.")
 
 
-def format_token_fields(moralis_token):
+def format_token_fields(moralis_token, coingecko_id):
     return {
-        "address": moralis_token["contract_address"],
+        "address": moralis_token["platforms"][coingecko_id],
         "decimals": moralis_token["token_decimals"],
         "name": moralis_token["token_name"],
         "symbol": moralis_token["token_symbol"],
@@ -171,7 +171,7 @@ def main():
                     continue
 
             tokens = [
-                format_token_fields(top_token)
+                format_token_fields(top_token, coingecko_id)
                 for top_token in top_tokens_by_chain
                 if coingecko_id in top_token["platforms"]
             ]
