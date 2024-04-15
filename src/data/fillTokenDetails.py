@@ -1,6 +1,27 @@
+"""
+    fillTokenDetails: populates tokenDetails.json with ERC20 token info for each chain 
+    present in chainDetails.json.
+    
+    Resulting list for each chain consists of three parts:
+    1. Native token.
+    3. Coingecko list with up to 100 tokens, ordered by marketcap.
+    2. Tokens from manualTokenDetails.json.
+    
+    Native token is added automatically at the top of the list for each chain.
+
+    Coingecko list is constructed from top 100 tokens by market cap, provided by Moralis:
+    - Fetch top tokens from Moralis by Ethereum Mainnet market cap.
+    - Iterate through Moralis top token list to find the same mainnet token address in a 
+    full coingecko token list (get_top_tokens_with_contracts function).
+    - Copy "platforms" data (<network_name>: <token_address> dict for that token) from 
+    coingecko token list to Moralis list
+    - Iterate through updated Moralis list and push each token info to corresponding 
+    resulting list
+    - Add tokens from manualTokenDetails.json to the resulting list
+"""
+
 import requests
 import json
-import codecs
 import os
 import dotenv
 
