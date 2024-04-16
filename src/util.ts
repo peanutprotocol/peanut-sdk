@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethersv5'
-import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
+import { CHAIN_MAP, PEANUT_CONTRACTS, V4ARRAY, V4_2ANDUPARRAY, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
@@ -105,7 +105,7 @@ export async function signWithdrawalMessage(
 	onlyRecipientMode?: boolean // only for v4.2+
 ) {
 	let claimParams: any[]
-	if (['v4.2', 'v4.3', 'v4.4'].includes(vaultVersion)) {
+	if (V4_2ANDUPARRAY.includes(vaultVersion)) {
 		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
 		const stringHash = ethers.utils.solidityKeccak256(
 			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],
@@ -314,7 +314,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (['v4', 'V4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
+	} else if (V4ARRAY.includes(contractVersion)) {
 		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.

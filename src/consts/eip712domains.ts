@@ -1,3 +1,4 @@
+import { V4_2ANDUPARRAY } from '../data'
 import { EIP3009TokensInterface } from './interfaces.consts'
 
 export const EIP3009Tokens: EIP3009TokensInterface = {
@@ -82,5 +83,5 @@ export const GaslessReclaimTypes: any = {
 	GaslessReclaim: [{ name: 'depositIndex', type: 'uint256' }],
 }
 
-export const PeanutsWithEIP3009: Array<string> = ['v4.2', 'v4.3', 'v4.4']
-export const PeanutsWithGaslessRevoke: Array<string> = ['v4.2', 'v4.3', 'v4.4']
+export const PeanutsWithEIP3009: Array<string> = V4_2ANDUPARRAY
+export const PeanutsWithGaslessRevoke: Array<string> = V4_2ANDUPARRAY

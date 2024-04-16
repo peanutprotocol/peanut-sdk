@@ -27,13 +27,19 @@ const TOKEN_TYPES = Object.freeze({
 
 // CONTRACT VERSIONS
 // TODO: rename CONTRACT to VAULT
-const LATEST_STABLE_CONTRACT_VERSION = 'v4.4'
+const LATEST_STABLE_CONTRACT_VERSION = 'v4.3'
 const LATEST_EXPERIMENTAL_CONTRACT_VERSION = 'v4.4'
-const FALLBACK_CONTRACT_VERSION = 'v4.3'
+const FALLBACK_CONTRACT_VERSION = 'v4.2'
 const LATEST_STABLE_ROUTER_VERSION = 'Rv4'
-const LATEST_EXPERIMENTAL_ROUTER_VERSION = 'Rv4'
-const LATEST_STABLE_BATCHER_VERSION = 'Bv4.4'
+const LATEST_EXPERIMENTAL_ROUTER_VERSION = 'Rv4.2'
+const LATEST_STABLE_BATCHER_VERSION = 'Bv4'
 const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4.4'
+
+//reason to make this array is that there are many features that are only available in v4 and up
+const V4ARRAY = ['v4', 'v4.2', 'v4.3', 'v4.4']
+
+//reason to make this array is that there are many features that are only available in v4.2 and up
+const V4_2ANDUPARRAY = ['v4.2', 'v4.3', 'v4.4'] // TODO: maybe change name
 
 // export all these functions (imported in index.js)
 export {
@@ -62,4 +68,6 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_EXPERIMENTAL_BATCHER_VERSION,
 	FALLBACK_CONTRACT_VERSION,
+	V4_2ANDUPARRAY,
+	V4ARRAY,
 }

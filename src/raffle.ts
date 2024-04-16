@@ -1,6 +1,7 @@
 import { BigNumber, Wallet, constants, ethers, utils } from 'ethersv5'
 import {
 	ERC1155_ABI,
+	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
 	config,
 	createClaimPayload,
 	createMultiLinkFromLinks,
@@ -18,6 +19,7 @@ import {
 } from '.'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { assert, getRawParamsFromLink, validateUserName } from './util'
+import { LATEST_EXPERIMENTAL_BATCHER_VERSION } from './data'
 
 export function generateAmountsDistribution(
 	totalAmount: BigNumber,
@@ -134,8 +136,8 @@ export async function prepareRaffleDepositTxs({
 	}
 
 	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = 'v4.4'
-	const batcherContractVersion = 'Bv4.4'
+	const peanutContractVersion = LATEST_EXPERIMENTAL_CONTRACT_VERSION
+	const batcherContractVersion = LATEST_EXPERIMENTAL_BATCHER_VERSION
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
