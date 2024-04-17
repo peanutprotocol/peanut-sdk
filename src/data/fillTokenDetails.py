@@ -80,7 +80,7 @@ def fetch_full_coingecko_list():
 def format_token_fields(moralis_token, coingecko_id):
     return {
         "address": moralis_token["platforms"][coingecko_id],
-        "decimals": moralis_token["token_decimals"],
+        "decimals": int(moralis_token["token_decimals"]),
         "name": moralis_token["token_name"],
         "symbol": moralis_token["token_symbol"],
         "logoURI": moralis_token["token_logo"],
