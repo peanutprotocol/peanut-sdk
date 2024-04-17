@@ -35,11 +35,14 @@ const LATEST_EXPERIMENTAL_ROUTER_VERSION = 'Rv4.2'
 const LATEST_STABLE_BATCHER_VERSION = 'Bv4'
 const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4.4'
 
-//reason to make this array is that there are many features that are only available in v4 and up
-const V4ARRAY = ['v4', 'v4.2', 'v4.3', 'v4.4']
-
-//reason to make this array is that there are many features that are only available in v4.2 and up
-const V4_2ANDUPARRAY = ['v4.2', 'v4.3', 'v4.4'] // TODO: maybe change name
+// Set of arrays for features only available on certain versions.
+// !! IMPORTANT !!: Update these arrays when creating new contracts
+// !! IMPORTANT !!: When creating a new array, make sure it starts with CA (standing for Contract Array).
+const CA_V4 = ['v4', 'v4.2', 'v4.3', 'v4.4']
+const CA_V4_2_ANDUP = ['v4.2', 'v4.3', 'v4.4']
+const CA_SUPPORTS_MFA = ['v4.4']
+const CA_SUPPORTS_MFA_BATCHER = ['Bv4.4']
+const CA_SUPPORTS_MFA_ROUTER = ['Rv4.2']
 
 // export all these functions (imported in index.js)
 export {
@@ -68,6 +71,9 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_EXPERIMENTAL_BATCHER_VERSION,
 	FALLBACK_CONTRACT_VERSION,
-	V4_2ANDUPARRAY,
-	V4ARRAY,
+	CA_V4_2_ANDUP,
+	CA_V4,
+	CA_SUPPORTS_MFA,
+	CA_SUPPORTS_MFA_BATCHER,
+	CA_SUPPORTS_MFA_ROUTER,
 }

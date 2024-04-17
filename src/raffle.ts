@@ -1,7 +1,6 @@
 import { BigNumber, Wallet, constants, ethers, utils } from 'ethersv5'
 import {
 	ERC1155_ABI,
-	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
 	config,
 	createClaimPayload,
 	createMultiLinkFromLinks,
@@ -17,9 +16,8 @@ import {
 	prepareApproveERC20Tx,
 	trim_decimal_overflow,
 } from '.'
-import { TransactionRequest } from '@ethersproject/abstract-provider'
-import { assert, getRawParamsFromLink, validateUserName } from './util'
-import { LATEST_EXPERIMENTAL_BATCHER_VERSION } from './data'
+import { getRawParamsFromLink, validateUserName } from './util'
+import { CA_SUPPORTS_MFA, CA_SUPPORTS_MFA_BATCHER } from './data'
 
 export function generateAmountsDistribution(
 	totalAmount: BigNumber,
@@ -68,7 +66,11 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	if ((linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) && linkDetails.tokenType !== 2 && !amounts) {
+	if (
+		(linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) &&
+		linkDetails.tokenType !== 2 &&
+		!amounts
+	) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
 			'tokenDecimals is required for prepareRaffleDepositTxs since tokenType is not 2 (ERC-721) and amounts is not supplied'
@@ -136,8 +138,8 @@ export async function prepareRaffleDepositTxs({
 	}
 
 	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = LATEST_EXPERIMENTAL_CONTRACT_VERSION
-	const batcherContractVersion = LATEST_EXPERIMENTAL_BATCHER_VERSION
+	const peanutContractVersion = CA_SUPPORTS_MFA[CA_SUPPORTS_MFA.length - 1] // Always taking highest version that supports MFA
+	const batcherContractVersion = CA_SUPPORTS_MFA_BATCHER[CA_SUPPORTS_MFA_BATCHER.length - 1] // Always taking highest version that supports MFA
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
@@ -147,7 +149,7 @@ export async function prepareRaffleDepositTxs({
 	// Used only for ETH and ERC20 raffles.
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
-	
+
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
 	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 
@@ -171,7 +173,7 @@ export async function prepareRaffleDepositTxs({
 			const approvalTxRequest = await tokenContract.populateTransaction.setApprovalForAll(
 				batcherContract.address,
 				true,
-				{ from: userAddress },
+				{ from: userAddress }
 			)
 			approveTx = ethersV5ToPeanutTx(approvalTxRequest)
 		}
@@ -188,10 +190,11 @@ export async function prepareRaffleDepositTxs({
 		} else {
 			amounts = generateAmountsDistribution(tokenAmountBigNum, numberOfLinks)
 			config.verbose && console.log('Requested amount:', tokenAmountBigNum.toString())
-			config.verbose && console.log(
-				'Got amounts:',
-				amounts.map((am) => am.toString())
-			)
+			config.verbose &&
+				console.log(
+					'Got amounts:',
+					amounts.map((am) => am.toString())
+				)
 		}
 	}
 
@@ -216,7 +219,7 @@ export async function prepareRaffleDepositTxs({
 	config.verbose && console.log('Deposit arguments:', batchingArgs)
 	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
 		...batchingArgs,
-		txOptions,
+		txOptions
 	)
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
 

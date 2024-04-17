@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethersv5'
-import { CHAIN_MAP, PEANUT_CONTRACTS, V4ARRAY, V4_2ANDUPARRAY, VERSION } from './data.ts'
+import { CHAIN_MAP, PEANUT_CONTRACTS, CA_V4, CA_V4_2_ANDUP, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
@@ -105,7 +105,7 @@ export async function signWithdrawalMessage(
 	onlyRecipientMode?: boolean // only for v4.2+
 ) {
 	let claimParams: any[]
-	if (V4_2ANDUPARRAY.includes(vaultVersion)) {
+	if (CA_V4_2_ANDUP.includes(vaultVersion)) {
 		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
 		const stringHash = ethers.utils.solidityKeccak256(
 			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],
@@ -314,7 +314,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (V4ARRAY.includes(contractVersion)) {
+	} else if (CA_V4.includes(contractVersion)) {
 		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.
@@ -638,7 +638,7 @@ export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransac
  * @returns the validated name
  */
 export function validateUserName(name: string | null): string {
-	if (!name) return name  // Empty name - all good :)
+	if (!name) return name // Empty name - all good :)
 	name = name.trim()
 
 	if (name.length > 30) {

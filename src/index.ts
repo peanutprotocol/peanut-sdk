@@ -29,10 +29,12 @@ import {
 	PEANUT_BATCHER_ABI_V4_3,
 	PEANUT_ABI_V4_4,
 	PEANUT_BATCHER_ABI_V4_4,
-	V4_2ANDUPARRAY,
+	CA_V4_2_ANDUP,
 	LATEST_EXPERIMENTAL_ROUTER_VERSION,
 	LATEST_EXPERIMENTAL_BATCHER_VERSION,
-	V4ARRAY,
+	CA_V4,
+	CA_SUPPORTS_MFA,
+	CA_SUPPORTS_MFA_ROUTER,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -906,7 +908,7 @@ async function prepareDepositTxs({
 	let depositTx: interfaces.IPeanutUnsignedTransaction
 	if (numberOfLinks == 1) {
 		try {
-			if (peanutContractVersion === LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
+			if (CA_SUPPORTS_MFA.includes(peanutContractVersion)) {
 				// Using the new, powerful and flexible deposit function!
 				depositParams = [
 					linkDetails.tokenAddress,
@@ -1637,7 +1639,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (!V4_2ANDUPARRAY.includes(contractVersion)) {
+	if (!CA_V4_2_ANDUP.includes(contractVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1671,7 +1673,7 @@ async function createClaimXChainPayload({
 
 	// cryptography
 	// TODO: deal with contract upgrades better SOP.md contract upgrads
-	const routerContractVersion = LATEST_EXPERIMENTAL_ROUTER_VERSION
+	const routerContractVersion = CA_SUPPORTS_MFA_ROUTER[CA_SUPPORTS_MFA_ROUTER.length - 1] // Always using the latest supported version
 	const squidAddress = isMainnet ? SQUID_ADDRESS['mainnet'] : SQUID_ADDRESS['testnet']
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
@@ -1821,7 +1823,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (V4ARRAY.includes(contractVersion)) {
+	if (CA_V4.includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2322,6 +2324,7 @@ function toggleVerbose(verbose?: boolean) {
 
 /*
 please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
+TODO: handle router contract versions in this function too
 */
 function getLatestContractVersion({
 	chainId,
@@ -2338,6 +2341,7 @@ function getLatestContractVersion({
 		const chainData = data[chainId as unknown as keyof typeof data]
 
 		// Filter keys starting with "v" or "Bv" based on type
+		// sorts contract versions by descending order. Example: [v4.3, v6.7, v2.1] --> [v6.7, v4.3, v2.1]
 		let versions = Object.keys(chainData)
 			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
 			.sort((a, b) => {
@@ -2395,7 +2399,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!V4ARRAY.includes(peanutContractVersion)) {
+	if (!CA_V4.includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}
