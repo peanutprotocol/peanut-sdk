@@ -29,12 +29,11 @@ import {
 	PEANUT_BATCHER_ABI_V4_3,
 	PEANUT_ABI_V4_4,
 	PEANUT_BATCHER_ABI_V4_4,
-	CA_V4_2_ANDUP,
-	LATEST_EXPERIMENTAL_ROUTER_VERSION,
+	VAULT_CONTRACTS_V4_2_ANDUP,
 	LATEST_EXPERIMENTAL_BATCHER_VERSION,
-	CA_V4,
-	CA_SUPPORTS_MFA,
-	CA_SUPPORTS_MFA_ROUTER,
+	VAULT_CONTRACTS_V4_ANDUP,
+	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
+	ROUTER_CONTRACTS_WITH_MFA,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -908,7 +907,7 @@ async function prepareDepositTxs({
 	let depositTx: interfaces.IPeanutUnsignedTransaction
 	if (numberOfLinks == 1) {
 		try {
-			if (CA_SUPPORTS_MFA.includes(peanutContractVersion)) {
+			if (VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS.includes(peanutContractVersion)) {
 				// Using the new, powerful and flexible deposit function!
 				depositParams = [
 					linkDetails.tokenAddress,
@@ -1639,7 +1638,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (!CA_V4_2_ANDUP.includes(contractVersion)) {
+	if (!VAULT_CONTRACTS_V4_2_ANDUP.includes(contractVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1673,7 +1672,7 @@ async function createClaimXChainPayload({
 
 	// cryptography
 	// TODO: deal with contract upgrades better SOP.md contract upgrads
-	const routerContractVersion = CA_SUPPORTS_MFA_ROUTER[CA_SUPPORTS_MFA_ROUTER.length - 1] // Always using the latest supported version
+	const routerContractVersion = ROUTER_CONTRACTS_WITH_MFA[ROUTER_CONTRACTS_WITH_MFA.length - 1] // Always using the latest supported version
 	const squidAddress = isMainnet ? SQUID_ADDRESS['mainnet'] : SQUID_ADDRESS['testnet']
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
@@ -1823,7 +1822,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (CA_V4.includes(contractVersion)) {
+	if (VAULT_CONTRACTS_V4_ANDUP.includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2399,7 +2398,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!CA_V4.includes(peanutContractVersion)) {
+	if (!VAULT_CONTRACTS_V4_ANDUP.includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}

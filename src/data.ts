@@ -37,12 +37,14 @@ const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4.4'
 
 // Set of arrays for features only available on certain versions.
 // !! IMPORTANT !!: Update these arrays when creating new contracts
-// !! IMPORTANT !!: When creating a new array, make sure it starts with CA (standing for Contract Array).
-const CA_V4 = ['v4', 'v4.2', 'v4.3', 'v4.4']
-const CA_V4_2_ANDUP = ['v4.2', 'v4.3', 'v4.4']
-const CA_SUPPORTS_MFA = ['v4.4']
-const CA_SUPPORTS_MFA_BATCHER = ['Bv4.4']
-const CA_SUPPORTS_MFA_ROUTER = ['Rv4.2']
+// !! IMPORTANT !!: When creating a new array, make sure the name makes sense and is descriptive
+
+const VAULT_CONTRACTS_V4_ANDUP = ['v4', 'v4.2', 'v4.3', 'v4.4']
+const VAULT_CONTRACTS_V4_2_ANDUP = ['v4.2', 'v4.3', 'v4.4']
+const VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS = ['v4.4']
+const VAULT_CONTRACTS_WITH_FMA = ['v4.3', 'v4.4']
+const BATCHER_CONTRACTS_WITH_MFA = ['Bv4.3', 'Bv4.4']
+const ROUTER_CONTRACTS_WITH_MFA = ['Rv4.2']
 
 // export all these functions (imported in index.js)
 export {
@@ -71,9 +73,10 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_EXPERIMENTAL_BATCHER_VERSION,
 	FALLBACK_CONTRACT_VERSION,
-	CA_V4_2_ANDUP,
-	CA_V4,
-	CA_SUPPORTS_MFA,
-	CA_SUPPORTS_MFA_BATCHER,
-	CA_SUPPORTS_MFA_ROUTER,
+	VAULT_CONTRACTS_V4_2_ANDUP,
+	VAULT_CONTRACTS_V4_ANDUP,
+	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
+	ROUTER_CONTRACTS_WITH_MFA,
+	VAULT_CONTRACTS_WITH_FMA,
+	BATCHER_CONTRACTS_WITH_MFA,
 }
