@@ -143,8 +143,8 @@ export async function prepareRaffleDepositTxs({
 	}
 
 	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = VAULT_CONTRACTS_WITH_FMA[0] // Always taking highest version that supports MFA
-	const batcherContractVersion = BATCHER_CONTRACTS_WITH_MFA[0] // Always taking highest version that supports MFA
+	const peanutContractVersion = VAULT_CONTRACTS_WITH_FMA[VAULT_CONTRACTS_WITH_FMA.length - 1] // Always taking highest version that supports MFA
+	const batcherContractVersion = BATCHER_CONTRACTS_WITH_MFA[BATCHER_CONTRACTS_WITH_MFA.length - 1] // Always taking highest version that supports MFA
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
