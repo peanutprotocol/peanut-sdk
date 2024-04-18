@@ -1,23 +1,23 @@
 """
-    fillTokenDetails: populates tokenDetails.json with ERC20 token info for each chain 
-    present in chainDetails.json.
-    
-    Resulting list for each chain consists of three parts:
-    1. Native token.
-    3. Coingecko list with up to 100 tokens, ordered by marketcap.
-    2. Tokens from manualTokenDetails.json.
-    
-    Native token is added automatically at the top of the list for each chain.
+fillTokenDetails: populates tokenDetails.json with ERC20 token info for each chain
+present in chainDetails.json.
 
-    Coingecko list is constructed from top 100 tokens by market cap, provided by Moralis:
-    - Fetch top tokens from Moralis by Ethereum Mainnet market cap.
-    - Iterate through Moralis top token list to find the same mainnet token address in a 
-    full coingecko token list (get_top_tokens_with_contracts function).
-    - Copy "platforms" data (<network_name>: <token_address> dict for that token) from 
-    coingecko token list to Moralis list
-    - Iterate through updated Moralis list and push each token info to corresponding 
-    resulting list
-    - Add tokens from manualTokenDetails.json to the resulting list
+Resulting list for each chain consists of three parts:
+1. Native token.
+3. Coingecko list with up to 100 tokens, ordered by marketcap.
+2. Tokens from manualTokenDetails.json.
+
+Native token is added automatically at the top of the list for each chain.
+
+Coingecko list is constructed from top 100 tokens by market cap, provided by Moralis:
+- Fetch top tokens from Moralis by Ethereum Mainnet market cap.
+- Iterate through Moralis top token list to find the same mainnet token address in a
+full coingecko token list (get_top_tokens_with_contracts function).
+- Copy "platforms" data (<network_name>: <token_address> dict for that token) from
+coingecko token list to Moralis list
+- Iterate through updated Moralis list and push each token info to corresponding
+resulting list
+- Add tokens from manualTokenDetails.json to the resulting list
 """
 
 import requests
@@ -30,12 +30,44 @@ dotenv.load_dotenv()
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
 TOP_TOKENS_URL = "https://api.coingecko.com/api/v3/coins/list?include_platform=true"
+TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
 UNISWAP_URL = "https://gateway.ipfs.io/ipns/tokens.uniswap.org"
 TOP_LIST_MORALIS_URL = (
     "https://deep-index.moralis.io/api/v2.2/market-data/erc20s/top-tokens"
 )
 MORALIS_API_KEY = os.environ.get("MORALIS_API_KEY")
 
+def fetch_tokens_for_platform(platform_id):
+    """
+        Returns only the first 200 tokens. Not an issue because this method is only
+        used for chains that have 0 tokens from the top 100 by market cap.
+    """
+    url = TOKENS_URL_TEMPLATE.format(platform_id)
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(
+            f"Error fetching tokens for platform {platform_id}. HTTP Status Code: {response.status_code}"
+        )
+        return []
+
+    data = response.json()
+    if "tokens" not in data or not isinstance(data["tokens"], list):
+        print(
+            f"Warning: Expected a list of tokens for platform {platform_id} but received a different data structure."
+        )
+        return []
+
+    # Check for expected fields in the first token as a sample
+    expected_fields = ["address", "decimals", "name", "symbol", "logoURI"]
+    if data["tokens"] and not all(
+        field in data["tokens"][0] for field in expected_fields
+    ):
+        print(
+            f"Warning: Some expected fields are missing in the tokens data for platform {platform_id}."
+        )
+
+    # Return only the first 200 tokens
+    return data["tokens"][:200]
 
 def moralis_fetch_top_marketcap_list():
     response = requests.get(
@@ -139,7 +171,7 @@ def main():
 
     # Fetch top tokens from moralis
     top_tokens = moralis_fetch_top_marketcap_list()
-    
+
     # add deployed contract addresses for different networks to top_tokens list
     top_tokens_by_chain = get_top_tokens_with_contracts(top_tokens, full_list)
 
@@ -196,6 +228,11 @@ def main():
                 for top_token in top_tokens_by_chain
                 if coingecko_id in top_token["platforms"]
             ]
+            
+            # If nothing is found from top 100 tokens by market cap, fill it
+            # using fetch_tokens_for_platform
+            if len(tokens) == 0:
+                tokens = fetch_tokens_for_platform(platform_id=coingecko_id)
 
             total_tokens += len(tokens)
             chains_fetched += 1
@@ -214,10 +251,18 @@ def main():
             print(f"Warning: No CoinGecko ID found for chainId {chain_id}.")
             complete_tokens = []
 
+        # Remove native token if already present so it won't get duplicated
+        complete_tokens = list(
+            filter(
+                lambda token: token["symbol"] != details["nativeCurrency"]["symbol"],
+                complete_tokens,
+            )
+        ) 
+
         # Add native token first in the list
         logoURI = details.get("icon", {}).get("url", "")
         if logoURI.startswith("ipfs://"):
-            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://"):]
+            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
         native_token = {
             "address": "0x0000000000000000000000000000000000000000",
             "name": details["nativeCurrency"]["name"],
