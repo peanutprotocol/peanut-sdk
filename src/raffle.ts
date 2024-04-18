@@ -17,7 +17,12 @@ import {
 	trim_decimal_overflow,
 } from '.'
 import { getRawParamsFromLink, validateUserName } from './util'
-import { VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS, ROUTER_CONTRACTS_WITH_MFA, VAULT_CONTRACTS_WITH_FMA } from './data'
+import {
+	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
+	ROUTER_CONTRACTS_WITH_MFA,
+	VAULT_CONTRACTS_WITH_FMA,
+	BATCHER_CONTRACTS_WITH_MFA,
+} from './data'
 
 export function generateAmountsDistribution(
 	totalAmount: BigNumber,
@@ -139,7 +144,7 @@ export async function prepareRaffleDepositTxs({
 
 	// For simplicity doing raffles always on these contracts
 	const peanutContractVersion = VAULT_CONTRACTS_WITH_FMA[VAULT_CONTRACTS_WITH_FMA.length - 1] // Always taking highest version that supports MFA
-	const batcherContractVersion = ROUTER_CONTRACTS_WITH_MFA[ROUTER_CONTRACTS_WITH_MFA.length - 1] // Always taking highest version that supports MFA
+	const batcherContractVersion = BATCHER_CONTRACTS_WITH_MFA[BATCHER_CONTRACTS_WITH_MFA.length - 1] // Always taking highest version that supports MFA
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
