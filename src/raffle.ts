@@ -9,6 +9,7 @@ import {
 	getContract,
 	getContractAddress,
 	getDefaultProvider,
+	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromTx,
@@ -20,7 +21,7 @@ import { getRawParamsFromLink, validateUserName } from './util'
 import {
 	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
 	ROUTER_CONTRACTS_WITH_MFA,
-	VAULT_CONTRACTS_WITH_FMA,
+	VAULT_CONTRACTS_WITH_MFA,
 	BATCHER_CONTRACTS_WITH_MFA,
 } from './data'
 
@@ -142,9 +143,27 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = VAULT_CONTRACTS_WITH_FMA[VAULT_CONTRACTS_WITH_FMA.length - 1] // Always taking highest version that supports MFA
-	const batcherContractVersion = BATCHER_CONTRACTS_WITH_MFA[BATCHER_CONTRACTS_WITH_MFA.length - 1] // Always taking highest version that supports MFA
+	const peanutContractVersion = getLatestContractVersion({
+		chainId: linkDetails.chainId,
+		type: 'normal',
+	})
+	const batcherContractVersion = getLatestContractVersion({
+		chainId: linkDetails.chainId,
+		type: 'batch',
+	})
+
+	if (!VAULT_CONTRACTS_WITH_MFA.includes(peanutContractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`Creating a raffle is not supported for vault contract version ${peanutContractVersion} on chain ${linkDetails.chainId} yet`
+		)
+	}
+	if (!BATCHER_CONTRACTS_WITH_MFA.includes(batcherContractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`Creating a raffle is not supported for batcher contract version ${batcherContractVersion} on chain ${linkDetails.chainId} yet`
+		)
+	}
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
@@ -217,7 +236,7 @@ export async function prepareRaffleDepositTxs({
 		Array(numberOfLinks).fill(linkDetails.tokenAddress),
 		Array(numberOfLinks).fill(linkDetails.tokenType),
 		amounts,
-		tokenIds,
+		tokenIds ? tokenIds : Array(numberOfLinks).fill(0),
 		Array(numberOfLinks).fill(pubKey20),
 		Array(numberOfLinks).fill(withMFA),
 	]
