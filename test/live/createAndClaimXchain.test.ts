@@ -5,6 +5,8 @@ import * as utils from './test.utils'
 import * as consts from './test.consts'
 
 describe('Create and claim tests, xchain links', () => {
+	// Creates a native link and claims xchain to the same address
+	// Testing using a random source chain and a random destination chain from consts.xchainChains
 	it('Should create a native link on a random source chain and claim it on a random destination chain', async () => {
 		peanut.toggleVerbose(true)
 		const [sourceChainId, destinationChainId] = utils.getRandomDistinctValues(consts.xchainChains)
@@ -38,13 +40,14 @@ describe('Create and claim tests, xchain links', () => {
 			destinationChainId,
 			APIKey: consts.PEANUT_DEV_API_KEY,
 			isMainnet: true,
+			baseUrl: consts.PEANUT_API_URL,
 		})
 		console.log('X-chain result!', { result })
 
 		expect(result.txHash).toBeDefined()
 	}, 120000)
 
-	// Doing one manual claim test to make sure function works
+	// Same as the previous test, but claiming manually with out the relayer
 	it('should create and claim an xchain link without using the API', async () => {
 		const [sourceChainId, destinationChainId] = utils.getRandomDistinctValues(consts.xchainChains)
 		console.log('sourceChainId', sourceChainId)
@@ -53,7 +56,6 @@ describe('Create and claim tests, xchain links', () => {
 
 		const provider = await peanut.getDefaultProvider(String(sourceChainId))
 		const wallet = new ethers.Wallet(consts.TEST_WALLET_PRIVATE_KEY ?? '', provider)
-		const relayerWallet = new ethers.Wallet(consts.TEST_RELAYER_PRIVATE_KEY, provider) // remove this eoa, use the user wallet
 
 		const recipientAddress = await wallet.getAddress()
 		const response = await peanut.createLink({
@@ -92,7 +94,7 @@ describe('Create and claim tests, xchain links', () => {
 		const { tx, txHash } = await peanut.signAndSubmitTx({
 			unsignedTx: xchainUnsignedTx,
 			structSigner: {
-				signer: relayerWallet,
+				signer: wallet,
 				gasLimit: BigNumber.from(1_500_000),
 			},
 		})

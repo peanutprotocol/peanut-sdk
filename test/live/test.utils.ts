@@ -12,6 +12,7 @@ export async function waitForTransaction(provider, txHash, timeout = 60000) {
 	throw new Error('Transaction was not confirmed within the timeout period.')
 }
 
+// Takes in an array and returns two distinct random values from the array. Used to get two random chainIds
 export function getRandomDistinctValues<T>(arr: T[]): T[] {
 	if (arr.length < 2) {
 		throw new Error('Array must have at least two distinct elements')

@@ -18,6 +18,7 @@ export async function createAndClaimLinkGasless(
 		link: response.link,
 		APIKey: consts.PEANUT_DEV_API_KEY ?? '',
 		recipientAddress,
+		baseUrl: consts.PEANUT_API_URL,
 	})
 
 	console.log('Link claimed: ' + claimResult.txHash)
@@ -29,6 +30,8 @@ describe('Create and claim tests, normal links', () => {
 	// 	mainnetChains = await Object.keys(CHAIN_DETAILS).filter((chainId) => CHAIN_DETAILS[chainId].mainnet === true)
 	// }) // TODO: Uncomment this when the test wallet is funded on ALL mainnet chains
 
+	// Creates a native link and claims to the same address
+	// Testing all chains in consts.chains
 	test.each(consts.chains)(
 		'Should create a native link on chain %s',
 		async function (chainId) {
@@ -55,6 +58,8 @@ describe('Create and claim tests, normal links', () => {
 		120000
 	)
 
+	// Creates an ERC20 link and claims to the same address
+	// Testing all chains with tokenAddresses in consts.erc20Addresses.
 	test.each(Object.keys(consts.erc20Addresses))(
 		'Should create an erc20 link on chain %s',
 		async function (chainId) {
@@ -84,7 +89,7 @@ describe('Create and claim tests, normal links', () => {
 		120000
 	)
 
-	// Doing ONE manual claim test to make sure functions work
+	// Doing one manual claim test to make sure the function works. This is a normal link, on a random chain from consts.chains
 	it('should create and claim a native link without using the API', async () => {
 		peanut.toggleVerbose(true)
 

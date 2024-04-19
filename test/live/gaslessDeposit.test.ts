@@ -78,6 +78,7 @@ describe('gasless deposit', () => {
 			link: links[0],
 			recipientAddress: userWallet.address,
 			APIKey: consts.PEANUT_DEV_API_KEY ?? '',
+			baseUrl: consts.PEANUT_API_URL,
 		})
 
 		expect(claimLinkResponse.txHash).toBeDefined()

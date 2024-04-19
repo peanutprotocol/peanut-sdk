@@ -4,6 +4,7 @@ import * as utils from './test.utils'
 import * as consts from './test.consts'
 
 describe('batch create and claim', () => {
+	// This test will use the createLinks function to create two links in one go. These links will both be claimed gasless to the same address.
 	it('should batch create and claim links', async () => {
 		peanut.toggleVerbose(true)
 		const chainId = consts.chains[Math.floor(Math.random() * consts.chains.length)] // Use a random chainId
@@ -40,6 +41,7 @@ describe('batch create and claim', () => {
 				link: response[i].link,
 				recipientAddress: recipientAddress,
 				APIKey: consts.PEANUT_DEV_API_KEY,
+				baseUrl: consts.PEANUT_API_URL,
 			})
 			console.log('Link claimed: ' + claimResult.txHash)
 			claimHashArray.push(claimResult.txHash)
