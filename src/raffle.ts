@@ -150,6 +150,7 @@ export async function prepareRaffleDepositTxs({
 	const batcherContractVersion = getLatestContractVersion({
 		chainId: linkDetails.chainId,
 		type: 'batch',
+		experimental: true,
 	})
 
 	if (!VAULT_CONTRACTS_WITH_MFA.includes(peanutContractVersion)) {

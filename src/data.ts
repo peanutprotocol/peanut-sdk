@@ -38,12 +38,12 @@ const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4.4'
 // Set of arrays for features only available on certain versions.
 // !! IMPORTANT !!: Update these arrays when creating new contracts
 // !! IMPORTANT !!: When creating a new array, make sure the name makes sense and is descriptive
-
+// !! IMPORTANT !!: when updating LTS of batcher, make sure to update getLatestContractversion in raffle.ts for the batcher version
 const VAULT_CONTRACTS_V4_ANDUP = ['v4', 'v4.2', 'v4.3', 'v4.4']
 const VAULT_CONTRACTS_V4_2_ANDUP = ['v4.2', 'v4.3', 'v4.4']
 const VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS = ['v4.4']
 const VAULT_CONTRACTS_WITH_MFA = ['v4.3', 'v4.4']
-const BATCHER_CONTRACTS_WITH_MFA = ['Bv4.3', 'Bv4.4']
+const BATCHER_CONTRACTS_WITH_MFA = ['Bv4.4']
 const ROUTER_CONTRACTS_WITH_MFA = ['Rv4.2']
 
 // export all these functions (imported in index.js)
