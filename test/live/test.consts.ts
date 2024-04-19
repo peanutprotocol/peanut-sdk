@@ -5,7 +5,8 @@ export const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY!
 // The native tests will run on these chains
 export const chains = ['56', '42161', '100', '137', '10', '324', '43114', '11155111']
 
-// The ERC20 tests will run on these chains, where the address is defined
+// The ERC20 tests will run on these chains, where the address is defined, all USDC
+// TODO: update the address to the correct USDC address and fund test wallet
 export const erc20Addresses = {
 	'137': {
 		address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',

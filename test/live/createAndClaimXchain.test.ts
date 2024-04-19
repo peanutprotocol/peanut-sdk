@@ -53,7 +53,7 @@ describe('Create and claim tests, xchain links', () => {
 
 		const provider = await peanut.getDefaultProvider(String(sourceChainId))
 		const wallet = new ethers.Wallet(consts.TEST_WALLET_PRIVATE_KEY ?? '', provider)
-		const relayerWallet = new ethers.Wallet(consts.TEST_RELAYER_PRIVATE_KEY, provider)
+		const relayerWallet = new ethers.Wallet(consts.TEST_RELAYER_PRIVATE_KEY, provider) // remove this eoa, use the user wallet
 
 		const recipientAddress = await wallet.getAddress()
 		const response = await peanut.createLink({

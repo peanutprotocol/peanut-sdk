@@ -84,7 +84,7 @@ describe('Create and claim tests, normal links', () => {
 		120000
 	)
 
-	// Doing one manual claim test to make sure functions work
+	// Doing ONE manual claim test to make sure functions work
 	it('should create and claim a native link without using the API', async () => {
 		peanut.toggleVerbose(true)
 
