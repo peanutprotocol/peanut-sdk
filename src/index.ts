@@ -1160,21 +1160,23 @@ async function validateLinkDetails(
 ): Promise<interfaces.IPeanutLinkDetails> {
 	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
 
-	if (
-		(linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 ||
-			linkDetails.tokenType == interfaces.EPeanutLinkType.native) &&
-		(linkDetails.tokenDecimals == undefined || linkDetails.tokenType == undefined)
-	) {
-		try {
-			const contractDetails = await getTokenContractDetails({
-				address: linkDetails.tokenAddress,
-				provider: provider,
-			})
+	if (linkDetails.tokenDecimals == undefined || linkDetails.tokenType == undefined) {
+		if (
+			linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 ||
+			linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
+			linkDetails.tokenType == undefined
+		) {
+			try {
+				const contractDetails = await getTokenContractDetails({
+					address: linkDetails.tokenAddress,
+					provider: provider,
+				})
 
-			linkDetails.tokenType = contractDetails.type
-			contractDetails.decimals && (linkDetails.tokenDecimals = contractDetails.decimals)
-		} catch (error) {
-			throw new Error('Contract type not supported')
+				linkDetails.tokenType = contractDetails.type
+				contractDetails.decimals && (linkDetails.tokenDecimals = contractDetails.decimals)
+			} catch (error) {
+				throw new Error('Contract type not supported')
+			}
 		}
 	}
 
