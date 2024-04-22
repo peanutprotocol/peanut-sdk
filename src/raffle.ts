@@ -17,13 +17,14 @@ import {
 	prepareApproveERC20Tx,
 	trim_decimal_overflow,
 } from '.'
-import { getRawParamsFromLink, validateUserName } from './util'
+import { getRawParamsFromLink, validateUserName, compareVersions } from './util'
 import {
 	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
 	ROUTER_CONTRACTS_WITH_MFA,
 	VAULT_CONTRACTS_WITH_MFA,
 	BATCHER_CONTRACTS_WITH_MFA,
 } from './data'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
 
 export function generateAmountsDistribution(
 	totalAmount: BigNumber,
@@ -146,7 +147,8 @@ export async function prepareRaffleDepositTxs({
 	const peanutContractVersion = getLatestContractVersion({
 		chainId: linkDetails.chainId,
 		type: 'normal',
-	})
+	}) // TODO: change from normal to vault type
+
 	const batcherContractVersion = getLatestContractVersion({
 		chainId: linkDetails.chainId,
 		type: 'batch',
@@ -230,23 +232,50 @@ export async function prepareRaffleDepositTxs({
 			value: tokenAmountBigNum,
 		}
 	}
-
 	// Call the general function that supports raffles with all tokens
-	const batchingArgs = [
-		peanutVaultAddress,
-		Array(numberOfLinks).fill(linkDetails.tokenAddress),
-		Array(numberOfLinks).fill(linkDetails.tokenType),
-		amounts,
-		tokenIds ? tokenIds : Array(numberOfLinks).fill(0),
-		Array(numberOfLinks).fill(pubKey20),
-		Array(numberOfLinks).fill(withMFA),
-	]
-	config.verbose && console.log('Deposit arguments:', batchingArgs)
-	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
-		...batchingArgs,
-		txOptions
-	)
+
+	// if v4.3 call batchMakeDeposit, if v4.4 or higher call batchMakeDepositArbitrary
+	// will fail if tokenType is 2 within batchMakeDeposit (tokentype 2 is not supported in batchMakeDeposit)
+
+	let depositTxRequest: TransactionRequest
+	if (compareVersions('v4.4', peanutContractVersion, 'v')) {
+		const batchingArgs = [
+			peanutVaultAddress,
+			Array(numberOfLinks).fill(linkDetails.tokenAddress),
+			Array(numberOfLinks).fill(linkDetails.tokenType),
+			amounts,
+			tokenIds ? tokenIds : Array(numberOfLinks).fill(0),
+			Array(numberOfLinks).fill(pubKey20),
+			Array(numberOfLinks).fill(withMFA),
+		]
+		config.verbose && console.log('Deposit arguments:', batchingArgs)
+
+		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
+			...batchingArgs,
+			txOptions
+		)
+	} else {
+		const depositParams = [peanutVaultAddress, linkDetails.tokenAddress, linkDetails.tokenType, amounts, pubKey20]
+		config.verbose && console.log('Deposit params:', depositParams)
+
+		if (withMFA) {
+			depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffleMFA(
+				...depositParams,
+				txOptions
+			)
+		} else {
+			depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
+				...depositParams,
+				txOptions
+			)
+		}
+
+		config.verbose && console.log('Deposit request:', depositTxRequest)
+	}
+
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
+
+	console.log(depositTx)
 
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
 	if (approveTx) unsignedTxs.push(approveTx)

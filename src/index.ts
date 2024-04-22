@@ -68,6 +68,7 @@ import {
 	ethersV5ToPeanutTx,
 	peanutToEthersV5Tx,
 	validateUserName,
+	compareVersions,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -3081,6 +3082,7 @@ const peanut = {
 	validateUserName,
 	getTxReceiptFromHash,
 	getTokenBalance,
+	compareVersions,
 	...raffle,
 }
 
@@ -3181,4 +3183,5 @@ export {
 	validateUserName,
 	getTxReceiptFromHash,
 	getTokenBalance,
+	compareVersions,
 }
