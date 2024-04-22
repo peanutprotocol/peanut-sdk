@@ -1152,6 +1152,10 @@ async function getTxReceiptFromHash(
 	return txReceipt
 }
 
+/**
+ * function that validates all the details of the link.
+ * TODO: rename to something that indicates that it also updates the linkDetails
+ */
 async function validateLinkDetails(
 	linkDetails: interfaces.IPeanutLinkDetails,
 	passwords: string[],
@@ -1160,17 +1164,24 @@ async function validateLinkDetails(
 ): Promise<interfaces.IPeanutLinkDetails> {
 	linkDetails.tokenAddress = linkDetails.tokenAddress ?? '0x0000000000000000000000000000000000000000'
 
+	// TODO: this should be rewritten to be more efficient/clear
 	if (linkDetails.tokenDecimals == undefined || linkDetails.tokenType == undefined) {
-		try {
-			const contractDetails = await getTokenContractDetails({
-				address: linkDetails.tokenAddress,
-				provider: provider,
-			})
+		if (
+			linkDetails.tokenType == interfaces.EPeanutLinkType.erc20 ||
+			linkDetails.tokenType == interfaces.EPeanutLinkType.native ||
+			linkDetails.tokenType == undefined
+		) {
+			try {
+				const contractDetails = await getTokenContractDetails({
+					address: linkDetails.tokenAddress,
+					provider: provider,
+				})
 
-			linkDetails.tokenType = contractDetails.type
-			contractDetails.decimals && (linkDetails.tokenDecimals = contractDetails.decimals)
-		} catch (error) {
-			throw new Error('Contract type not supported')
+				linkDetails.tokenType = contractDetails.type
+				contractDetails.decimals && (linkDetails.tokenDecimals = contractDetails.decimals)
+			} catch (error) {
+				throw new Error('Contract type not supported')
+			}
 		}
 	}
 
@@ -1220,7 +1231,7 @@ async function validateLinkDetails(
 			linkDetails.tokenType == interfaces.EPeanutLinkType.erc1155
 		) || linkDetails.tokenDecimals != null,
 		'tokenDecimals must be provided for ERC20 and ERC1155 tokens'
-	)
+	) // this can be removed since we do the check at the top for decimals and
 
 	if (
 		linkDetails.tokenType !== interfaces.EPeanutLinkType.native &&
