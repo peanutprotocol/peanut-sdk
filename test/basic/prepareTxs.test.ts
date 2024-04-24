@@ -16,7 +16,7 @@ describe('prepareDepositTxs', function () {
 		const response = await peanut.prepareDepositTxs({
 			address: goerliWallet.address,
 			linkDetails: {
-				chainId: '5',
+				chainId: '137',
 				tokenAmount: 0.01,
 				tokenType: 0,
 			},
@@ -32,11 +32,11 @@ describe('prepareDepositTxs', function () {
 		const response = await peanut.prepareDepositTxs({
 			address: goerliWallet.address,
 			linkDetails: {
-				chainId: '5',
+				chainId: '137',
 				tokenAmount: 0.01,
 				tokenType: 1,
-				tokenAddress: '0x73967c6a0904aA032C103b4104747E88c566B1A2',
-				tokenDecimals: 18,
+				tokenAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+				tokenDecimals: 6,
 			},
 			numberOfLinks: 1,
 			passwords: ['testpassword'],
@@ -51,7 +51,7 @@ describe('prepareDepositTxs', function () {
 			const response = await peanut.prepareDepositTxs({
 				address: goerliWallet.address,
 				linkDetails: {
-					chainId: '5',
+					chainId: '137',
 					tokenAmount: 0.01,
 					tokenType: 0,
 				},
@@ -69,7 +69,7 @@ describe('prepareDepositTxs', function () {
 			const response = await peanut.prepareDepositTxs({
 				address: goerliWallet.address,
 				linkDetails: {
-					chainId: '5',
+					chainId: '137',
 					tokenAmount: -0.01, // Invalid token amount
 					tokenType: 0,
 				},

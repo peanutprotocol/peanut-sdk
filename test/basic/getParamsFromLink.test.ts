@@ -51,4 +51,4 @@ describe('getParamsFromLink', function () {
 			trackId: '',
 		})
 	}, 10000)
-})
+}) // TODO: move away from goerli, not high prio since network is readonly

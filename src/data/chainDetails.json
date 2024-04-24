@@ -61,52 +61,6 @@
 		],
 		"mainnet": true
 	},
-	"5": {
-		"name": "Goerli",
-		"title": "Ethereum Testnet Goerli",
-		"chain": "ETH",
-		"rpc": [
-			"https://goerli.infura.io/v3/${INFURA_API_KEY}",
-			"https://ethereum-goerli.publicnode.com",
-			"https://goerli.gateway.tenderly.co"
-		],
-		"faucets": [
-			"http://fauceth.komputing.org?chain=5&address=${ADDRESS}",
-			"https://goerli-faucet.slock.it?address=${ADDRESS}",
-			"https://faucet.goerli.mudit.blog"
-		],
-		"nativeCurrency": {
-			"name": "Goerli Ether",
-			"symbol": "ETH",
-			"decimals": 18
-		},
-		"infoURL": "https://goerli.net/#about",
-		"shortName": "Goerli",
-		"chainId": "5",
-		"networkId": 5,
-		"slip44": 1,
-		"ens": {
-			"registry": "0x112234455c3a32fd11230c42e7bccd4a84e02010"
-		},
-		"explorers": [
-			{
-				"name": "etherscan-goerli",
-				"url": "https://goerli.etherscan.io",
-				"standard": "EIP3091"
-			},
-			{
-				"name": "blockscout-goerli",
-				"url": "https://eth-goerli.blockscout.com",
-				"icon": "blockscout",
-				"standard": "EIP3091"
-			}
-		],
-		"mainnet": false,
-		"icon": {
-			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
-			"format": "svg"
-		}
-	},
 	"137": {
 		"name": "Polygon",
 		"chain": "Polygon",
@@ -615,34 +569,6 @@
 		],
 		"status": "active",
 		"mainnet": true
-	},
-	"5001": {
-		"name": "Mantle Testnet",
-		"chain": "ETH",
-		"rpc": ["https://rpc.testnet.mantle.xyz"],
-		"faucets": ["https://faucet.testnet.mantle.xyz"],
-		"nativeCurrency": {
-			"name": "Testnet Mantle",
-			"symbol": "MNT",
-			"decimals": 18
-		},
-		"infoURL": "https://mantle.xyz",
-		"shortName": "mantle-testnet",
-		"chainId": "5001",
-		"networkId": 5001,
-		"slip44": 1,
-		"explorers": [
-			{
-				"name": "Mantle Testnet Explorer",
-				"url": "https://explorer.testnet.mantle.xyz",
-				"standard": "EIP3091"
-			}
-		],
-		"mainnet": false,
-		"icon": {
-			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg",
-			"format": "svg"
-		}
 	},
 	"324": {
 		"name": "zkSync Mainnet",
