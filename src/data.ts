@@ -27,13 +27,24 @@ const TOKEN_TYPES = Object.freeze({
 
 // CONTRACT VERSIONS
 // TODO: rename CONTRACT to VAULT
-const LATEST_STABLE_CONTRACT_VERSION = 'v4.4'
+const LATEST_STABLE_CONTRACT_VERSION = 'v4.3'
 const LATEST_EXPERIMENTAL_CONTRACT_VERSION = 'v4.4'
-const FALLBACK_CONTRACT_VERSION = 'v4.3'
+const FALLBACK_CONTRACT_VERSION = 'v4.2'
 const LATEST_STABLE_ROUTER_VERSION = 'Rv4'
-const LATEST_EXPERIMENTAL_ROUTER_VERSION = 'Rv4'
-const LATEST_STABLE_BATCHER_VERSION = 'Bv4.4'
+const LATEST_EXPERIMENTAL_ROUTER_VERSION = 'Rv4.2'
+const LATEST_STABLE_BATCHER_VERSION = 'Bv4'
 const LATEST_EXPERIMENTAL_BATCHER_VERSION = 'Bv4.4'
+
+// Set of arrays for features only available on certain versions.
+// !! IMPORTANT !!: Update these arrays when creating new contracts
+// !! IMPORTANT !!: When creating a new array, make sure the name makes sense and is descriptive
+// !! IMPORTANT !!: when updating LTS of batcher, make sure to update getLatestContractversion in raffle.ts for the batcher version
+const VAULT_CONTRACTS_V4_ANDUP = ['v4', 'v4.2', 'v4.3', 'v4.4']
+const VAULT_CONTRACTS_V4_2_ANDUP = ['v4.2', 'v4.3', 'v4.4']
+const VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS = ['v4.4']
+const VAULT_CONTRACTS_WITH_MFA = ['v4.3', 'v4.4']
+const BATCHER_CONTRACTS_WITH_MFA = ['Bv4.4']
+const ROUTER_CONTRACTS_WITH_MFA = ['Rv4.2']
 
 // export all these functions (imported in index.js)
 export {
@@ -62,4 +73,10 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_EXPERIMENTAL_BATCHER_VERSION,
 	FALLBACK_CONTRACT_VERSION,
+	VAULT_CONTRACTS_V4_2_ANDUP,
+	VAULT_CONTRACTS_V4_ANDUP,
+	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
+	ROUTER_CONTRACTS_WITH_MFA,
+	VAULT_CONTRACTS_WITH_MFA,
+	BATCHER_CONTRACTS_WITH_MFA,
 }

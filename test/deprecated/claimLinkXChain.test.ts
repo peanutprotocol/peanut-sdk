@@ -53,7 +53,6 @@ describe('Peanut XChain claiming tests', function () {
 			squidRouterUrl: getSquidRouterUrl(true, false),
 			isMainnet: true,
 		})
-		console.log('Computed x chain claim payload', xchainClaimPayload)
 
 		const xchainUnsignedTx = await peanut.populateXChainClaimTx({
 			payload: xchainClaimPayload,

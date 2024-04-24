@@ -11,7 +11,6 @@ describe('test getDefaultProvider on EVERY chain', function () {
 	test.each(Object.keys(chainDetails))(
 		'should return a provider for chain %s',
 		async function (chainId) {
-			if (chainId === '5') return // Skip tests for Goerli (chainId 5) as it's deprecated
 			const provider = await peanut.getDefaultProvider(chainId)
 			expect(provider).toBeInstanceOf(ethers.providers.JsonRpcProvider)
 

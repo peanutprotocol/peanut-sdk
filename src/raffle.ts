@@ -9,6 +9,7 @@ import {
 	getContract,
 	getContractAddress,
 	getDefaultProvider,
+	getLatestContractVersion,
 	getLinkDetails,
 	getLinkFromParams,
 	getLinksFromTx,
@@ -16,8 +17,14 @@ import {
 	prepareApproveERC20Tx,
 	trim_decimal_overflow,
 } from '.'
+import { getRawParamsFromLink, validateUserName, compareVersions } from './util'
+import {
+	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
+	ROUTER_CONTRACTS_WITH_MFA,
+	VAULT_CONTRACTS_WITH_MFA,
+	BATCHER_CONTRACTS_WITH_MFA,
+} from './data'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
-import { assert, getRawParamsFromLink, validateUserName } from './util'
 
 export function generateAmountsDistribution(
 	totalAmount: BigNumber,
@@ -66,7 +73,11 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	if ((linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) && linkDetails.tokenType !== 2 && !amounts) {
+	if (
+		(linkDetails.tokenDecimals === null || linkDetails.tokenDecimals === undefined) &&
+		linkDetails.tokenType !== 2 &&
+		!amounts
+	) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
 			'tokenDecimals is required for prepareRaffleDepositTxs since tokenType is not 2 (ERC-721) and amounts is not supplied'
@@ -133,9 +144,29 @@ export async function prepareRaffleDepositTxs({
 		)
 	}
 
-	// For simplicity doing raffles always on these contracts
-	const peanutContractVersion = 'v4.4'
-	const batcherContractVersion = 'Bv4.4'
+	const peanutContractVersion = getLatestContractVersion({
+		chainId: linkDetails.chainId,
+		type: 'normal',
+	}) // TODO: change from normal to vault type
+
+	const batcherContractVersion = getLatestContractVersion({
+		chainId: linkDetails.chainId,
+		type: 'batch',
+		experimental: true,
+	})
+
+	if (!VAULT_CONTRACTS_WITH_MFA.includes(peanutContractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`Creating a raffle is not supported for vault contract version ${peanutContractVersion} on chain ${linkDetails.chainId} yet`
+		)
+	}
+	if (!BATCHER_CONTRACTS_WITH_MFA.includes(batcherContractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
+			`Creating a raffle is not supported for batcher contract version ${batcherContractVersion} on chain ${linkDetails.chainId} yet`
+		)
+	}
 
 	if (!provider) {
 		provider = await getDefaultProvider(linkDetails.chainId)
@@ -145,7 +176,7 @@ export async function prepareRaffleDepositTxs({
 	// Used only for ETH and ERC20 raffles.
 	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
-	
+
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
 	const batcherContract = await getContract(linkDetails.chainId, provider, batcherContractVersion)
 
@@ -169,7 +200,7 @@ export async function prepareRaffleDepositTxs({
 			const approvalTxRequest = await tokenContract.populateTransaction.setApprovalForAll(
 				batcherContract.address,
 				true,
-				{ from: userAddress },
+				{ from: userAddress }
 			)
 			approveTx = ethersV5ToPeanutTx(approvalTxRequest)
 		}
@@ -186,10 +217,11 @@ export async function prepareRaffleDepositTxs({
 		} else {
 			amounts = generateAmountsDistribution(tokenAmountBigNum, numberOfLinks)
 			config.verbose && console.log('Requested amount:', tokenAmountBigNum.toString())
-			config.verbose && console.log(
-				'Got amounts:',
-				amounts.map((am) => am.toString())
-			)
+			config.verbose &&
+				console.log(
+					'Got amounts:',
+					amounts.map((am) => am.toString())
+				)
 		}
 	}
 
@@ -200,23 +232,50 @@ export async function prepareRaffleDepositTxs({
 			value: tokenAmountBigNum,
 		}
 	}
-
 	// Call the general function that supports raffles with all tokens
-	const batchingArgs = [
-		peanutVaultAddress,
-		Array(numberOfLinks).fill(linkDetails.tokenAddress),
-		Array(numberOfLinks).fill(linkDetails.tokenType),
-		amounts,
-		tokenIds,
-		Array(numberOfLinks).fill(pubKey20),
-		Array(numberOfLinks).fill(withMFA),
-	]
-	config.verbose && console.log('Deposit arguments:', batchingArgs)
-	const depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
-		...batchingArgs,
-		txOptions,
-	)
+
+	// if v4.3 call batchMakeDeposit, if v4.4 or higher call batchMakeDepositArbitrary
+	// will fail if tokenType is 2 within batchMakeDeposit (tokentype 2 is not supported in batchMakeDeposit)
+
+	let depositTxRequest: TransactionRequest
+	if (compareVersions('v4.4', peanutContractVersion, 'v')) {
+		const batchingArgs = [
+			peanutVaultAddress,
+			Array(numberOfLinks).fill(linkDetails.tokenAddress),
+			Array(numberOfLinks).fill(linkDetails.tokenType),
+			amounts,
+			tokenIds ? tokenIds : Array(numberOfLinks).fill(0),
+			Array(numberOfLinks).fill(pubKey20),
+			Array(numberOfLinks).fill(withMFA),
+		]
+		config.verbose && console.log('Deposit arguments:', batchingArgs)
+
+		depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositArbitrary(
+			...batchingArgs,
+			txOptions
+		)
+	} else {
+		const depositParams = [peanutVaultAddress, linkDetails.tokenAddress, linkDetails.tokenType, amounts, pubKey20]
+		config.verbose && console.log('Deposit params:', depositParams)
+
+		if (withMFA) {
+			depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffleMFA(
+				...depositParams,
+				txOptions
+			)
+		} else {
+			depositTxRequest = await batcherContract.populateTransaction.batchMakeDepositRaffle(
+				...depositParams,
+				txOptions
+			)
+		}
+
+		config.verbose && console.log('Deposit request:', depositTxRequest)
+	}
+
 	const depositTx = ethersV5ToPeanutTx(depositTxRequest)
+
+	console.log(depositTx)
 
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
 	if (approveTx) unsignedTxs.push(approveTx)

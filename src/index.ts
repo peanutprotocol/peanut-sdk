@@ -25,11 +25,15 @@ import {
 	PEANUT_ROUTER_ABI_V4_2,
 	PEANUT_ABI_V4_2,
 	PEANUT_ABI_V4_3,
-	FALLBACK_CONTRACT_VERSION,
 	PEANUT_BATCHER_ABI_V4_2,
 	PEANUT_BATCHER_ABI_V4_3,
 	PEANUT_ABI_V4_4,
 	PEANUT_BATCHER_ABI_V4_4,
+	VAULT_CONTRACTS_V4_2_ANDUP,
+	LATEST_EXPERIMENTAL_BATCHER_VERSION,
+	VAULT_CONTRACTS_V4_ANDUP,
+	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
+	ROUTER_CONTRACTS_WITH_MFA,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -64,6 +68,7 @@ import {
 	ethersV5ToPeanutTx,
 	peanutToEthersV5Tx,
 	validateUserName,
+	compareVersions,
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
@@ -585,7 +590,7 @@ async function setFeeOptions({
 	// Check if EIP-1559 is supported
 	// if on milkomeda or bnb or linea, set eip1559 to false
 	// Even though linea is eip1559 compatible, it is more reliable to use the good old gasPrice
-	if (['2001', '200101', '56', '59144', '59140', '534352', '5000', '5001'].includes(_chainId)) {
+	if (['2001', '200101', '56', '59144', '59140', '534352', '5000'].includes(_chainId)) {
 		eip1559 = false
 		config.verbose && console.log('Chain includes unreliable eip1559 chains. Using legacy gas calculation.')
 	} else if (chainDetails && chainDetails.features) {
@@ -903,7 +908,7 @@ async function prepareDepositTxs({
 	let depositTx: interfaces.IPeanutUnsignedTransaction
 	if (numberOfLinks == 1) {
 		try {
-			if (peanutContractVersion === 'v4.4') {
+			if (VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS.includes(peanutContractVersion)) {
 				// Using the new, powerful and flexible deposit function!
 				depositParams = [
 					linkDetails.tokenAddress,
@@ -1645,7 +1650,7 @@ async function createClaimXChainPayload({
 	const contractVersion = linkParams.contractVersion
 	const password = linkParams.password
 
-	if (!['v4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
+	if (!VAULT_CONTRACTS_V4_2_ANDUP.includes(contractVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
 			`Unsupported contract version ${contractVersion}`
@@ -1679,7 +1684,7 @@ async function createClaimXChainPayload({
 
 	// cryptography
 	// TODO: deal with contract upgrades better SOP.md contract upgrads
-	const routerContractVersion = 'Rv4.2'
+	const routerContractVersion = ROUTER_CONTRACTS_WITH_MFA[ROUTER_CONTRACTS_WITH_MFA.length - 1] // Always using the latest supported version
 	const squidAddress = isMainnet ? SQUID_ADDRESS['mainnet'] : SQUID_ADDRESS['testnet']
 	const vaultAddress = getContractAddress(linkDetails.chainId, linkDetails.contractVersion)
 	const routerAddress = getContractAddress(linkDetails.chainId, routerContractVersion)
@@ -1829,7 +1834,7 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 
 	let depositDate: Date | null = null
-	if (['v4', 'v4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
+	if (VAULT_CONTRACTS_V4_ANDUP.includes(contractVersion)) {
 		if (deposit.timestamp) {
 			depositDate = new Date(deposit.timestamp * 1000)
 			if (deposit.timestamp == 0) {
@@ -2330,6 +2335,7 @@ function toggleVerbose(verbose?: boolean) {
 
 /*
 please note that a contract version has to start with 'v' and a batcher contract version has to start with 'Bv'. We support major & inor versions (e.g. v1.0, v1.1, v2.0, v2.1, but not v1.0.1)
+TODO: handle router contract versions in this function too
 */
 function getLatestContractVersion({
 	chainId,
@@ -2346,6 +2352,7 @@ function getLatestContractVersion({
 		const chainData = data[chainId as unknown as keyof typeof data]
 
 		// Filter keys starting with "v" or "Bv" based on type
+		// sorts contract versions by descending order. Example: [v4.3, v6.7, v2.1] --> [v6.7, v4.3, v2.1]
 		let versions = Object.keys(chainData)
 			.filter((key) => key.startsWith(type === 'batch' ? 'Bv' : 'v'))
 			.sort((a, b) => {
@@ -2364,20 +2371,26 @@ function getLatestContractVersion({
 			})
 
 		config.verbose && console.log('Contract Versions found:', versions)
+		let _versions = versions
 		// Adjust the filtering logic based on the experimental flag and contract version variables
-		if (!experimental && type === 'normal') {
-			if (!versions.includes(LATEST_STABLE_CONTRACT_VERSION)) {
-				if (versions.length === 0) {
-					versions = [FALLBACK_CONTRACT_VERSION]
+		if (!experimental) {
+			//check if the latest version is an experimental version. On some chains, we've deployed 4.4 but not 4.3. In this case, we want to return 4.4 as latest contract version.
+			if (type === 'normal') {
+				if (versions[0] === LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
+					_versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
 				}
+			} else if (type === 'batch') {
+				if (versions[0] === LATEST_EXPERIMENTAL_BATCHER_VERSION) {
+					_versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_BATCHER_VERSION)
+				}
+			}
 
-				if (LATEST_STABLE_CONTRACT_VERSION !== LATEST_EXPERIMENTAL_CONTRACT_VERSION) {
-					versions = versions.filter((version) => version !== LATEST_EXPERIMENTAL_CONTRACT_VERSION)
-				}
+			if (_versions.length === 0) {
+				_versions = versions
 			}
 		}
 
-		const highestVersion = versions[0]
+		const highestVersion = _versions[0]
 
 		config.verbose && console.log('latest contract version: ', highestVersion)
 		return highestVersion
@@ -2397,7 +2410,7 @@ async function getAllUnclaimedDepositsWithIdxForAddress({
 		provider = await getDefaultProvider(chainId)
 	}
 
-	if (!['v4', 'v4.2', 'v4.3', 'v4.4'].includes(peanutContractVersion)) {
+	if (!VAULT_CONTRACTS_V4_ANDUP.includes(peanutContractVersion)) {
 		console.error('ERROR: can only return unclaimed deposits for v4+ contracts')
 		return
 	}
@@ -3080,6 +3093,7 @@ const peanut = {
 	validateUserName,
 	getTxReceiptFromHash,
 	getTokenBalance,
+	compareVersions,
 	...raffle,
 }
 
@@ -3180,4 +3194,5 @@ export {
 	validateUserName,
 	getTxReceiptFromHash,
 	getTokenBalance,
+	compareVersions,
 }
