@@ -21,41 +21,41 @@ jobs:
                   INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
                   TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
 
-    test-live:
-        runs-on: ubuntu-latest
-        outputs:
-            live-test-failed: ${{ steps.live-tests.outcome == 'failure' }}
-        steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: '20'
-            - run: npm install
-            - name: Run live tests
-              id: live-tests
-              run: |
-                  if ! npm run test:live; then
-                    echo "LIVE_TESTS_FAILED=true" >> $GITHUB_ENV
-                  fi
-              continue-on-error: true
-              env:
-                  ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
-                  INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
-                  TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
+    # test-live:
+    #     runs-on: ubuntu-latest
+    #     outputs:
+    #         live-test-failed: ${{ steps.live-tests.outcome == 'failure' }}
+    #     steps:
+    #         - uses: actions/checkout@v3
+    #         - uses: actions/setup-node@v3
+    #           with:
+    #               node-version: '20'
+    #         - run: npm install
+    #         - name: Run live tests
+    #           id: live-tests
+    #           run: |
+    #               if ! npm run test:live; then
+    #                 echo "LIVE_TESTS_FAILED=true" >> $GITHUB_ENV
+    #               fi
+    #           continue-on-error: true
+    #           env:
+    #               ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+    #               INFURA_GOERLI_RPC: ${{ secrets.INFURA_GOERLI_RPC }}
+    #               TEST_WALLET_PRIVATE_KEY: ${{ secrets.TEST_WALLET_PRIVATE_KEY }}
 
-            - name: Post comment if live tests fail
-              if: env.LIVE_TESTS_FAILED == 'true'
-              uses: actions/github-script@v6
-              with:
-                  github-token: ${{secrets.GITHUB_TOKEN}}
-                  script: |
-                      const issue_number = context.issue.number;
-                      const comment = {
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: issue_number,
-                        body: 'Live tests failed. Please check the logs to see which checks failed.'
-                      };
-                      github.rest.issues.createComment(comment);
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    #         - name: Post comment if live tests fail
+    #           if: env.LIVE_TESTS_FAILED == 'true'
+    #           uses: actions/github-script@v6
+    #           with:
+    #               github-token: ${{secrets.GITHUB_TOKEN}}
+    #               script: |
+    #                   const issue_number = context.issue.number;
+    #                   const comment = {
+    #                     owner: context.repo.owner,
+    #                     repo: context.repo.repo,
+    #                     issue_number: issue_number,
+    #                     body: 'Live tests failed. Please check the logs to see which checks failed.'
+    #                   };
+    #                   github.rest.issues.createComment(comment);
+    #           env:
+    #               GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

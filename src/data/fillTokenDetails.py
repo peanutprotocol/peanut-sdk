@@ -1,33 +1,47 @@
+"""
+fillTokenDetails: populates tokenDetails.json with ERC20 token info for each chain
+present in chainDetails.json.
+
+Resulting list for each chain consists of three parts:
+1. Native token.
+3. Coingecko list with up to 100 tokens, ordered by marketcap.
+2. Tokens from manualTokenDetails.json.
+
+Native token is added automatically at the top of the list for each chain.
+
+Coingecko list is constructed from top 100 tokens by market cap, provided by Moralis:
+- Fetch top tokens from Moralis by Ethereum Mainnet market cap.
+- Iterate through Moralis top token list to find the same mainnet token address in a
+full coingecko token list (get_top_tokens_with_contracts function).
+- Copy "platforms" data (<network_name>: <token_address> dict for that token) from
+coingecko token list to Moralis list
+- Iterate through updated Moralis list and push each token info to corresponding
+resulting list
+- Add tokens from manualTokenDetails.json to the resulting list
+"""
+
 import requests
 import json
-import time
 import os
+import dotenv
+
+dotenv.load_dotenv()
 
 # Constants
 ASSET_PLATFORMS_URL = "https://api.coingecko.com/api/v3/asset_platforms"
+TOP_TOKENS_URL = "https://api.coingecko.com/api/v3/coins/list?include_platform=true"
 TOKENS_URL_TEMPLATE = "https://tokens.coingecko.com/{}/all.json"
 UNISWAP_URL = "https://gateway.ipfs.io/ipns/tokens.uniswap.org"
-
-
-def fetch_coingecko_id_to_chain_id_mapping():
-    response = requests.get(ASSET_PLATFORMS_URL)
-    if response.status_code != 200:
-        print(
-            f"Error fetching asset platforms. HTTP Status Code: {response.status_code}"
-        )
-        return {}
-
-    platforms = response.json()
-    mapping = {}
-    for platform in platforms:
-        chain_id = platform.get("chain_identifier")
-        if chain_id:
-            mapping[chain_id] = platform["id"]
-
-    return mapping
-
+TOP_LIST_MORALIS_URL = (
+    "https://deep-index.moralis.io/api/v2.2/market-data/erc20s/top-tokens"
+)
+MORALIS_API_KEY = os.environ.get("MORALIS_API_KEY")
 
 def fetch_tokens_for_platform(platform_id):
+    """
+        Returns only the first 200 tokens. Not an issue because this method is only
+        used for chains that have 0 tokens from the top 100 by market cap.
+    """
     url = TOKENS_URL_TEMPLATE.format(platform_id)
     response = requests.get(url)
     if response.status_code != 200:
@@ -53,8 +67,80 @@ def fetch_tokens_for_platform(platform_id):
         )
 
     # Return only the first 200 tokens
-    # temp fix until we properly implement this (FILTER_TOKEN_DETAILS branch)
     return data["tokens"][:200]
+
+def moralis_fetch_top_marketcap_list():
+    response = requests.get(
+        TOP_LIST_MORALIS_URL, headers={"x-api-key": MORALIS_API_KEY}
+    )
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 401:
+        print(
+            "Failed to fetch top tokens by marketcap with status 401. Is your moralis api key correct?"
+        )
+    else:
+        print("Failed to fetch top tokens by marketcap.")
+
+
+def fetch_coingecko_id_to_chain_id_mapping():
+    response = requests.get(ASSET_PLATFORMS_URL)
+    if response.status_code != 200:
+        print(
+            f"Error fetching asset platforms. HTTP Status Code: {response.status_code}"
+        )
+        return {}
+
+    platforms = response.json()
+    mapping = {}
+    for platform in platforms:
+        chain_id = platform.get("chain_identifier")
+        if chain_id:
+            mapping[chain_id] = platform["id"]
+
+    return mapping
+
+
+def fetch_full_coingecko_list():
+    response = requests.get(TOP_TOKENS_URL)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print("Failed to fetch list of all tokens.")
+
+
+def format_token_fields(moralis_token, coingecko_id):
+    return {
+        "address": moralis_token["platforms"][coingecko_id],
+        "decimals": int(moralis_token["token_decimals"]),
+        "name": moralis_token["token_name"],
+        "symbol": moralis_token["token_symbol"],
+        "logoURI": moralis_token["token_logo"],
+    }
+
+
+def get_top_tokens_with_contracts(top_tokens, full_list):
+    """
+    Iterate through moralis top token list to find the same token address
+    in a full coingecko token list. Populate 'platforms' field in the resulting list
+    with contract addresses for different networks.
+    """
+
+    top_tokens_by_chain = []
+    for top_token in top_tokens:
+        for full_list_token in full_list:
+            if (
+                top_token["contract_address"] != ""
+                and top_token["token_symbol"].lower()
+                == full_list_token["symbol"].lower()
+                and top_token["contract_address"]
+                in list(full_list_token["platforms"].values())
+            ):
+                token_info = top_token.copy()
+                token_info["platforms"] = full_list_token["platforms"]
+                top_tokens_by_chain.append(token_info)
+
+    return top_tokens_by_chain
 
 
 def main():
@@ -77,6 +163,17 @@ def main():
             manual_token_details = json.load(f)
     except FileNotFoundError:
         manual_token_details = []
+
+    # Fetch full token list supported by coingecko
+    full_list = fetch_full_coingecko_list()
+    if not full_list:
+        raise Exception("Top tokens fetch failed, please try again.")
+
+    # Fetch top tokens from moralis
+    top_tokens = moralis_fetch_top_marketcap_list()
+
+    # add deployed contract addresses for different networks to top_tokens list
+    top_tokens_by_chain = get_top_tokens_with_contracts(top_tokens, full_list)
 
     # Fetch the mapping from chainId to CoinGecko ID
     chain_id_to_coingecko_id = fetch_coingecko_id_to_chain_id_mapping()
@@ -110,17 +207,33 @@ def main():
                     # Update stats for already fetched tokens
                     total_tokens += len(existing_tokens["tokens"])
                     incomplete_tokens = [
-                        token for token in existing_tokens["tokens"]
+                        token
+                        for token in existing_tokens["tokens"]
                         if not all(
                             key in token
-                            for key in ["address", "decimals", "name", "symbol", "logoURI"]
+                            for key in [
+                                "address",
+                                "decimals",
+                                "name",
+                                "symbol",
+                                "logoURI",
+                            ]
                         )
                     ]
                     total_errors += len(incomplete_tokens)
                     continue
-            tokens = fetch_tokens_for_platform(coingecko_id)
-            # wait for 1 second to avoid rate limit
-            time.sleep(1)
+
+            tokens = [
+                format_token_fields(top_token, coingecko_id)
+                for top_token in top_tokens_by_chain
+                if coingecko_id in top_token["platforms"]
+            ]
+            
+            # If nothing is found from top 100 tokens by market cap, fill it
+            # using fetch_tokens_for_platform
+            if len(tokens) == 0:
+                tokens = fetch_tokens_for_platform(platform_id=coingecko_id)
+
             total_tokens += len(tokens)
             chains_fetched += 1
 
@@ -138,10 +251,18 @@ def main():
             print(f"Warning: No CoinGecko ID found for chainId {chain_id}.")
             complete_tokens = []
 
+        # Remove native token if already present so it won't get duplicated
+        complete_tokens = list(
+            filter(
+                lambda token: token["symbol"] != details["nativeCurrency"]["symbol"],
+                complete_tokens,
+            )
+        ) 
+
         # Add native token first in the list
         logoURI = details.get("icon", {}).get("url", "")
         if logoURI.startswith("ipfs://"):
-            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://"):]
+            logoURI = "https://ipfs.io/" + logoURI[len("ipfs://") :]
         native_token = {
             "address": "0x0000000000000000000000000000000000000000",
             "name": details["nativeCurrency"]["name"],
@@ -177,18 +298,26 @@ def main():
         for manual_entry in manual_token_details:
             chain_id = manual_entry["chainId"]
             existing_entry_index = next(
-                (i for i, detail in enumerate(token_details) if detail["chainId"] == chain_id),
-                None
+                (
+                    i
+                    for i, detail in enumerate(token_details)
+                    if detail["chainId"] == chain_id
+                ),
+                None,
             )
             if existing_entry_index is not None:
                 # Merge tokens if chainId exists
                 existing_tokens = token_details[existing_entry_index]["tokens"]
                 manual_tokens = manual_entry["tokens"]
                 # This simplistic approach adds manual tokens, replacing any existing ones with the same address
-                existing_tokens_dict = {token["address"]: token for token in existing_tokens}
+                existing_tokens_dict = {
+                    token["address"]: token for token in existing_tokens
+                }
                 for manual_token in manual_tokens:
                     existing_tokens_dict[manual_token["address"]] = manual_token
-                token_details[existing_entry_index]["tokens"] = list(existing_tokens_dict.values())
+                token_details[existing_entry_index]["tokens"] = list(
+                    existing_tokens_dict.values()
+                )
             else:
                 # Add new chainId entry if it doesn't exist
                 token_details.append(manual_entry)

@@ -173,7 +173,7 @@
 		],
 		"mainnet": true,
 		"icon": {
-			"url": "https://optimistic.etherscan.io/images/svg/brands/main.svg",
+			"url": "https://raw.githubusercontent.com/trustwallet/assets/8ee07e9d791bec6c3ada3cfac73ddfdc4f4a40b7/blockchains/optimism/info/logo.png",
 			"format": "svg"
 		}
 	},

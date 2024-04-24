@@ -1,5 +1,5 @@
 import { BigNumber, ethers } from 'ethersv5'
-import { CHAIN_MAP, PEANUT_CONTRACTS, VERSION } from './data.ts'
+import { CHAIN_MAP, PEANUT_CONTRACTS, VAULT_CONTRACTS_V4_ANDUP, VAULT_CONTRACTS_V4_2_ANDUP, VERSION } from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
@@ -105,7 +105,7 @@ export async function signWithdrawalMessage(
 	onlyRecipientMode?: boolean // only for v4.2+
 ) {
 	let claimParams: any[]
-	if (['v4.2', 'v4.3', 'v4.4'].includes(vaultVersion)) {
+	if (VAULT_CONTRACTS_V4_2_ANDUP.includes(vaultVersion)) {
 		const extraData = onlyRecipientMode ? RECIPIENT_WITHDRAWAL_MODE : ANYONE_WITHDRAWAL_MODE
 		const stringHash = ethers.utils.solidityKeccak256(
 			['bytes32', 'uint256', 'address', 'uint256', 'address', 'bytes32'],
@@ -314,7 +314,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 			//@HUGO: I've removed the parseInt here since it's already a bigInt
 			depositIdx = BigInt(depositIdxHex)
 		}
-	} else if (['v4', 'V4.2', 'v4.3', 'v4.4'].includes(contractVersion)) {
+	} else if (VAULT_CONTRACTS_V4_ANDUP.includes(contractVersion)) {
 		// In v4+, the index is now an indexed topic rather than part of the log data
 		try {
 			// Based on the etherscan example, the index is now the 1st topic.
@@ -638,7 +638,7 @@ export function peanutToEthersV5Tx(unsignedTx: interfaces.IPeanutUnsignedTransac
  * @returns the validated name
  */
 export function validateUserName(name: string | null): string {
-	if (!name) return name  // Empty name - all good :)
+	if (!name) return name // Empty name - all good :)
 	name = name.trim()
 
 	if (name.length > 30) {
@@ -653,4 +653,32 @@ export function validateUserName(name: string | null): string {
 	}
 
 	return name
+}
+
+/**
+ * This is a helper function to compare versions, if version1 is greater than version2, it returns false, otherwise true
+ * Always pass in the LTS version as version1
+ * @param version1 the LTS version
+ * @param version2 the version to compare against
+ * @param lead either 'v' or 'Bv' depending on if it's vault or batch contract
+ * @returns true if the version2 is greater than version1
+ */
+
+export function compareVersions(version1: string, version2: string, lead: string): boolean {
+	const v1 = version1.startsWith(lead) ? version1.substring(lead.length) : version1
+	const v2 = version2.startsWith(lead) ? version2.substring(lead.length) : version2
+
+	const parts1 = v1.split('.').map(Number)
+	const parts2 = v2.split('.').map(Number)
+
+	const maxLength = Math.max(parts1.length, parts2.length)
+
+	for (let i = 0; i < maxLength; i++) {
+		const part1 = i < parts1.length ? parts1[i] : 0
+		const part2 = i < parts2.length ? parts2[i] : 0
+
+		if (part1 > part2) return false
+		if (part1 < part2) return true
+	}
+	return true
 }
