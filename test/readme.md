@@ -1,8 +1,11 @@
 # Peanut Protocol SDK - testing suite
 
-### Total cost of running live testing suite:
+### Total cost of running live testing suite: highly dependant on gas price, but between 3-4 USD
 
 ### Total runtime of running live testing suite:
+
+-   [ ] basic: 30-60 seconds
+-   [ ] live: 5-10 minutes (this takes way longer because --runInBand is used and tests have to be run sequentially to avoid nonce collision)
 
 ### Test cases:
 

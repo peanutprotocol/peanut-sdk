@@ -1,13 +1,5 @@
 import { BigNumber } from 'ethersv5'
-import {
-	getRaffleInfo,
-	generateAmountsDistribution,
-	getRandomString,
-	getRaffleLeaderboard,
-	hasAddressParticipatedInRaffle,
-	claimRaffleLink,
-	interfaces,
-} from '../../src'
+import { getRaffleInfo, generateAmountsDistribution, claimRaffleLink, interfaces } from '../../src'
 import { makeRandomAddress } from '../util'
 import dotenv from 'dotenv'
 dotenv.config()
