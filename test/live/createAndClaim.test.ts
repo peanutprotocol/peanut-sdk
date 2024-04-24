@@ -18,7 +18,6 @@ export async function createAndClaimLinkGasless(
 		link: response.link,
 		APIKey: consts.PEANUT_DEV_API_KEY ?? '',
 		recipientAddress,
-		baseUrl: consts.PEANUT_API_URL,
 	})
 
 	console.log('Link claimed: ' + claimResult.txHash)
@@ -77,7 +76,8 @@ describe('Create and claim tests, normal links', () => {
 							chainId: chainId,
 							tokenAmount: 0.0001,
 							tokenAddress: consts.erc20Addresses[chainId].address,
-							tokenType: consts.erc20Addresses[chainId].decimals,
+							tokenDecimals: consts.erc20Addresses[chainId].decimals,
+							tokenType: 1,
 						},
 					},
 					12000

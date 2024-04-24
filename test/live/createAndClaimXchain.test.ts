@@ -40,7 +40,6 @@ describe('Create and claim tests, xchain links', () => {
 			destinationChainId,
 			APIKey: consts.PEANUT_DEV_API_KEY,
 			isMainnet: true,
-			baseUrl: consts.PEANUT_API_URL,
 		})
 		console.log('X-chain result!', { result })
 

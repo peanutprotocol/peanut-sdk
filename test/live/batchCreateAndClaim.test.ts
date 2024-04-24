@@ -41,7 +41,6 @@ describe('batch create and claim', () => {
 				link: response[i].link,
 				recipientAddress: recipientAddress,
 				APIKey: consts.PEANUT_DEV_API_KEY,
-				baseUrl: consts.PEANUT_API_URL,
 			})
 			console.log('Link claimed: ' + claimResult.txHash)
 			claimHashArray.push(claimResult.txHash)

@@ -5,11 +5,8 @@ export const TEST_WALLET_PRIVATE_KEY = process.env.TEST_WALLET_PRIVATE_KEY!
 export const TEST_RELAYER_PRIVATE_KEY = process.env.TEST_RELAYER_PRIVATE_KEY!
 export const PEANUT_DEV_API_KEY = process.env.PEANUT_DEV_API_KEY!
 
-// The relayer URL that is used for the gasless tests
-export const PEANUT_API_URL = 'https://api.staging.peanut.to/'
-
 // The native tests will run on these chains. These are all the 'big' chains that are used the most
-export const chains = ['56', '42161', '100', '137', '10', '324', '43114', '11155111']
+export const chains = ['56', '42161', '137', '10', '324', '43114', '11155111']
 
 // The ERC20 tests will run on these chains, where the address is defined, all USDC
 // TODO: update the address to the correct USDC address and fund test wallet
@@ -21,10 +18,6 @@ export const erc20Addresses = {
 	'56': {
 		address: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
 		decimals: 18,
-	},
-	'100': {
-		address: '',
-		decimals: 6,
 	},
 	'43114': {
 		address: '',

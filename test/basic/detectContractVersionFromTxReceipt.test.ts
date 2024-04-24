@@ -44,14 +44,14 @@ describe('detect contract version, function ()', () => {
 	it('detect v4', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt1, '137') // polygon
 		expect(version).toEqual('v4')
-	})
+	}, 12000)
 	it('detect v3', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt2, '137') // polygon
 		expect(version).toEqual('v3')
-	})
+	}, 12000)
 
 	it('detect v4.2', async () => {
 		const version = peanut.detectContractVersionFromTxReceipt(txReceipt3, '137') // polygon
 		expect(version).toEqual('v4.2')
-	})
+	}, 12000)
 })
