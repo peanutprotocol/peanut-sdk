@@ -76,8 +76,8 @@ import { SQUID_ADDRESS } from './consts/misc.ts'
 import {
 	EIP3009Tokens,
 	GaslessReclaimTypes,
-	PeanutsWithEIP3009,
-	PeanutsWithGaslessRevoke,
+	VAULT_CONTRACTS_WITH_3009,
+	VAULT_CONTRACTS_WITH_GASLES_REVOKE,
 	ReceiveWithAuthorizationTypes,
 } from './consts/eip712domains.ts'
 
@@ -2533,7 +2533,7 @@ async function makeGaslessDepositPayload({
 	linkDetails,
 	password,
 }: interfaces.IPrepareGaslessDepositParams): Promise<interfaces.IMakeGaslessDepositPayloadResponse> {
-	if (!PeanutsWithEIP3009.includes(contractVersion)) {
+	if (!VAULT_CONTRACTS_WITH_3009.includes(contractVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
 			'Error validating link details: this Peanut version does not support gasless deposits'
@@ -2705,7 +2705,7 @@ async function makeGaslessReclaimPayload({
 	depositIndex,
 	chainId,
 }: interfaces.IMakeGaslessReclaimPayloadParams): Promise<interfaces.IMakeGaslessReclaimPayloadResponse> {
-	if (!PeanutsWithGaslessRevoke.includes(contractVersion)) {
+	if (!VAULT_CONTRACTS_WITH_GASLES_REVOKE.includes(contractVersion)) {
 		throw new interfaces.SDKStatus(
 			interfaces.EPrepareCreateTxsStatusCodes.ERROR_VALIDATING_LINK_DETAILS,
 			'Error validating link details: this Peanut version does not support gasless revocations'
@@ -3104,6 +3104,8 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
+	VAULT_CONTRACTS_WITH_3009, 
+	VAULT_CONTRACTS_WITH_GASLES_REVOKE,
 	ERC1155_ABI,
 	ERC20_ABI,
 	ERC721_ABI,

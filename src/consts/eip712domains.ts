@@ -83,5 +83,5 @@ export const GaslessReclaimTypes: any = {
 	GaslessReclaim: [{ name: 'depositIndex', type: 'uint256' }],
 }
 
-export const PeanutsWithEIP3009: Array<string> = VAULT_CONTRACTS_V4_2_ANDUP
-export const PeanutsWithGaslessRevoke: Array<string> = VAULT_CONTRACTS_V4_2_ANDUP
+export const VAULT_CONTRACTS_WITH_3009: Array<string> = VAULT_CONTRACTS_V4_2_ANDUP
+export const VAULT_CONTRACTS_WITH_GASLES_REVOKE: Array<string> = VAULT_CONTRACTS_V4_2_ANDUP
