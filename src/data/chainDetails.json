@@ -594,6 +594,12 @@
 				"url": "https://explorer.zksync.io",
 				"icon": "zksync-era",
 				"standard": "EIP3091"
+			},
+			{
+				"name": "blockscout",
+				"url": "https://zksync.blockscout.com/",
+				"icon": "blockscout",
+				"standard": "EIP3091"
 			}
 		],
 		"parent": {
