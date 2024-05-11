@@ -201,6 +201,15 @@
 		"v4.4": "0xF70326d622aD4A890e51d447f48945f51db82151",
 		"Bv4.4": "0x5aC58e7dD5e3FCe5909dE8F9ed3454D3304552e5"
 	},
+	"5001": {
+		"name": "mantle-testnet",
+		"mainnet": "false",
+		"v4.2": "0x5c1b67ED2809e371aabbc58D934282E8Aa7E3fd4",
+		"Bv4.2": "0xa1F413760E942dbbBDD36589526A11f4C013085b",
+		"Rv4.2": "0x2a656515f4f87070670C0f922a45A36be387AaDd",
+		"v4.3": "0xDC28Bee3f933047f717BC792bcea4c7d3e243554",
+		"Bv4.3": "0x7a888921bEe35450346CC4f5551bf5E2D0aa65cB"
+	},
 	"1284": {
 		"name": "moonbeam",
 		"mainnet": "true",
@@ -229,5 +238,35 @@
 		"v4.3": "0x7B36e10AA3ff44576efF4b1AfB80587B9b3BA3a5",
 		"v4.4": "0x91Eb3443fc348e2C35941419Ab9ee9D26eC3270B",
 		"Bv4.4": "0x0D3492437E86dabb67F2bCfAE5c597D2edA67D65"
+	},
+	"167009": {
+		"name": "taiko-hekla",
+		"mainnet": "false",
+		"v4.2": "0x5A957cfF1e50EDdCF3aEBF091AAA0763396B21b9",
+		"v4.3": "0x897F8EDdB345F0d16081615823F76055Ad60A00c",
+		"Bv4.3": "0x1851359AB8B002217cf4D108d7F027B63563754C"
+	},
+	"7560": {
+		"name": "cyber",
+		"mainnet": "true",
+		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5",
+		"v4.3": "0x897f8eddb345f0d16081615823f76055ad60a00c"
+	},
+	"34443": {
+		"name": "mode",
+		"mainnet": "true",
+		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
+		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
+	},
+	"81457": {
+		"name": "degen",
+		"mainnet": "true",
+		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7"
+	},
+	"666666666": {
+		"name": "degen",
+		"mainnet": "true",
+		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
+		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
 	}
 }
