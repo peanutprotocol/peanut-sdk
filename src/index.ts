@@ -1021,7 +1021,6 @@ async function signAndSubmitTx({
 	let tx: ethers.providers.TransactionResponse
 	try {
 		config.verbose && console.log('broadcasting tx: ', _unsignedTx)
-		config.verbose && console.log('....')
 		tx = await structSigner.signer.sendTransaction(_unsignedTx)
 		config.verbose && console.log('broadcasted tx...')
 	} catch (error) {
