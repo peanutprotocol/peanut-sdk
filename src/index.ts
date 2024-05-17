@@ -704,12 +704,24 @@ async function setFeeOptions({
 		}
 	}
 	// cast from bignumber to string before returning
-	txOptions.gasPrice = txOptions.gasPrice?.toString()
-	txOptions.maxFeePerGas = txOptions.maxFeePerGas?.toString()
-	txOptions.maxPriorityFeePerGas = txOptions.maxPriorityFeePerGas?.toString()
-	txOptions.value = txOptions.value?.toString()
-	txOptions.gasLimit = txOptions.gasLimit?.toString()
-	txOptions.nonce = txOptions.nonce?.toString()
+	if (txOptions.gasPrice !== undefined) {
+		txOptions.gasPrice = txOptions.gasPrice.toString()
+	}
+	if (txOptions.maxFeePerGas !== undefined) {
+		txOptions.maxFeePerGas = txOptions.maxFeePerGas.toString()
+	}
+	if (txOptions.maxPriorityFeePerGas !== undefined) {
+		txOptions.maxPriorityFeePerGas = txOptions.maxPriorityFeePerGas.toString()
+	}
+	if (txOptions.value !== undefined) {
+		txOptions.value = txOptions.value.toString()
+	}
+	if (txOptions.gasLimit !== undefined) {
+		txOptions.gasLimit = txOptions.gasLimit.toString()
+	}
+	if (txOptions.nonce !== undefined) {
+		txOptions.nonce = txOptions.nonce.toString()
+	}
 
 	config.verbose && console.log('FINAL txOptions:', txOptions)
 
