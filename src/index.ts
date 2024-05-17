@@ -703,25 +703,28 @@ async function setFeeOptions({
 			}
 		}
 	}
-	// cast from bignumber to string before returning
-	if (txOptions.gasPrice !== undefined) {
-		txOptions.gasPrice = txOptions.gasPrice.toString()
-	}
-	if (txOptions.maxFeePerGas !== undefined) {
-		txOptions.maxFeePerGas = txOptions.maxFeePerGas.toString()
-	}
-	if (txOptions.maxPriorityFeePerGas !== undefined) {
-		txOptions.maxPriorityFeePerGas = txOptions.maxPriorityFeePerGas.toString()
-	}
-	if (txOptions.value !== undefined) {
-		txOptions.value = txOptions.value.toString()
-	}
-	if (txOptions.gasLimit !== undefined) {
-		txOptions.gasLimit = txOptions.gasLimit.toString()
-	}
-	if (txOptions.nonce !== undefined) {
-		txOptions.nonce = txOptions.nonce.toString()
-	}
+	// cast values to string (hex) instead of objects to be maximally compatible with all libraries
+	// don't have them as ethers BigNumber objects
+	// if (txOptions.gasPrice !== undefined) {
+	// 	txOptions.gasPrice = txOptions.gasPrice.toString()
+	// 	// ensure it's hex
+	// 	txOptions.gasPrice = ethers.utils.hexlify(txOptions.gasPrice)
+	// }
+	// if (txOptions.maxFeePerGas !== undefined) {
+	// 	txOptions.maxFeePerGas = txOptions.maxFeePerGas.toString()
+	// }
+	// if (txOptions.maxPriorityFeePerGas !== undefined) {
+	// 	txOptions.maxPriorityFeePerGas = txOptions.maxPriorityFeePerGas.toString()
+	// }
+	// if (txOptions.value !== undefined) {
+	// 	txOptions.value = txOptions.value.toString()
+	// }
+	// if (txOptions.gasLimit !== undefined) {
+	// 	txOptions.gasLimit = txOptions.gasLimit.toString()
+	// }
+	// if (txOptions.nonce !== undefined) {
+	// 	txOptions.nonce = txOptions.nonce.toString()
+	// }
 
 	config.verbose && console.log('FINAL txOptions:', txOptions)
 
