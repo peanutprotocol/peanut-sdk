@@ -593,11 +593,11 @@ async function setFeeOptions({
 	if (['2001', '200101', '56', '59144', '59140', '534352', '5000'].includes(_chainId)) {
 		eip1559 = false
 		config.verbose && console.log('Chain includes unreliable eip1559 chains. Using legacy gas calculation.')
-	} else if (chainDetails && chainDetails.features) {
+	} else if (chainDetails && chainDetails.features && chainDetails.features.length > 0) {
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
 		config.verbose && console.log('EIP1559 support determined from chain features:', eip1559)
 	} else {
-		config.verbose && console.log('Chain features not available, checking EIP1559 support via feeData...')
+		config.verbose && console.log('Chain features not available or empty, checking EIP1559 support via feeData...')
 		try {
 			eip1559 = 'maxFeePerGas' in feeData
 			config.verbose && console.log('EIP1559 support determined from feeData:', eip1559)
@@ -3003,7 +3003,7 @@ const peanut = {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
-	VAULT_CONTRACTS_WITH_EIP_3009, 
+	VAULT_CONTRACTS_WITH_EIP_3009,
 	VAULT_CONTRACTS_WITH_GASLESS_REVOKE,
 	ERC1155_ABI,
 	ERC20_ABI,
@@ -3106,7 +3106,7 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
-	VAULT_CONTRACTS_WITH_EIP_3009, 
+	VAULT_CONTRACTS_WITH_EIP_3009,
 	VAULT_CONTRACTS_WITH_GASLESS_REVOKE,
 	ERC1155_ABI,
 	ERC20_ABI,
