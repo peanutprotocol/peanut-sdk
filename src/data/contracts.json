@@ -256,17 +256,32 @@
 		"name": "mode",
 		"mainnet": "true",
 		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
-		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
+		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5",
+		"Rv4.2": "0x1851359ab8b002217cf4d108d7f027b63563754c"
 	},
 	"81457": {
-		"name": "degen",
+		"name": "blast",
 		"mainnet": "true",
-		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7"
+		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
+		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5",
+		"Rv4.2": "0x897f8eddb345f0d16081615823f76055ad60a00c"
 	},
 	"666666666": {
 		"name": "degen",
 		"mainnet": "true",
 		"v4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
 		"Bv4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
+	},
+	"84532": {
+		"name": "base-sepolia",
+		"mainnet": "false",
+		"Bv4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
+		"v4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
+	},
+	"534351": {
+		"name": "placeholder_chainid_534351",
+		"mainnet": "true",
+		"Bv4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
+		"v4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
 	}
 }

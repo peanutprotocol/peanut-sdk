@@ -2911,5 +2911,31 @@
 				"logoURI": "https://assets.coingecko.com/coins/images/36730/thumb/dinu_200x200.png?1712159206"
 			}
 		]
+	},
+	{
+		"chainId": "84532",
+		"name": "Base Sepolia Testnet",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Sepolia Ether",
+				"symbol": "ETH",
+				"decimals": 18,
+				"logoURI": "https://ipfs.io/ipfs/QmaxRoHpxZd8PqccAynherrMznMufG6sdmHZLihkECXmZv"
+			}
+		]
+	},
+	{
+		"chainId": "534351",
+		"name": "Scroll Sepolia Testnet",
+		"tokens": [
+			{
+				"address": "0x0000000000000000000000000000000000000000",
+				"name": "Ether",
+				"symbol": "ETH",
+				"decimals": 18,
+				"logoURI": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/eth.svg"
+			}
+		]
 	}
 ]
