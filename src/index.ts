@@ -599,7 +599,7 @@ async function setFeeOptions({
 	} else {
 		config.verbose && console.log('Chain features not available or empty, checking EIP1559 support via feeData...')
 		try {
-			eip1559 = 'maxFeePerGas' in feeData
+			eip1559 = 'maxFeePerGas' in feeData && feeData.maxFeePerGas !== null && feeData.maxFeePerGas !== undefined
 			config.verbose && console.log('EIP1559 support determined from feeData:', eip1559)
 		} catch (error) {
 			console.error('Failed to determine EIP1559 support from feeData:', error)
@@ -703,6 +703,14 @@ async function setFeeOptions({
 			}
 		}
 	}
+	// cast from bignumber to string before returning
+	txOptions.gasPrice = txOptions.gasPrice?.toString()
+	txOptions.maxFeePerGas = txOptions.maxFeePerGas?.toString()
+	txOptions.maxPriorityFeePerGas = txOptions.maxPriorityFeePerGas?.toString()
+	txOptions.value = txOptions.value?.toString()
+	txOptions.gasLimit = txOptions.gasLimit?.toString()
+	txOptions.nonce = txOptions.nonce?.toString()
+
 	config.verbose && console.log('FINAL txOptions:', txOptions)
 
 	return txOptions
