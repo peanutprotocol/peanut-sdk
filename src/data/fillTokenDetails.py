@@ -37,10 +37,11 @@ TOP_LIST_MORALIS_URL = (
 )
 MORALIS_API_KEY = os.environ.get("MORALIS_API_KEY")
 
+
 def fetch_tokens_for_platform(platform_id):
     """
-        Returns only the first 200 tokens. Not an issue because this method is only
-        used for chains that have 0 tokens from the top 100 by market cap.
+    Returns only the first 200 tokens. Not an issue because this method is only
+    used for chains that have 0 tokens from the top 100 by market cap.
     """
     url = TOKENS_URL_TEMPLATE.format(platform_id)
     response = requests.get(url)
@@ -69,6 +70,7 @@ def fetch_tokens_for_platform(platform_id):
     # Return only the first 200 tokens
     return data["tokens"][:200]
 
+
 def moralis_fetch_top_marketcap_list():
     response = requests.get(
         TOP_LIST_MORALIS_URL, headers={"x-api-key": MORALIS_API_KEY}
@@ -77,6 +79,11 @@ def moralis_fetch_top_marketcap_list():
         return response.json()
     elif response.status_code == 401:
         print(
+            "ERROR: Failed to fetch top tokens by marketcap with status 401. Is your moralis api key correct?"
+        )
+        # full error
+        print(f"Moralis API response: {response.json()}")
+        raise Exception(
             "Failed to fetch top tokens by marketcap with status 401. Is your moralis api key correct?"
         )
     else:
@@ -171,6 +178,7 @@ def main():
 
     # Fetch top tokens from moralis
     top_tokens = moralis_fetch_top_marketcap_list()
+    print(f"Top tokens fetched: {len(top_tokens)}")
 
     # add deployed contract addresses for different networks to top_tokens list
     top_tokens_by_chain = get_top_tokens_with_contracts(top_tokens, full_list)
@@ -228,7 +236,7 @@ def main():
                 for top_token in top_tokens_by_chain
                 if coingecko_id in top_token["platforms"]
             ]
-            
+
             # If nothing is found from top 100 tokens by market cap, fill it
             # using fetch_tokens_for_platform
             if len(tokens) == 0:
@@ -257,7 +265,7 @@ def main():
                 lambda token: token["symbol"] != details["nativeCurrency"]["symbol"],
                 complete_tokens,
             )
-        ) 
+        )
 
         # Add native token first in the list
         logoURI = details.get("icon", {}).get("url", "")

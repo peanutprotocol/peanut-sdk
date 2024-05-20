@@ -593,13 +593,13 @@ async function setFeeOptions({
 	if (['2001', '200101', '56', '59144', '59140', '534352', '5000'].includes(_chainId)) {
 		eip1559 = false
 		config.verbose && console.log('Chain includes unreliable eip1559 chains. Using legacy gas calculation.')
-	} else if (chainDetails && chainDetails.features) {
+	} else if (chainDetails && chainDetails.features && chainDetails.features.length > 0) {
 		eip1559 = chainDetails.features.some((feature: any) => feature.name === 'EIP1559')
 		config.verbose && console.log('EIP1559 support determined from chain features:', eip1559)
 	} else {
-		config.verbose && console.log('Chain features not available, checking EIP1559 support via feeData...')
+		config.verbose && console.log('Chain features not available or empty, checking EIP1559 support via feeData...')
 		try {
-			eip1559 = 'maxFeePerGas' in feeData
+			eip1559 = 'maxFeePerGas' in feeData && feeData.maxFeePerGas !== null && feeData.maxFeePerGas !== undefined
 			config.verbose && console.log('EIP1559 support determined from feeData:', eip1559)
 		} catch (error) {
 			console.error('Failed to determine EIP1559 support from feeData:', error)
@@ -703,6 +703,29 @@ async function setFeeOptions({
 			}
 		}
 	}
+	// cast values to string (hex) instead of objects to be maximally compatible with all libraries
+	// don't have them as ethers BigNumber objects
+	// if (txOptions.gasPrice !== undefined) {
+	// 	txOptions.gasPrice = txOptions.gasPrice.toString()
+	// 	// ensure it's hex
+	// 	txOptions.gasPrice = ethers.utils.hexlify(txOptions.gasPrice)
+	// }
+	// if (txOptions.maxFeePerGas !== undefined) {
+	// 	txOptions.maxFeePerGas = txOptions.maxFeePerGas.toString()
+	// }
+	// if (txOptions.maxPriorityFeePerGas !== undefined) {
+	// 	txOptions.maxPriorityFeePerGas = txOptions.maxPriorityFeePerGas.toString()
+	// }
+	// if (txOptions.value !== undefined) {
+	// 	txOptions.value = txOptions.value.toString()
+	// }
+	// if (txOptions.gasLimit !== undefined) {
+	// 	txOptions.gasLimit = txOptions.gasLimit.toString()
+	// }
+	// if (txOptions.nonce !== undefined) {
+	// 	txOptions.nonce = txOptions.nonce.toString()
+	// }
+
 	config.verbose && console.log('FINAL txOptions:', txOptions)
 
 	return txOptions
@@ -1021,7 +1044,6 @@ async function signAndSubmitTx({
 	let tx: ethers.providers.TransactionResponse
 	try {
 		config.verbose && console.log('broadcasting tx: ', _unsignedTx)
-		config.verbose && console.log('....')
 		tx = await structSigner.signer.sendTransaction(_unsignedTx)
 		config.verbose && console.log('broadcasted tx...')
 	} catch (error) {
@@ -3003,7 +3025,7 @@ const peanut = {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
-	VAULT_CONTRACTS_WITH_EIP_3009, 
+	VAULT_CONTRACTS_WITH_EIP_3009,
 	VAULT_CONTRACTS_WITH_GASLESS_REVOKE,
 	ERC1155_ABI,
 	ERC20_ABI,
@@ -3106,7 +3128,7 @@ export {
 	LATEST_STABLE_BATCHER_VERSION,
 	LATEST_STABLE_CONTRACT_VERSION,
 	LATEST_EXPERIMENTAL_CONTRACT_VERSION,
-	VAULT_CONTRACTS_WITH_EIP_3009, 
+	VAULT_CONTRACTS_WITH_EIP_3009,
 	VAULT_CONTRACTS_WITH_GASLESS_REVOKE,
 	ERC1155_ABI,
 	ERC20_ABI,

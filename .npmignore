@@ -2,10 +2,12 @@ examples
 tests
 *.csv
 test/*
+test/
 other/*
 examples/*
 scripts/
 .env
+.env.example
 *.env
 playground/
 archive/
@@ -21,6 +23,7 @@ tsconfig.tsbuildinfo
 .github/
 env/
 experiments/
+README.md
 
 
 *.conf.js
