@@ -106,7 +106,7 @@
 		"title": "Polygon Testnet Mumbai",
 		"chain": "Polygon",
 		"icon": {
-			"url": "https://polygonscan.com/images/svg/brands/matic.svg",
+			"url": "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/svg/color/matic.svg",
 			"format": "svg"
 		},
 		"rpc": [
@@ -612,6 +612,12 @@
 				"name": "zkSync Era Block Explorer",
 				"url": "https://explorer.zksync.io",
 				"icon": "zksync-era",
+				"standard": "EIP3091"
+			},
+			{
+				"name": "blockscout",
+				"url": "https://zksync.blockscout.com/",
+				"icon": "blockscout",
 				"standard": "EIP3091"
 			}
 		],
