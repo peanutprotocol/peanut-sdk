@@ -2799,14 +2799,15 @@
 	},
 	{
 		"chainId": "7560",
-		"name": "Cyber Mainnet",
+		"name": "Cyber",
 		"tokens": [
 			{
 				"address": "0x0000000000000000000000000000000000000000",
 				"name": "Ether",
 				"symbol": "ETH",
 				"decimals": 18,
-				"logoURI": "https://ipfs.io/ipfs/QmP61yDNPv7fxY9ZzPs4CjQDbZLoKtF8eWWjszVYbwkabd"
+				"logoURI": "https://cyberconnect.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F67fa7b9d-69d8-4e84-9367-d2f8f06242cf%2F6e1aac8d-149b-4ab7-b1bd-6d112b834200%2Ftoken.png?table=block&id=04f6511c-807d-4e32-8a20-bb54e01a7714&spaceId=67fa7b9d-69d8-4e84-9367-d2f8f06242cf&width=190&userId=&cache=v2",
+				"logoURI2": "https://ipfs.io/ipfs/QmP61yDNPv7fxY9ZzPs4CjQDbZLoKtF8eWWjszVYbwkabd"
 			}
 		]
 	},
