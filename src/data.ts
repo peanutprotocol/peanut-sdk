@@ -43,7 +43,7 @@ const VAULT_CONTRACTS_V4_ANDUP = ['v4', 'v4.2', 'v4.3', 'v4.4']
 const VAULT_CONTRACTS_V4_2_ANDUP = ['v4.2', 'v4.3', 'v4.4']
 const VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS = ['v4.4']
 const VAULT_CONTRACTS_WITH_MFA = ['v4.3', 'v4.4']
-const BATCHER_CONTRACTS_WITH_MFA = ['Bv4.4']
+const BATCHER_CONTRACTS_WITH_MFA = ['Bv4.3', 'Bv4.4']
 const ROUTER_CONTRACTS_WITH_MFA = ['Rv4.2']
 
 // export all these functions (imported in index.js)

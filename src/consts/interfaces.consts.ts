@@ -81,7 +81,7 @@ export interface ICreateLinkParams {
 }
 
 //createLinks
-export interface ICreateLinksParams extends Omit<ICreateLinkParams, 'password'> {
+export interface IpeParams extends Omit<ICreateLinkParams, 'password'> {
 	numberOfLinks: number
 	passwords?: string[]
 }
