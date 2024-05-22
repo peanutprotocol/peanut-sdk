@@ -77,11 +77,11 @@ export interface ICreateLinkParams {
 	peanutContractVersion?: string
 	password?: string
 	recipient?: string // only this address will be able to claim if set
-	reclaimableAfter?: number  // timestamp in seconds
+	reclaimableAfter?: number // timestamp in seconds
 }
 
 //createLinks
-export interface IpeParams extends Omit<ICreateLinkParams, 'password'> {
+export interface ICreateLinksParams extends Omit<ICreateLinkParams, 'password'> {
 	numberOfLinks: number
 	passwords?: string[]
 }
