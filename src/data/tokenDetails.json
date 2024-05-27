@@ -914,19 +914,7 @@
 			}
 		]
 	},
-	{
-		"chainId": "80001",
-		"name": "Mumbai",
-		"tokens": [
-			{
-				"address": "0x0000000000000000000000000000000000000000",
-				"name": "MATIC",
-				"symbol": "MATIC",
-				"decimals": 18,
-				"logoURI": "https://polygonscan.com/images/svg/brands/matic.svg"
-			}
-		]
-	},
+	
 	{
 		"chainId": "10",
 		"name": "Optimism",

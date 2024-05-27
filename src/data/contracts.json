@@ -48,19 +48,6 @@
 		"v4.4": "0x3B92cB30bc3C9AD8Ae24F16E73dC59e08C520f92",
 		"Bv4.4": "0xC9bDba1764C4E870E839319A7d9522fFEa97B3d0"
 	},
-	"80001": {
-		"name": "polygon-mumbai",
-		"mainnet": "false",
-		"v3": "0x1da738d367dd369cf95f53a51b213a9cc9146afb",
-		"v4": "0xec8f9a7f47dd6031e27ff9cef9d0f33e81fcece9",
-		"Bv4": "0x1CcD80448cD0Eb21b2912c54B4E61dafD01Ab3C5",
-		"v4.2": "0x8230697B79C2F1b0b64629F67cE30B2cAa354e3d",
-		"Rv4.2": "0xd7a425dc8D50bF8A8c69BfE8c892D9B2CFA2Dd22",
-		"Bv4.3": "0x12cA3c376Cfd1BC0ac6089dc03611a148d10F9bb",
-		"v4.3": "0xeB429e5A3103449C5aD7a462dfe5B57f6bB516bF",
-		"v4.4": "0x2d26EE041fBB9CfE3dAF94B4501F4470182CE356",
-		"Bv4.4": "0x883788Da7b716a3D82ec53155085df02a05e7ae5"
-	},
 	"8453": {
 		"name": "base",
 		"mainnet": "true",
