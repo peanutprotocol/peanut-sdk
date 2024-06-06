@@ -5,8 +5,6 @@
 	"ethereum-goerli": 5,
 	"matic": 137,
 	"polygon-mainnet": 137,
-	"polygon-mumbai": 80001,
-	"mumbai": 80001,
 	"opt": 10,
 	"optimism-mainnet": 10,
 	"optimism-goerli": 420,

@@ -58,14 +58,8 @@ export const EIP3009Tokens: EIP3009TokensInterface = {
 			version: '2',
 		},
 	},
-	'80001': {
-		'0x9999f7Fea5938fD3b1E26A12c3f2fb024e194f97': {
-			chainId: '80001',
-			verifyingContract: '0x9999f7Fea5938fD3b1E26A12c3f2fb024e194f97',
-			name: 'USD Coin',
-			version: '2',
-		},
-	},
+	
+	
 }
 
 export const ReceiveWithAuthorizationTypes: any = {

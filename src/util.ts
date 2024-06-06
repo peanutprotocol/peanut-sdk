@@ -297,7 +297,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 	let logIndex
 
 	// Identify the logIndex based on chainId
-	if (chainId === '137' || chainId === '80001') {
+	if (chainId === '137' ) {
 		logIndex = logs.length - 2
 	} else {
 		logIndex = logs.length - 1

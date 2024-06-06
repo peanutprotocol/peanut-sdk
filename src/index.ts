@@ -188,16 +188,14 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 	try {
 		const provider = new ethers.providers.JsonRpcProvider({ url: rpcUrl })
 
-		// Check if the RPC is valid by calling fetchGetBalance
-		const response = await fetchGetBalance(rpcUrl)
-		if (response.error) {
+		const balance = await provider.getBalance('0x04B5f21facD2ef7c7dbdEe7EbCFBC68616adC45C')
+		if (!balance) {
 			throw new interfaces.SDKStatus(
 				interfaces.EGenericErrorCodes.GENERIC_ERROR,
-				response.error.message,
+				'Invalid RPC',
 				`Invalid RPC: ${rpcUrl}`
 			)
 		}
-
 		return provider
 	} catch (error) {
 		try {
