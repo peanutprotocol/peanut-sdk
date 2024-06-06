@@ -257,9 +257,7 @@
 			"url": "https://ipfs.io/ipfs/QmdoUtvHDybu5ppYBZT8BMRp6AqByVSoQs8nFwKbaS55jd",
 			"format": "svg"
 		},
-		"rpc": [
-			"https://rpc-mainnet-cardano-evm.c1.milkomeda.com"
-		],
+		"rpc": ["https://rpc-mainnet-cardano-evm.c1.milkomeda.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "milkAda",
@@ -339,9 +337,7 @@
 			"https://sepolia.gateway.tenderly.co",
 			"https://ethereum-sepolia.publicnode.com"
 		],
-		"faucets": [
-			"http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"
-		],
+		"faucets": ["http://fauceth.komputing.org?chain=11155111&address=${ADDRESS}"],
 		"nativeCurrency": {
 			"name": "Sepolia Ether",
 			"symbol": "ETH",
@@ -374,13 +370,8 @@
 		"name": "Holesky",
 		"title": "Ethereum Testnet Holesky",
 		"chain": "ETH",
-		"rpc": [
-			"https://ethereum-holesky.publicnode.com"
-		],
-		"faucets": [
-			"https://faucet.holesky.ethpandaops.io",
-			"https://holesky-faucet.pk910.de"
-		],
+		"rpc": ["https://ethereum-holesky.publicnode.com"],
+		"faucets": ["https://faucet.holesky.ethpandaops.io", "https://holesky-faucet.pk910.de"],
 		"nativeCurrency": {
 			"name": "Testnet ETH",
 			"symbol": "ETH",
@@ -470,10 +461,7 @@
 			"url": "https://ipfs.io/ipfs/QmRALA5qvQBRwWre8ofuhCbr3wxVmPS3kGetRR9uJqbqqe",
 			"format": "png"
 		},
-		"rpc": [
-			"https://api.avax.network/ext/bc/C/rpc",
-			"https://avalanche-c-chain.publicnode.com"
-		],
+		"rpc": ["https://api.avax.network/ext/bc/C/rpc", "https://avalanche-c-chain.publicnode.com"],
 		"features": [
 			{
 				"name": "EIP1559"
@@ -503,10 +491,7 @@
 		"name": "Linea",
 		"title": "Linea Mainnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://rpc.linea.build",
-			"https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"
-		],
+		"rpc": ["https://rpc.linea.build", "https://linea-mainnet.infura.io/v3/${INFURA_API_KEY}"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Linea Ether",
@@ -556,9 +541,7 @@
 	"324": {
 		"name": "zkSync Mainnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://mainnet.era.zksync.io"
-		],
+		"rpc": ["https://mainnet.era.zksync.io"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -601,9 +584,7 @@
 	"300": {
 		"name": "zkSync Sepolia Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://sepolia.era.zksync.dev"
-		],
+		"rpc": ["https://sepolia.era.zksync.dev"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -636,9 +617,7 @@
 				}
 			]
 		},
-		"redFlags": [
-			"reusedChainId"
-		],
+		"redFlags": ["reusedChainId"],
 		"mainnet": false
 	},
 	"534352": {
@@ -695,10 +674,7 @@
 			"url": "https://ipfs.io/ipfs/QmYddHh5zdceSsBU7uGfQvEHg6UUtAFbzQBBaePS4whx7o",
 			"format": "png"
 		},
-		"rpc": [
-			"https://rpc.mantle.xyz",
-			"https://mantle.publicnode.com"
-		],
+		"rpc": ["https://rpc.mantle.xyz", "https://mantle.publicnode.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Mantle",
@@ -730,10 +706,7 @@
 	"1284": {
 		"name": "Moonbeam",
 		"chain": "MOON",
-		"rpc": [
-			"https://rpc.api.moonbeam.network",
-			"https://moonbeam.publicnode.com"
-		],
+		"rpc": ["https://rpc.api.moonbeam.network", "https://moonbeam.publicnode.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Glimmer",
@@ -760,9 +733,7 @@
 	"169": {
 		"name": "Manta Pacific",
 		"chain": "Manta Pacific",
-		"rpc": [
-			"https://pacific-rpc.manta.network/http"
-		],
+		"rpc": ["https://pacific-rpc.manta.network/http"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -805,9 +776,7 @@
 			"symbol": "CELO",
 			"decimals": 18
 		},
-		"rpc": [
-			"https://forno.celo.org"
-		],
+		"rpc": ["https://forno.celo.org"],
 		"faucets": [],
 		"infoURL": "https://docs.celo.org/",
 		"explorers": [
@@ -840,13 +809,8 @@
 			"symbol": "CELO",
 			"decimals": 18
 		},
-		"rpc": [
-			"https://alfajores-forno.celo-testnet.org"
-		],
-		"faucets": [
-			"https://celo.org/developers/faucet",
-			"https://cauldron.pretoriaresearchlab.io/alfajores-faucet"
-		],
+		"rpc": ["https://alfajores-forno.celo-testnet.org"],
+		"faucets": ["https://celo.org/developers/faucet", "https://cauldron.pretoriaresearchlab.io/alfajores-faucet"],
 		"infoURL": "https://docs.celo.org/",
 		"explorers": [
 			{
@@ -865,9 +829,7 @@
 		"name": "Mantle Testnet",
 		"chain": "ETH",
 		"rpc": [],
-		"faucets": [
-			"https://faucet.testnet.mantle.xyz"
-		],
+		"faucets": ["https://faucet.testnet.mantle.xyz"],
 		"nativeCurrency": {
 			"name": "Testnet Mantle",
 			"symbol": "MNT",
@@ -899,9 +861,7 @@
 			"url": "https://ipfs.io/ipfs/QmcHdmVr5VRUJq13jnM6tgah5Ge7hn3Dm14eY6vwivJ5ui",
 			"format": "png"
 		},
-		"rpc": [
-			"https://rpc.hekla.taiko.xyz"
-		],
+		"rpc": ["https://rpc.hekla.taiko.xyz"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -927,12 +887,9 @@
 		"mainnet": false
 	},
 	"7560": {
-		"name": "Cyber Mainnet",
+		"name": "Cyber",
 		"chain": "Cyber",
-		"rpc": [
-			"https://cyber.alt.technology/",
-			"https://rpc.cyber.co/"
-		],
+		"rpc": ["https://cyber.alt.technology/", "https://rpc.cyber.co/"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -940,8 +897,10 @@
 			"decimals": 18
 		},
 		"icon": {
-			"url": "https://ipfs.io/ipfs/QmP61yDNPv7fxY9ZzPs4CjQDbZLoKtF8eWWjszVYbwkabd",
-			"format": "svg"
+			"url": "https://cyberconnect.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F67fa7b9d-69d8-4e84-9367-d2f8f06242cf%2F6e1aac8d-149b-4ab7-b1bd-6d112b834200%2Ftoken.png?table=block&id=04f6511c-807d-4e32-8a20-bb54e01a7714&spaceId=67fa7b9d-69d8-4e84-9367-d2f8f06242cf&width=190&userId=&cache=v2",
+			"url2": "https://ipfs.io/ipfs/QmP61yDNPv7fxY9ZzPs4CjQDbZLoKtF8eWWjszVYbwkabd",
+			"format": "png",
+			"format2": "png"
 		},
 		"infoURL": "https://cyber.co/",
 		"shortName": "cyeth",
@@ -969,10 +928,7 @@
 	"34443": {
 		"name": "Mode",
 		"chain": "ETH",
-		"rpc": [
-			"https://mainnet.mode.network",
-			"https://mode.drpc.org"
-		],
+		"rpc": ["https://mainnet.mode.network", "https://mode.drpc.org"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Ether",
@@ -1045,9 +1001,7 @@
 		"name": "Degen Chain",
 		"title": "Degen Chain",
 		"chain": "Degen",
-		"rpc": [
-			"https://rpc.degen.tips"
-		],
+		"rpc": ["https://rpc.degen.tips"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "DEGEN",
@@ -1068,10 +1022,7 @@
 	"84532": {
 		"name": "Base Sepolia Testnet",
 		"chain": "ETH",
-		"rpc": [
-			"https://sepolia.base.org",
-			"https://base-sepolia-rpc.publicnode.com"
-		],
+		"rpc": ["https://sepolia.base.org", "https://base-sepolia-rpc.publicnode.com"],
 		"faucets": [],
 		"nativeCurrency": {
 			"name": "Sepolia Ether",
