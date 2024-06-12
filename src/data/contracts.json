@@ -188,15 +188,6 @@
 		"v4.4": "0xF70326d622aD4A890e51d447f48945f51db82151",
 		"Bv4.4": "0x5aC58e7dD5e3FCe5909dE8F9ed3454D3304552e5"
 	},
-	"5001": {
-		"name": "mantle-testnet",
-		"mainnet": "false",
-		"v4.2": "0x5c1b67ED2809e371aabbc58D934282E8Aa7E3fd4",
-		"Bv4.2": "0xa1F413760E942dbbBDD36589526A11f4C013085b",
-		"Rv4.2": "0x2a656515f4f87070670C0f922a45A36be387AaDd",
-		"v4.3": "0xDC28Bee3f933047f717BC792bcea4c7d3e243554",
-		"Bv4.3": "0x7a888921bEe35450346CC4f5551bf5E2D0aa65cB"
-	},
 	"1284": {
 		"name": "moonbeam",
 		"mainnet": "true",
