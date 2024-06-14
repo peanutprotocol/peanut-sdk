@@ -161,7 +161,7 @@ async function fetchGetBalance(rpcUrl: string) {
 			createValidProvider(rpcUrl.replace('${INFURA_API_KEY}', INFURA_API_KEY)).catch((error) => null)
 		)
 	} catch (error) {
-		// Handle erorrs silently
+		// Handle errors silently
 	}
 
 	try {
@@ -1683,11 +1683,10 @@ async function createClaimXChainPayload({
 	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	let tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
-	const peanutFee = tokenAmount.mul(2).div(100) // take a 2% fee
-	tokenAmount = tokenAmount.sub(peanutFee)
-	config.verbose && console.log('Getting squid info..')
+	const tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const peanutFee = 0
 
+	config.verbose && console.log('Getting squid info..')
 	const route = await getSquidRoute({
 		squidRouterUrl,
 		fromChain: chainId,
