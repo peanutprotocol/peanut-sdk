@@ -1684,8 +1684,7 @@ async function createClaimXChainPayload({
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
 	const tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
-	const peanutFee = 0
-
+	const peanutFee = BigNumber.from(0)
 	config.verbose && console.log('Getting squid info..')
 	const route = await getSquidRoute({
 		squidRouterUrl,
@@ -2088,6 +2087,7 @@ async function claimLinkXChainGasless({
 		peanutFee: payload.peanutFee.toString(),
 		squidData: payload.squidData,
 		routingSignature: payload.routingSignature,
+		recipientAddress: recipientAddress,
 	}
 
 	const claimResponse = await fetch(baseUrl, {
