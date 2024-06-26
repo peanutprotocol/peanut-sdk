@@ -169,6 +169,11 @@
 		"faucets": [],
 		"explorers": [
 			{
+				"name": "Blockscout",
+				"url": "https://arbitrum.blockscout.com/",
+				"standard": "EIP3091"
+			},
+			{
 				"name": "Arbiscan",
 				"url": "https://arbiscan.io",
 				"standard": "EIP3091"
