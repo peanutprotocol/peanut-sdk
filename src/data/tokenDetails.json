@@ -914,7 +914,7 @@
 			}
 		]
 	},
-	
+
 	{
 		"chainId": "10",
 		"name": "Optimism",
@@ -935,6 +935,13 @@
 			},
 			{
 				"address": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+				"decimals": 6,
+				"name": "USD Coin",
+				"symbol": "USDC",
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
+			},
+			{
+				"address": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
 				"decimals": 6,
 				"name": "USD Coin",
 				"symbol": "USDC",
@@ -2179,7 +2186,7 @@
 			}
 		]
 	},
-	
+
 	{
 		"chainId": "324",
 		"name": "zkSync Mainnet",
