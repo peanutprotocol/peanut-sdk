@@ -2467,6 +2467,13 @@
 				"symbol": "MDragon",
 				"decimals": 18,
 				"logoURI": "https://assets.coingecko.com/coins/images/30980/thumb/token-logo.png?1696529819"
+			},
+			{
+				"address": "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9",
+				"name": "USDC",
+				"symbol": "USDC",
+				"decimals": 6,
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
 			}
 		]
 	},
