@@ -2113,8 +2113,8 @@ async function claimLinkXChainGasless({
 async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
 	const url = isTestnet
-		? 'https://testnet.apiplus.squidrouter.com//v2/chains'
-		: 'https://apiplus.squidrouter.com//v2/chains'
+		? 'https://testnet.apiplus.squidrouter.com/v2/chains'
+		: 'https://apiplus.squidrouter.com/v2/chains'
 	try {
 		const response = await fetch(url, {
 			headers: {
@@ -2147,8 +2147,8 @@ async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<in
 	// TODO rate limits? Caching?
 	// const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
 	const url = isTestnet
-		? 'https://testnet.apiplus.squidrouter.com//v2/tokens'
-		: 'https://apiplus.squidrouter.com//v2/tokens'
+		? 'https://testnet.apiplus.squidrouter.com/v2/tokens'
+		: 'https://apiplus.squidrouter.com/v2/tokens'
 
 	try {
 		const response = await fetch(url, {
