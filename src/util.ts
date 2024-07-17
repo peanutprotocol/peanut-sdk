@@ -596,9 +596,9 @@ export function getSquidRouterUrl(isMainnet: boolean, usePeanutApi: boolean): st
 	} else {
 		// using squid api
 		if (isMainnet) {
-			squidRouteUrl = 'https://apiplus.squidrouter.com//v2/route'
+			squidRouteUrl = 'https://apiplus.squidrouter.com/v2/route'
 		} else {
-			squidRouteUrl = 'https://testnet.apiplus.squidrouter.com//v2/route'
+			squidRouteUrl = 'https://testnet.apiplus.squidrouter.com/v2/route'
 		}
 	}
 	return squidRouteUrl
