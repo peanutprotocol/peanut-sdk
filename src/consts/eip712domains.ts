@@ -2,14 +2,14 @@ import { VAULT_CONTRACTS_V4_2_ANDUP } from '../data'
 import { EIP3009TokensInterface } from './interfaces.consts'
 
 export const EIP3009Tokens: EIP3009TokensInterface = {
-	'1': {
-		'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
-			chainId: '1',
-			verifyingContract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-			name: 'USD Coin',
-			version: '2',
-		},
-	},
+	// '1': {
+	// 	'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': {
+	// 		chainId: '1',
+	// 		verifyingContract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+	// 		name: 'USD Coin',
+	// 		version: '2',
+	// 	},
+	// },
 	'43114': {
 		'0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E': {
 			chainId: '43114',
@@ -58,8 +58,6 @@ export const EIP3009Tokens: EIP3009TokensInterface = {
 			version: '2',
 		},
 	},
-	
-	
 }
 
 export const ReceiveWithAuthorizationTypes: any = {

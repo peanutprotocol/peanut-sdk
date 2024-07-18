@@ -161,7 +161,7 @@ async function fetchGetBalance(rpcUrl: string) {
 			createValidProvider(rpcUrl.replace('${INFURA_API_KEY}', INFURA_API_KEY)).catch((error) => null)
 		)
 	} catch (error) {
-		// Handle erorrs silently
+		// Handle errors silently
 	}
 
 	try {
@@ -186,8 +186,7 @@ async function getDefaultProviderUrl(chainId: string): Promise<string> {
 
 async function createValidProvider(rpcUrl: string): Promise<ethers.providers.JsonRpcProvider> {
 	try {
-		const provider = new ethers.providers.JsonRpcProvider({ url: rpcUrl,
-		})
+		const provider = new ethers.providers.JsonRpcProvider({ url: rpcUrl })
 
 		const balance = await provider.getBalance('0x04B5f21facD2ef7c7dbdEe7EbCFBC68616adC45C')
 		if (!balance) {
@@ -216,7 +215,7 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 						'Invalid RPC',
 						`Invalid RPC: ${rpcUrl}`
 					)
-				}			
+				}
 
 				return provider
 			} else {
@@ -1686,11 +1685,9 @@ async function createClaimXChainPayload({
 	console.log('destination token', destinationToken)
 
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	let tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
-	const peanutFee = tokenAmount.mul(2).div(100) // take a 2% fee
-	tokenAmount = tokenAmount.sub(peanutFee)
+	const tokenAmount = utils.parseUnits(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const peanutFee = BigNumber.from(0)
 	config.verbose && console.log('Getting squid info..')
-
 	const route = await getSquidRoute({
 		squidRouterUrl,
 		fromChain: chainId,
@@ -2092,6 +2089,7 @@ async function claimLinkXChainGasless({
 		peanutFee: payload.peanutFee.toString(),
 		squidData: payload.squidData,
 		routingSignature: payload.routingSignature,
+		recipientAddress: recipientAddress,
 	}
 
 	const claimResponse = await fetch(baseUrl, {
@@ -2115,8 +2113,8 @@ async function claimLinkXChainGasless({
 async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
 	const url = isTestnet
-		? 'https://testnet.v2.api.squidrouter.com/v2/chains'
-		: 'https://v2.api.squidrouter.com/v2/chains'
+		? 'https://testnet.apiplus.squidrouter.com/v2/chains'
+		: 'https://apiplus.squidrouter.com/v2/chains'
 	try {
 		const response = await fetch(url, {
 			headers: {
@@ -2149,8 +2147,8 @@ async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<in
 	// TODO rate limits? Caching?
 	// const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
 	const url = isTestnet
-		? 'https://testnet.v2.api.squidrouter.com/v2/tokens'
-		: 'https://v2.api.squidrouter.com/v2/tokens'
+		? 'https://testnet.apiplus.squidrouter.com/v2/tokens'
+		: 'https://apiplus.squidrouter.com/v2/tokens'
 
 	try {
 		const response = await fetch(url, {
@@ -2217,7 +2215,7 @@ async function getXChainOptionsForLink({
 	})
 
 	const destinationChains = supportedChains
-		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
+		.filter((chain) => chain.chainType === 'evm')
 		.map(({ chainId, axelarChainName, chainType, chainIconURI }) => ({
 			chainId,
 			axelarChainName,
@@ -2277,10 +2275,7 @@ async function getSquidRouteRaw({
 		fromAddress,
 		toAddress,
 		// optionally set slippage manually, this will override slippageConfig
-		slippageConfig: {
-			slippage: slippage, // slippage in %
-			autoMode: 1, // ignored if manual slippage is set,
-		},
+		slippage: slippage,
 		enableForecall,
 		enableBoost,
 	}
