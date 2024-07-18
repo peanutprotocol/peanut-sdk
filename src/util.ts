@@ -297,7 +297,7 @@ export function getDepositIdx(txReceipt: any, chainId: string, contractVersion: 
 	let logIndex
 
 	// Identify the logIndex based on chainId
-	if (chainId === '137' ) {
+	if (chainId === '137') {
 		logIndex = logs.length - 2
 	} else {
 		logIndex = logs.length - 1
@@ -596,9 +596,9 @@ export function getSquidRouterUrl(isMainnet: boolean, usePeanutApi: boolean): st
 	} else {
 		// using squid api
 		if (isMainnet) {
-			squidRouteUrl = 'https://v2.api.squidrouter.com/v2/route'
+			squidRouteUrl = 'https://apiplus.squidrouter.com/v2/route'
 		} else {
-			squidRouteUrl = 'https://testnet.v2.api.squidrouter.com/v2/route'
+			squidRouteUrl = 'https://testnet.apiplus.squidrouter.com/v2/route'
 		}
 	}
 	return squidRouteUrl
