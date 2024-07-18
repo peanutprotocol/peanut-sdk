@@ -2215,7 +2215,7 @@ async function getXChainOptionsForLink({
 	})
 
 	const destinationChains = supportedChains
-		.filter((chain) => chain.chainId !== sourceChainId && chain.chainType === 'evm')
+		.filter((chain) => chain.chainType === 'evm')
 		.map(({ chainId, axelarChainName, chainType, chainIconURI }) => ({
 			chainId,
 			axelarChainName,
