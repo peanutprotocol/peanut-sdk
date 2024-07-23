@@ -154,7 +154,9 @@
 		"mainnet": "true",
 		"v4": "0x0f8d307723107d3A466223E09113A1EE6f8411DF",
 		"v4.2": "0xF6F3927552bE1137A823417A0a6eBdB883B72e17",
+		"v4.3": "0x155D491e76830Dbd8f738Cb2Ad873D2caF69DA42",
 		"v4.4": "0xFC66df3A544e558c1546bBdb9A2a735ee5516351",
+		"Bv4.3": "0x390eEb5ADD18328CD9C9F8350Cf3D223e000C2df",
 		"Bv4.4": "0x3A1ce6fdc14953B8889A0070BF1Ae4D1C0F3Bb97"
 	},
 	"300": {
@@ -257,8 +259,8 @@
 		"v4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
 	},
 	"534351": {
-		"name": "placeholder_chainid_534351",
-		"mainnet": "true",
+		"name": "scroll-sepolia",
+		"mainnet": "false",
 		"Bv4.3": "0x8d1a17a3a4504aeb17515645ba8098f1d75237f7",
 		"v4.3": "0x7b36e10aa3ff44576eff4b1afb80587b9b3ba3a5"
 	}
