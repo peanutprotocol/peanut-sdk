@@ -914,7 +914,6 @@
 			}
 		]
 	},
-
 	{
 		"chainId": "10",
 		"name": "Optimism",
@@ -2186,7 +2185,6 @@
 			}
 		]
 	},
-
 	{
 		"chainId": "324",
 		"name": "zkSync Mainnet",
@@ -2203,35 +2201,49 @@
 				"decimals": 18,
 				"name": "Wrapped Ether",
 				"symbol": "WETH",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf3052f6ed37615d0739e5341097668a189b40574ff102fc5509909ba305351b7.png"
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x492819575e3778967c49b8f4805ca3713224ac1ea6984d7de0b14acec5830309.png"
 			},
 			{
 				"address": "0x1d17cbcf0d6d143135ae902365d2e5e2a16538d4",
 				"decimals": 6,
 				"name": "USD Coin",
 				"symbol": "USDC",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x10ca7e698fab4eb287d4d33b3886ae17a6d078fbda455cdd673cfec0ca8ef413.png"
-			},
-			{
-				"address": "0xbbeb516fb02a01611cbbe0453fe3c580d7281011",
-				"decimals": 8,
-				"name": "Wrapped BTC",
-				"symbol": "WBTC",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x8081d9311c1a35fec25b983cc360ac1a4e8796041a76148477ef56466cf2783b.png"
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xda4a7aa3c2c6966c74c4a8446b6348c3e397491e14b2874719192fa5a4c71cab.png"
 			},
 			{
 				"address": "0x4b9eb6c0b6ea15176bbf62841c6b2a8a398cb656",
 				"decimals": 18,
 				"name": "Dai Stablecoin",
 				"symbol": "DAI",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xf5ee3b6eb7079510c13204332c16b4475f68463e78e4a0c2546370efd6403a57.png"
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xea5be93d23c21846ac28d0096ce859aceaac4471a4492818d06c0c5a5e540644.png"
 			},
 			{
 				"address": "0x9e22d758629761fc5708c171d06c2fabb60b5159",
 				"decimals": 18,
 				"name": "Wootrade Network",
 				"symbol": "WOO",
-				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x2c23ce0388d9eb2fc90cf6aa4f3551664995b9111b1cf814a352afb1355a9663.png"
+				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0x583704607815d01c49eded99e41ca49ec827684cc7f2f9f8cf9f82137504206c.png"
+			},
+			{
+				"address": "0x493257fD37EDB34451f62EDf8D2a0C418852bA4C",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1700119918"
+			},
+			{
+				"address": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4",
+				"name": "Bridged USDC",
+				"symbol": "USDC.e",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35262/thumb/USDC_Icon.png?1700119918"
+			},
+			{
+				"address": "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E",
+				"name": "ZKsync",
+				"symbol": "ZK",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/38043/thumb/ZKTokenBlack.png?1700119918"
 			}
 		]
 	},
