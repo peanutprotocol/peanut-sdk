@@ -230,6 +230,8 @@ export function getRawParamsFromLink(link: string): interfaces.ILinkRawParams {
 		search = search + '&' + url.hash.substring(1)
 	}
 
+	search = search.replace(/amp;/g, '')
+
 	const params = new URLSearchParams(search)
 
 	const _chainId: string = params.get('c') ?? '' // can be chain name or chain id
