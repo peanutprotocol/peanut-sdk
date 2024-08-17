@@ -3225,4 +3225,5 @@ export {
 	getTxReceiptFromHash,
 	getTokenBalance,
 	compareVersions,
+	getStringAmount,
 }
