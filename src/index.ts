@@ -793,7 +793,7 @@ function trim_decimal_overflow(_n: number, decimals: number) {
 	return arr[0] + '.' + fraction
 }
 
-function getStringAmount(amount: number | string, decimals: number) {
+function getStringAmount(amount: interfaces.IPeanutLinkDetails['tokenAmount'], decimals: number) {
 	if (typeof amount === 'string') {
 		return amount
 	} else {
