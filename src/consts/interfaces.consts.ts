@@ -30,7 +30,7 @@ export enum EPeanutLinkType {
 
 export interface IPeanutLinkDetails {
 	chainId: string
-	tokenAmount: number
+	tokenAmount: number | string
 	tokenType?: EPeanutLinkType
 	tokenAddress?: string
 	tokenId?: number
