@@ -15,7 +15,7 @@ import {
 	getLinksFromTx,
 	interfaces,
 	prepareApproveERC20Tx,
-	trim_decimal_overflow,
+	getStringAmount,
 } from '.'
 import { getRawParamsFromLink, validateUserName, compareVersions } from './util'
 import {
@@ -174,7 +174,7 @@ export async function prepareRaffleDepositTxs({
 
 	// Convert linkDetails.tokenAmount to BigNumber.
 	// Used only for ETH and ERC20 raffles.
-	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals)
+	const tokenAmountString = getStringAmount(linkDetails.tokenAmount, linkDetails.tokenDecimals)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 
 	const peanutVaultAddress = getContractAddress(linkDetails.chainId, peanutContractVersion)
