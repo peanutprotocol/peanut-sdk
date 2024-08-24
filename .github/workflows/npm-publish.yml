@@ -27,14 +27,13 @@ jobs:
                   git config user.name "github-actions"
                   git config user.email "github-actions@github.com"
 
-            # Version bump
-            # - name: Bump package version
-            # run: |
-            #      git checkout main
-            #      pnpm version patch
-            #      git push origin main --follow-tags
-            #  env:
-            #      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+            # Update package version
+            - name: Update package version
+              run: |
+                  VERSION=${GITHUB_REF#refs/tags/}
+                  npm version $VERSION --no-git-tag-version
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             # Install dependencies
             - run: pnpm install
