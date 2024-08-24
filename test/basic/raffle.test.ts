@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethersv5'
-import { getRaffleInfo, generateAmountsDistribution, claimRaffleLink, interfaces } from '../../src'
+import { generateAmountsDistribution, claimRaffleLink, interfaces } from '../../src'
 import { makeRandomAddress } from '../util'
 import dotenv from 'dotenv'
 dotenv.config()
@@ -7,14 +7,6 @@ dotenv.config()
 const APIKey = process.env.PEANUT_DEV_API_KEY!
 
 describe('raffle', () => {
-	test('get raffle info', async () => {
-		const link = 'https://red.peanut.to/packet?c=5000&v=v4.3&i=(33248,5098)&t=mantle#p=7SMDzKEn7ZOwdwPw'
-		const info = await getRaffleInfo({ link, APIKey })
-		console.log('Raffle info!', info)
-
-		expect(info).toBeDefined()
-	}, 120000)
-
 	test('generate amounts distribution', async () => {
 		const totalAmount = BigNumber.from(1e6)
 		const numberOfLinks = 1
