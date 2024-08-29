@@ -92,7 +92,7 @@ export async function createRequestLink({
 		formData.append('chainId', chainId)
 		formData.append('tokenAddress', tokenAddress)
 		formData.append('tokenAmount', tokenAmount)
-		formData.append('tokenType', EPeanutLinkType[tokenType])
+		formData.append('tokenType', tokenType.toString())
 		formData.append('tokenDecimals', tokenDecimals)
 		formData.append('recipientAddress', recipientAddress)
 		formData.append('baseUrl', baseUrl)
@@ -154,8 +154,7 @@ export function prepareRequestLinkFulfillmentTransaction({
 	tokenDecimals,
 }: IPrepareRequestLinkFulfillmentTransactionProps): IPrepareRequestLinkFulfillmentTransactionResponse {
 	try {
-		console.log(tokenType)
-		console.log(EPeanutLinkType.erc20)
+		tokenType = Number(tokenType)
 		if (tokenType !== EPeanutLinkType.erc20 && tokenType !== EPeanutLinkType.native) return
 		let unsignedTx: IPeanutUnsignedTransaction = {}
 		if (tokenType === EPeanutLinkType.native) {
