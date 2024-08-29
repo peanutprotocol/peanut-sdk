@@ -3014,6 +3014,7 @@ async function getTokenBalance({
 const prepareTxs = prepareDepositTxs
 
 import * as raffle from './raffle.ts'
+import * as request from './request.ts'
 export * from './raffle.ts'
 
 const peanut = {
@@ -3115,6 +3116,7 @@ const peanut = {
 	getTokenBalance,
 	compareVersions,
 	...raffle,
+	...request,
 }
 
 export default peanut
