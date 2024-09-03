@@ -48,18 +48,24 @@ export interface ICreateRequestLinkResponse {
 }
 
 export interface IGetRequestLinkDetailsResponse {
+	uuid: string
 	link: string
 	chainId: string
+	recipientAddress: string | null
 	tokenAmount: string
 	tokenAddress: string
-	recipientAddress: string
-	tokenDecimals: string
-	tokenType: EPeanutLinkType
-	tokenSymbol: string
-	createdDate: string
-	reference?: string
-	attachment?: string // TODO: update this type
-	payerAddress?: string
+	tokenDecimals: number
+	tokenType: string
+	tokenSymbol: string | null
+	createdAt: string
+	updatedAt: string
+	reference: string | null
+	attachmentUrl: string | null
+	payerAddress: string | null
+	trackId: string | null
+	destinationChainFulfillmentHash: string | null
+	originChainFulfillmentHash: string | null
+	status: string
 }
 
 export interface IPrepareRequestLinkFulfillmentTransactionResponse {
