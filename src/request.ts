@@ -1,6 +1,7 @@
-import { ethers } from 'ethersv5'
+import { ethers, getDefaultProvider, utils } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
-import { ERC20_ABI } from './data'
+import { ERC20_ABI, VAULT_CONTRACTS_V4_2_ANDUP } from './data'
+import peanut, { config, getSquidRoute, interfaces, prepareApproveERC20Tx } from '.'
 
 // INTERFACES
 export interface ICreateRequestLinkProps {
@@ -32,6 +33,18 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 	tokenAmount: string
 	tokenType: EPeanutLinkType
 	tokenDecimals: number
+}
+
+export interface IPrepareXchainRequestLinkFulfillmentTransactionProps {
+	senderAddress: string
+	recipientAddress: string
+	destinationChainId: string
+	destinationToken: string
+	fromAmount: string
+	link: string
+	squidRouterUrl: string
+	slippage: number
+	provider: ethers.providers.Provider
 }
 
 export interface ISubmitRequestLinkFulfillmentProps {
@@ -150,6 +163,102 @@ export async function getRequestLinkDetails({
 	const x = await apiResponse.json()
 
 	return x
+}
+
+export async function prepareXchainRequestLinkFulfillmentTransaction({
+	senderAddress,
+	recipientAddress,
+	destinationChainId,
+	destinationToken,
+	fromAmount,
+	link,
+	squidRouterUrl,
+	slippage,
+	provider,
+}: IPrepareXchainRequestLinkFulfillmentTransactionProps): Promise<interfaces.IPrepareDepositTxsResponse> {
+	const linkParams = peanut.getParamsFromLink(link)
+	const chainId = linkParams.chainId
+	const contractVersion = linkParams.contractVersion
+
+	if (!VAULT_CONTRACTS_V4_2_ANDUP.includes(contractVersion)) {
+		throw new interfaces.SDKStatus(
+			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
+			`Unsupported contract version ${contractVersion}`
+		)
+	}
+
+	const linkDetails = await peanut.getLinkDetails({ link: link })
+	if (destinationToken === null) destinationToken = linkDetails.tokenAddress
+	console.log('destination token', destinationToken)
+	let txOptions: interfaces.ITxOptions = {}
+	if (!provider) {
+		try {
+			provider = await getDefaultProvider(linkDetails.chainId)
+		} catch (error) {
+			throw new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
+				'Error getting the default provider'
+			)
+		}
+	}
+	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
+	const tokenAmount = utils.parseUnits(fromAmount, linkDetails.tokenDecimals)
+	config.verbose && console.log('Getting squid info..')
+	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
+	if (linkDetails.tokenType == interfaces.EPeanutLinkType.native) {
+		txOptions = {
+			...txOptions,
+			value: tokenAmount,
+		}
+	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc20) {
+		config.verbose && console.log('checking allowance...')
+		try {
+			const approveTx: interfaces.IPeanutUnsignedTransaction = await prepareApproveERC20Tx(
+				senderAddress,
+				linkDetails.chainId,
+				linkDetails.tokenAddress!,
+				tokenAmount,
+				linkDetails.tokenDecimals,
+				true,
+				contractVersion,
+				provider
+			)
+
+			approveTx && unsignedTxs.push(approveTx)
+			approveTx && config.verbose && console.log('approveTx:', approveTx)
+		} catch (error) {
+			throw new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,
+				'Error preparing the approve ERC20 tx, please make sure you have enough balance and have approved the contract to spend your tokens'
+			)
+		}
+	}
+
+	const routeResult = await getSquidRoute({
+		squidRouterUrl,
+		fromChain: chainId,
+		fromToken: linkDetails.tokenAddress,
+		fromAmount: tokenAmount.toString(),
+		toChain: destinationChainId,
+		toToken: destinationToken,
+		fromAddress: senderAddress,
+		toAddress: recipientAddress,
+		slippage,
+	})
+
+	config.verbose && console.log('Squid route calculated :)', { routeResult })
+
+	const unsignedTx: IPeanutUnsignedTransaction = {
+		data: routeResult.calldata,
+	}
+
+	if (txOptions.value) {
+		unsignedTx.value = BigInt(txOptions.value.toString())
+	}
+
+	unsignedTxs.push(unsignedTx)
+
+	return { unsignedTxs }
 }
 
 export function prepareRequestLinkFulfillmentTransaction({
