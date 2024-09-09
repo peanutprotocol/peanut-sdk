@@ -1,7 +1,7 @@
 import { ethers, getDefaultProvider, utils } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
-import { ERC20_ABI, VAULT_CONTRACTS_V4_2_ANDUP } from './data'
-import peanut, { config, getSquidRoute, interfaces, prepareApproveERC20Tx } from '.'
+import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
+import { config, getSquidRoute, interfaces, prepareApproveERC20Tx } from '.'
 
 // INTERFACES
 export interface ICreateRequestLinkProps {
@@ -36,6 +36,7 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 }
 
 export interface IPrepareXchainRequestLinkFulfillmentTransactionProps {
+	apiUrl?: string
 	senderAddress: string
 	recipientAddress: string
 	destinationChainId: string
@@ -43,7 +44,6 @@ export interface IPrepareXchainRequestLinkFulfillmentTransactionProps {
 	fromAmount: string
 	link: string
 	squidRouterUrl: string
-	slippage: number
 	provider: ethers.providers.Provider
 }
 
@@ -173,27 +173,17 @@ export async function prepareXchainRequestLinkFulfillmentTransaction({
 	fromAmount,
 	link,
 	squidRouterUrl,
-	slippage,
 	provider,
+	apiUrl = 'https://api.peanut.to/',
 }: IPrepareXchainRequestLinkFulfillmentTransactionProps): Promise<interfaces.IPrepareDepositTxsResponse> {
-	const linkParams = peanut.getParamsFromLink(link)
-	const chainId = linkParams.chainId
-	const contractVersion = linkParams.contractVersion
+	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
 
-	if (!VAULT_CONTRACTS_V4_2_ANDUP.includes(contractVersion)) {
-		throw new interfaces.SDKStatus(
-			interfaces.EXChainStatusCodes.ERROR_UNSUPPORTED_CONTRACT_VERSION,
-			`Unsupported contract version ${contractVersion}`
-		)
-	}
-
-	const linkDetails = await peanut.getLinkDetails({ link: link })
-	if (destinationToken === null) destinationToken = linkDetails.tokenAddress
+	if (!destinationToken) destinationToken = linkDetails.tokenAddress
 	console.log('destination token', destinationToken)
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
 		try {
-			provider = await getDefaultProvider(linkDetails.chainId)
+			provider = getDefaultProvider(linkDetails.chainId)
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
@@ -205,12 +195,23 @@ export async function prepareXchainRequestLinkFulfillmentTransaction({
 	const tokenAmount = utils.parseUnits(fromAmount, linkDetails.tokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
-	if (linkDetails.tokenType == interfaces.EPeanutLinkType.native) {
+	const routeResult = await getSquidRoute({
+		squidRouterUrl,
+		fromChain: linkDetails.chainId,
+		fromToken: linkDetails.tokenAddress,
+		fromAmount: tokenAmount.toString(),
+		toChain: destinationChainId,
+		toToken: destinationToken,
+		fromAddress: senderAddress,
+		toAddress: recipientAddress,
+		enableBoost: true,
+	})
+	if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
 			value: tokenAmount,
 		}
-	} else if (linkDetails.tokenType == interfaces.EPeanutLinkType.erc20) {
+	} else if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
 		try {
 			const approveTx: interfaces.IPeanutUnsignedTransaction = await prepareApproveERC20Tx(
@@ -220,12 +221,15 @@ export async function prepareXchainRequestLinkFulfillmentTransaction({
 				tokenAmount,
 				linkDetails.tokenDecimals,
 				true,
-				contractVersion,
-				provider
+				LATEST_STABLE_BATCHER_VERSION,
+				provider,
+				routeResult.to
 			)
 
-			approveTx && unsignedTxs.push(approveTx)
-			approveTx && config.verbose && console.log('approveTx:', approveTx)
+			if (approveTx) {
+				unsignedTxs.push(approveTx)
+				config.verbose && console.log('approveTx:', approveTx)
+			}
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_PREPARING_APPROVE_ERC20_TX,
@@ -234,22 +238,12 @@ export async function prepareXchainRequestLinkFulfillmentTransaction({
 		}
 	}
 
-	const routeResult = await getSquidRoute({
-		squidRouterUrl,
-		fromChain: chainId,
-		fromToken: linkDetails.tokenAddress,
-		fromAmount: tokenAmount.toString(),
-		toChain: destinationChainId,
-		toToken: destinationToken,
-		fromAddress: senderAddress,
-		toAddress: recipientAddress,
-		slippage,
-	})
-
 	config.verbose && console.log('Squid route calculated :)', { routeResult })
 
 	const unsignedTx: IPeanutUnsignedTransaction = {
 		data: routeResult.calldata,
+		to: routeResult.to,
+		value: BigInt(routeResult.value.toString()),
 	}
 
 	if (txOptions.value) {

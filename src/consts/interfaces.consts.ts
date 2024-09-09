@@ -201,6 +201,7 @@ export interface IGetLinkDetailsParams {
 export interface ISquidRoute {
 	value: BigNumber
 	calldata: string
+	to: string
 }
 
 //getCrossChainoptionsForLink

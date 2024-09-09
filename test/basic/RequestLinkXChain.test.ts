@@ -1,0 +1,80 @@
+import { ethers } from 'ethersv5'
+import peanut, { getDefaultProvider, getSquidRouterUrl, signAndSubmitTx } from '../../src/index' // import directly from source code
+import dotenv from 'dotenv'
+import { describe, it } from '@jest/globals'
+import { BigNumber } from 'ethersv5'
+import { EPeanutLinkType } from '../../src/consts/interfaces.consts'
+dotenv.config()
+
+describe('Peanut XChain request links fulfillment tests', function () {
+	describe('Peanut XChain request link fulfillment tests', function () {
+		it('Create a request link and fulfill it cross-chain', async function () {
+			peanut.toggleVerbose(true)
+			const userPrivateKey = process.env.TEST_WALLET_X_CHAIN_USER!
+			// const relayerPrivateKey = process.env.TEST_WALLET_X_CHAIN_RELAYER!
+
+			// Parameters that affect the test behaviour
+			const sourceChainId = '10'
+			const destinationChainId = '137'
+			const amountToTestWith = 0.1
+			const tokenAddress = '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'
+			const tokenDecimals = 6
+			const APIKey = process.env.PEANUT_DEV_API_KEY!
+			const sourceChainProvider = await getDefaultProvider(sourceChainId)
+			console.log('Source chain provider', sourceChainProvider)
+
+			const userSourceChainWallet = new ethers.Wallet(userPrivateKey, sourceChainProvider)
+			// const relayerSourceChainWallet = new ethers.Wallet(relayerPrivateKey, sourceChainProvider)
+
+			// console.log('Using wallets:', {
+			// 	user: userSourceChainWallet.address,
+			// 	relayer: relayerSourceChainWallet.address,
+			// })
+
+			const { link } = await peanut.createRequestLink({
+				chainId: sourceChainId,
+				tokenAddress,
+				tokenAmount: amountToTestWith.toString(),
+				tokenType: EPeanutLinkType.erc20,
+				tokenDecimals: tokenDecimals.toString(),
+				recipientAddress: '0x42A5DC31169Da17639468e7Ffa271e90Fdb5e85A',
+				APIKey,
+				apiUrl: 'https://staging.peanut.to/api/proxy/withFormData',
+			})
+			console.log('Created a request link on the source chain!', link)
+
+			const linkDetails = await peanut.getRequestLinkDetails({
+				link,
+				APIKey,
+				apiUrl: 'https://staging.peanut.to/api/proxy/get',
+			})
+			console.log('Got the link details!', linkDetails)
+
+			const xchainUnsignedTxs = await peanut.prepareXchainRequestLinkFulfillmentTransaction({
+				senderAddress: userSourceChainWallet.address,
+				recipientAddress: linkDetails.recipientAddress as string,
+				destinationChainId,
+				destinationToken: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+				fromAmount: amountToTestWith.toString(),
+				link,
+				squidRouterUrl: getSquidRouterUrl(true, false),
+				provider: sourceChainProvider,
+				apiUrl: 'https://staging.peanut.to/api/proxy/get',
+			})
+			console.log('Computed x chain unsigned fulfillment transactions', xchainUnsignedTxs)
+
+			for (const unsignedTx of xchainUnsignedTxs.unsignedTxs) {
+				const { tx, txHash } = await signAndSubmitTx({
+					unsignedTx,
+					structSigner: {
+						signer: userSourceChainWallet,
+						gasLimit: BigNumber.from(1_500_000),
+					},
+				})
+				console.log('Submitted a transaction to fulfill the request link with tx hash', txHash)
+				await tx.wait()
+				console.log('Request link fulfillment initiated!')
+			}
+		}, 120000)
+	})
+})
