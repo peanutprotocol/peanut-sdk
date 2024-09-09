@@ -227,6 +227,7 @@ export async function prepareXchainRequestLinkFulfillmentTransaction({
 			)
 
 			if (approveTx) {
+				approveTx.from = senderAddress
 				unsignedTxs.push(approveTx)
 				config.verbose && console.log('approveTx:', approveTx)
 			}
