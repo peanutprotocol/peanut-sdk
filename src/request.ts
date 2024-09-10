@@ -36,6 +36,8 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 }
 
 export interface IPrepareXchainRequestFulfillmentTransactionProps {
+	fromChainId: string
+	fromToken: string
 	apiUrl?: string
 	senderAddress: string
 	recipientAddress: string
@@ -170,7 +172,9 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	recipientAddress,
 	destinationChainId,
 	destinationToken,
+	fromToken,
 	fromAmount,
+	fromChainId,
 	link,
 	squidRouterUrl,
 	provider,
@@ -197,8 +201,8 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
 	const routeResult = await getSquidRoute({
 		squidRouterUrl,
-		fromChain: linkDetails.chainId,
-		fromToken: linkDetails.tokenAddress,
+		fromChain: fromChainId,
+		fromToken: fromToken,
 		fromAmount: tokenAmount.toString(),
 		toChain: destinationChainId,
 		toToken: destinationToken,
@@ -217,7 +221,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 			const approveTx: interfaces.IPeanutUnsignedTransaction = await prepareApproveERC20Tx(
 				senderAddress,
 				linkDetails.chainId,
-				linkDetails.tokenAddress!,
+				fromToken,
 				tokenAmount,
 				linkDetails.tokenDecimals,
 				true,
@@ -240,15 +244,22 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	}
 
 	config.verbose && console.log('Squid route calculated :)', { routeResult })
+	console.log({ lol: routeResult.value.toString() })
 
-	const unsignedTx: IPeanutUnsignedTransaction = {
-		data: routeResult.calldata,
-		to: routeResult.to,
-		value: BigInt(routeResult.value.toString()),
-	}
+	let unsignedTx: IPeanutUnsignedTransaction = {}
 
-	if (txOptions.value) {
-		unsignedTx.value = BigInt(txOptions.value.toString())
+	if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.native) {
+		unsignedTx = {
+			data: routeResult.calldata,
+			to: routeResult.to,
+			value: BigInt(routeResult.value.toString()) + BigInt(txOptions.value.toString()),
+		}
+	} else if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.erc20) {
+		unsignedTx = {
+			data: routeResult.calldata,
+			to: routeResult.to,
+			value: BigInt(routeResult.value.toString()),
+		}
 	}
 
 	unsignedTxs.push(unsignedTx)
