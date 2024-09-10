@@ -14,10 +14,9 @@ describe('Peanut XChain request links fulfillment tests', function () {
 			// const relayerPrivateKey = process.env.TEST_WALLET_X_CHAIN_RELAYER!
 
 			// Parameters that affect the test behaviour
-			const sourceChainId = '10'
-			const destinationChainId = '137'
+			const sourceChainId = '10' // Optimism
+			const destinationChainId = '137' // Polygon
 			const amountToTestWith = 0.1
-			const tokenAddress = '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'
 			const tokenDecimals = 6
 			const APIKey = process.env.PEANUT_DEV_API_KEY!
 			const sourceChainProvider = await getDefaultProvider(sourceChainId)
@@ -26,7 +25,8 @@ describe('Peanut XChain request links fulfillment tests', function () {
 			const userSourceChainWallet = new ethers.Wallet(userPrivateKey, sourceChainProvider)
 
 			const recipientAddress = '0x42A5DC31169Da17639468e7Ffa271e90Fdb5e85A'
-			const destinationToken = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'
+			const tokenAddress = '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85' // USDC on Optimism
+			const destinationToken = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F' // USDT on Polygon
 
 			const { link } = await peanut.createRequestLink({
 				chainId: sourceChainId,
@@ -47,7 +47,7 @@ describe('Peanut XChain request links fulfillment tests', function () {
 			})
 			console.log('Got the link details!', linkDetails)
 
-			const xchainUnsignedTxs = await peanut.prepareXchainRequestLinkFulfillmentTransaction({
+			const xchainUnsignedTxs = await peanut.prepareXchainRequestFulfillmentTransaction({
 				senderAddress: userSourceChainWallet.address,
 				recipientAddress: linkDetails.recipientAddress as string,
 				destinationChainId,

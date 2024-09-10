@@ -167,6 +167,10 @@ export interface IPrepareDepositTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
+export interface IPrepareDepositFulfillmentTxsResponse {
+	unsignedTxs: IPeanutUnsignedTransaction[]
+}
+
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner

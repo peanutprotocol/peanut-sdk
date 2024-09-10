@@ -35,7 +35,7 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 	tokenDecimals: number
 }
 
-export interface IPrepareXchainRequestLinkFulfillmentTransactionProps {
+export interface IPrepareXchainRequestFulfillmentTransactionProps {
 	apiUrl?: string
 	senderAddress: string
 	recipientAddress: string
@@ -165,7 +165,7 @@ export async function getRequestLinkDetails({
 	return x
 }
 
-export async function prepareXchainRequestLinkFulfillmentTransaction({
+export async function prepareXchainRequestFulfillmentTransaction({
 	senderAddress,
 	recipientAddress,
 	destinationChainId,
@@ -175,7 +175,7 @@ export async function prepareXchainRequestLinkFulfillmentTransaction({
 	squidRouterUrl,
 	provider,
 	apiUrl = 'https://api.peanut.to/',
-}: IPrepareXchainRequestLinkFulfillmentTransactionProps): Promise<interfaces.IPrepareDepositTxsResponse> {
+}: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareDepositFulfillmentTxsResponse> {
 	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
 
 	if (!destinationToken) destinationToken = linkDetails.tokenAddress
