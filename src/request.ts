@@ -183,7 +183,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	provider,
 	apiUrl = 'https://api.peanut.to/',
 	tokenType,
-}: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareDepositFulfillmentTxsResponse> {
+}: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionProps> {
 	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
 
 	if (!destinationToken) destinationToken = linkDetails.tokenAddress
