@@ -38,6 +38,7 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 export interface IPrepareXchainRequestFulfillmentTransactionProps {
 	fromChainId: string
 	fromToken: string
+	fromTokenDecimals: number
 	apiUrl?: string
 	senderAddress: string
 	recipientAddress: string
@@ -47,6 +48,7 @@ export interface IPrepareXchainRequestFulfillmentTransactionProps {
 	link: string
 	squidRouterUrl: string
 	provider: ethers.providers.Provider
+	tokenType: EPeanutLinkType
 }
 
 export interface ISubmitRequestLinkFulfillmentProps {
@@ -173,12 +175,14 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	destinationChainId,
 	destinationToken,
 	fromToken,
+	fromTokenDecimals,
 	fromAmount,
 	fromChainId,
 	link,
 	squidRouterUrl,
 	provider,
 	apiUrl = 'https://api.peanut.to/',
+	tokenType,
 }: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareDepositFulfillmentTxsResponse> {
 	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
 
@@ -196,7 +200,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		}
 	}
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = utils.parseUnits(fromAmount, linkDetails.tokenDecimals)
+	const tokenAmount = utils.parseUnits(fromAmount, fromTokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
 	const routeResult = await getSquidRoute({
@@ -210,12 +214,12 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		toAddress: recipientAddress,
 		enableBoost: true,
 	})
-	if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.native) {
+	if (tokenType == EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
 			value: tokenAmount,
 		}
-	} else if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.erc20) {
+	} else if (tokenType == EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
 		try {
 			const approveTx: interfaces.IPeanutUnsignedTransaction = await prepareApproveERC20Tx(
@@ -223,7 +227,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 				linkDetails.chainId,
 				fromToken,
 				tokenAmount,
-				linkDetails.tokenDecimals,
+				fromTokenDecimals,
 				true,
 				LATEST_STABLE_BATCHER_VERSION,
 				provider,
@@ -248,13 +252,13 @@ export async function prepareXchainRequestFulfillmentTransaction({
 
 	let unsignedTx: IPeanutUnsignedTransaction = {}
 
-	if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.native) {
+	if (tokenType == EPeanutLinkType.native) {
 		unsignedTx = {
 			data: routeResult.calldata,
 			to: routeResult.to,
 			value: BigInt(routeResult.value.toString()) + BigInt(txOptions.value.toString()),
 		}
-	} else if ((linkDetails.tokenType as unknown as EPeanutLinkType) == EPeanutLinkType.erc20) {
+	} else if (tokenType == EPeanutLinkType.erc20) {
 		unsignedTx = {
 			data: routeResult.calldata,
 			to: routeResult.to,
