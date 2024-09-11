@@ -2,6 +2,7 @@ import { ethers, getDefaultProvider, utils } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
 import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
 import { config, getSquidRoute, interfaces, prepareApproveERC20Tx } from '.'
+import { prepareXchainFromAmountCalculation } from './util'
 
 // INTERFACES
 export interface ICreateRequestLinkProps {
@@ -44,7 +45,6 @@ export interface IPrepareXchainRequestFulfillmentTransactionProps {
 	recipientAddress: string
 	destinationChainId: string
 	destinationToken: string
-	fromAmount: string
 	link: string
 	squidRouterUrl: string
 	provider: ethers.providers.Provider
@@ -176,7 +176,6 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	destinationToken,
 	fromToken,
 	fromTokenDecimals,
-	fromAmount,
 	fromChainId,
 	link,
 	squidRouterUrl,
@@ -199,10 +198,42 @@ export async function prepareXchainRequestFulfillmentTransaction({
 			)
 		}
 	}
+	if (fromToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Source token is 0x0000, converting to 0xEeee..')
+		fromToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	if (destinationToken == '0x0000000000000000000000000000000000000000') {
+		// Update for Squid compatibility
+		config.verbose && console.log('Destination token is 0x0000, converting to 0xEeee..')
+		destinationToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+	}
+
+	const fromTokenData = {
+		address: fromToken,
+		chainId: fromChainId,
+		decimals: fromTokenDecimals,
+	}
+	const toTokenData = {
+		address: destinationToken,
+		chainId: destinationChainId,
+		decimals: linkDetails.tokenDecimals,
+	}
+	const estimatedFromAmount = await prepareXchainFromAmountCalculation({
+		fromToken: fromTokenData,
+		toAmount: linkDetails.tokenAmount,
+		toToken: toTokenData,
+	})
+	console.log('estimatedFromAmount', estimatedFromAmount)
+	if (!estimatedFromAmount) {
+		throw new Error('Failed to estimate from amount')
+	}
 	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = utils.parseUnits(fromAmount, fromTokenDecimals)
+	const tokenAmount = utils.parseUnits(estimatedFromAmount, fromTokenDecimals)
 	config.verbose && console.log('Getting squid info..')
 	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
+
 	const routeResult = await getSquidRoute({
 		squidRouterUrl,
 		fromChain: fromChainId,

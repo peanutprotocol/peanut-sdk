@@ -699,7 +699,7 @@ interface TokenData {
 	decimals: number
 }
 
-export async function getFromAmount({
+export async function prepareXchainFromAmountCalculation({
 	fromToken,
 	toAmount,
 	toToken,
