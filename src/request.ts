@@ -164,9 +164,9 @@ export async function getRequestLinkDetails({
 		throw new Error('Failed to get request link details')
 	}
 
-	const x = await apiResponse.json()
+	const responseData = await apiResponse.json() // Zmieniono zmienną x na responseData
 
-	return x
+	return responseData
 }
 
 export async function prepareXchainRequestFulfillmentTransaction({
