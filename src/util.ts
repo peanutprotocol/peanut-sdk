@@ -407,7 +407,7 @@ export function getLinksFromMultilink(link: string): string[] {
 		if (newSearchParams.has('p')) {
 			newUrl.hash = '#?' + newSearchParams.toString()
 		} else {
-			newUrl.hash = 'p=' + url.hash.slice(3) ?? ''
+			newUrl.hash = 'p=' + (url.hash.slice(3) ?? '')
 			newUrl.search = '?' + newSearchParams.toString()
 		}
 		return newUrl.toString()
