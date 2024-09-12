@@ -37,17 +37,14 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 }
 
 export interface IPrepareXchainRequestFulfillmentTransactionProps {
-	fromChainId: string
+	senderAddress: string
 	fromToken: string
 	fromTokenDecimals: number
-	apiUrl?: string
-	senderAddress: string
-	recipientAddress: string
-	destinationChainId: string
-	destinationToken: string
+	fromChainId: string
 	link: string
 	squidRouterUrl: string
 	provider: ethers.providers.Provider
+	apiUrl?: string
 	tokenType: EPeanutLinkType
 }
 
@@ -164,16 +161,13 @@ export async function getRequestLinkDetails({
 		throw new Error('Failed to get request link details')
 	}
 
-	const responseData = await apiResponse.json() // Zmieniono zmienną x na responseData
+	const responseData = await apiResponse.json()
 
 	return responseData
 }
 
 export async function prepareXchainRequestFulfillmentTransaction({
 	senderAddress,
-	recipientAddress,
-	destinationChainId,
-	destinationToken,
 	fromToken,
 	fromTokenDecimals,
 	fromChainId,
@@ -184,13 +178,17 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	tokenType,
 }: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionProps> {
 	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
-
-	if (!destinationToken) destinationToken = linkDetails.tokenAddress
-	console.log('destination token', destinationToken)
+	let { tokenAddress: destinationToken } = linkDetails
+	const {
+		chainId: destinationChainId,
+		recipientAddress,
+		tokenAmount: destinationTokenAmount,
+		tokenDecimals: destinationTokenDecimals,
+	} = linkDetails
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
 		try {
-			provider = getDefaultProvider(linkDetails.chainId)
+			provider = getDefaultProvider(destinationChainId)
 		} catch (error) {
 			throw new interfaces.SDKStatus(
 				interfaces.EPrepareCreateTxsStatusCodes.ERROR_GETTING_DEFAULT_PROVIDER,
@@ -218,11 +216,11 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	const toTokenData = {
 		address: destinationToken,
 		chainId: destinationChainId,
-		decimals: linkDetails.tokenDecimals,
+		decimals: destinationTokenDecimals,
 	}
 	const estimatedFromAmount = await prepareXchainFromAmountCalculation({
 		fromToken: fromTokenData,
-		toAmount: linkDetails.tokenAmount,
+		toAmount: destinationTokenAmount,
 		toToken: toTokenData,
 	})
 	console.log('estimatedFromAmount', estimatedFromAmount)
@@ -255,7 +253,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		try {
 			const approveTx: interfaces.IPeanutUnsignedTransaction = await prepareApproveERC20Tx(
 				senderAddress,
-				linkDetails.chainId,
+				destinationChainId,
 				fromToken,
 				tokenAmount,
 				fromTokenDecimals,
@@ -279,7 +277,6 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	}
 
 	config.verbose && console.log('Squid route calculated :)', { routeResult })
-	console.log({ lol: routeResult.value.toString() })
 
 	let unsignedTx: IPeanutUnsignedTransaction = {}
 
