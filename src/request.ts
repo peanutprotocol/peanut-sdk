@@ -223,6 +223,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		toAmount: destinationTokenAmount,
 		toToken: toTokenData,
 	})
+
 	console.log('estimatedFromAmount', estimatedFromAmount)
 	if (!estimatedFromAmount) {
 		throw new Error('Failed to estimate from amount')
@@ -297,6 +298,30 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	unsignedTxs.push(unsignedTx)
 
 	return { unsignedTxs }
+}
+
+export function calculateCrossChainTxFee({
+	unsignedTxs,
+	isNativeTxValue,
+	fromAmount,
+}: {
+	unsignedTxs: IPeanutUnsignedTransaction[]
+	isNativeTxValue: boolean
+	fromAmount: string
+}): bigint {
+	let totalFee = BigInt(0)
+
+	for (const tx of unsignedTxs) {
+		if (tx.value) {
+			totalFee += BigInt(tx.value.toString())
+		}
+	}
+
+	if (isNativeTxValue) {
+		totalFee = totalFee - ethers.utils.parseEther(fromAmount).toBigInt()
+	}
+
+	return totalFee
 }
 
 export function prepareRequestLinkFulfillmentTransaction({
