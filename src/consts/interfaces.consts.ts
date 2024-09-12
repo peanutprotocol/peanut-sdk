@@ -167,6 +167,10 @@ export interface IPrepareDepositTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
+export interface IPrepareXchainRequestFulfillmentTransactionProps {
+	unsignedTxs: IPeanutUnsignedTransaction[]
+}
+
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
@@ -201,6 +205,7 @@ export interface IGetLinkDetailsParams {
 export interface ISquidRoute {
 	value: BigNumber
 	calldata: string
+	to: string
 }
 
 //getCrossChainoptionsForLink

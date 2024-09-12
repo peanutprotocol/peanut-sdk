@@ -2325,6 +2325,7 @@ async function getSquidRoute(args: interfaces.IGetSquidRouteParams): Promise<int
 		return {
 			value: BigNumber.from(data.route.transactionRequest.value),
 			calldata: data.route.transactionRequest.data,
+			to: data.route.transactionRequest.target,
 		}
 	}
 
@@ -3022,6 +3023,7 @@ async function getTokenBalance({
 const prepareTxs = prepareDepositTxs
 
 import * as raffle from './raffle.ts'
+import * as request from './request.ts'
 export * from './raffle.ts'
 
 const peanut = {
@@ -3123,6 +3125,7 @@ const peanut = {
 	getTokenBalance,
 	compareVersions,
 	...raffle,
+	...request,
 }
 
 export default peanut
