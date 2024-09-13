@@ -19,6 +19,7 @@ const config = {
 		'/node_modules/(?!(\\@squirrel-labs\\/peanut-sdk)/)',
 	],
 	testPathIgnorePatterns: ['<rootDir>/src/test/manual/'],
+	reporters: ['default', ['jest-summary-reporter', {}]],
 	// try to test directly on index.js
 	// moduleDirectories: ["node_modules", "src"],
 	// moduleNameMapper: {
