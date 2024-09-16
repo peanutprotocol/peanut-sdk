@@ -207,7 +207,7 @@ export interface ISquidRoute {
 	value: BigNumber
 	calldata: string
 	to: string
-	estimate?: any
+	txEstimation?: any
 }
 
 //getCrossChainoptionsForLink

@@ -245,15 +245,16 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		enableBoost: true,
 	})
 
+	// Transaction estimation from Squid API allows us to know the transaction fees (gas and fee), then we can iterate over them and add the values ​​that are in dollars
 	let feeEstimation = 0
-	if (routeResult.estimate.feeCosts.length > 0) {
-		routeResult.estimate.feeCosts.forEach((fee) => {
+	if (routeResult.txEstimation.feeCosts.length > 0) {
+		routeResult.txEstimation.feeCosts.forEach((fee) => {
 			feeEstimation += Number(fee.amountUsd)
 		})
 	}
 
-	if (routeResult.estimate.gasCosts.length > 0) {
-		routeResult.estimate.gasCosts.forEach((gas) => {
+	if (routeResult.txEstimation.gasCosts.length > 0) {
+		routeResult.txEstimation.gasCosts.forEach((gas) => {
 			feeEstimation += Number(gas.amountUsd)
 		})
 	}
