@@ -169,6 +169,7 @@ export interface IPrepareDepositTxsResponse {
 
 export interface IPrepareXchainRequestFulfillmentTransactionProps {
 	unsignedTxs: IPeanutUnsignedTransaction[]
+	feeEstimation: string
 }
 
 //signAndSubmitTx
@@ -206,6 +207,7 @@ export interface ISquidRoute {
 	value: BigNumber
 	calldata: string
 	to: string
+	estimate?: any
 }
 
 //getCrossChainoptionsForLink

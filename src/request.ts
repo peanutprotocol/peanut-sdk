@@ -244,6 +244,20 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		toAddress: recipientAddress,
 		enableBoost: true,
 	})
+
+	let feeEstimation = 0
+	if (routeResult.estimate.feeCosts.length > 0) {
+		routeResult.estimate.feeCosts.forEach((fee) => {
+			feeEstimation += Number(fee.amountUsd)
+		})
+	}
+
+	if (routeResult.estimate.gasCosts.length > 0) {
+		routeResult.estimate.gasCosts.forEach((gas) => {
+			feeEstimation += Number(gas.amountUsd)
+		})
+	}
+
 	if (tokenType == EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
@@ -297,31 +311,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 
 	unsignedTxs.push(unsignedTx)
 
-	return { unsignedTxs }
-}
-
-export function calculateCrossChainTxFee({
-	unsignedTxs,
-	isNativeTxValue,
-	fromAmount,
-}: {
-	unsignedTxs: IPeanutUnsignedTransaction[]
-	isNativeTxValue: boolean
-	fromAmount: string
-}): bigint {
-	let totalFee = BigInt(0)
-
-	for (const tx of unsignedTxs) {
-		if (tx.value) {
-			totalFee += BigInt(tx.value.toString())
-		}
-	}
-
-	if (isNativeTxValue) {
-		totalFee = totalFee - ethers.utils.parseEther(fromAmount).toBigInt()
-	}
-
-	return totalFee
+	return { unsignedTxs, feeEstimation: feeEstimation.toString() }
 }
 
 export function prepareRequestLinkFulfillmentTransaction({
