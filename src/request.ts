@@ -244,6 +244,27 @@ export async function prepareXchainRequestFulfillmentTransaction({
 		toAddress: recipientAddress,
 		enableBoost: true,
 	})
+
+	// Transaction estimation from Squid API allows us to know the transaction fees (gas and fee), then we can iterate over them and add the values ​​that are in dollars
+	// Explanation:
+	// feeCosts: Service fees that may be charged by the Squid.
+	// gasCosts: Network gas fees charged for blockchain transactions.
+	// feeEstimation: The total estimated fee, which is the sum of both feeCosts and gasCosts.
+	// Why loops?: Each of these costs can contain multiple items (multiple txs such as approve, swap, etc), so we iterate through each to add their USD values to the total estimated fee.
+
+	let feeEstimation = 0
+	if (routeResult.txEstimation.feeCosts.length > 0) {
+		routeResult.txEstimation.feeCosts.forEach((fee) => {
+			feeEstimation += Number(fee.amountUsd)
+		})
+	}
+
+	if (routeResult.txEstimation.gasCosts.length > 0) {
+		routeResult.txEstimation.gasCosts.forEach((gas) => {
+			feeEstimation += Number(gas.amountUsd)
+		})
+	}
+
 	if (tokenType == EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
@@ -297,31 +318,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 
 	unsignedTxs.push(unsignedTx)
 
-	return { unsignedTxs }
-}
-
-export function calculateCrossChainTxFee({
-	unsignedTxs,
-	isNativeTxValue,
-	fromAmount,
-}: {
-	unsignedTxs: IPeanutUnsignedTransaction[]
-	isNativeTxValue: boolean
-	fromAmount: string
-}): bigint {
-	let totalFee = BigInt(0)
-
-	for (const tx of unsignedTxs) {
-		if (tx.value) {
-			totalFee += BigInt(tx.value.toString())
-		}
-	}
-
-	if (isNativeTxValue) {
-		totalFee = totalFee - ethers.utils.parseEther(fromAmount).toBigInt()
-	}
-
-	return totalFee
+	return { unsignedTxs, feeEstimation: feeEstimation.toString() }
 }
 
 export function prepareRequestLinkFulfillmentTransaction({

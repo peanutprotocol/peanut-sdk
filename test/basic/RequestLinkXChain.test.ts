@@ -63,13 +63,6 @@ describe('Peanut XChain request links fulfillment tests', function () {
 		})
 		console.log('Computed x chain unsigned fulfillment transactions', xchainUnsignedTxs)
 
-		const fee = await peanut.calculateCrossChainTxFee({
-			unsignedTxs: xchainUnsignedTxs.unsignedTxs,
-			isNativeTxValue: false,
-			fromAmount: amountToTestWith.toString(),
-		})
-		console.log('Fee', ethers.utils.formatEther(fee))
-
 		for (const unsignedTx of xchainUnsignedTxs.unsignedTxs) {
 			const { tx, txHash } = await signAndSubmitTx({
 				unsignedTx,
@@ -143,13 +136,6 @@ describe('Peanut XChain request links fulfillment tests', function () {
 			fromTokenDecimals: 18,
 		})
 		console.log('Computed x chain unsigned fulfillment transactions', xchainUnsignedTxs)
-
-		const fee = await peanut.calculateCrossChainTxFee({
-			unsignedTxs: xchainUnsignedTxs.unsignedTxs,
-			isNativeTxValue: true,
-			fromAmount: amountToTestWith.toString(),
-		})
-		console.log('Fee1', ethers.utils.formatEther(fee))
 
 		for (const unsignedTx of xchainUnsignedTxs.unsignedTxs) {
 			const { tx, txHash } = await signAndSubmitTx({

@@ -2326,6 +2326,7 @@ async function getSquidRoute(args: interfaces.IGetSquidRouteParams): Promise<int
 			value: BigNumber.from(data.route.transactionRequest.value),
 			calldata: data.route.transactionRequest.data,
 			to: data.route.transactionRequest.target,
+			txEstimation: data.route.estimate,
 		}
 	}
 
