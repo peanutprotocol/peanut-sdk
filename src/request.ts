@@ -246,6 +246,12 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	})
 
 	// Transaction estimation from Squid API allows us to know the transaction fees (gas and fee), then we can iterate over them and add the values ​​that are in dollars
+	// Explanation:
+	// feeCosts: Service fees that may be charged by the Squid.
+	// gasCosts: Network gas fees charged for blockchain transactions.
+	// feeEstimation: The total estimated fee, which is the sum of both feeCosts and gasCosts.
+	// Why loops?: Each of these costs can contain multiple items (multiple txs such as approve, swap, etc), so we iterate through each to add their USD values to the total estimated fee.
+
 	let feeEstimation = 0
 	if (routeResult.txEstimation.feeCosts.length > 0) {
 		routeResult.txEstimation.feeCosts.forEach((fee) => {
