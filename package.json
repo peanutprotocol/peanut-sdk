@@ -6,8 +6,8 @@
 	"types": "dist/index.d.ts",
 	"type": "module",
 	"scripts": {
-		"test": "npm run pkg-move && jest test/basic --silent",
-		"test:basic": "npm run pkg-move && jest test/basic --silent",
+		"test": "npm run pkg-move && jest test/basic --silent --coverage",
+		"test:basic": "npm run pkg-move && jest test/basic --silent --coverage",
 		"test:live": "npm run pkg-move && jest test/live --silent --runInBand",
 		"test:full": "npm run pkg-move && jest --coverage --silent --runInBand",
 		"prettier": "prettier . --write",
@@ -45,7 +45,8 @@
 	},
 	"homepage": "https://github.com/ProphetFund/peanut-sdk#readme",
 	"dependencies": {
-		"ethersv5": "npm:ethers@^5.7.2"
+		"ethersv5": "npm:ethers@^5.7.2",
+		"jest-summary-reporter": "^0.0.2"
 	},
 	"publishConfig": {
 		"access": "public"
