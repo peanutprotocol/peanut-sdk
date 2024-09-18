@@ -7,7 +7,8 @@ describe('raffle create and claim', () => {
 	it('should create a raffle link and claim all slots', async () => {
 		peanut.toggleVerbose(true)
 
-		const chainId = consts.chains[Math.floor(Math.random() * consts.chains.length)] // Use a random chainId
+		const chainId = '10'
+		// const chainId = consts.chains[Math.floor(Math.random() * consts.chains.length)] // Use a random chainId
 		console.log('using chainId: ', chainId)
 
 		const provider = await peanut.getDefaultProvider(chainId)
@@ -50,13 +51,19 @@ describe('raffle create and claim', () => {
 			password,
 			name: 'test-suite',
 			withMFA: true,
-			withCaptcha: true,
+			withCaptcha: false,
 			APIKey: consts.PEANUT_DEV_API_KEY,
 			withENS: false,
 			withSignedMessage: false,
 			withWeb3Email: false,
+			// baseUrl: 'http://localhost:5000/submit-raffle-link',
 		})
 		console.log('Got the raffle link!', link)
+
+		// const link = { link: 'https://peanut.to/claim?c=10&v=v4.3&i=(1166,2)#p=0WlcJ2lA2nrZE9md' }
+
+		// wait 2 seconds before claiming
+		await new Promise((resolve) => setTimeout(resolve, 2000))
 
 		const claimHashArray: string[] = []
 		for (let i = 0; i < numberOfSlots; i++) {
@@ -65,6 +72,8 @@ describe('raffle create and claim', () => {
 				APIKey: consts.PEANUT_DEV_API_KEY,
 				recipientAddress: consts.recipientAddresses[i],
 				recipientName: 'test-suite',
+				// baseUrlAuth: 'http://localhost:5000/get-authorisation',
+				// baseUrlClaim: 'http://localhost:5000/claim-v2',
 			})
 
 			console.log('Link claimed: ' + claimInfo.txHash)
