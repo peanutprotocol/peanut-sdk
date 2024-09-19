@@ -319,7 +319,7 @@ export async function prepareXchainRequestFulfillmentTransaction({
 
 	unsignedTxs.push(unsignedTx)
 
-	return { unsignedTxs, feeEstimation: feeEstimation.toString() }
+	return { unsignedTxs, feeEstimation: feeEstimation.toString(), estimatedFromAmount }
 }
 
 export function prepareRequestLinkFulfillmentTransaction({
