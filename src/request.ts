@@ -366,7 +366,6 @@ export async function submitRequestLinkFulfillment({
 	signedTx,
 	apiUrl = 'https://api.peanut.to/',
 	link,
-
 	amountUsd,
 }: ISubmitRequestLinkFulfillmentProps): Promise<ISubmitRequestLinkFulfillmentResponse> {
 	try {
