@@ -55,6 +55,7 @@ export interface ISubmitRequestLinkFulfillmentProps {
 	signedTx?: string
 	apiUrl?: string
 	link: string
+	amountUsd: string
 }
 
 export interface ICreateRequestLinkResponse {
@@ -365,6 +366,7 @@ export async function submitRequestLinkFulfillment({
 	signedTx,
 	apiUrl = 'https://api.peanut.to/',
 	link,
+	amountUsd,
 }: ISubmitRequestLinkFulfillmentProps): Promise<ISubmitRequestLinkFulfillmentResponse> {
 	try {
 		const uuid = getUuidFromLink(link)
@@ -374,6 +376,7 @@ export async function submitRequestLinkFulfillment({
 				destinationChainFulfillmentHash: hash,
 				payerAddress,
 				chainId,
+				amountUsd,
 				// signedTx,
 			}),
 			headers: {
