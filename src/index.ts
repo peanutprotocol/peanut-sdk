@@ -793,6 +793,14 @@ function trim_decimal_overflow(_n: number, decimals: number) {
 	return arr[0] + '.' + fraction
 }
 
+function getStringAmount(amount: interfaces.IPeanutLinkDetails['tokenAmount'], decimals: number) {
+	if (typeof amount === 'string') {
+		return amount
+	} else {
+		return trim_decimal_overflow(amount, decimals)
+	}
+}
+
 /**
  * Returns an array of transactions necessary to create a link (e.g. 1. approve, 2. makeDeposit)
  * all values obligatory.
@@ -827,7 +835,7 @@ async function prepareDepositTxs({
 			'Error validating link details: please make sure all required fields are provided and valid'
 		)
 	}
-	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
+	const tokenAmountString = getStringAmount(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals)
 	const totalTokenAmount = tokenAmountBigNum.mul(numberOfLinks)
 
@@ -1267,7 +1275,7 @@ async function validateLinkDetails(
 		throw new Error('need to provide tokenAddress if tokenType is not 0')
 	}
 
-	const tokenAmountString = trim_decimal_overflow(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
+	const tokenAmountString = getStringAmount(linkDetails.tokenAmount, linkDetails.tokenDecimals!)
 	const tokenAmountBigNum = ethers.utils.parseUnits(tokenAmountString, linkDetails.tokenDecimals) // v5
 	assert(tokenAmountBigNum.gt(0), 'tokenAmount must be greater than 0')
 
@@ -2317,6 +2325,8 @@ async function getSquidRoute(args: interfaces.IGetSquidRouteParams): Promise<int
 		return {
 			value: BigNumber.from(data.route.transactionRequest.value),
 			calldata: data.route.transactionRequest.data,
+			to: data.route.transactionRequest.target,
+			txEstimation: data.route.estimate,
 		}
 	}
 
@@ -3014,6 +3024,7 @@ async function getTokenBalance({
 const prepareTxs = prepareDepositTxs
 
 import * as raffle from './raffle.ts'
+import * as request from './request.ts'
 export * from './raffle.ts'
 
 const peanut = {
@@ -3115,6 +3126,7 @@ const peanut = {
 	getTokenBalance,
 	compareVersions,
 	...raffle,
+	...request,
 }
 
 export default peanut
@@ -3217,4 +3229,5 @@ export {
 	getTxReceiptFromHash,
 	getTokenBalance,
 	compareVersions,
+	getStringAmount,
 }

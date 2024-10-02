@@ -30,7 +30,7 @@ export enum EPeanutLinkType {
 
 export interface IPeanutLinkDetails {
 	chainId: string
-	tokenAmount: number
+	tokenAmount: number | string
 	tokenType?: EPeanutLinkType
 	tokenAddress?: string
 	tokenId?: number
@@ -167,6 +167,12 @@ export interface IPrepareDepositTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
+export interface IPrepareXchainRequestFulfillmentTransactionProps {
+	unsignedTxs: IPeanutUnsignedTransaction[]
+	feeEstimation: string
+	estimatedFromAmount: string
+}
+
 //signAndSubmitTx
 export interface ISignAndSubmitTxParams {
 	structSigner: IPeanutSigner
@@ -201,6 +207,8 @@ export interface IGetLinkDetailsParams {
 export interface ISquidRoute {
 	value: BigNumber
 	calldata: string
+	to: string
+	txEstimation?: any
 }
 
 //getCrossChainoptionsForLink

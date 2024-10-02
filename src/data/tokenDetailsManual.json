@@ -75,6 +75,32 @@
 		]
 	},
 	{
+		"chainId": "324",
+		"tokens": [
+			{
+				"address": "0x493257fD37EDB34451f62EDf8D2a0C418852bA4C",
+				"name": "Tether USD",
+				"symbol": "USDT",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1700119918"
+			},
+			{
+				"address": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4",
+				"name": "Bridged USDC",
+				"symbol": "USDC.e",
+				"decimals": 6,
+				"logoURI": "https://assets.coingecko.com/coins/images/35262/thumb/USDC_Icon.png?1700119918"
+			},
+			{
+				"address": "0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E",
+				"name": "ZKsync",
+				"symbol": "ZK",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/38043/thumb/ZKTokenBlack.png?1700119918"
+			}
+		]
+	},
+	{
 		"chainId": "43114",
 		"tokens": [
 			{
