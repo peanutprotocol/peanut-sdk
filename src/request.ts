@@ -1,7 +1,7 @@
 import { ethers, getDefaultProvider, utils } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
 import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
-import { config, getSquidRoute, interfaces, prepareApproveERC20Tx } from '.'
+import { config, getSquidRoute, interfaces, prepareApproveERC20Tx, resolveFromEnsName } from '.'
 import { prepareXchainFromAmountCalculation } from './util'
 
 // INTERFACES
@@ -180,12 +180,21 @@ export async function prepareXchainRequestFulfillmentTransaction({
 }: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionProps> {
 	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
 	let { tokenAddress: destinationToken } = linkDetails
-	const {
+	let {
 		chainId: destinationChainId,
 		recipientAddress,
 		tokenAmount: destinationTokenAmount,
 		tokenDecimals: destinationTokenDecimals,
 	} = linkDetails
+	if (recipientAddress.endsWith('.eth')) {
+		recipientAddress = await resolveFromEnsName({ ensName: recipientAddress })
+		if (undefined === recipientAddress) {
+			throw new interfaces.SDKStatus(
+				interfaces.EPrepareCreateTxsStatusCodes.ERROR_RESOLVING_ENS_NAME,
+				'Error resolving ENS name'
+			)
+		}
+	}
 	let txOptions: interfaces.ITxOptions = {}
 	if (!provider) {
 		try {

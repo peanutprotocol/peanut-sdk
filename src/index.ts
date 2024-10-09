@@ -2021,6 +2021,13 @@ async function resolveToENSName({
 	return ensName
 }
 
+async function resolveFromEnsName({ ensName }: { ensName: string }): Promise<string | undefined> {
+	const provider = await getDefaultProvider('1')
+	const x = await provider.resolveName(ensName)
+
+	return x ? x : undefined
+}
+
 /**
  * Claims a link through the Peanut API
  */
@@ -3113,6 +3120,7 @@ const peanut = {
 	trim_decimal_overflow,
 	verifySignature,
 	resolveToENSName,
+	resolveFromEnsName,
 	makeGaslessDepositPayload,
 	prepareApproveERC20Tx,
 	prepareGaslessDepositTx,
@@ -3218,6 +3226,7 @@ export {
 	trim_decimal_overflow,
 	verifySignature,
 	resolveToENSName,
+	resolveFromEnsName,
 	makeGaslessDepositPayload,
 	prepareGaslessDepositTx,
 	makeGaslessReclaimPayload,

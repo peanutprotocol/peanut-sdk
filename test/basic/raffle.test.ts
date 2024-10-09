@@ -31,7 +31,9 @@ describe('raffle', () => {
 			console.log('Got error!', error)
 			const err: interfaces.SDKStatus = error
 			console.log(err)
-			expect(err.message).toEqual('{"error":"this raffle link is not known to the server"}')
+			expect(err.message).toEqual(
+				`{"error":"invalid pubkey: error: this raffle link is not known to the server - raffle not known to the server"}`
+			)
 			raised = true
 		}
 		expect(raised).toBe(true)

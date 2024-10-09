@@ -596,6 +596,7 @@ export enum EPrepareCreateTxsStatusCodes {
 	ERROR_SETTING_FEE_OPTIONS,
 	ERROR_ESTIMATING_GAS_LIMIT,
 	ERROR_MAKING_DEPOSIT,
+	ERROR_RESOLVING_ENS_NAME,
 }
 
 export enum ESignAndSubmitTx {
