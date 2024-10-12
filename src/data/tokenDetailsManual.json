@@ -118,5 +118,17 @@
 				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
 			}
 		]
+	},
+	{
+		"chainId": "8453",
+		"tokens": [
+			{
+				"address": "0xA12cd3110a2496d3F87F9D9830FDdFC408f5b2E4",
+				"name": "Ed Nah-cat",
+				"symbol": "Ed",
+				"decimals": 18,
+				"logoURI": "https://dd.dexscreener.com/ds-data/tokens/base/0xa12cd3110a2496d3f87f9d9830fddfc408f5b2e4.png?size=xl&key=387099"
+			}
+		]
 	}
 ]
