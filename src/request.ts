@@ -46,6 +46,7 @@ export interface IPrepareXchainRequestFulfillmentTransactionProps {
 	provider: ethers.providers.Provider
 	apiUrl?: string
 	tokenType: EPeanutLinkType
+	APIKey?: string
 }
 
 export interface ISubmitRequestLinkFulfillmentProps {
@@ -177,8 +178,9 @@ export async function prepareXchainRequestFulfillmentTransaction({
 	provider,
 	apiUrl = 'https://api.peanut.to/',
 	tokenType,
+	APIKey,
 }: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionProps> {
-	const linkDetails = await getRequestLinkDetails({ link: link, apiUrl: apiUrl })
+	const linkDetails = await getRequestLinkDetails({ link, apiUrl, APIKey })
 	let { tokenAddress: destinationToken } = linkDetails
 	let {
 		chainId: destinationChainId,
