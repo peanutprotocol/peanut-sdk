@@ -6,6 +6,18 @@ import { BigNumber } from 'ethersv5'
 import { EPeanutLinkType } from '../../src/consts/interfaces.consts'
 dotenv.config()
 
+const retry = async (assertion: () => Promise<void>, { times = 3, interval = 100 } = {}) => {
+	for (let i = 0; i < times; i++) {
+		try {
+			await assertion()
+			return
+		} catch (err) {
+			if (i === times - 1) throw err
+			await new Promise((resolve) => setTimeout(resolve, interval))
+		}
+	}
+}
+
 describe('Peanut XChain request links fulfillment tests', function () {
 	it.each([
 		{
@@ -63,7 +75,7 @@ describe('Peanut XChain request links fulfillment tests', function () {
 		'$sourceToken.name to $destinationToken.name',
 		async ({ amount, sourceToken, destinationToken }) => {
 			peanut.toggleVerbose(true)
-			const userPrivateKey = process.env.TEST_WALLET_X_CHAIN_USER!
+			const userPrivateKey = process.env.TEST_WALLET_PRIVATE_KEY!
 
 			// Parameters that affect the test behaviour
 			const apiUrl = process.env.PEANUT_API_URL!
@@ -74,6 +86,12 @@ describe('Peanut XChain request links fulfillment tests', function () {
 			const userSourceChainWallet = new ethers.Wallet(userPrivateKey, sourceChainProvider)
 
 			const recipientAddress = new ethers.Wallet(process.env.TEST_WALLET_PRIVATE_KEY2!).address
+			const initialBalance = await peanut.getTokenBalance({
+				tokenAddress: destinationToken.address,
+				walletAddress: recipientAddress,
+				chainId: destinationToken.chain,
+			})
+			console.log('Initial balance of recipient:', initialBalance)
 
 			const { link } = await peanut.createRequestLink({
 				chainId: destinationToken.chain,
@@ -121,16 +139,24 @@ describe('Peanut XChain request links fulfillment tests', function () {
 				await tx.wait()
 				console.log('Request link fulfillment initiated!')
 			}
-			// TODO: expect something here
-			/*
-		const finalBalance = await peanut.getTokenBalance({
-			tokenAddress: destinationToken,
-			walletAddress: recipientAddress,
-			chainId: destinationChainId,
-		})
-		console.log('Final balance of recipient:', finalBalance)
-		// expect(finalBalance).toBe((Number(initialBalance) + amountToTestWith).toString())
-    */
+			// how many digits to check for equality after the decimal point
+			const numDigits = Math.floor(Math.log10(1 / Number(amount))) + 1
+			const expectedBalance = Number(initialBalance) + Number(amount)
+
+			await retry(
+				async () => {
+					const finalBalance = await peanut.getTokenBalance({
+						tokenAddress: destinationToken.address,
+						walletAddress: recipientAddress,
+						chainId: destinationToken.chain,
+					})
+					console.log(
+						`Final balance of recipient: ${finalBalance}, expected: ${expectedBalance}, with tolerance: ${numDigits}`
+					)
+					expect(Number(finalBalance)).toBeCloseTo(expectedBalance, numDigits)
+				},
+				{ times: 15, interval: 2000 }
+			) // retry for up to 30 seconds
 		},
 		120000
 	)
