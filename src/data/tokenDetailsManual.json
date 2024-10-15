@@ -18,7 +18,6 @@
 			}
 		]
 	},
-
 	{
 		"chainId": "137",
 		"tokens": [
@@ -116,6 +115,18 @@
 				"symbol": "USDT",
 				"decimals": 6,
 				"logoURI": "https://assets.coingecko.com/coins/images/35001/thumb/logo.png?1706959346"
+			}
+		]
+	},
+	{
+		"chainId": "8453",
+		"tokens": [
+			{
+				"address": "0x0C03Ce270B4826Ec62e7DD007f0B716068639F7B",
+				"name": "The Innovation Game",
+				"symbol": "TIG",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/50669/thumb/TIG_Logo_-_200x200.png?1728670027"
 			}
 		]
 	}
