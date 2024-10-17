@@ -1710,11 +1710,18 @@
 				"logoURI": "https://market-data-images.s3.us-east-1.amazonaws.com/tokenImages/0xa6b0437c3347c5218ac238a541ae6a9c47e40725495c4c99053d5f8f1735f673.png"
 			},
 			{
-				"address": "0x0C03Ce270B4826Ec62e7DD007f0B716068639F7B",
+				"address": "0xA12cd3110a2496d3F87F9D9830FDdFC408f5b2E4",
+				"name": "Ed Nah-cat",
+				"symbol": "Ed",
+				"decimals": 18,
+				"logoURI": "https://dd.dexscreener.com/ds-data/tokens/base/0xa12cd3110a2496d3f87f9d9830fddfc408f5b2e4.png?size=xl&key=387099"
+			},
+			{
+				"address": "0x0c03ce270b4826ec62e7dd007f0b716068639f7b",
 				"name": "The Innovation Game",
 				"symbol": "TIG",
 				"decimals": 18,
-				"logoURI": "https://assets.coingecko.com/coins/images/50669/thumb/TIG_Logo_-_200x200.png?1728670027"
+				"logoURI": "https://assets.coingecko.com/coins/images/50669/standard/TIG_Logo_-_200x200.png?1728670027"
 			}
 		]
 	},
