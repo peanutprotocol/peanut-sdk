@@ -7,7 +7,8 @@
 	"type": "module",
 	"scripts": {
 		"test": "npm run pkg-move && jest test/basic --silent --coverage",
-		"test:basic": "npm run pkg-move && jest test/basic --silent --coverage",
+		"test:unit": "jest test/unit --silent --coverage",
+		"test:basic": "npm run pkg-move && jest 'test/(unit|basic)' --silent --coverage",
 		"test:live": "npm run pkg-move && jest test/live --silent --runInBand",
 		"test:full": "npm run pkg-move && jest --coverage --silent --runInBand",
 		"prettier": "prettier . --write",
