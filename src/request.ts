@@ -36,18 +36,27 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 	tokenDecimals: number
 }
 
-export interface IPrepareXchainRequestFulfillmentTransactionProps {
+export type IPrepareXchainRequestFulfillmentTransactionProps = {
 	senderAddress: string
 	fromToken: string
 	fromTokenDecimals: number
 	fromChainId: string
-	link: string
 	squidRouterUrl: string
 	provider: ethers.providers.Provider
-	apiUrl?: string
 	tokenType: EPeanutLinkType
-	APIKey?: string
-}
+} & (
+	| {
+			link: string
+			apiUrl?: string
+			APIKey?: string
+	  }
+	| {
+			linkDetails: Pick<
+				IGetRequestLinkDetailsResponse,
+				'chainId' | 'recipientAddress' | 'tokenAmount' | 'tokenDecimals' | 'tokenAddress'
+			>
+	  }
+)
 
 export interface ISubmitRequestLinkFulfillmentProps {
 	hash: string
@@ -168,25 +177,26 @@ export async function getRequestLinkDetails({
 	return responseData
 }
 
-export async function prepareXchainRequestFulfillmentTransaction({
-	senderAddress,
-	fromToken,
-	fromTokenDecimals,
-	fromChainId,
-	link,
-	squidRouterUrl,
-	provider,
-	apiUrl = 'https://api.peanut.to/',
-	tokenType,
-	APIKey,
-}: IPrepareXchainRequestFulfillmentTransactionProps): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionProps> {
-	const linkDetails = await getRequestLinkDetails({ link, apiUrl, APIKey })
-	let { tokenAddress: destinationToken } = linkDetails
+export async function prepareXchainRequestFulfillmentTransaction(
+	props: IPrepareXchainRequestFulfillmentTransactionProps
+): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionResponse> {
+	let { senderAddress, fromToken, fromTokenDecimals, fromChainId, squidRouterUrl, provider, tokenType } = props
+	let linkDetails: Pick<
+		IGetRequestLinkDetailsResponse,
+		'chainId' | 'recipientAddress' | 'tokenAmount' | 'tokenDecimals' | 'tokenAddress'
+	>
+	if ('linkDetails' in props) {
+		linkDetails = props.linkDetails
+	} else {
+		const { link, apiUrl = 'https://api.peanut.to/', APIKey } = props
+		linkDetails = await getRequestLinkDetails({ link, apiUrl, APIKey })
+	}
 	let {
 		chainId: destinationChainId,
 		recipientAddress,
 		tokenAmount: destinationTokenAmount,
 		tokenDecimals: destinationTokenDecimals,
+		tokenAddress: destinationToken,
 	} = linkDetails
 	if (recipientAddress.endsWith('.eth')) {
 		recipientAddress = await resolveFromEnsName({ ensName: recipientAddress })

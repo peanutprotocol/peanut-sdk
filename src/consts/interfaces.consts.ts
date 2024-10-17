@@ -167,7 +167,7 @@ export interface IPrepareDepositTxsResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 }
 
-export interface IPrepareXchainRequestFulfillmentTransactionProps {
+export interface IPrepareXchainRequestFulfillmentTransactionResponse {
 	unsignedTxs: IPeanutUnsignedTransaction[]
 	feeEstimation: string
 	estimatedFromAmount: string
