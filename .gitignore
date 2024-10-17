@@ -10,6 +10,9 @@ src/data/package.json
 test/basic/playground.test.ts
 **.env
 
+**/venv/
+
+
 # Logs
 logs
 *.log

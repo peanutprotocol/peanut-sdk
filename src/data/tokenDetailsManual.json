@@ -128,6 +128,13 @@
 				"symbol": "Ed",
 				"decimals": 18,
 				"logoURI": "https://dd.dexscreener.com/ds-data/tokens/base/0xa12cd3110a2496d3f87f9d9830fddfc408f5b2e4.png?size=xl&key=387099"
+			},
+			{
+				"address": "0x0c03ce270b4826ec62e7dd007f0b716068639f7b",
+				"name": "The Innovation Game",
+				"symbol": "TIG",
+				"decimals": 18,
+				"logoURI": "https://assets.coingecko.com/coins/images/50669/standard/TIG_Logo_-_200x200.png?1728670027"
 			}
 		]
 	}
