@@ -753,3 +753,9 @@ export async function prepareXchainFromAmountCalculation({
 		return null
 	}
 }
+
+export function normalizeUrl(url: string): string {
+	const urlObject = new URL(url)
+	urlObject.pathname = urlObject.pathname.replace(/\/+/g, '/')
+	return urlObject.toString()
+}

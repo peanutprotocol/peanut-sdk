@@ -2,7 +2,7 @@ import { ethers, getDefaultProvider, utils } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
 import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
 import { config, getSquidRoute, interfaces, prepareApproveERC20Tx, resolveFromEnsName } from '.'
-import { prepareXchainFromAmountCalculation } from './util'
+import { prepareXchainFromAmountCalculation, normalizeUrl } from './util'
 
 // INTERFACES
 export interface ICreateRequestLinkProps {
@@ -125,7 +125,7 @@ export async function createRequestLink({
 		if (tokenSymbol) formData.append('tokenSymbol', tokenSymbol)
 		if (attachment) formData.append('attachment', attachment)
 
-		const apiResponse = await fetch(`${apiUrl}/request-links`, {
+		const apiResponse = await fetch(normalizeUrl(`${apiUrl}/request-links`), {
 			method: 'POST',
 			body: formData,
 			headers: {
@@ -152,7 +152,7 @@ export async function getRequestLinkDetails({
 }: IGetRequestLinkDetailsProps): Promise<IGetRequestLinkDetailsResponse> {
 	const uuid = getUuidFromLink(link)
 
-	const apiResponse = await fetch(`${apiUrl}/request-links/${uuid}`, {
+	const apiResponse = await fetch(normalizeUrl(`${apiUrl}/request-links/${uuid}`), {
 		method: 'GET',
 		headers: {
 			'api-key': APIKey!,
@@ -381,7 +381,7 @@ export async function submitRequestLinkFulfillment({
 }: ISubmitRequestLinkFulfillmentProps): Promise<ISubmitRequestLinkFulfillmentResponse> {
 	try {
 		const uuid = getUuidFromLink(link)
-		const apiResponse = await fetch(`${apiUrl}request-links/${uuid}`, {
+		const apiResponse = await fetch(normalizeUrl(`${apiUrl}/request-links/${uuid}`), {
 			method: 'PATCH',
 			body: JSON.stringify({
 				destinationChainFulfillmentHash: hash,
