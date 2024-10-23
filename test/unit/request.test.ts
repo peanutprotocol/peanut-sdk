@@ -60,6 +60,20 @@ describe('Request', () => {
 
 			expect(mockFetch).toHaveBeenCalledWith(`https://api.peanut.to/request-links/${linkUuid}`, expect.anything())
 		})
+
+		it('should accept uuid directly', async () => {
+			const linkUuid = 'ee3b904d-9809-4b97-b82b-34de1d1a7314'
+			mockFetch.mockResolvedValueOnce({
+				json: jest.fn().mockResolvedValueOnce({
+					link: `https://peanut.to/request/pay?id=${linkUuid}`,
+				}),
+				status: 200,
+			})
+
+			await getRequestLinkDetails({ uuid: linkUuid })
+
+			expect(mockFetch).toHaveBeenCalledWith(`https://api.peanut.to/request-links/${linkUuid}`, expect.anything())
+		})
 	})
 
 	describe('submitRequestLinkFulfillment', () => {
