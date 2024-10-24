@@ -22,11 +22,17 @@ export interface ICreateRequestLinkProps {
 	APIKey?: string
 }
 
-export interface IGetRequestLinkDetailsProps {
-	link: string
+export type IGetRequestLinkDetailsProps = {
 	APIKey?: string
 	apiUrl?: string
-}
+} & (
+	| {
+			link: string
+	  }
+	| {
+			uuid: string
+	  }
+)
 
 export interface IPrepareRequestLinkFulfillmentTransactionProps {
 	recipientAddress: string
@@ -154,12 +160,12 @@ export async function createRequestLink({
 	}
 }
 
-export async function getRequestLinkDetails({
-	link,
-	APIKey,
-	apiUrl = 'https://api.peanut.to/',
-}: IGetRequestLinkDetailsProps): Promise<IGetRequestLinkDetailsResponse> {
-	const uuid = getUuidFromLink(link)
+export async function getRequestLinkDetails(
+	props: IGetRequestLinkDetailsProps
+): Promise<IGetRequestLinkDetailsResponse> {
+	const { APIKey, apiUrl = 'https://api.peanut.to/' } = props
+
+	const uuid = 'uuid' in props ? props.uuid : getUuidFromLink(props.link)
 
 	const apiResponse = await fetch(normalizePath(`${apiUrl}/request-links/${uuid}`), {
 		method: 'GET',
