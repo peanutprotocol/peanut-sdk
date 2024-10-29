@@ -703,7 +703,7 @@ export async function prepareXchainFromAmountCalculation({
 	fromToken,
 	toAmount,
 	toToken,
-	slippagePercentage = 1.5,
+	slippagePercentage = 0.3, // 0.3%
 }: {
 	fromToken: TokenData
 	toToken: TokenData
@@ -736,17 +736,12 @@ export async function prepareXchainFromAmountCalculation({
 		const toTokenPriceBN = ethers.utils.parseUnits(toTokenPrice.toString(), normalizedDecimalCount)
 		const toAmountBN = ethers.utils.parseUnits(toAmount, normalizedDecimalCount)
 		const fromAmountBN = toTokenPriceBN.mul(toAmountBN).div(fromTokenPriceBN)
-
 		// Slippage percentage is multiplied by 1000 to convert it into an integer form that represents the fraction.
 		// because BigNumber cannot handle floating points directly.
+		// TODO: use bigint
 		const slippageFractionBN = ethers.BigNumber.from(Math.floor(slippagePercentage * 1000))
-
-		// For example, a 10.5% slippage is represented here as 10,500 (after scaling),
-		// and dividing by 100,000 effectively applies the 10.5% to the fromAmountBN.
-		const slippageBN = fromAmountBN.mul(slippageFractionBN).div(100000)
-
+		const slippageBN = fromAmountBN.mul(slippageFractionBN).div(100000) // 1000 * 100 (10e5)
 		const totalFromAmountBN = fromAmountBN.add(slippageBN)
-
 		return ethers.utils.formatUnits(totalFromAmountBN, fromToken.decimals)
 	} catch (error) {
 		console.error('Failed to calculate fromAmount:', error)

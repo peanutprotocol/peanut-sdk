@@ -250,6 +250,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		fromToken: fromTokenData,
 		toAmount: destinationTokenAmount,
 		toToken: toTokenData,
+		slippagePercentage: 0.3, // this can be low because squid will add slippage
 	})
 
 	console.log('estimatedFromAmount', estimatedFromAmount)
@@ -282,13 +283,13 @@ export async function prepareXchainRequestFulfillmentTransaction(
 
 	let feeEstimation = 0
 	if (routeResult.txEstimation.feeCosts.length > 0) {
-		routeResult.txEstimation.feeCosts.forEach((fee) => {
+		routeResult.txEstimation.feeCosts.forEach((fee: { amountUsd: string }) => {
 			feeEstimation += Number(fee.amountUsd)
 		})
 	}
 
 	if (routeResult.txEstimation.gasCosts.length > 0) {
-		routeResult.txEstimation.gasCosts.forEach((gas) => {
+		routeResult.txEstimation.gasCosts.forEach((gas: { amountUsd: string }) => {
 			feeEstimation += Number(gas.amountUsd)
 		})
 	}
@@ -296,7 +297,6 @@ export async function prepareXchainRequestFulfillmentTransaction(
 	if (tokenType == EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
-			value: tokenAmount,
 		}
 	} else if (tokenType == EPeanutLinkType.erc20) {
 		config.verbose && console.log('checking allowance...')
@@ -328,23 +328,11 @@ export async function prepareXchainRequestFulfillmentTransaction(
 
 	config.verbose && console.log('Squid route calculated :)', { routeResult })
 
-	let unsignedTx: IPeanutUnsignedTransaction = {}
-
-	if (tokenType == EPeanutLinkType.native) {
-		unsignedTx = {
-			data: routeResult.calldata,
-			to: routeResult.to,
-			value: BigInt(routeResult.value.toString()) + BigInt(txOptions.value.toString()),
-		}
-	} else if (tokenType == EPeanutLinkType.erc20) {
-		unsignedTx = {
-			data: routeResult.calldata,
-			to: routeResult.to,
-			value: BigInt(routeResult.value.toString()),
-		}
-	}
-
-	unsignedTxs.push(unsignedTx)
+	unsignedTxs.push({
+		data: routeResult.calldata,
+		to: routeResult.to,
+		value: BigInt(routeResult.value.toString()),
+	})
 
 	return { unsignedTxs, feeEstimation: feeEstimation.toString(), estimatedFromAmount }
 }
