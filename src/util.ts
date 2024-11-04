@@ -742,7 +742,8 @@ export async function prepareXchainFromAmountCalculation({
 		const slippageFractionBN = ethers.BigNumber.from(Math.floor(slippagePercentage * 1000))
 		const slippageBN = fromAmountBN.mul(slippageFractionBN).div(100000) // 1000 * 100 (10e5)
 		const totalFromAmountBN = fromAmountBN.add(slippageBN)
-		return ethers.utils.formatUnits(totalFromAmountBN, fromToken.decimals)
+		const amount = ethers.utils.formatUnits(totalFromAmountBN, normalizedDecimalCount)
+		return stringToFixed(amount, fromToken.decimals)
 	} catch (error) {
 		console.error('Failed to calculate fromAmount:', error)
 		return null
@@ -758,4 +759,13 @@ export function normalizePath(url: string): string {
 		// Assume we are getting only a path
 		return url.replace(/\/+/g, '/')
 	}
+}
+
+export function stringToFixed(numStr: string, precision: number = 0): string {
+	const match = numStr.match(/^(-?\d+)\.(?<decimals>\d*)$/)
+	if (!match) return numStr
+
+	const [_, intPart, decimals] = match
+	const rounded = decimals.padEnd(precision, '0').slice(0, precision)
+	return rounded ? `${intPart}.${rounded}` : intPart
 }
