@@ -1,4 +1,4 @@
-import { normalizePath, prepareXchainFromAmountCalculation } from '../../src/util'
+import { normalizePath, prepareXchainFromAmountCalculation, stringToFixed } from '../../src/util'
 
 const mockFetch = jest.fn()
 
@@ -66,6 +66,19 @@ describe('util', () => {
 
 			expect(mockFetch).toHaveBeenCalledTimes(2)
 			expect(fromAmount).toBe(expectedFromAmount)
+		})
+	})
+
+	describe('stringToFixed', () => {
+		it.each([
+			['0.001', '0.00', 2],
+			['0.01', '0.01', 2],
+			['0.1', '0.10', 2],
+			['1', '1', 2],
+			['10.1', '10.10', 2],
+			['10.123456', '10.123', 3],
+		])('should convert %s to %s with precision %s', (numStr, expected, precision) => {
+			expect(stringToFixed(numStr, precision)).toBe(expected)
 		})
 	})
 })
