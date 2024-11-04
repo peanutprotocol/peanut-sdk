@@ -742,7 +742,7 @@ export async function prepareXchainFromAmountCalculation({
 		const slippageFractionBN = ethers.BigNumber.from(Math.floor(slippagePercentage * 1000))
 		const slippageBN = fromAmountBN.mul(slippageFractionBN).div(100000) // 1000 * 100 (10e5)
 		const totalFromAmountBN = fromAmountBN.add(slippageBN)
-		return ethers.utils.formatUnits(totalFromAmountBN, fromToken.decimals)
+		return Number(ethers.utils.formatUnits(totalFromAmountBN, normalizedDecimalCount)).toFixed(fromToken.decimals)
 	} catch (error) {
 		console.error('Failed to calculate fromAmount:', error)
 		return null
