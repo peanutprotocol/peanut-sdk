@@ -888,6 +888,10 @@ export async function routeForTargetAmount({
 		})
 		minToAmount = ethers.BigNumber.from(result.routeResult.txEstimation.toAmountMin)
 		slippagePercentage += 0.1
+		if (5.0 < slippagePercentage) {
+			// we dont want to go over 5% slippage
+			throw new Error('Slippage percentage exceeded maximum allowed value')
+		}
 	}
 	return { ...result, finalSlippage: slippagePercentage }
 }
