@@ -142,17 +142,17 @@ async function fetchGetBalance(rpcUrl: string) {
 	config.verbose && console.log('rpcs', rpcs)
 
 	// Check if there is an Infura RPC and check for its liveliness
-	// let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
+	let infuraRpc = rpcs.find((rpc) => rpc.includes('infura.io'))
 	const INFURA_API_KEY = '4478656478ab4945a1b013fb1d8f20fd'
-	// if (infuraRpc) {
-	// 	infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', INFURA_API_KEY)
-	// 	config.verbose && console.log('Infura RPC found:', infuraRpc)
-	// 	const provider = await createValidProvider(infuraRpc)
-	// 	if (provider) {
-	// 		providerCache[chainId] = provider
-	// 		return provider
-	// 	}
-	// }
+	if (infuraRpc) {
+		infuraRpc = infuraRpc.replace('${INFURA_API_KEY}', INFURA_API_KEY)
+		config.verbose && console.log('Infura RPC found:', infuraRpc)
+		const provider = await createValidProvider(infuraRpc)
+		if (provider) {
+			providerCache[chainId] = provider
+			return provider
+		}
+	}
 
 	// If no valid Infura RPC, continue with the current behavior
 	let providerPromises
@@ -170,6 +170,7 @@ async function fetchGetBalance(rpcUrl: string) {
 			throw new Error('No alive provider found for chainId ' + chainId)
 		}
 		providerCache[chainId] = provider
+		config.verbose && console.log('Found following provider:', provider.connection.url)
 		return provider
 	} catch (error) {
 		throw new Error('No alive provider found for chainId ' + chainId)
@@ -196,7 +197,7 @@ async function createValidProvider(rpcUrl: string): Promise<ethers.providers.Jso
 				`Invalid RPC: ${rpcUrl}`
 			)
 		}
-
+		config.verbose && console.log(`${provider.connection.url} returned balance: ${balance}`)
 		return provider
 	} catch (error) {
 		try {
