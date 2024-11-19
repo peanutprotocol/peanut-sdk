@@ -2198,7 +2198,11 @@ async function getXChainOptionsForLink({
 	sourceChainId,
 	tokenType,
 }: interfaces.IGetCrossChainOptionsForLinkParams): Promise<
-	Array<interfaces.ISquidChain & { tokens: interfaces.ISquidToken[] }>
+	Array<
+		interfaces.ISquidChain & {
+			tokens: Pick<interfaces.ISquidToken, 'chainId' | 'address' | 'name' | 'symbol' | 'logoURI'>[]
+		}
+	>
 > {
 	if (tokenType > 1) {
 		throw new interfaces.SDKStatus(
@@ -2220,7 +2224,10 @@ async function getXChainOptionsForLink({
 
 	const supportedTokens = await getSquidTokens({ isTestnet })
 
-	const supportedTokensMap = new Map<string, interfaces.ISquidToken[]>()
+	const supportedTokensMap = new Map<
+		string,
+		Pick<interfaces.ISquidToken, 'chainId' | 'address' | 'name' | 'symbol' | 'logoURI'>[]
+	>()
 
 	supportedTokens.forEach(({ chainId, address, name, symbol, logoURI }) => {
 		if (!supportedTokensMap.has(chainId)) {

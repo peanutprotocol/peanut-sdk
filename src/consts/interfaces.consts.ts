@@ -243,11 +243,14 @@ export interface ISquidChain {
 }
 
 export interface ISquidToken {
+	active: boolean
 	chainId: string
 	address: string
+	decimals: number
 	name: string
 	symbol: string
 	logoURI: string
+	usdPrice: number
 }
 
 export interface ICreateClaimXChainPayload {
