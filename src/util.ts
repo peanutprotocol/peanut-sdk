@@ -765,7 +765,7 @@ export async function prepareXchainFromAmountCalculation({
 	}
 }
 
-async function routeWithSlippage({
+async function estimateRouteWithMinSlippage({
 	slippagePercentage,
 	fromToken,
 	toToken,
@@ -843,18 +843,20 @@ export async function routeForTargetAmount({
 	routeResult: interfaces.ISquidRoute
 	finalSlippage: number
 }> {
-	const fromTokenPrice = await getTokenPrice({
-		chainId: fromToken.chainId,
-		tokenAddress: fromToken.address,
-	})
-	const toTokenPrice = await getTokenPrice({
-		chainId: toToken.chainId,
-		tokenAddress: toToken.address,
-	})
+	const [fromTokenPrice, toTokenPrice] = await Promise.all([
+		getTokenPrice({
+			chainId: fromToken.chainId,
+			tokenAddress: fromToken.address,
+		}),
+		getTokenPrice({
+			chainId: toToken.chainId,
+			tokenAddress: toToken.address,
+		}),
+	])
 
 	if (slippagePercentage) {
 		return {
-			...(await routeWithSlippage({
+			...(await estimateRouteWithMinSlippage({
 				slippagePercentage,
 				fromToken,
 				toToken,
@@ -875,7 +877,7 @@ export async function routeForTargetAmount({
 	let minToAmount: ethers.BigNumber = ethers.BigNumber.from(0)
 	slippagePercentage = 0
 	while (minToAmount.lt(weiToAmount)) {
-		result = await routeWithSlippage({
+		result = await estimateRouteWithMinSlippage({
 			slippagePercentage,
 			fromToken,
 			toToken,
