@@ -4,6 +4,7 @@ import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { getSquidRoute } from '.'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -685,7 +686,13 @@ export function compareVersions(version1: string, version2: string, lead: string
 	return true
 }
 
-async function getTokenPrice({ tokenAddress, chainId }: { tokenAddress: string; chainId: string | number }) {
+export async function getTokenPrice({
+	tokenAddress,
+	chainId,
+}: {
+	tokenAddress: string
+	chainId: string | number
+}): Promise<number> {
 	const response = await fetch(
 		'https://api.0xsquid.com/v1/token-price?' + new URLSearchParams({ tokenAddress, chainId: chainId.toString() })
 	)
@@ -704,11 +711,15 @@ export async function prepareXchainFromAmountCalculation({
 	toAmount,
 	toToken,
 	slippagePercentage = 0.3, // 0.3%
+	fromTokenPrice,
+	toTokenPrice,
 }: {
 	fromToken: TokenData
 	toToken: TokenData
 	toAmount: string
 	slippagePercentage?: number
+	fromTokenPrice?: number
+	toTokenPrice?: number
 }): Promise<string | null> {
 	if (slippagePercentage < 0) {
 		console.error('Invalid slippagePercentage: Cannot be negative.')
@@ -717,15 +728,19 @@ export async function prepareXchainFromAmountCalculation({
 
 	try {
 		// Get usd prices for both tokens
-		const [fromTokenPrice, toTokenPrice] = await Promise.all([
-			getTokenPrice({
-				chainId: fromToken.chainId,
-				tokenAddress: fromToken.address,
-			}),
-			getTokenPrice({
-				chainId: toToken.chainId,
-				tokenAddress: toToken.address,
-			}),
+		;[fromTokenPrice, toTokenPrice] = await Promise.all([
+			fromTokenPrice
+				? Promise.resolve(fromTokenPrice)
+				: getTokenPrice({
+						chainId: fromToken.chainId,
+						tokenAddress: fromToken.address,
+					}),
+			toTokenPrice
+				? Promise.resolve(toTokenPrice)
+				: getTokenPrice({
+						chainId: toToken.chainId,
+						tokenAddress: toToken.address,
+					}),
 		])
 
 		// Normalize prices to account for different decimal counts between tokens.
@@ -748,6 +763,139 @@ export async function prepareXchainFromAmountCalculation({
 		console.error('Failed to calculate fromAmount:', error)
 		return null
 	}
+}
+
+async function estimateRouteWithMinSlippage({
+	slippagePercentage,
+	fromToken,
+	toToken,
+	targetAmount,
+	squidRouterUrl,
+	fromAddress,
+	toAddress,
+	fromTokenPrice,
+	toTokenPrice,
+}: {
+	slippagePercentage: number
+	fromToken: TokenData
+	toToken: TokenData
+	targetAmount: string
+	squidRouterUrl: string
+	fromAddress: string
+	toAddress: string
+	fromTokenPrice: number
+	toTokenPrice: number
+}): Promise<{
+	estimatedFromAmount: string
+	weiFromAmount: ethers.BigNumber
+	routeResult: interfaces.ISquidRoute
+}> {
+	const estimatedFromAmount = await prepareXchainFromAmountCalculation({
+		fromToken,
+		toAmount: targetAmount,
+		toToken,
+		slippagePercentage,
+		fromTokenPrice,
+		toTokenPrice,
+	})
+	console.log('estimatedFromAmount', estimatedFromAmount)
+	if (!estimatedFromAmount) {
+		throw new Error('Failed to estimate from amount')
+	}
+	const weiFromAmount = ethers.utils.parseUnits(estimatedFromAmount, fromToken.decimals)
+	const routeResult = await getSquidRoute({
+		squidRouterUrl,
+		fromChain: fromToken.chainId,
+		fromToken: fromToken.address,
+		fromAmount: weiFromAmount.toString(),
+		toChain: toToken.chainId,
+		toToken: toToken.address,
+		fromAddress,
+		toAddress,
+		enableBoost: true,
+	})
+	return { estimatedFromAmount, weiFromAmount, routeResult }
+}
+
+/**
+ * For a token pair and target amount calculates the minium from amount
+ * needed to get the target amount, and the squid route to get there
+ */
+export async function routeForTargetAmount({
+	slippagePercentage,
+	fromToken,
+	toToken,
+	targetAmount,
+	squidRouterUrl,
+	fromAddress,
+	toAddress,
+}: {
+	slippagePercentage?: number
+	fromToken: TokenData
+	toToken: TokenData
+	targetAmount: string
+	squidRouterUrl: string
+	fromAddress: string
+	toAddress: string
+}): Promise<{
+	estimatedFromAmount: string
+	weiFromAmount: ethers.BigNumber
+	routeResult: interfaces.ISquidRoute
+	finalSlippage: number
+}> {
+	const [fromTokenPrice, toTokenPrice] = await Promise.all([
+		getTokenPrice({
+			chainId: fromToken.chainId,
+			tokenAddress: fromToken.address,
+		}),
+		getTokenPrice({
+			chainId: toToken.chainId,
+			tokenAddress: toToken.address,
+		}),
+	])
+
+	if (slippagePercentage) {
+		return {
+			...(await estimateRouteWithMinSlippage({
+				slippagePercentage,
+				fromToken,
+				toToken,
+				targetAmount,
+				squidRouterUrl,
+				fromAddress,
+				toAddress,
+				fromTokenPrice,
+				toTokenPrice,
+			})),
+			finalSlippage: slippagePercentage,
+		}
+	}
+
+	let result: { estimatedFromAmount: string; weiFromAmount: ethers.BigNumber; routeResult: interfaces.ISquidRoute }
+
+	const weiToAmount = ethers.utils.parseUnits(targetAmount, toToken.decimals)
+	let minToAmount: ethers.BigNumber = ethers.BigNumber.from(0)
+	slippagePercentage = 0
+	while (minToAmount.lt(weiToAmount)) {
+		result = await estimateRouteWithMinSlippage({
+			slippagePercentage,
+			fromToken,
+			toToken,
+			targetAmount,
+			squidRouterUrl,
+			fromAddress,
+			toAddress,
+			fromTokenPrice,
+			toTokenPrice,
+		})
+		minToAmount = ethers.BigNumber.from(result.routeResult.txEstimation.toAmountMin)
+		slippagePercentage += 0.1
+		if (5.0 < slippagePercentage) {
+			// we dont want to go over 5% slippage
+			throw new Error('Slippage percentage exceeded maximum allowed value')
+		}
+	}
+	return { ...result, finalSlippage: slippagePercentage }
 }
 
 export function normalizePath(url: string): string {
