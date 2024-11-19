@@ -1,8 +1,8 @@
-import { ethers, getDefaultProvider, utils } from 'ethersv5'
+import { ethers, getDefaultProvider } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
 import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
-import { config, getSquidRoute, interfaces, prepareApproveERC20Tx, resolveFromEnsName } from '.'
-import { prepareXchainFromAmountCalculation, normalizePath } from './util'
+import { config, interfaces, prepareApproveERC20Tx, resolveFromEnsName } from '.'
+import { normalizePath, routeForTargetAmount } from './util'
 
 // INTERFACES
 export interface ICreateRequestLinkProps {
@@ -50,6 +50,7 @@ export type IPrepareXchainRequestFulfillmentTransactionProps = {
 	squidRouterUrl: string
 	provider: ethers.providers.Provider
 	tokenType: EPeanutLinkType
+	slippagePercentage?: number
 } & (
 	| {
 			link: string
@@ -186,7 +187,16 @@ export async function getRequestLinkDetails(
 export async function prepareXchainRequestFulfillmentTransaction(
 	props: IPrepareXchainRequestFulfillmentTransactionProps
 ): Promise<interfaces.IPrepareXchainRequestFulfillmentTransactionResponse> {
-	let { senderAddress, fromToken, fromTokenDecimals, fromChainId, squidRouterUrl, provider, tokenType } = props
+	let {
+		senderAddress,
+		fromToken,
+		fromTokenDecimals,
+		fromChainId,
+		squidRouterUrl,
+		provider,
+		tokenType,
+		slippagePercentage,
+	} = props
 	let linkDetails: Pick<
 		IGetRequestLinkDetailsResponse,
 		'chainId' | 'recipientAddress' | 'tokenAmount' | 'tokenDecimals' | 'tokenAddress'
@@ -246,32 +256,15 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		chainId: destinationChainId,
 		decimals: destinationTokenDecimals,
 	}
-	const estimatedFromAmount = await prepareXchainFromAmountCalculation({
+
+	const { estimatedFromAmount, weiFromAmount, routeResult, finalSlippage } = await routeForTargetAmount({
+		slippagePercentage,
 		fromToken: fromTokenData,
-		toAmount: destinationTokenAmount,
 		toToken: toTokenData,
-		slippagePercentage: 0.3, // this can be low because squid will add slippage
-	})
-
-	console.log('estimatedFromAmount', estimatedFromAmount)
-	if (!estimatedFromAmount) {
-		throw new Error('Failed to estimate from amount')
-	}
-	// get wei of amount being withdrawn and send as string (e.g. "10000000000000000")
-	const tokenAmount = utils.parseUnits(estimatedFromAmount, fromTokenDecimals)
-	config.verbose && console.log('Getting squid info..')
-	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
-
-	const routeResult = await getSquidRoute({
+		targetAmount: destinationTokenAmount,
 		squidRouterUrl,
-		fromChain: fromChainId,
-		fromToken: fromToken,
-		fromAmount: tokenAmount.toString(),
-		toChain: destinationChainId,
-		toToken: destinationToken,
 		fromAddress: senderAddress,
 		toAddress: recipientAddress,
-		enableBoost: true,
 	})
 
 	// Transaction estimation from Squid API allows us to know the transaction fees (gas and fee), then we can iterate over them and add the values ​​that are in dollars
@@ -294,6 +287,8 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		})
 	}
 
+	const unsignedTxs: interfaces.IPeanutUnsignedTransaction[] = []
+
 	if (tokenType == EPeanutLinkType.native) {
 		txOptions = {
 			...txOptions,
@@ -305,7 +300,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 				senderAddress,
 				destinationChainId,
 				fromToken,
-				tokenAmount,
+				weiFromAmount,
 				fromTokenDecimals,
 				true,
 				LATEST_STABLE_BATCHER_VERSION,
@@ -334,7 +329,12 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		value: BigInt(routeResult.value.toString()),
 	})
 
-	return { unsignedTxs, feeEstimation: feeEstimation.toString(), estimatedFromAmount }
+	return {
+		unsignedTxs,
+		feeEstimation: feeEstimation.toString(),
+		estimatedFromAmount,
+		slippagePercentage: finalSlippage,
+	}
 }
 
 export function prepareRequestLinkFulfillmentTransaction({
@@ -378,7 +378,6 @@ export async function submitRequestLinkFulfillment({
 	chainId,
 	hash,
 	payerAddress,
-	signedTx,
 	apiUrl = 'https://api.peanut.to/',
 	link,
 	amountUsd,
