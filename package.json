@@ -40,7 +40,7 @@
 		"ethers"
 	],
 	"author": "Hugo Montenegro, Konrad Urban",
-	"license": "UNLICENSED",
+	"license": "GPL-3.0-or-later",
 	"bugs": {
 		"url": "https://github.com/ProphetFund/peanut-sdk/issues"
 	},
