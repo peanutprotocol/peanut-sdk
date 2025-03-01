@@ -5,6 +5,7 @@ import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { getSquidRoute } from '.'
+import { SQUID_API_URL } from './consts/misc.ts'
 
 export function assert(condition: any, message: string) {
 	if (!condition) {
@@ -599,7 +600,7 @@ export function getSquidRouterUrl(isMainnet: boolean, usePeanutApi: boolean): st
 	} else {
 		// using squid api
 		if (isMainnet) {
-			squidRouteUrl = 'https://apiplus.squidrouter.com/v2/route'
+			squidRouteUrl = `${SQUID_API_URL}/route`
 		} else {
 			squidRouteUrl = 'https://testnet.apiplus.squidrouter.com/v2/route'
 		}
@@ -693,11 +694,11 @@ export async function getTokenPrice({
 	tokenAddress: string
 	chainId: string | number
 }): Promise<number> {
-	const response = await fetch(
-		'https://api.0xsquid.com/v1/token-price?' + new URLSearchParams({ tokenAddress, chainId: chainId.toString() })
-	)
+	const response = await fetch(`${SQUID_API_URL}/token-price?tokenAddress=${tokenAddress}&chainId=${chainId}`, {
+		headers: { 'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C' },
+	})
 	const data = await response.json()
-	return data.price
+	return data.token.usdPrice
 }
 
 interface TokenData {
