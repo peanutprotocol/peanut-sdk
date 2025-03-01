@@ -72,7 +72,7 @@ import {
 } from './util.ts'
 
 import * as interfaces from './consts/interfaces.consts.ts'
-import { SQUID_ADDRESS } from './consts/misc.ts'
+import { SQUID_ADDRESS, SQUID_API_URL } from './consts/misc.ts'
 import {
 	EIP3009Tokens,
 	GaslessReclaimTypes,
@@ -2128,9 +2128,7 @@ async function claimLinkXChainGasless({
 
 async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
-	const url = isTestnet
-		? 'https://testnet.apiplus.squidrouter.com/v2/chains'
-		: 'https://apiplus.squidrouter.com/v2/chains'
+	const url = isTestnet ? 'https://testnet.apiplus.squidrouter.com/v2/chains' : `${SQUID_API_URL}/chains`
 	try {
 		const response = await fetch(url, {
 			headers: {
@@ -2162,9 +2160,7 @@ async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<in
 async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidToken[]> {
 	// TODO rate limits? Caching?
 	// const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
-	const url = isTestnet
-		? 'https://testnet.apiplus.squidrouter.com/v2/tokens'
-		: 'https://apiplus.squidrouter.com/v2/tokens'
+	const url = isTestnet ? 'https://testnet.apiplus.squidrouter.com/v2/tokens' : `${SQUID_API_URL}/tokens`
 
 	try {
 		const response = await fetch(url, {
