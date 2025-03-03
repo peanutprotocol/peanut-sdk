@@ -11,9 +11,6 @@ importers:
       ethersv5:
         specifier: npm:ethers@^5.7.2
         version: ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      jest-summary-reporter:
-        specifier: ^0.0.2
-        version: 0.0.2
     devDependencies:
       '@ethersproject/abstract-provider':
         specifier: ^5.7.0
@@ -66,6 +63,9 @@ importers:
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.7.4)
+      jest-summary-reporter:
+        specifier: ^0.0.2
+        version: 0.0.2
       json-loader:
         specifier: ^0.5.7
         version: 0.5.7
@@ -901,6 +901,7 @@ packages:
 
   acorn-import-assertions@1.9.0:
     resolution: {integrity: sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA==}
+    deprecated: package has been renamed to acorn-import-attributes
     peerDependencies:
       acorn: ^8
 
