@@ -748,9 +748,9 @@ export async function prepareXchainFromAmountCalculation({
 		// This ensures calculations are consistent and prevents issues with scientific notation
 		// that could arise from small price values or different token decimals.
 		const normalizedDecimalCount = Math.max(fromToken.decimals, toToken.decimals)
-		const fromTokenPriceBN = ethers.utils.parseUnits(fromTokenPrice.toString(), normalizedDecimalCount)
-		const toTokenPriceBN = ethers.utils.parseUnits(toTokenPrice.toString(), normalizedDecimalCount)
-		const toAmountBN = ethers.utils.parseUnits(toAmount, normalizedDecimalCount)
+		const fromTokenPriceBN = ethers.utils.parseUnits(fromTokenPrice.toFixed(normalizedDecimalCount), normalizedDecimalCount)
+		const toTokenPriceBN = ethers.utils.parseUnits(toTokenPrice.toFixed(normalizedDecimalCount), normalizedDecimalCount)
+		const toAmountBN = ethers.utils.parseUnits(Number(toAmount).toFixed(normalizedDecimalCount), normalizedDecimalCount)
 		const fromAmountBN = toTokenPriceBN.mul(toAmountBN).div(fromTokenPriceBN)
 		// Slippage percentage is multiplied by 1000 to convert it into an integer form that represents the fraction.
 		// because BigNumber cannot handle floating points directly.
