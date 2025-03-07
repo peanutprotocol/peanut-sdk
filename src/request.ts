@@ -2,38 +2,9 @@ import { ethers, getDefaultProvider } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
 import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
 import { config, interfaces, prepareApproveERC20Tx, resolveFromEnsName } from '.'
-import { normalizePath, routeForTargetAmount } from './util'
+import { routeForTargetAmount } from './util'
 
 // INTERFACES
-export interface ICreateRequestLinkProps {
-	chainId: string
-	tokenAddress: string
-	tokenAmount: string
-	tokenType: EPeanutLinkType
-	tokenDecimals: string
-	recipientAddress: string
-	tokenSymbol?: string
-	recipientName?: string
-	baseUrl?: string
-	apiUrl?: string
-	trackId?: string
-	reference?: string
-	attachment?: File
-	APIKey?: string
-}
-
-export type IGetRequestLinkDetailsProps = {
-	APIKey?: string
-	apiUrl?: string
-} & (
-	| {
-			link: string
-	  }
-	| {
-			uuid: string
-	  }
-)
-
 export interface IPrepareRequestLinkFulfillmentTransactionProps {
 	recipientAddress: string
 	tokenAddress: string
@@ -51,138 +22,20 @@ export type IPrepareXchainRequestFulfillmentTransactionProps = {
 	provider: ethers.providers.Provider
 	tokenType: EPeanutLinkType
 	slippagePercentage?: number
-} & (
-	| {
-			link: string
-			apiUrl?: string
-			APIKey?: string
-	  }
-	| {
-			linkDetails: Pick<
-				IGetRequestLinkDetailsResponse,
-				'chainId' | 'recipientAddress' | 'tokenAmount' | 'tokenDecimals' | 'tokenAddress'
-			>
-	  }
-)
-
-export interface ISubmitRequestLinkFulfillmentProps {
-	hash: string
-	chainId: string
-	payerAddress: string
-	signedTx?: string
-	apiUrl?: string
-	link: string
-	amountUsd: string
-}
-
-export interface ICreateRequestLinkResponse {
-	link: string
-}
-
-export interface IGetRequestLinkDetailsResponse {
-	uuid: string
-	link: string
-	chainId: string
-	recipientAddress: string | null
-	tokenAmount: string
-	tokenAddress: string
-	tokenDecimals: number
-	tokenType: string
-	tokenSymbol: string | null
-	createdAt: string
-	updatedAt: string
-	reference: string | null
-	attachmentUrl: string | null
-	payerAddress: string | null
-	trackId: string | null
-	destinationChainFulfillmentHash: string | null
-	originChainFulfillmentHash: string | null
-	status: string
-}
+  linkDetails: {
+    chainId: string
+    recipientAddress: string | null
+    tokenAmount: string
+    tokenAddress: string
+    tokenDecimals: number
+  }
+} 
 
 export interface IPrepareRequestLinkFulfillmentTransactionResponse {
 	unsignedTx: IPeanutUnsignedTransaction
 }
 
-export interface ISubmitRequestLinkFulfillmentResponse {
-	success: boolean
-}
-
 // FUNCTIONS
-export async function createRequestLink({
-	chainId,
-	tokenAddress,
-	tokenAmount,
-	tokenType,
-	tokenDecimals,
-	recipientAddress,
-	baseUrl = 'https://peanut.to/request/pay',
-	apiUrl = 'https://api.peanut.to/',
-	trackId,
-	reference,
-	attachment,
-	recipientName,
-	tokenSymbol,
-	APIKey,
-}: ICreateRequestLinkProps): Promise<ICreateRequestLinkResponse> {
-	try {
-		const formData = new FormData()
-		formData.append('chainId', chainId)
-		formData.append('tokenAddress', tokenAddress)
-		formData.append('tokenAmount', tokenAmount)
-		formData.append('tokenType', tokenType.toString())
-		formData.append('tokenDecimals', tokenDecimals)
-		formData.append('recipientAddress', recipientAddress)
-		formData.append('baseUrl', baseUrl)
-
-		if (trackId) formData.append('trackId', trackId)
-		if (reference) formData.append('reference', reference)
-		if (recipientName) formData.append('recipientName', recipientName)
-		if (tokenSymbol) formData.append('tokenSymbol', tokenSymbol)
-		if (attachment) formData.append('attachment', attachment)
-
-		const apiResponse = await fetch(normalizePath(`${apiUrl}/request-links`), {
-			method: 'POST',
-			body: formData,
-			headers: {
-				'api-key': APIKey!,
-			},
-		})
-
-		if (apiResponse.status !== 200) {
-			throw new Error('Failed to create request link')
-		}
-
-		const { link } = await apiResponse.json()
-		return { link }
-	} catch (error) {
-		console.error('Error creating request link:', error)
-		throw error
-	}
-}
-
-export async function getRequestLinkDetails(
-	props: IGetRequestLinkDetailsProps
-): Promise<IGetRequestLinkDetailsResponse> {
-	const { APIKey, apiUrl = 'https://api.peanut.to/' } = props
-
-	const uuid = 'uuid' in props ? props.uuid : getUuidFromLink(props.link)
-
-	const apiResponse = await fetch(normalizePath(`${apiUrl}/request-links/${uuid}`), {
-		method: 'GET',
-		headers: {
-			'api-key': APIKey!,
-		},
-	})
-
-	if (apiResponse.status !== 200) {
-		throw new Error('Failed to get request link details')
-	}
-
-	const responseData = await apiResponse.json()
-
-	return responseData
-}
 
 export async function prepareXchainRequestFulfillmentTransaction(
 	props: IPrepareXchainRequestFulfillmentTransactionProps
@@ -196,17 +49,8 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		provider,
 		tokenType,
 		slippagePercentage,
+    linkDetails
 	} = props
-	let linkDetails: Pick<
-		IGetRequestLinkDetailsResponse,
-		'chainId' | 'recipientAddress' | 'tokenAmount' | 'tokenDecimals' | 'tokenAddress'
-	>
-	if ('linkDetails' in props) {
-		linkDetails = props.linkDetails
-	} else {
-		const { link, apiUrl = 'https://api.peanut.to/', APIKey } = props
-		linkDetails = await getRequestLinkDetails({ link, apiUrl, APIKey })
-	}
 	let {
 		chainId: destinationChainId,
 		recipientAddress,
@@ -372,47 +216,4 @@ export function prepareRequestLinkFulfillmentTransaction({
 		console.error('Error preparing request link fulfillment transaction:', error)
 		throw error
 	}
-}
-
-export async function submitRequestLinkFulfillment({
-	chainId,
-	hash,
-	payerAddress,
-	apiUrl = 'https://api.peanut.to/',
-	link,
-	amountUsd,
-}: ISubmitRequestLinkFulfillmentProps): Promise<ISubmitRequestLinkFulfillmentResponse> {
-	try {
-		const uuid = getUuidFromLink(link)
-		const apiResponse = await fetch(normalizePath(`${apiUrl}/request-links/${uuid}`), {
-			method: 'PATCH',
-			body: JSON.stringify({
-				destinationChainFulfillmentHash: hash,
-				payerAddress,
-				chainId,
-				amountUsd,
-				// signedTx,
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-
-		if (apiResponse.status !== 200) {
-			throw new Error('Failed to submit request link fulfillment')
-		}
-
-		const data = await apiResponse.json()
-
-		return data
-	} catch (error) {
-		console.error('Error submitting request link fulfillment:', error)
-		throw error
-	} // TODO: handle error
-}
-
-export function getUuidFromLink(link: string): string {
-	const url = new URL(link)
-	const searchParams = new URLSearchParams(url.search)
-	return searchParams.get('id')!
 }
