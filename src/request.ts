@@ -22,14 +22,14 @@ export type IPrepareXchainRequestFulfillmentTransactionProps = {
 	provider: ethers.providers.Provider
 	tokenType: EPeanutLinkType
 	slippagePercentage?: number
-  linkDetails: {
-    chainId: string
-    recipientAddress: string | null
-    tokenAmount: string
-    tokenAddress: string
-    tokenDecimals: number
-  }
-} 
+	linkDetails: {
+		chainId: string
+		recipientAddress: string | null
+		tokenAmount: string
+		tokenAddress: string
+		tokenDecimals: number
+	}
+}
 
 export interface IPrepareRequestLinkFulfillmentTransactionResponse {
 	unsignedTx: IPeanutUnsignedTransaction
@@ -49,7 +49,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		provider,
 		tokenType,
 		slippagePercentage,
-    linkDetails
+		linkDetails,
 	} = props
 	let {
 		chainId: destinationChainId,
@@ -216,4 +216,26 @@ export function prepareRequestLinkFulfillmentTransaction({
 		console.error('Error preparing request link fulfillment transaction:', error)
 		throw error
 	}
+}
+
+function throwDeprecatedError(): never {
+	throw new Error(
+		'This function has been deprecated. Please check how to use the request API in https://docs.peanut.to/request-api'
+	)
+}
+
+export function createRequestLink(_data: object): Promise<object> {
+	throwDeprecatedError()
+}
+
+export function getRequestLinkDetails(_data: object): Promise<object> {
+	throwDeprecatedError()
+}
+
+export function submitRequestLinkFulfillment(_data: object): Promise<object> {
+	throwDeprecatedError()
+}
+
+export function getUuidFromLink(_data: string): string {
+	throwDeprecatedError()
 }
