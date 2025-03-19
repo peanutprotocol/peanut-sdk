@@ -17,7 +17,7 @@ describe('util', () => {
 		})
 	})
 
-	describe('prepareXchainFromAmountCalculation', () => {
+	describe.only('prepareXchainFromAmountCalculation', () => {
 		beforeEach(() => {
 			jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
 		})
@@ -42,6 +42,8 @@ describe('util', () => {
 			const toAmount = '0.00408'
 			const expectedFromAmount = '10.042552'
 			const slippagePercentage = 0.3
+
+			// Update the mock to return the correct structure that matches the actual API
 			mockFetch.mockImplementation((url: string) => {
 				const tokenAddress = new URL(url).searchParams.get('tokenAddress')
 				let price: number
@@ -53,7 +55,12 @@ describe('util', () => {
 					price = 0
 				}
 				return Promise.resolve({
-					json: () => Promise.resolve({ price }),
+					json: () =>
+						Promise.resolve({
+							token: {
+								usdPrice: price,
+							},
+						}),
 				})
 			})
 

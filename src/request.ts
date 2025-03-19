@@ -1,6 +1,6 @@
 import { ethers, getDefaultProvider } from 'ethersv5'
 import { EPeanutLinkType, IPeanutUnsignedTransaction } from './consts/interfaces.consts'
-import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION } from './data'
+import { ERC20_ABI, LATEST_STABLE_BATCHER_VERSION, DEFAULT_SQUID_INTEGRATOR_ID } from './data'
 import { config, interfaces, prepareApproveERC20Tx, resolveFromEnsName } from '.'
 import { routeForTargetAmount } from './util'
 
@@ -11,6 +11,7 @@ export interface IPrepareRequestLinkFulfillmentTransactionProps {
 	tokenAmount: string
 	tokenType: EPeanutLinkType
 	tokenDecimals: number
+	squidIntegratorId?: string
 }
 
 export type IPrepareXchainRequestFulfillmentTransactionProps = {
@@ -22,6 +23,7 @@ export type IPrepareXchainRequestFulfillmentTransactionProps = {
 	provider: ethers.providers.Provider
 	tokenType: EPeanutLinkType
 	slippagePercentage?: number
+	squidIntegratorId?: string
 	linkDetails: {
 		chainId: string
 		recipientAddress: string | null
@@ -49,6 +51,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		provider,
 		tokenType,
 		slippagePercentage,
+		squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 		linkDetails,
 	} = props
 	let {
@@ -109,6 +112,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		squidRouterUrl,
 		fromAddress: senderAddress,
 		toAddress: recipientAddress,
+		squidIntegratorId,
 	})
 
 	// Transaction estimation from Squid API allows us to know the transaction fees (gas and fee), then we can iterate over them and add the values ​​that are in dollars
@@ -187,6 +191,7 @@ export function prepareRequestLinkFulfillmentTransaction({
 	tokenAmount,
 	tokenType,
 	tokenDecimals,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 }: IPrepareRequestLinkFulfillmentTransactionProps): IPrepareRequestLinkFulfillmentTransactionResponse {
 	try {
 		tokenType = Number(tokenType)

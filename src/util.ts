@@ -1,5 +1,13 @@
 import { BigNumber, ethers } from 'ethersv5'
-import { CHAIN_MAP, PEANUT_CONTRACTS, VAULT_CONTRACTS_V4_ANDUP, VAULT_CONTRACTS_V4_2_ANDUP, VERSION } from './data.ts'
+import {
+	CHAIN_MAP,
+	PEANUT_CONTRACTS,
+	VAULT_CONTRACTS_V4_ANDUP,
+	VAULT_CONTRACTS_V4_2_ANDUP,
+	VERSION,
+	CORAL_SQUID_INTEGRATOR_ID,
+	DEFAULT_SQUID_INTEGRATOR_ID,
+} from './data.ts'
 import { config } from './config.ts'
 import * as interfaces from './consts/interfaces.consts.ts'
 import { ANYONE_WITHDRAWAL_MODE, PEANUT_SALT, RECIPIENT_WITHDRAWAL_MODE } from './consts/misc.ts'
@@ -690,12 +698,14 @@ export function compareVersions(version1: string, version2: string, lead: string
 export async function getTokenPrice({
 	tokenAddress,
 	chainId,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 }: {
 	tokenAddress: string
 	chainId: string | number
+	squidIntegratorId?: string
 }): Promise<number> {
 	const response = await fetch(`${SQUID_API_URL}/token-price?tokenAddress=${tokenAddress}&chainId=${chainId}`, {
-		headers: { 'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C' },
+		headers: { 'x-integrator-id': squidIntegratorId },
 	})
 	const data = await response.json()
 	return data.token.usdPrice
@@ -714,6 +724,7 @@ export async function prepareXchainFromAmountCalculation({
 	slippagePercentage = 0.3, // 0.3%
 	fromTokenPrice,
 	toTokenPrice,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 }: {
 	fromToken: TokenData
 	toToken: TokenData
@@ -721,6 +732,7 @@ export async function prepareXchainFromAmountCalculation({
 	slippagePercentage?: number
 	fromTokenPrice?: number
 	toTokenPrice?: number
+	squidIntegratorId?: string
 }): Promise<string | null> {
 	if (slippagePercentage < 0) {
 		console.error('Invalid slippagePercentage: Cannot be negative.')
@@ -735,12 +747,14 @@ export async function prepareXchainFromAmountCalculation({
 				: getTokenPrice({
 						chainId: fromToken.chainId,
 						tokenAddress: fromToken.address,
+						squidIntegratorId,
 					}),
 			toTokenPrice
 				? Promise.resolve(toTokenPrice)
 				: getTokenPrice({
 						chainId: toToken.chainId,
 						tokenAddress: toToken.address,
+						squidIntegratorId,
 					}),
 		])
 
@@ -748,9 +762,18 @@ export async function prepareXchainFromAmountCalculation({
 		// This ensures calculations are consistent and prevents issues with scientific notation
 		// that could arise from small price values or different token decimals.
 		const normalizedDecimalCount = Math.max(fromToken.decimals, toToken.decimals)
-		const fromTokenPriceBN = ethers.utils.parseUnits(fromTokenPrice.toFixed(normalizedDecimalCount), normalizedDecimalCount)
-		const toTokenPriceBN = ethers.utils.parseUnits(toTokenPrice.toFixed(normalizedDecimalCount), normalizedDecimalCount)
-		const toAmountBN = ethers.utils.parseUnits(Number(toAmount).toFixed(normalizedDecimalCount), normalizedDecimalCount)
+		const fromTokenPriceBN = ethers.utils.parseUnits(
+			fromTokenPrice.toFixed(normalizedDecimalCount),
+			normalizedDecimalCount
+		)
+		const toTokenPriceBN = ethers.utils.parseUnits(
+			toTokenPrice.toFixed(normalizedDecimalCount),
+			normalizedDecimalCount
+		)
+		const toAmountBN = ethers.utils.parseUnits(
+			Number(toAmount).toFixed(normalizedDecimalCount),
+			normalizedDecimalCount
+		)
 		const fromAmountBN = toTokenPriceBN.mul(toAmountBN).div(fromTokenPriceBN)
 		// Slippage percentage is multiplied by 1000 to convert it into an integer form that represents the fraction.
 		// because BigNumber cannot handle floating points directly.
@@ -776,6 +799,7 @@ async function estimateRouteWithMinSlippage({
 	toAddress,
 	fromTokenPrice,
 	toTokenPrice,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 }: {
 	slippagePercentage: number
 	fromToken: TokenData
@@ -786,6 +810,7 @@ async function estimateRouteWithMinSlippage({
 	toAddress: string
 	fromTokenPrice: number
 	toTokenPrice: number
+	squidIntegratorId?: string
 }): Promise<{
 	estimatedFromAmount: string
 	weiFromAmount: ethers.BigNumber
@@ -798,6 +823,7 @@ async function estimateRouteWithMinSlippage({
 		slippagePercentage,
 		fromTokenPrice,
 		toTokenPrice,
+		squidIntegratorId,
 	})
 	console.log('estimatedFromAmount', estimatedFromAmount)
 	if (!estimatedFromAmount) {
@@ -814,6 +840,8 @@ async function estimateRouteWithMinSlippage({
 		fromAddress,
 		toAddress,
 		enableBoost: true,
+		slippage: slippagePercentage,
+		squidIntegratorId,
 	})
 	return { estimatedFromAmount, weiFromAmount, routeResult }
 }
@@ -830,6 +858,7 @@ export async function routeForTargetAmount({
 	squidRouterUrl,
 	fromAddress,
 	toAddress,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 }: {
 	slippagePercentage?: number
 	fromToken: TokenData
@@ -838,6 +867,7 @@ export async function routeForTargetAmount({
 	squidRouterUrl: string
 	fromAddress: string
 	toAddress: string
+	squidIntegratorId?: string
 }): Promise<{
 	estimatedFromAmount: string
 	weiFromAmount: ethers.BigNumber
@@ -848,10 +878,12 @@ export async function routeForTargetAmount({
 		getTokenPrice({
 			chainId: fromToken.chainId,
 			tokenAddress: fromToken.address,
+			squidIntegratorId,
 		}),
 		getTokenPrice({
 			chainId: toToken.chainId,
 			tokenAddress: toToken.address,
+			squidIntegratorId,
 		}),
 	])
 
@@ -867,6 +899,7 @@ export async function routeForTargetAmount({
 				toAddress,
 				fromTokenPrice,
 				toTokenPrice,
+				squidIntegratorId,
 			})),
 			finalSlippage: slippagePercentage,
 		}
@@ -888,6 +921,7 @@ export async function routeForTargetAmount({
 			toAddress,
 			fromTokenPrice,
 			toTokenPrice,
+			squidIntegratorId,
 		})
 		minToAmount = ethers.BigNumber.from(result.routeResult.txEstimation.toAmountMin)
 		slippagePercentage += 0.1
@@ -917,4 +951,43 @@ export function stringToFixed(numStr: string, precision: number = 0): string {
 	const [_, intPart, decimals] = match
 	const rounded = decimals.padEnd(precision, '0').slice(0, precision)
 	return rounded ? `${intPart}.${rounded}` : intPart
+}
+
+/**
+ * Checks if a Squid route is a Coral (RFQ) route
+ * @param routeData The raw route data returned from Squid API
+ * @returns boolean indicating if the route is a Coral route
+ */
+export function isCoralRoute(routeData: any): boolean {
+	if (!routeData || !routeData.route) {
+		return false
+	}
+
+	const route = routeData.route
+
+	// Check for type: "rfq" (coral type)
+	if (route.type === 'rfq') {
+		return true
+	}
+
+	// Check for expiry field (present in Coral routes)
+	if (route.expiry !== undefined) {
+		return true
+	}
+
+	// Check if transaction value is 0
+	if ((route.transactionRequest && route.transactionRequest.value === '0') || route.transactionRequest.value === 0) {
+		return true
+	}
+
+	return false
+}
+
+/**
+ * Gets the appropriate Squid integrator ID based on whether Coral should be used
+ * @param useCoral Whether to use Coral routes
+ * @returns The appropriate integrator ID
+ */
+export function getSquidIntegratorId(useCoral: boolean = false): string {
+	return useCoral ? CORAL_SQUID_INTEGRATOR_ID : DEFAULT_SQUID_INTEGRATOR_ID
 }

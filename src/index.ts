@@ -34,6 +34,8 @@ import {
 	VAULT_CONTRACTS_V4_ANDUP,
 	VAULT_CONTRACTS_WITH_FLEXIBLE_DEPOSITS,
 	ROUTER_CONTRACTS_WITH_MFA,
+	DEFAULT_SQUID_INTEGRATOR_ID,
+	CORAL_SQUID_INTEGRATOR_ID,
 } from './data.ts'
 
 import { config } from './config.ts'
@@ -1157,17 +1159,31 @@ async function getLinksFromTx({
 }
 
 function detectContractVersionFromTxReceipt(txReceipt: any, chainId: string): string {
+	if (!txReceipt || !chainId || !PEANUT_CONTRACTS[chainId]) {
+		throw new Error(`Invalid transaction receipt or chain ID: ${chainId}`)
+	}
+
 	const contractAddresses = Object.values(PEANUT_CONTRACTS[chainId])
 	const contractVersions = Object.keys(PEANUT_CONTRACTS[chainId])
+
+	// Check if logs exist before trying to map them
+	if (!txReceipt.logs || !Array.isArray(txReceipt.logs)) {
+		throw new Error('Transaction receipt does not contain valid logs array')
+	}
+
 	const txReceiptContractAddresses = txReceipt.logs.map((log: any) => log.address.toLowerCase())
 
 	let txReceiptContractVersion = -1
-
 	for (let i = 0; i < contractAddresses.length; i++) {
-		if (txReceiptContractAddresses.includes(String(contractAddresses[i]).toLowerCase())) {
+		const contractAddress = (contractAddresses[i] as string).toLowerCase()
+		if (txReceiptContractAddresses.includes(contractAddress)) {
 			txReceiptContractVersion = i
 			break
 		}
+	}
+
+	if (txReceiptContractVersion === -1) {
+		throw new Error('Could not detect contract version from transaction receipt')
 	}
 
 	return contractVersions[txReceiptContractVersion]
@@ -1675,7 +1691,8 @@ async function createClaimXChainPayload({
 	destinationChainId,
 	destinationToken,
 	slippage,
-}: interfaces.ICreateClaimXChainPayload): Promise<interfaces.IXchainClaimPayload> {
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
+}: interfaces.ICreateClaimXChainPayload & { squidIntegratorId?: string }): Promise<interfaces.IXchainClaimPayload> {
 	const linkParams = peanut.getParamsFromLink(link)
 	const chainId = linkParams.chainId
 	const contractVersion = linkParams.contractVersion
@@ -1707,6 +1724,7 @@ async function createClaimXChainPayload({
 		fromAddress: recipient,
 		toAddress: recipient,
 		slippage,
+		squidIntegratorId,
 	})
 
 	config.verbose && console.log('Squid route calculated :)', { route })
@@ -2083,6 +2101,7 @@ async function claimLinkXChainGasless({
 	squidRouterUrl,
 	isMainnet = true,
 	slippage,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
 }: interfaces.IClaimLinkXChainGaslessParams): Promise<interfaces.IClaimLinkXChainGaslessResponse> {
 	const payload = await createClaimXChainPayload({
 		isMainnet,
@@ -2092,6 +2111,7 @@ async function claimLinkXChainGasless({
 		recipient: recipientAddress,
 		squidRouterUrl,
 		slippage,
+		squidIntegratorId,
 	})
 
 	const claimParams = {
@@ -2126,14 +2146,19 @@ async function claimLinkXChainGasless({
 	return { txHash: data.txHash }
 }
 
-async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidChain[]> {
+async function getSquidChains({
+	isTestnet,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
+}: {
+	isTestnet: boolean
+	squidIntegratorId?: string
+}): Promise<interfaces.ISquidChain[]> {
 	// TODO rate limits? Caching?
 	const url = isTestnet ? 'https://testnet.apiplus.squidrouter.com/v2/chains' : `${SQUID_API_URL}/chains`
 	try {
 		const response = await fetch(url, {
 			headers: {
-				// 'x-integrator-id': 'peanut-api',
-				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
+				'x-integrator-id': squidIntegratorId,
 			},
 		})
 		if (response.ok) {
@@ -2157,7 +2182,13 @@ async function getSquidChains({ isTestnet }: { isTestnet: boolean }): Promise<in
 	}
 }
 
-async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<interfaces.ISquidToken[]> {
+async function getSquidTokens({
+	isTestnet,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
+}: {
+	isTestnet: boolean
+	squidIntegratorId?: string
+}): Promise<interfaces.ISquidToken[]> {
 	// TODO rate limits? Caching?
 	// const url = isTestnet ? 'https://testnet.api.squidrouter.com/v1/tokens' : 'https://api.squidrouter.com/v1/tokens'
 	const url = isTestnet ? 'https://testnet.apiplus.squidrouter.com/v2/tokens' : `${SQUID_API_URL}/tokens`
@@ -2165,8 +2196,7 @@ async function getSquidTokens({ isTestnet }: { isTestnet: boolean }): Promise<in
 	try {
 		const response = await fetch(url, {
 			headers: {
-				// 'x-integrator-id': 'peanut-api',
-				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
+				'x-integrator-id': squidIntegratorId,
 			},
 		})
 		if (response.ok) {
@@ -2208,7 +2238,7 @@ async function getXChainOptionsForLink({
 		)
 	}
 
-	const supportedChains = await getSquidChains({ isTestnet })
+	const supportedChains = await getSquidChains({ isTestnet, squidIntegratorId: DEFAULT_SQUID_INTEGRATOR_ID })
 
 	const isSourceChainSupported = supportedChains.some((chain) => chain.chainId === sourceChainId)
 
@@ -2219,7 +2249,7 @@ async function getXChainOptionsForLink({
 		)
 	}
 
-	const supportedTokens = await getSquidTokens({ isTestnet })
+	const supportedTokens = await getSquidTokens({ isTestnet, squidIntegratorId: DEFAULT_SQUID_INTEGRATOR_ID })
 
 	const supportedTokensMap = new Map<
 		string,
@@ -2266,7 +2296,8 @@ async function getSquidRouteRaw({
 	slippage,
 	enableForecall = true,
 	enableBoost = true,
-}: interfaces.IGetSquidRouteParams): Promise<any> {
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
+}: interfaces.IGetSquidRouteParams & { squidIntegratorId?: string }): Promise<any> {
 	// have a default for squidRouterUrl
 	if (squidRouterUrl === undefined) squidRouterUrl = getSquidRouterUrl(true, true)
 
@@ -2306,7 +2337,7 @@ async function getSquidRouteRaw({
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'x-integrator-id': '11CBA45B-5EE9-4331-B146-48CCD7ED4C7C',
+				'x-integrator-id': squidIntegratorId,
 			},
 			body: JSON.stringify(params),
 		})
@@ -2329,8 +2360,35 @@ async function getSquidRouteRaw({
 /**
  * Gets a squid route
  */
-async function getSquidRoute(args: interfaces.IGetSquidRouteParams): Promise<interfaces.ISquidRoute> {
-	const data = await getSquidRouteRaw(args)
+async function getSquidRoute({
+	squidRouterUrl,
+	fromChain,
+	fromToken,
+	fromAmount,
+	toChain,
+	toToken,
+	fromAddress,
+	toAddress,
+	slippage,
+	enableForecall = true,
+	enableBoost = true,
+	squidIntegratorId = DEFAULT_SQUID_INTEGRATOR_ID,
+}: interfaces.IGetSquidRouteParams & { squidIntegratorId?: string }): Promise<interfaces.ISquidRoute> {
+	const data = await getSquidRouteRaw({
+		squidRouterUrl,
+		fromChain,
+		fromToken,
+		fromAmount,
+		toChain,
+		toToken,
+		fromAddress,
+		toAddress,
+		slippage,
+		enableForecall,
+		enableBoost,
+		squidIntegratorId,
+	})
+
 	if (data && data.route) {
 		config.verbose && console.log('Squid route: ', data.route)
 		return {

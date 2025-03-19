@@ -105,6 +105,7 @@ export interface IClaimLinkXChainGaslessParams {
 	baseUrl?: string
 	squidRouterUrl?: string
 	slippage?: number
+	squidIntegratorId?: string
 }
 
 export interface IClaimLinkXChainGaslessResponse {
@@ -130,6 +131,7 @@ export interface IClaimLinkXChainParams {
 	maxSlippage: number
 	recipient?: string
 	destinationTokenAddress?: string
+	squidIntegratorId?: string
 }
 
 export interface IClaimLinkXChainResponse {
@@ -232,6 +234,7 @@ export interface IGetSquidRouteParams {
 	slippage?: number
 	enableForecall?: boolean
 	enableBoost?: boolean
+	squidIntegratorId?: string
 }
 
 //squid chain and token interfaces
@@ -261,6 +264,7 @@ export interface ICreateClaimXChainPayload {
 	squidRouterUrl?: string
 	isMainnet?: boolean
 	slippage?: number
+	squidIntegratorId?: string
 }
 
 export interface IXchainClaimPayload {
