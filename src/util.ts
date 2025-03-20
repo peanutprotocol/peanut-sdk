@@ -748,9 +748,18 @@ export async function prepareXchainFromAmountCalculation({
 		// This ensures calculations are consistent and prevents issues with scientific notation
 		// that could arise from small price values or different token decimals.
 		const normalizedDecimalCount = Math.max(fromToken.decimals, toToken.decimals)
-		const fromTokenPriceBN = ethers.utils.parseUnits(fromTokenPrice.toFixed(normalizedDecimalCount), normalizedDecimalCount)
-		const toTokenPriceBN = ethers.utils.parseUnits(toTokenPrice.toFixed(normalizedDecimalCount), normalizedDecimalCount)
-		const toAmountBN = ethers.utils.parseUnits(Number(toAmount).toFixed(normalizedDecimalCount), normalizedDecimalCount)
+		const fromTokenPriceBN = ethers.utils.parseUnits(
+			fromTokenPrice.toFixed(normalizedDecimalCount),
+			normalizedDecimalCount
+		)
+		const toTokenPriceBN = ethers.utils.parseUnits(
+			toTokenPrice.toFixed(normalizedDecimalCount),
+			normalizedDecimalCount
+		)
+		const toAmountBN = ethers.utils.parseUnits(
+			Number(toAmount).toFixed(normalizedDecimalCount),
+			normalizedDecimalCount
+		)
 		const fromAmountBN = toTokenPriceBN.mul(toAmountBN).div(fromTokenPriceBN)
 		// Slippage percentage is multiplied by 1000 to convert it into an integer form that represents the fraction.
 		// because BigNumber cannot handle floating points directly.
@@ -830,6 +839,7 @@ export async function routeForTargetAmount({
 	squidRouterUrl,
 	fromAddress,
 	toAddress,
+	slippageIncrement,
 }: {
 	slippagePercentage?: number
 	fromToken: TokenData
@@ -838,6 +848,7 @@ export async function routeForTargetAmount({
 	squidRouterUrl: string
 	fromAddress: string
 	toAddress: string
+	slippageIncrement?: number
 }): Promise<{
 	estimatedFromAmount: string
 	weiFromAmount: ethers.BigNumber
@@ -877,6 +888,7 @@ export async function routeForTargetAmount({
 	const weiToAmount = ethers.utils.parseUnits(targetAmount, toToken.decimals)
 	let minToAmount: ethers.BigNumber = ethers.BigNumber.from(0)
 	slippagePercentage = 0
+	slippageIncrement ??= 0.4
 	while (minToAmount.lt(weiToAmount)) {
 		result = await estimateRouteWithMinSlippage({
 			slippagePercentage,
@@ -890,7 +902,7 @@ export async function routeForTargetAmount({
 			toTokenPrice,
 		})
 		minToAmount = ethers.BigNumber.from(result.routeResult.txEstimation.toAmountMin)
-		slippagePercentage += 0.1
+		slippagePercentage += slippageIncrement
 		if (5.0 < slippagePercentage) {
 			// we dont want to go over 5% slippage
 			throw new Error('Slippage percentage exceeded maximum allowed value')

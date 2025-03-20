@@ -22,6 +22,7 @@ export type IPrepareXchainRequestFulfillmentTransactionProps = {
 	provider: ethers.providers.Provider
 	tokenType: EPeanutLinkType
 	slippagePercentage?: number
+	slippageIncrement?: number
 	linkDetails: {
 		chainId: string
 		recipientAddress: string | null
@@ -49,6 +50,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		provider,
 		tokenType,
 		slippagePercentage,
+		slippageIncrement,
 		linkDetails,
 	} = props
 	let {
@@ -109,6 +111,7 @@ export async function prepareXchainRequestFulfillmentTransaction(
 		squidRouterUrl,
 		fromAddress: senderAddress,
 		toAddress: recipientAddress,
+		slippageIncrement,
 	})
 
 	// Transaction estimation from Squid API allows us to know the transaction fees (gas and fee), then we can iterate over them and add the values ​​that are in dollars
