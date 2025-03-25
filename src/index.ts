@@ -243,6 +243,45 @@ function getContractAddress(chainId: string, version: string) {
 	return contractAddress
 }
 
+function getContractAbi(version: string): any {
+	let contractAbi: any
+	switch (version) {
+		case 'v4':
+			contractAbi = PEANUT_ABI_V4
+			break
+		case 'v4.2':
+			contractAbi = PEANUT_ABI_V4_2
+			break
+		case 'v4.3':
+			contractAbi = PEANUT_ABI_V4_3
+			break
+		case 'v4.4':
+			contractAbi = PEANUT_ABI_V4_4
+			break
+		case 'Bv4':
+			contractAbi = PEANUT_BATCHER_ABI_V4
+			break
+		case 'Bv4.3':
+			contractAbi = PEANUT_BATCHER_ABI_V4_3
+			break
+		case 'Bv4.4':
+			contractAbi = PEANUT_BATCHER_ABI_V4_4
+			break
+		case 'Bv4.2':
+			contractAbi = PEANUT_BATCHER_ABI_V4_2
+			break
+		case 'Rv4.2':
+			contractAbi = PEANUT_ROUTER_ABI_V4_2
+			break
+		case 'Rv4.3':
+			contractAbi = PEANUT_ABI_V4_3
+			break
+		default:
+			throw new Error('Unable to find Peanut contract for this version, check for correct version or updated SDK')
+	}
+	return contractAbi
+}
+
 async function getContract(chainId: string, signerOrProvider: any, version = null) {
 	if (signerOrProvider == null) {
 		config.verbose && console.log('signerOrProvider is null, getting default provider...')
@@ -2008,6 +2047,94 @@ async function getLinkDetails({ link, provider }: interfaces.IGetLinkDetailsPara
 	}
 }
 
+/**
+ * Gets the details of a Link: what token it is, how much it holds, etc.
+ */
+function extractLinkDetails({ params, deposit, tokenDetails }: any) {
+	let tokenAddress = deposit.tokenAddress
+	const tokenType = deposit.contractType
+	const senderAddress = deposit.senderAddress
+
+	let claimed = false
+	if (['v2', 'v4'].includes(params.contractVersion)) {
+		if (deposit.pubKey20 == '0x0000000000000000000000000000000000000000') {
+			claimed = true
+		}
+		config.verbose && console.log('Pre-4.2 claim checking behaviour, claimed:', claimed)
+	} else {
+		// v4.2+
+		claimed = deposit.claimed
+		config.verbose && console.log('v4.2+ claim checking behaviour, claimed:', claimed)
+	}
+
+	let depositDate: Date | null = null
+	if (VAULT_CONTRACTS_V4_ANDUP.includes(params.contractVersion)) {
+		if (deposit.timestamp) {
+			depositDate = new Date(deposit.timestamp * 1000)
+			if (deposit.timestamp == 0) {
+				depositDate = null
+			}
+		} else {
+			config.verbose && console.log('No timestamp found in deposit for version', params.contractVersion)
+		}
+	}
+
+	let tokenAmount = '0'
+	let tokenDecimals = null
+	let symbol = null
+	let name = null
+	let tokenURI = null
+	let metadata = null
+
+	if (tokenType == interfaces.EPeanutLinkType.native) {
+		config.verbose && console.log('tokenType is 0, setting tokenAddress to zero address')
+		tokenAddress = ethers.constants.AddressZero
+	}
+	if (tokenType == interfaces.EPeanutLinkType.native || tokenType == interfaces.EPeanutLinkType.erc20) {
+		config.verbose &&
+			console.log('finding token details for token with address: ', tokenAddress, ' on chain: ', params.chainId)
+		const chainDetails = TOKEN_DETAILS.find((chain) => chain.chainId === params.chainId)
+		if (!chainDetails) {
+			throw new Error("Couldn't find details for this token")
+		}
+
+		symbol = tokenDetails.symbol
+		name = tokenDetails.name
+		tokenDecimals = tokenDetails.decimals
+		tokenAmount = ethers.utils.formatUnits(deposit.amount, tokenDecimals)
+	}
+
+	// format deposit to string values
+	const depositCopy = {}
+	for (const key in deposit) {
+		if (isNaN(Number(key))) {
+			// Only copy named properties
+			depositCopy[key] = deposit[key].toString()
+		}
+	}
+
+	return {
+		chainId: params.chainId,
+		depositIndex: params.depositIdx,
+		contractVersion: params.contractVersion,
+		senderAddress: senderAddress,
+		tokenType: deposit.contractType,
+		tokenAddress: deposit.tokenAddress,
+		tokenDecimals: tokenDecimals,
+		tokenSymbol: symbol,
+		tokenName: name,
+		tokenAmount: tokenAmount,
+		tokenId: ethers.BigNumber.from(deposit.tokenId).toNumber(),
+		claimed: claimed,
+		depositDate: depositDate,
+		tokenURI: tokenURI,
+		metadata: metadata,
+		rawOnchainDepositInfo: depositCopy,
+		recipient: deposit.recipient,
+		reclaimableAfter: deposit.reclaimableAfter,
+	}
+}
+
 async function resolveToENSName({
 	address,
 	provider = null,
@@ -3082,6 +3209,7 @@ const peanut = {
 	getAllUnclaimedDepositsWithIdxForAddress,
 	getContract,
 	getContractAddress,
+	getContractAbi,
 	getDefaultProvider,
 	getDefaultProviderUrl,
 	getDepositIdx,
@@ -3089,6 +3217,7 @@ const peanut = {
 	getEIP1559Tip,
 	getLatestContractVersion,
 	getLinkDetails,
+	extractLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
 	isShortenedLink,
@@ -3187,6 +3316,7 @@ export {
 	getAllUnclaimedDepositsWithIdxForAddress,
 	getContract,
 	getContractAddress,
+	getContractAbi,
 	getDefaultProvider,
 	getDefaultProviderUrl,
 	getDepositIdx,
@@ -3194,6 +3324,7 @@ export {
 	getEIP1559Tip,
 	getLatestContractVersion,
 	getLinkDetails,
+	extractLinkDetails,
 	getLinkFromParams,
 	getLinksFromMultilink,
 	isShortenedLink,
